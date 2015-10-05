@@ -3,3 +3,4 @@
 export(JonesVanZalingeMethod)
 export(LengthConCatchCurve)
 export(PaulysM)
+export(RikhterEfanovsM)
