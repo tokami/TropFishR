@@ -2,3 +2,4 @@
 
 export(JonesVanZalingeMethod)
 export(LengthConCatchCurve)
+export(PaulysM)
