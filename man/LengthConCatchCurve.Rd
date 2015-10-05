@@ -7,28 +7,28 @@
 LengthConCatchCurve(midLengths, catch, Linf, K, t0 = 0, catchCorFac = NA)
 }
 \arguments{
-\item{midLengths}{The midpoints of the size class intervals as vector.}
+\item{midLengths}{Midpoints of the length class as vector}
 
-\item{catch}{The catch per sampling time as matrix or the total catch as vector.}
+\item{catch}{Catch per sampling time as matrix or the total catch as vector.}
 
-\item{Linf}{The infinite length for investigated species in cm [cm].}
+\item{Linf}{Infinite length for investigated species in cm [cm].}
 
-\item{K}{The growth coefficient for investigated species per year [1/year].}
+\item{K}{Growth coefficient for investigated species per year [1/year].}
 
-\item{t0}{The theoretical time zero, at which individuals of this species hatch.}
+\item{t0}{Theoretical time zero, at which individuals of this species hatch.}
 
-\item{catchCorFac}{optional: Correction factor for catch, in case catch does not reflect catch of a whole year or it reflects only part of fishing ground.}
+\item{catchCorFac}{optional: Correction factor for catch, in case provided catch does spatially or temporarily not reflect catch for fishing ground of a whole year.}
 }
 \description{
 This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve.
 }
 \details{
-Catch curve..., results (Dataframe, Total mortality, Plot) are saved in the list "results.CC".
+The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 }
 \examples{
-\donttest{
+\dontrun{
  data("ex.LengthCC")
- output <- LengthConCatchCurve(ex.LengthCC[,1], ex.LengthCC[,2], Linf = 23.1, K = 0.59)
+ output <- LengthConCatchCurve(midLengths = ex.LengthCC[,1], catch = ex.LengthCC[,2], Linf = 23.1, K = 0.59)
  output
  }
 }

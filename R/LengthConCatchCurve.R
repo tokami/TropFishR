@@ -2,29 +2,28 @@
 #
 #' @description  This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve.
 #'
-#' @param midLengths The midpoints of the size class intervals as vector.
+#' @param midLengths Midpoints of the length class as vector
 #'
-#' @param catch The catch per sampling time as matrix or the total catch as vector.
+#' @param catch Catch per sampling time as matrix or the total catch as vector.
 #'
-#' @param Linf The infinite length for investigated species in cm [cm].
+#' @param Linf Infinite length for investigated species in cm [cm].
 #'
-#' @param K The growth coefficient for investigated species per year [1/year].
+#' @param K Growth coefficient for investigated species per year [1/year].
 #'
-#' @param t0 The theoretical time zero, at which individuals of this species hatch.
+#' @param t0 Theoretical time zero, at which individuals of this species hatch.
 #'
-#' @param catchCorFac optional: Correction factor for catch, in case catch does not reflect catch of a whole year or it reflects only part of fishing ground.
+#' @param catchCorFac optional: Correction factor for catch, in case provided catch does spatially or temporarily not reflect catch for fishing ground of a whole year.
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'  data("ex.LengthCC")
-#'  output <- LengthConCatchCurve(ex.LengthCC[,1], ex.LengthCC[,2], Linf = 23.1, K = 0.59)
+#'  output <- LengthConCatchCurve(midLengths = ex.LengthCC[,1], catch = ex.LengthCC[,2], Linf = 23.1, K = 0.59)
 #'  output
 #'  }
 #'
-#' @details Catch curve..., results (Dataframe, Total mortality, Plot) are saved in the list "results.CC".
+#' @details The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 #'
 #' @export
-
 
 LengthConCatchCurve <- function(midLengths, catch, Linf, K, t0 = 0,
                        catchCorFac = NA){
@@ -66,11 +65,11 @@ LengthConCatchCurve <- function(midLengths, catch, Linf, K, t0 = 0,
 
   #identify plot
   plot(x = df.CC$t_midL,y = df.CC$lnC_dt,
-       xlab = "Relative age [yrs]", ylab = "ln(C/dt)",
-       ylim = c(0,10))
+       xlab = "Relative age [yrs]", ylab = "ln(C/dt)")
   print("Please choose the minimum and maximum point in the graph to include for the regression line! Then press 'Finish'!")
-  cutter <- identify(x = df.CC$t_midL,y = df.CC$lnC_dt,
+  cutter <- identify(x = df.CC$t_midL, y = df.CC$lnC_dt,
                      labels = rownames(df.CC))
+  if(is.na(cutter[1]) | is.na(cutter[2])) stop("No points for linear regression were chosen.")
 
   #calculations + model
   df.CC.cut <- df.CC[cutter[1]:cutter[2],]
@@ -91,13 +90,15 @@ LengthConCatchCurve <- function(midLengths, catch, Linf, K, t0 = 0,
   #final plot
   plot(x = df.CC$t_midL, y = df.CC$lnC_dt,
        xlab = "Relative age [yrs]", ylab = "ln(C / dt)",
-       ylim = c(0,12), xlim = c(0,10), cex = 1.5, bty = 'n')
+       cex = 1.5, bty = 'n')
   par(new=T)
   points(x = df.CC.cut$t_midL, y = df.CC.cut$lnC_dt,
          pch = 19, col = 'blue', cex = 1.5)
-  #ablineclip(a = intercept_lm1, b = slope_lm1, lwd = 1.7,
-  #           col = 'blue', x1 = df.CC$t_midL[cutter[1]],
-  #           x2 = df.CC.cut$t_midL[cutter[2]])
+  segments(x0=df.CC$t_midL[cutter[1]],
+           y0=df.CC$lnC_dt[cutter[1]],
+           x1=df.CC$t_midL[cutter[2]],
+           y1=df.CC$lnC_dt[cutter[2]],
+           col="blue",lwd = 1.7)
   mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"±",
                                round(SE_Z_lm1,2)), col = 'blue')
   plot1 = recordPlot()
