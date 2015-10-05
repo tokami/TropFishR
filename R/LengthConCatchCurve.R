@@ -15,7 +15,7 @@
 #' @param catchCorFac optional: Correction factor for catch, in case provided catch does spatially or temporarily not reflect catch for fishing ground of a whole year.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'  data("ex.LengthCC")
 #'  output <- LengthConCatchCurve(midLengths = ex.LengthCC[,1], catch = ex.LengthCC[,2], Linf = 23.1, K = 0.59)
 #'  output
@@ -69,7 +69,6 @@ LengthConCatchCurve <- function(midLengths, catch, Linf, K, t0 = 0,
   print("Please choose the minimum and maximum point in the graph to include for the regression line! Then press 'Finish'!")
   cutter <- identify(x = df.CC$t_midL, y = df.CC$lnC_dt,
                      labels = rownames(df.CC))
-  if(is.na(cutter[1]) | is.na(cutter[2])) stop("No points for linear regression were chosen.")
 
   #calculations + model
   df.CC.cut <- df.CC[cutter[1]:cutter[2],]

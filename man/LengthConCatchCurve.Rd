@@ -26,7 +26,7 @@ This is a function to calculate the total mortality (Z) from length composition 
 The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 }
 \examples{
-\dontrun{
+\donttest{
  data("ex.LengthCC")
  output <- LengthConCatchCurve(midLengths = ex.LengthCC[,1], catch = ex.LengthCC[,2], Linf = 23.1, K = 0.59)
  output

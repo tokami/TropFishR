@@ -2,4 +2,3 @@
 
 export(JonesVanZalingeMethod)
 export(LengthConCatchCurve)
-export(jetPal)
