@@ -24,7 +24,9 @@
 #'
 #' @examples
 #' data("ex.CohortAnalysis")
-#' output = CohortAnalysis(midLengths = ex.CohortAnalysis$midLengths, catch = ex.CohortAnalysis$catch, Linf = 130, K = 0.1, M = 0.28, terminalF = 0.28, a = 0.00001, b = 3)
+#' output = CohortAnalysis(midLengths = ex.CohortAnalysis$midLengths,
+#'  catch = ex.CohortAnalysis$catch, Linf = 130, K = 0.1, M = 0.28,
+#'  terminalF = 0.28, a = 0.00001, b = 3)
 #' output
 #' @details Cohort analysis
 #'
