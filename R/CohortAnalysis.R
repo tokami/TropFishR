@@ -3,23 +3,14 @@
 #' @description Cohort analysis
 #'
 #' @param midLengths Midpoints of the length class as vector
-#'
 #' @param catch Catch per sampling time as matrix or the total catch as vector.
-#'
 #' @param Linf Infinite length for investigated species in cm [cm].
-#'
 #' @param K Growth coefficient for investigated species per year [1/year].
-#'
 #' @param t0 Theoretical time zero, at which individuals of this species hatch.
-#'
 #' @param catchCorFac optional: Correction factor for catch, in case provided catch does spatially or temporarily not reflect catch for fishing ground of a whole year.
-#'
 #' @param M Natural mortality [1/year]
-#'
 #' @param terminalF terminal fishing mortality
-#'
 #' @param a length-weight relationship coefficent (W = a * L^b)
-#'
 #' @param b length-weight relationship coefficent (W = a * L^b)
 #'
 #' @examples
@@ -28,15 +19,23 @@
 #' output
 #' @details Cohort analysis
 #'
+#' @references
+#' Jones ???  Sparre?
+#'
 #' @export
 
 CohortAnalysis <- function(midLengths, catch, Linf, K, t0 = 0, M, terminalF,
                            a, b, catchCorFac = NA){
 
-  if(length(midLengths) != length(catch)) stop("midLengths and catch do not have the same length!")
+  #Transform matrix into vector if provided
+  if(class(catch) == 'matrix'){
+    catch.vec <- rowSums(catch)
+  }else catch.vec = catch
+
+  if(length(midLengths) != length(catch.vec)) stop("midLengths and catch do not have the same length!")
 
   df.CA <- data.frame(midLengths.CA = midLengths,
-                      catch.CA = catch)
+                      catch.CA = catch.vec)
 
   #calculate size class interval
   interval.CA <- df.CA$midLengths.CA[2] - df.CA$midLengths.CA[1]

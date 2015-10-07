@@ -32,4 +32,7 @@ The length converted linearised catch curve is used to calculate the total morta
  output
  }
 }
+\references{
+Sparre ???
+}
 

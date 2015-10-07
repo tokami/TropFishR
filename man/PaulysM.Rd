@@ -24,4 +24,8 @@ Pauly's empirical formula to calculate natural mortality (M). If accounting for 
 \examples{
 PaulysM(Linf = 80, K = 0.5, Temp = 25)
 }
+\references{
+Pauly, D., 1980.
+On the interrelationships between natural mortality, growth parameters, and mean environmental temperature in 175 fish stocks.
+}
 
