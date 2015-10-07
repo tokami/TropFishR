@@ -1,13 +1,13 @@
 #' @title Rikhter and Efanov's formula
-#
+#'
 #' @description Rikhter and Efanov's formula to calculate natural mortality (M)
 #'
-#' @param Tm50 Age when 50% of the population is mature [year] ("the age of massive maturation")
-#'
-#' @examples
-#' RikhterEfanovsM(Tm50 = 1)
+#' @param Tm50 Age when 50\% of the population is mature [year] ("the age of massive maturation")
 #'
 #' @details Rikhter and Efanov's formula to calculate natural mortality (M).
+
+#' @examples
+#' RikhterEfanovsM(Tm50 = 1)
 #'
 #' @export
 

@@ -19,7 +19,8 @@
 #'  data("ex.LengthCC")
 #'  #calculating the cumulated catch of fish of length L and above:
 #'  cumulativeCatch <- rev(cumsum(rev(ex.LengthCC[,2])))
-#'  output <- JonesVanZalingeMethod(midLengths = ex.LengthCC[,1], cumCatch = cumulativeCatch, Linf = 23.1, K = 0.59)
+#'  output <- JonesVanZalingeMethod(midLengths = ex.LengthCC[,1],
+#'    cumCatch = cumulativeCatch, Linf = 23.1, K = 0.59)
 #'  output
 #'  }
 #'
