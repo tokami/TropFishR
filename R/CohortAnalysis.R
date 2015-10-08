@@ -1,11 +1,11 @@
 #' @title Cohort analysis
-#
+#'
 #' @description Cohort analysis
 #'
 #' @param midLengths Midpoints of the length class as vector
 #' @param catch Catch per sampling time as matrix or the total catch as vector.
 #' @param Linf Infinite length for investigated species in cm [cm].
-#' @param K Growth coefficient for investigated species per year [1/year].
+#' @param K Growth coefficent for investigated species per year [1/year].
 #' @param t0 Theoretical time zero, at which individuals of this species hatch.
 #' @param catchCorFac optional: Correction factor for catch, in case provided catch does spatially or temporarily not reflect catch for fishing ground of a whole year.
 #' @param M Natural mortality [1/year]

@@ -13,7 +13,7 @@ LengthConCatchCurve(midLengths, catch, Linf, K, t0 = 0, catchCorFac = NA)
 
 \item{Linf}{Infinite length for investigated species in cm [cm].}
 
-\item{K}{Growth coefficient for investigated species per year [1/year].}
+\item{K}{Growth coefficent for investigated species per year [1/year].}
 
 \item{t0}{Theoretical time zero, at which individuals of this species hatch.}
 

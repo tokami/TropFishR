@@ -5,7 +5,7 @@
 #' @param midLengths Midpoints of the length class as vector
 #' @param catch Catch per sampling time as matrix or the total catch as vector.
 #' @param Linf Infinite length for investigated species in cm [cm].
-#' @param K Growth coefficient for investigated species per year [1/year].
+#' @param K Growth coefficent for investigated species per year [1/year].
 #' @param t0 Theoretical time zero, at which individuals of this species hatch.
 #' @param catchCorFac optional: Correction factor for catch, in case provided catch does spatially or temporarily not reflect catch for fishing ground of a whole year.
 #'
@@ -81,7 +81,7 @@ LengthConCatchCurve <- function(midLengths, catch, Linf, K, t0 = 0,
   lm1.fit <- sum_lm1$r.squared
 
   Z_lm1 <- abs(slope_lm1)
-  SE_Z_lm1 <- abs(se_slope_lm1) * qt(0.975,sum_lm1$df[2])
+  SE_Z_lm1 <- abs(se_slope_lm1) * qt(0.975,sum_lm1$df[2])   ##COMPARE VALUES WITH: sb2 <- ((sd.Y/sd.X)^2 - slope^2 )/ (length(n)-2)
 
 
   #final plot
