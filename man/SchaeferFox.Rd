@@ -19,7 +19,9 @@ MSY
 }
 \examples{
 data(ex.SchaeferFox)
-SchaeferFox(Y = ex.SchaeferFox$yield, f = ex.SchaeferFox$effort)
+output = SchaeferFox(Y = ex.SchaeferFox$yield,
+                     f = ex.SchaeferFox$effort)
+output[[2]]
 }
 \references{
 Graham 1935 Schaefer 1954 Fox 1970

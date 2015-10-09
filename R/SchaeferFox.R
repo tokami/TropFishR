@@ -7,7 +7,9 @@
 #'
 #' @examples
 #' data(ex.SchaeferFox)
-#' SchaeferFox(Y = ex.SchaeferFox$yield, f = ex.SchaeferFox$effort)
+#' output = SchaeferFox(Y = ex.SchaeferFox$yield,
+#'                      f = ex.SchaeferFox$effort)
+#' output[[2]]
 #'
 #' @details MSY
 #'
@@ -52,11 +54,48 @@ SchaeferFox <- function(Y, f){
   MSY.F <- -(1/b.F) * exp(a.F-1)
   fMSY.F <- -1/b.F
 
+
+  #Plot
+  x = seq(min(f),max(f),1)
+  y = exp(a.F + b.F*x)
+  par(new=F, mar=c(5, 4, 4, 2) + 0.1)
+  plot(CPUE.S ~ f, xlab='Fishing effort', ylab='CPUE')
+  abline(a = a.S, b=b.S)
+  lines(x, y = y, col = 'blue', lty = 5)
+  legend("topright", col=c('black','blue'), bty ='n',
+         legend = c('Schaefer','Fox'), lty=c(1,5))
+  plot1 <- recordPlot()
+
+
+  x = seq(0,abs(a.S / b.S),1)
+  y.S = a.S*x + b.S*x^2
+  y.F = x * exp(a.F + b.F*x)
+  par(new=F)
+  plot(x,rep(max(Y),length(x)),type='n',
+       ylim=c(0,max(Y)), xlab = "Fishing effort", ylab = "Yield")
+  points(Y ~ f)
+  lines(x, y = y.S)
+  lines(x, y = y.F,col='blue', lty = 5)
+  segments(x0=fMSY.S,x1=fMSY.S,y0=0,y1=MSY.S,lty=2)
+  segments(x0=0,x1=fMSY.S,y0=MSY.S,y1=MSY.S,lty=2)
+  points(fMSY.S,MSY.S,col='red',pch=16)
+  segments(x0=fMSY.F,x1=fMSY.F,y0=0,y1=MSY.F,lty=2,col='blue')
+  segments(x0=0,x1=fMSY.F,y0=MSY.F,y1=MSY.F,lty=2,col='blue')
+  points(fMSY.F,MSY.F,col='red',pch=16)
+  legend("bottomleft", col=c('black','blue'), bty ='n',
+         legend = c('Schaefer','Fox'), lty=c(1,5))
+  plot2 <- recordPlot()
+
+
+  results.list <- list()
   results <- data.frame(Schaefer = c(MSY.S,fMSY.S),
                         Fox = c(MSY.F,fMSY.F))
 
   rownames(results) <- c("MSY","fMSY")
+  results.list[[1]] <- results
+  results.list[[2]] <- plot1
+  results.list[[3]] <- plot2
 
-  return(results)
+  return(results.list)
 }
 
