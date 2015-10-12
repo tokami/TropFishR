@@ -15,7 +15,7 @@
 #' monthly date values, and 3. a matrix of sst anomaly values by month and lon/lat position
 #' (1906 rows, 264 columns)
 #' @source \url{http://www.esrl.noaa.gov/psd/data/gridded/data.kaplan_sst.html}
-#' @usage data(ex.SchaferFox)
+#' @usage data(ex.SchaeferFox)
 #' @keywords datasets length
 #' @examples
 #'

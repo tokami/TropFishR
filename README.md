@@ -7,9 +7,7 @@ A collection of fisheries models based on the the FAO Manual "Introduction to tr
 **To load** (using `devtools`):
 ```
 install.packages("devtools")
-
 library(devtools)
-
 install_github("tokami/TropFishR")
 ```
 

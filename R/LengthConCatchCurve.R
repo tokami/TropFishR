@@ -64,9 +64,9 @@ LengthConCatchCurve <- function(midLengths, catch, Linf, K, t0 = 0,
   #identify plot
   plot(x = df.CC$t_midL,y = df.CC$lnC_dt,
        xlab = "Relative age [yrs]", ylab = "ln(C/dt)")
-  print("Please choose the minimum and maximum point in the graph to include for the regression line! Then press 'Finish'!")
+  print("Please choose the minimum and maximum point in the graph to include for the regression line!")
   cutter <- identify(x = df.CC$t_midL, y = df.CC$lnC_dt,
-                     labels = rownames(df.CC))
+                     labels = rownames(df.CC), n=2)
 
   #calculations + model
   df.CC.cut <- df.CC[cutter[1]:cutter[2],]
