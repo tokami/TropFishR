@@ -7,7 +7,7 @@
 #' @param Linf Infinite length for investigated species in cm [cm].
 #'
 #' @examples
-#' data("ex.CohortAnalysis")
+#' data("ex.HeinckesZ")
 #'
 #' @details Z from CPUE data
 #'
@@ -17,9 +17,9 @@
 #' @export
 
 
-data("ex.CPUE_Z")
+data("ex.HeinckesZ")
 
-HeinckesZ(
+#HeinckesZ(
   cohort <- ex.CPUE_Z$cohort
   age <- ex.CPUE_Z$age.t1
   CPUE <- ex.CPUE_Z$CPUE
