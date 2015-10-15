@@ -10,22 +10,6 @@ Bhattacharya(midLengths, catch)
 \item{midLengths}{Midpoints of the length class as vector}
 
 \item{catch}{Catch per sampling time as matrix or the total catch as vector.}
-
-\item{Linf}{Infinite length for investigated species in cm [cm].}
-
-\item{K}{Growth coefficent for investigated species per year [1/year].}
-
-\item{t0}{Theoretical time zero, at which individuals of this species hatch.}
-
-\item{catchCorFac}{optional: Correction factor for catch, in case provided catch does spatially or temporarily not reflect catch for fishing ground of a whole year.}
-
-\item{M}{Natural mortality [1/year]}
-
-\item{terminalF}{terminal fishing mortality}
-
-\item{a}{length-weight relationship coefficent (W = a * L^b)}
-
-\item{b}{length-weight relationship coefficent (W = a * L^b)}
 }
 \description{
 Separating normal distributions of several cohorts in distinct distributions representing cohorts.
@@ -34,18 +18,13 @@ Separating normal distributions of several cohorts in distinct distributions rep
 Bhattacharya
 }
 \examples{
-<<<<<<< HEAD
-#' \donttest{
-=======
 \donttest{
->>>>>>> 2fa5d0e33a0b2585a1c784204dd57fd40e467a5a
  data("ex.Bhattacharya")
- output = Bhattacharya(midLengths = ex.Bhattacharya$midLengths,
-  catch = ex.Bhattacharya$catch)
+ output = with(Bhattacharya(midLengths,catch))
  output
 }
 }
 \references{
-Jones ???  Sparre?
+Jones Sparre
 }
 

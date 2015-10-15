@@ -1,4 +1,4 @@
-#' @name ex.HeinckesZ
+#' @name ex.Z_CPUE
 #' @title Example dataset of length for the calculation of Z form CPUE data
 #'
 #'
@@ -15,13 +15,13 @@
 #' monthly date values, and 3. a matrix of sst anomaly values by month and lon/lat position
 #' (1906 rows, 264 columns)
 #' @source \url{http://www.esrl.noaa.gov/psd/data/gridded/data.kaplan_sst.html}
-#' @usage data(ex.HeinckesZ)
+#' @usage data(ex.Z_CPUE)
 #' @keywords datasets length
 #' @examples
 #'
 #' ### Ex 1.
-#' data(ex.HeinckesZ)
-#' head(ex.HeinckesZ)
+#' data(ex.Z_CPUE)
+#' head(ex.Z_CPUE)
 #'
 #'
 NULL

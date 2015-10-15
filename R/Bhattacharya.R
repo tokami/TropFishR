@@ -8,16 +8,13 @@
 #' @examples
 #' \donttest{
 #'  data("ex.Bhattacharya")
-#'  output = Bhattacharya(midLengths = ex.Bhattacharya$midLengths,
-#'   catch = ex.Bhattacharya$catch)
+#'  output = with(Bhattacharya(midLengths,catch))
 #'  output
 #' }
 #' @details Bhattacharya
 #'
 #' @references
-#' Jones ???  Sparre?
-#'
-#' @export
+#' Jones Sparre
 
 Bhattacharya <- function(midLengths, catch){
 
