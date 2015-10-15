@@ -4,14 +4,6 @@
 #'
 #' @param midLengths Midpoints of the length class as vector
 #' @param catch Catch per sampling time as matrix or the total catch as vector.
-#' @param Linf Infinite length for investigated species in cm [cm].
-#' @param K Growth coefficent for investigated species per year [1/year].
-#' @param t0 Theoretical time zero, at which individuals of this species hatch.
-#' @param catchCorFac optional: Correction factor for catch, in case provided catch does spatially or temporarily not reflect catch for fishing ground of a whole year.
-#' @param M Natural mortality [1/year]
-#' @param terminalF terminal fishing mortality
-#' @param a length-weight relationship coefficent (W = a * L^b)
-#' @param b length-weight relationship coefficent (W = a * L^b)
 #'
 #' @examples
 #' \donttest{
@@ -26,7 +18,6 @@
 #' Jones ???  Sparre?
 #'
 #' @export
-
 
 Bhattacharya <- function(midLengths, catch){
 
@@ -119,7 +110,7 @@ Bhattacharya <- function(midLengths, catch){
     if(xy > 1){
       abline(a = a.b.list[[xy-1]][1],b=a.b.list[[xy-1]][2],col=colour.xy[xy-1])
     }
-    print("Starting on the left, please choose the points which lie on a straight line! Do not include points which might be affected by the next distribution!")
+    print("Starting on the left, please choose from black points which lie on a straight line! Do not include points which might be affected by the next distribution!")
     id.co1 <- identify(bhat.table$L,bhat.table$delta.log.N1.plus,
                        n = 2, pos = TRUE)
     if(length(id.co1$ind) == 0){
@@ -141,6 +132,7 @@ Bhattacharya <- function(midLengths, catch){
     a.b.list[[xy]] <- c(a.co1,b.co1)
 
     #STEP 8: fill sixth column
+    #set.seed ????
     normal.dis.co1 <- rnorm(n=1000,mean = l.mean.co1,sd=s.co1)
     max.class.ind.co1 <- which(round(max(normal.dis.co1),digits = 0) >= (
       bhat.table$mean.length.classes - (interval.Bh/2)) &

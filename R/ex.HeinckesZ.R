@@ -1,8 +1,8 @@
-#' @name ex.CPUE_Z
+#' @name ex.HeinckesZ
 #' @title Example dataset of length for the calculation of Z form CPUE data
 #'
 #'
-#' @description bla bla
+#' @description from exercise 4.3
 #'
 #' \itemize{
 #'   \item bla1. Dateframe of lon/lat coordinates corresponding to columns of sst$field (5 deg resolution)
@@ -15,13 +15,13 @@
 #' monthly date values, and 3. a matrix of sst anomaly values by month and lon/lat position
 #' (1906 rows, 264 columns)
 #' @source \url{http://www.esrl.noaa.gov/psd/data/gridded/data.kaplan_sst.html}
-#' @usage data(ex.SchaeferFox)
+#' @usage data(ex.HeinckesZ)
 #' @keywords datasets length
 #' @examples
 #'
-#' ### Ex 1. Plot of single month
-#' data(ex.SchaeferFox)
-#' head(ex.SchaeferFox)
+#' ### Ex 1.
+#' data(ex.HeinckesZ)
+#' head(ex.HeinckesZ)
 #'
 #'
 NULL
