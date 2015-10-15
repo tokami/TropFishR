@@ -14,7 +14,7 @@
 #' @param b length-weight relationship coefficent (W = a * L^b)
 #'
 #' @examples
-#' #' \donttest{
+#' \donttest{
 #'  data("ex.Bhattacharya")
 #'  output = Bhattacharya(midLengths = ex.Bhattacharya$midLengths,
 #'   catch = ex.Bhattacharya$catch)
@@ -26,7 +26,6 @@
 #' Jones ???  Sparre?
 #'
 #' @export
-
 
 
 Bhattacharya <- function(midLengths, catch){
@@ -58,11 +57,12 @@ Bhattacharya <- function(midLengths, catch){
                            'N2.plus'=NA)
 
   bhat.table.list <- list()
+  a.b.list <- list()
   colour.xy <- c('blue','darkgreen','red','yellow','purple','orange','lightgreen','skyblue')
   colour.vec <- rep('black',length(bhat.table$L))
 
 
-  for(xy in 1:30){
+  for(xy in 1:30){  #more than 30 cohorts?
     #STEP 2: fills third column
     bhat.table$log.N1.plus <- round(log(bhat.table$N1.plus),digits=3)
 
@@ -87,34 +87,38 @@ Bhattacharya <- function(midLengths, catch){
     p.bhat1 <- recordPlot()
 
     #STEP 6: select points for regression line
-    if(("blue" %in% colour.vec) == F){bhat.table.list[[1]] <- bhat.table}
+    if(xy == 1){bhat.table.list[[1]] <- bhat.table}
 
     # do not include in linear regression if number in N1.plus is under 3 or 4 if(bhat.table$N1.plus < 3){}
 
     #find new maximum for start of next cohort
-    gradi <- NA
-    for(nm in 3:(length(bhat.table.list[[1]]$delta.log.N1.plus)-1)){
-      if((bhat.table.list[[1]]$delta.log.N1.plus[nm] >
-          bhat.table.list[[1]]$delta.log.N1.plus[nm-1]) == T &
-         (bhat.table.list[[1]]$delta.log.N1.plus[nm] >
-          bhat.table.list[[1]]$delta.log.N1.plus[nm+1]) == T
-      ){gradi[nm] <- T}else gradi[nm] <- F
-    }
+    if(xy > 1){
+      gradi <- NA
+      for(nm in 3:(length(bhat.table.list[[1]]$delta.log.N1.plus)-1)){
+        if((bhat.table.list[[1]]$delta.log.N1.plus[nm] >
+            bhat.table.list[[1]]$delta.log.N1.plus[nm-1]) == T &
+           (bhat.table.list[[1]]$delta.log.N1.plus[nm] >
+            bhat.table.list[[1]]$delta.log.N1.plus[nm+1]) == T
+        ){gradi[nm] <- T}else gradi[nm] <- F
+      }
 
-    cut.max <- max.rem + min(which(gradi[(max.rem+1):length(gradi)] == T))
+      cut.max <- max.rem + min(which(gradi[(max.rem+1):length(gradi)] == T))
 
-
-    bhat.table$delta.log.N1.plus
-
-    bhat.table.list[[1]]$delta.log.N1.plus[
-      which(as.numeric(rownames(bhat.table.list[[1]])) >= cut.max)] <-
-      bhat.table$delta.log.N1.plus[
-        which(as.numeric(rownames(bhat.table.list[[1]])) >= cut.max)]
+      bhat.table.list[[1]]$delta.log.N1.plus[
+        which(as.numeric(rownames(bhat.table.list[[1]])) >= cut.max)] <-
+        bhat.table$delta.log.N1.plus[
+          which(as.numeric(rownames(bhat.table.list[[1]])) >= cut.max)]
+      }
 
 
     plot(bhat.table.list[[1]]$L,bhat.table.list[[1]]$delta.log.N1.plus, pch = 16,
          col = colour.vec)
     abline(h = 0)
+    text(bhat.table.list[[1]]$L,bhat.table.list[[1]]$delta.log.N1.plus,
+         labels=row.names(bhat.table.list[[1]]), cex= 0.7, pos=3)
+    if(xy > 1){
+      abline(a = a.b.list[[xy-1]][1],b=a.b.list[[xy-1]][2],col=colour.xy[xy-1])
+    }
     print("Starting on the left, please choose the points which lie on a straight line! Do not include points which might be affected by the next distribution!")
     id.co1 <- identify(bhat.table$L,bhat.table$delta.log.N1.plus,
                        n = 2, pos = TRUE)
@@ -133,6 +137,8 @@ Bhattacharya <- function(midLengths, catch){
     b.co1 <- sum.m.co1$coefficients[2]
     l.mean.co1 <- -a.co1/b.co1   #mean length: L(mean)(N1) = -a/b
     s.co1 <- sqrt(-1/b.co1)      #standard deviation: s(N1) = sqrt(-1/b)
+
+    a.b.list[[xy]] <- c(a.co1,b.co1)
 
     #STEP 8: fill sixth column
     normal.dis.co1 <- rnorm(n=1000,mean = l.mean.co1,sd=s.co1)
@@ -189,9 +195,6 @@ Bhattacharya <- function(midLengths, catch){
     bhat.table2$N2.plus[which(bhat.table2$N2.plus < 0)] <- 0
     bhat.table2$N1[which(bhat.table2$N2.plus < 0)] <- bhat.table2$N1.plus
 
-    #save data
-    bhat.table.list[[xy+1]] <- bhat.table #or bhat.table2?? which one more important
-
     #creation of new table for continuation
     bhat.table <- data.frame('mean.length.classes' = bhat.table2$mean.length.classes,
                              'N1.plus'= bhat.table2$N2.plus,
@@ -203,9 +206,20 @@ Bhattacharya <- function(midLengths, catch){
                              'N1' =NA,
                              'N2.plus'=NA)
 
+    #arrange dataframe for saving
+    colnames(bhat.table2) <- c('mean.length.classes',paste('N',xy,'.plus',sep=''),
+                               paste('log.N',xy,'.plus',sep=''),
+                               paste('delta.log.N',xy,'.plus',sep=''),'L',
+                               'delta.log.N',paste('log.N',xy,sep=''),
+                               paste('N',xy,sep=''),paste('N',xy+1,'.plus',sep=''))
+
+    #save data
+    bhat.table.list[[xy+1]] <- bhat.table2 #or bhat.table1?? which one more important
+
     #necessary for stop function to work
     max.rem <- id.co1$ind[2]
     rm(id.co1)
+    print(bhat.table2)
   }
 }
 
