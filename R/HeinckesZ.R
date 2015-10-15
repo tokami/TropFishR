@@ -32,9 +32,11 @@ HeinckesZ <- function(cohort, age, CPUE){
 
   result_Z <- list()
   for(i in 2:length(age)){
-    Zi <- round((1 / (age[i] - age[i-1])) *
-                  (log(CPUE[i-1] /CPUE[i])),digits = 2)
-
+    i=2
+    for(k in 1:i){
+      Zi <- round((1 / (age[i] - age[i-1])) *
+                    (log(CPUE[i-1] /CPUE[i])),digits = 2)
+    }
   }
 
 
