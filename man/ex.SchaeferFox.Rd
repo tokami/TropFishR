@@ -11,7 +11,7 @@ monthly date values, and 3. a matrix of sst anomaly values by month and lon/lat 
 \url{http://www.esrl.noaa.gov/psd/data/gridded/data.kaplan_sst.html}
 }
 \usage{
-data(ex.SchaferFox)
+data(ex.SchaeferFox)
 }
 \description{
 bla bla
