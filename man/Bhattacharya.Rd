@@ -34,7 +34,11 @@ Separating normal distributions of several cohorts in distinct distributions rep
 Bhattacharya
 }
 \examples{
+<<<<<<< HEAD
+#' \donttest{
+=======
 \donttest{
+>>>>>>> 2fa5d0e33a0b2585a1c784204dd57fd40e467a5a
  data("ex.Bhattacharya")
  output = Bhattacharya(midLengths = ex.Bhattacharya$midLengths,
   catch = ex.Bhattacharya$catch)
