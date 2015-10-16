@@ -214,7 +214,7 @@ CatchCurve <- function(classes, catch, datatype, Linf = NULL, K = NULL, t0 = 0){
       }
 
       # (t + dt) / 2   ==   x
-      df.CC$tplusdt_2 <- (df.CC$classes.num + df.CC$dt ) / 2
+      df.CC$tplusdt_2 <- df.CC$classes.num + (df.CC$dt / 2)
 
       # ln( Catch / delta t)     ==    y
       df.CC$lnC_dt <- log(df.CC$catch / df.CC$dt)
