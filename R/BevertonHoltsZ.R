@@ -13,6 +13,9 @@
 #' data("ex.BevertonHoltsZ")
 #' with(ex.BevertonHoltsZ, BevertonHoltsZ(midLength,
 #' catch1960, datatype="length", Linf = 100, K = 0.3))
+#' data("ex.ageBevertonHoltsZ")
+#' with(ex.ageBevertonHoltsZ,BevertonHoltsZ(midAge,
+#' catch1960,datatype = 'age'))
 #' \donttest{
 #' data("ex.PowellWetherall")
 #' with(ex.PowellWetherall, BevertonHoltsZ(midLength,
@@ -22,7 +25,7 @@
 #' catch, datatype="length", PowellWetherall = T))
 #' }
 #'
-#' @details For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
+#' @details Lprime or tprime will be identified via the first length (or age) class inserted.For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 #'
 #' @references
 #' Sparre ???
@@ -154,6 +157,26 @@ BevertonHoltsZ <- function(classes, catch, datatype, PowellWetherall = FALSE,
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   #     Aged based equation    #
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-  if(datatype == 'age'){}
+  if(datatype == 'age'){
 
+    sample.size <- sum(df.BH$catch,na.rm=T)
+    sum.age.number <- sum((df.BH$catch * df.BH$classes.num), na.rm=T)
+    tmean <- sum.age.number/sample.size
+    interval.age.BH <- (df.BH$classes.num[2] - df.BH$classes.num[1]) / 2
+    tprime <- df.BH$classes.num[1] - interval.age.BH
+
+    Z.BH <- 1 / (tmean - tprime)
+
+    #save all in list
+    results.BH <- list()
+    results.BH[[1]] <- df.BH
+    results.BH[[2]] <- paste("Z =",round(Z.BH,2))
+    names(results.BH) <- c("Dataframe","Total_mortality")
+
+    return(results.BH)
+  }
+
+  #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
+  #     Length at first capture data    #
+  #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
 }

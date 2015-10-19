@@ -14,22 +14,25 @@ BevertonHoltsZ(classes, catch, datatype, PowellWetherall = FALSE,
 
 \item{datatype}{Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively}
 
+\item{PowellWetherall}{A logical parameter indicating if the Powell Wetherall method should be applied to length frequency data.}
+
 \item{Linf}{Infinite length for investigated species in cm [cm].}
 
 \item{K}{Growth coefficent for investigated species per year [1/year].}
-
-\item{t0}{Theoretical time zero, at which individuals of this species hatch (default: 0).}
 }
 \description{
 This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.
 }
 \details{
-For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
+Lprime or tprime will be identified via the first length (or age) class inserted.For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 }
 \examples{
 data("ex.BevertonHoltsZ")
 with(ex.BevertonHoltsZ, BevertonHoltsZ(midLength,
 catch1960, datatype="length", Linf = 100, K = 0.3))
+data("ex.ageBevertonHoltsZ")
+with(ex.ageBevertonHoltsZ,BevertonHoltsZ(midAge,
+catch1960,datatype = 'age'))
 \donttest{
 data("ex.PowellWetherall")
 with(ex.PowellWetherall, BevertonHoltsZ(midLength,
