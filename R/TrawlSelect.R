@@ -10,8 +10,8 @@
 #' @param t0 Theoretical time zero, at which individuals of this species hatch (default: 0).
 #'
 #' @examples
-#' data("ex.trawlselect")
-#' with(ex.trawlselect,TrawlSelect(classes = midLength,
+#' data("ex.TrawlSelect")
+#' with(ex.TrawlSelect,TrawlSelect(classes = midLengths,
 #'    numCodend, numCover, meshsizeCodend = 4))
 #'
 #'
