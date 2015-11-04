@@ -15,23 +15,12 @@
 #'    msNet1 = 8.1,msNet2 = 9.1))
 #'
 #'
-#' @details Preconditions: selection curves of two mesh sizes must overlap, nets set in same area, during the same time. To calculate selection factor (SF), L25, L50 and L75 for gillnets. Assumptions: optimum length Lm is proportional to mesh size (Lm = SF * m), two selection curves have the same standard deviation, nets have the same fishing power (same dimensions and material).
+#' @details Preconditions: selection curves of two mesh sizes must overlap, nets set in same area, during the same time. To calculate selection factor (SF), L25, L50 and L75 for gillnets. Assumptions: optimum length Lm is proportional to mesh size (Lm = SF * m), two selection curves have the same standard deviation, nets have the same fishing power (same dimensions and material). Assumption that selection curves are normally distributed with a common standard deviation.
 #'
 #' @references
 #'
 #'
 #' @export
-
-
-classes <- ex.GillnetSelect$midLengths
-numNet1 <- ex.GillnetSelect$numCa1
-numNet2 <- ex.GillnetSelect$numCa2
-msNet1 <- 8.1
-msNet2 <- 9.1
-
-data("ex.GillnetSelect")
-with(ex.GillnetSelect,GillnetSelect(midLengths,numCa1,numCa2,msNet1 = 8.1,msNet2 = 9.1))
-
 
 GillnetSelect <- function(classes, numNet1, numNet2, msNet1, msNet2){
 
@@ -46,12 +35,11 @@ GillnetSelect <- function(classes, numNet1, numNet2, msNet1, msNet2){
   # log ratios y = ln(numNet2 / numNet1)
   df.GS$lnNet2_Net1 <- log(df.GS$numNet2 / df.GS$numNet1)
   df.GS$lnNet2_Net1[which(df.GS$numNet1 == 0 | df.GS$numNet2 == 0)] <- NA
-  df.GS$lnNet2_Net1[which(df.GS$lnNet2_Net1 == Inf | df.GS$lnNet2_Net1 == -Inf)] <-
-    NA
+  df.GS$lnNet2_Net1[which(df.GS$lnNet2_Net1 == Inf | df.GS$lnNet2_Net1 == -Inf)] <- NA
 
   #regression analysis
   mod.GS <- lm(lnNet2_Net1 ~ classes.num, df.GS)
-  sum.mod.GS <- summary(mod1.GS)
+  sum.mod.GS <- summary(mod.GS)
   a.GS <- sum.mod.GS$coefficients[1]
   b.GS <- sum.mod.GS$coefficients[2]
 
@@ -70,8 +58,8 @@ GillnetSelect <- function(classes, numNet1, numNet2, msNet1, msNet2){
   s.GS <- sqrt(s2.GS)
 
   # points on selection curves
-  df.GS$SNet1 <- exp(- ((df.GS$classes.num - LmNet1)^2 / (2 * s2.GS)))
-  df.GS$SNet2 <- exp(- ((df.GS$classes.num - LmNet2)^2 / (2 * s2.GS)))
+  df.GS$SNet1 <- exp(-((df.GS$classes.num - LmNet1)^2 / (2 * s2.GS)))
+  df.GS$SNet2 <- exp(-((df.GS$classes.num - LmNet2)^2 / (2 * s2.GS)))
 
   # numbers in population
   df.GS$NNet1 <- df.GS$numNet1 / df.GS$SNet1
