@@ -112,8 +112,8 @@ TrawlSelect <- function(classes, numCodend, numCover, meshsizeCodend){
   results.TS[[3]] <- plot1
   results.TS[[4]] <- plot2
 
-  names(results.TS) <- c("Dataframe","Total_mortality",
-                         "Regression_plot","Gear_selection_ogvie")
+  names(results.TS) <- c("Dataframe","Selectivity_Results",
+                         "Regression_plot","Gear_selection_ogive")
 
   return(results.TS)
 }
