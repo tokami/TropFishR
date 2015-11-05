@@ -11,9 +11,9 @@
 #'
 #' @examples
 #' data("ex.TrawlSelect")
-#' with(ex.TrawlSelect,TrawlSelect(classes = midLengths,
+#' output <- with(ex.TrawlSelect,TrawlSelect(classes = midLengths,
 #'    numCodend, numCover, meshsizeCodend = 4))
-#'
+#' output
 #'
 #' @details To calculate selection factor (SF), L25, L50 and L75 for trawl nets /fisheries.
 #'
