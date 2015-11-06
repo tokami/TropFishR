@@ -43,7 +43,6 @@
 #'
 #' @export
 
-
 VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
                            a, b, catchCorFac = NA, Linf = NA, K = NA, t0 = 0){
 
@@ -87,14 +86,14 @@ VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
       df.VPA$survivors <- NA
 
       # survivors last size class
-      lastLengthClass <- max(which(!is.na(df.VPA$catchCor.VPA)),na.rm=T)  ### CHECK!!!!: EXCLUDES THE LAST CLASSES WHICH ARE NA IN CATCH DUE TO TOO LESS YEARS SAMPLED!
+      lastLengthClass <- max(which(!is.na(df.VPA$catchCor.VPA)),na.rm=TRUE)  ### CHECK!!!!: EXCLUDES THE LAST CLASSES WHICH ARE NA IN CATCH DUE TO TOO LESS YEARS SAMPLED!
       df.VPA$survivors[lastLengthClass] <-
         df.VPA$catchCor.VPA[lastLengthClass] / ((terminalF/(terminalF + M)) * (1 - exp(-(terminalF + M))))
 
       #other survivors and fishing mortality
       ###IMPROVABLE BY MAKING THE STEP CHOOSABLE, MEANING THE USER CAN CHOOSE THE RESOLUTION
-      df.VPA$F <- NA
-      df.VPA$F[lastLengthClass] <- terminalF
+      df.VPA$FM <- NA
+      df.VPA$FM[lastLengthClass] <- terminalF
 
       for(num_class in (lastLengthClass-1):1){
 
@@ -117,7 +116,7 @@ VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
         }
 
         #fill F
-        df.VPA$F[num_class] <- sur.F
+        df.VPA$FM[num_class] <- sur.F
 
         #fill survivors
         df.VPA$survivors[num_class] <- df.VPA$survivors[(num_class+1)] *
@@ -127,7 +126,7 @@ VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
       # Z
       df.VPA$Z <- NA
       for(x6 in 1:(length(df.VPA$Z))){
-        df.VPA$Z[x6] <- M  +  df.VPA$F[x6]
+        df.VPA$Z[x6] <- M  +  df.VPA$FM[x6]
       }
 
       #Annual mean Nr
@@ -173,32 +172,33 @@ VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
       colnames(df.VPAnew) <- df.VPA$classes.num
 
       #save x axis positions
-      par(new = F)
+      max_sur <- round(max(df.VPA$survivors,na.rm=TRUE),digits=0)
+      dim_sur <- 10 ^ (nchar(max_sur)-1)
+      max_FM <- ceiling(max(df.VPA$FM,na.rm=TRUE))
+      max_clas <- max(df.VPA$classes.num,na.rm=TRUE)
+      par(new = FALSE)
       mids <- barplot(df.VPAnew, xlab="",
-                      ylim=c(0,(max(df.VPA$survivors,na.rm=T)+
-                                  max(df.VPA$survivors,na.rm=T)/14)))
+                      ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur))
 
-      #create CA plot
+      #create VPA plot
       par(mar = c(5, 4, 4, 4) + 0.3)
       barplot(df.VPAnew,col=c('darkgreen','purple','yellow'),
-              ylim=c(0,(max(df.VPA$survivors,na.rm=T) + max(df.VPA$survivors,na.rm=T)/14)),
-              axisnames = F,axis.lty = F,
-              xlab = "Midlength [cm]", ylab = "Population" )                   #,names.arg = as.character(data$Midlength))#legend = rownames(data.new),
-      legend(x=(length(mids)-1),y=max(df.VPA$survivors,na.rm=T),
+              xlab = "Midlength [cm]", ylab = "Population",
+              ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur))
+      legend(x=mids[(which(df.VPA$classes.num == max_clas)-2)],
+             y = ceiling(max_sur/dim_sur)*dim_sur,
              legend = c(rownames(df.VPAnew),"Fishing mortality"),
-             fill = c('darkgreen','purple','yellow',NA),col='red',bty='n',
-             cex=0.8, xpd = T, #text.width = 30,
-             x.intersp = c(0.3,0.3,0.3,0.3),y.intersp = 0.5,xjust=0, yjust = 0.8,
-             lty = c(NA,NA,NA,1),lwd=3,merge=T,border = c(T,T,T,F), pt.cex = 10,
-             seg.len = 0.6)
-      axis(1,at=mids[seq(1,length(mids),3)],
-           labels=df.VPA$classes.num[seq(1,length(df.VPA$classes.num),3)],
-           tick = F)
+             col = c('darkgreen','purple','yellow','red'),xpd = TRUE,
+             pch=c(rep(15,3),NA), lty = c(NA,NA,NA,1), lwd=2,seg.len = 0.3,
+             pt.cex = 2, x.intersp = c(0.3,0.3,0.3,0.3),merge=TRUE,
+             y.intersp = 0.2, box.lty=0,cex=0.8,xjust = 0,yjust = 0.8)
       par(new = TRUE)
-      plot(df.VPA$classes.num, df.VPA$F, type = "l", col='red',lwd=4,
+      plot(df.VPA$classes.num, df.VPA$FM, type = "l", col='red',lwd=2,
            axes = FALSE, bty = "n", xlab = "", ylab = "")
-      axis(side=4, at = pretty(range(df.VPA$F)))
-      mtext("Fishing mortatlity", side=4, line=3)
+      usr <- par("usr")
+      par(usr=c(usr[1:2], 0, max_FM))
+      axis(4,at=pretty(c(0,max_FM)))
+      mtext("fishing mortatlity", side=4, line=3)
       plot1 <- recordPlot()
 
       #save all in list
@@ -206,7 +206,7 @@ VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
       results.VPA[[1]] <- df.VPA
       results.VPA[[2]] <- df.VPAnew
       results.VPA[[3]] <- plot1
-      names(results.VPA) <- c("Dataframe","Plotting_dataframe","Plot")
+      names(results.VPA) <- c("Results","Plotting_dataframe","Plot")
 
       return(results.VPA)
     }
@@ -234,7 +234,7 @@ VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
       df.VPA$survivors <- NA
 
       # survivors last size class
-      lastLengthClass <- max(which(!is.na(df.VPA$catchCor.VPA)),na.rm=T)  ### CHECK!!!!: EXCLUDES THE LAST CLASSES WHICH ARE NA IN CATCH DUE TO TOO LESS YEARS SAMPLED!
+      lastLengthClass <- max(which(!is.na(df.VPA$catchCor.VPA)),na.rm=TRUE)  ### CHECK!!!!: EXCLUDES THE LAST CLASSES WHICH ARE NA IN CATCH DUE TO TOO LESS YEARS SAMPLED!
       df.VPA$survivors[lastLengthClass] <-
         df.VPA$catchCor.VPA[lastLengthClass] / ((terminalF/(terminalF + M)) * (1 - exp(-(terminalF + M))))
       # other survivors
@@ -244,16 +244,16 @@ VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
       }
 
       #F
-      df.VPA$F <- NA
-      df.VPA$F[lastLengthClass] <- terminalF
+      df.VPA$FM <- NA
+      df.VPA$FM[lastLengthClass] <- terminalF
       for(x5 in 1:(lastLengthClass-1)){
-        df.VPA$F[x5] <- log(df.VPA$survivors[x5]/df.VPA$survivors[x5+1]) - M
+        df.VPA$FM[x5] <- log(df.VPA$survivors[x5]/df.VPA$survivors[x5+1]) - M
       }
 
       # Z
       df.VPA$Z <- NA
       for(x6 in 1:(length(df.VPA$Z))){
-        df.VPA$Z[x6] <- M  +  df.VPA$F[x6]
+        df.VPA$Z[x6] <- M  +  df.VPA$FM[x6]
       }
 
       #Annual mean Nr
@@ -298,33 +298,35 @@ VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
       df.VPAnew <- t(as.matrix(df.VPAnew))
       colnames(df.VPAnew) <- df.VPA$classes.num
 
+
       #save x axis positions
-      par(new = F)
+      max_sur <- round(max(df.VPA$survivors,na.rm=TRUE),digits=0)
+      dim_sur <- 10 ^ (nchar(max_sur)-1)
+      max_FM <- ceiling(max(df.VPA$FM,na.rm=TRUE))
+      max_clas <- max(df.VPA$classes.num,na.rm=TRUE)
+      par(new = FALSE)
       mids <- barplot(df.VPAnew, xlab="",
-                      ylim=c(0,(max(df.VPA$survivors,na.rm=T)+
-                                  max(df.VPA$survivors,na.rm=T)/14)))
+                      ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur))
 
       #create VPA plot
       par(mar = c(5, 4, 4, 4) + 0.3)
       barplot(df.VPAnew,col=c('darkgreen','purple','yellow'),
-              ylim=c(0,(max(df.VPA$survivors,na.rm=T) + max(df.VPA$survivors,na.rm=T)/14)),
-              axisnames = F,axis.lty = F,
-              xlab = "Midlength [cm]", ylab = "Population" )                   #,names.arg = as.character(data$Midlength))#legend = rownames(data.new),
-      legend(x=(length(mids)-1),y=max(df.VPA$survivors,na.rm=T),
+              xlab = "Midlength [cm]", ylab = "Population",
+              ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur))
+      legend(x=mids[(which(df.VPA$classes.num == max_clas)-2)],
+             y = ceiling(max_sur/dim_sur)*dim_sur,
              legend = c(rownames(df.VPAnew),"Fishing mortality"),
-             fill = c('darkgreen','purple','yellow',NA),col='red',bty='n',
-             cex=0.8, xpd = T, #text.width = 30,
-             x.intersp = c(0.3,0.3,0.3,0.3),y.intersp = 0.5,xjust=0, yjust = 0.8,
-             lty = c(NA,NA,NA,1),lwd=3,merge=T,border = c(T,T,T,F), pt.cex = 10,
-             seg.len = 0.6)
-      axis(1,at=mids[seq(1,length(mids),3)],
-           labels=df.VPA$classes.num[seq(1,length(df.VPA$classes.num),3)],
-           tick = F)
+             col = c('darkgreen','purple','yellow','red'),xpd = TRUE,
+             pch=c(rep(15,3),NA), lty = c(NA,NA,NA,1), lwd=2,seg.len = 0.3,
+             pt.cex = 2, x.intersp = c(0.3,0.3,0.3,0.3),merge=TRUE,
+             y.intersp = 0.2, box.lty=0,cex=0.8,xjust = 0,yjust = 0.8)
       par(new = TRUE)
-      plot(df.VPA$classes.num, df.VPA$F, type = "l", col='red',lwd=4,
+      plot(df.VPA$classes.num, df.VPA$FM, type = "l", col='red',lwd=2,
            axes = FALSE, bty = "n", xlab = "", ylab = "")
-      axis(side=4, at = pretty(range(df.VPA$F)))
-      mtext("Fishing mortatlity", side=4, line=3)
+      usr <- par("usr")
+      par(usr=c(usr[1:2], 0, max_FM))
+      axis(4,at=pretty(c(0,max_FM)))
+      mtext("fishing mortatlity", side=4, line=3)
       plot1 <- recordPlot()
 
       #save all in list
@@ -332,7 +334,7 @@ VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
       results.VPA[[1]] <- df.VPA
       results.VPA[[2]] <- df.VPAnew
       results.VPA[[3]] <- plot1
-      names(results.VPA) <- c("Dataframe","Plotting_dataframe","Plot")
+      names(results.VPA) <- c("Results","Plotting_dataframe","Plot")
 
       return(results.VPA)
     }
@@ -401,15 +403,15 @@ VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
     df.VPA$F_Z[length(df.VPA$F_Z)] <- terminalF / (terminalF + M)
 
     #F  # F = M * (F_Z / 1-F_Z)
-    df.VPA$F <- NA
-    for(x5 in 1:(length(df.VPA$F))){
-      df.VPA$F[x5] <- M  *  (df.VPA$F_Z[x5] / (1 - df.VPA$F_Z[x5]))
+    df.VPA$FM <- NA
+    for(x5 in 1:(length(df.VPA$FM))){
+      df.VPA$FM[x5] <- M  *  (df.VPA$F_Z[x5] / (1 - df.VPA$F_Z[x5]))
     }
 
     # Z
     df.VPA$Z <- NA
     for(x6 in 1:(length(df.VPA$Z))){
-      df.VPA$Z[x6] <- M  +  df.VPA$F[x6]
+      df.VPA$Z[x6] <- M  +  df.VPA$FM[x6]
     }
 
     #Annual mean Nr
@@ -455,31 +457,33 @@ VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
     colnames(df.VPAnew) <- df.VPA$classes.num
 
     #save x axis positions
-    par(new = F)
+    max_sur <- round(max(df.VPA$survivors,na.rm=TRUE),digits=0)
+    dim_sur <- 10 ^ (nchar(max_sur)-1)
+    max_FM <- ceiling(max(df.VPA$FM,na.rm=TRUE))
+    max_clas <- max(df.VPA$classes.num,na.rm=TRUE)
+    par(new = FALSE)
     mids <- barplot(df.VPAnew, xlab="",
-                    ylim=c(0,(max(df.VPA$survivors,na.rm=T)+
-                                max(df.VPA$survivors,na.rm=T)/14)))
+                    ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur))
 
-    #create CA plot
+    #create VPA plot
     par(mar = c(5, 4, 4, 4) + 0.3)
     barplot(df.VPAnew,col=c('darkgreen','purple','yellow'),
-            ylim=c(0,(max(df.VPA$survivors) + max(df.VPA$survivors)/14)),
-            axisnames = F,axis.lty = F,
-            xlab = "Midlength [cm]", ylab = "Population" )                   #,names.arg = as.character(data$Midlength))#legend = rownames(data.new),
-    legend('topright',legend = c(rownames(df.VPAnew),"Fishing mortality"),
-           fill = c('darkgreen','purple','yellow',NA),col='red',
-           cex=0.9, xpd = T, text.width = 10,
-           x.intersp = c(0.5,0.5,0.5,0.6),y.intersp = 1.4,
-           lty = c(NA,NA,NA,1),lwd=3,merge=T,border = c(T,T,T,F),
-           seg.len = 0.8)
-    axis(1,at=mids[seq(1,length(mids),3)],
-         labels=df.VPA$classes.num[seq(1,length(df.VPA$classes.num),3)],
-         tick = F)
+            xlab = "Midlength [cm]", ylab = "Population",
+            ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur))
+    legend(x=mids[(which(df.VPA$classes.num == max_clas)-3)],
+           y = (ceiling(max_sur/dim_sur)*dim_sur),
+           legend = c(rownames(df.VPAnew),"Fishing mortality"),
+           col = c('darkgreen','purple','yellow','red'),xpd = TRUE,
+           pch=c(rep(15,3),NA), lty = c(NA,NA,NA,1), lwd=2,seg.len = 0.3,
+           pt.cex = 2, x.intersp = c(0.3,0.3,0.3,0.3),merge=TRUE,
+           y.intersp = 0.2, box.lty=0,cex=0.8,xjust = 0,yjust = 0.8)
     par(new = TRUE)
-    plot(df.VPA$classes.num, df.VPA$F, type = "l", col='red',lwd=4,
+    plot(df.VPA$classes.num, df.VPA$FM, type = "l", col='red',lwd=2,
          axes = FALSE, bty = "n", xlab = "", ylab = "")
-    axis(side=4, at = pretty(range(df.VPA$F)))
-    mtext("Fishing mortatlity", side=4, line=3)
+    usr <- par("usr")
+    par(usr=c(usr[1:2], 0, max_FM))
+    axis(4,at=pretty(c(0,max_FM)))
+    mtext("fishing mortatlity", side=4, line=3)
     plot1 <- recordPlot()
 
     #save all in list
@@ -487,7 +491,7 @@ VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
     results.VPA[[1]] <- df.VPA
     results.VPA[[2]] <- df.VPAnew
     results.VPA[[3]] <- plot1
-    names(results.VPA) <- c("Dataframe","Plotting_dataframe","Plot")
+    names(results.VPA) <- c("Results","Plotting_dataframe","Plot")
 
     return(results.VPA)
   }
