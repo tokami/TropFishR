@@ -13,15 +13,18 @@
 #' @param FM reference F-at-age-array
 #'
 #' @examples
+#' data("ex.Predict_ThompsonBell")
+#' with(ex.Predict_ThompsonBell,Predict_ThompsonBell(classes = age,
+#'   mean_weight = meanWeight,value = valueGramm,FM = FM,Z = Z,
+#'   datatype = 'age',Tr = 1,stock_size_1 = NA,plus.group = 12))
 #'
-#' @details For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
+#' @details better to treat last group always as a plus group..... For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 #'
 #' @references
 #' example 1 : Kuwait (Garcia and van zalinge 1982)
 #'
 #' @export
 
-data("ex.Predict_ThompsonBell")
 classes = ex.Predict_ThompsonBell$age
 mean_weight = ex.Predict_ThompsonBell$meanWeight
 value = ex.Predict_ThompsonBell$valueGramm
@@ -31,9 +34,12 @@ datatype = 'age'
 Tr = 1
 stock_size_1 = NA
 unit.time = 'month'
+plus.group = 12
+
+
 
 Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
-                                 datatype, stock_size_1 = NA){
+                                 datatype, stock_size_1 = NA, plus.group = NA){
 
   df.TB <- cbind(classes,mean_weight,value,FM,Z)
   df.TB <- as.data.frame(df.TB)
@@ -46,10 +52,7 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   #                        Age data                          #
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-  #if(datatype == 'age'){
-
-
-
+  if(datatype == 'age'){
 
     # delta t
     df.TB$dt <- NA
@@ -64,10 +67,14 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
     df.TB$population <- NA
     if(!is.na(stock_size_1)){
       df.TB$population[1] <- stock_size_1
-    }else df.TB$population[1] <- 1000  #if not provided resulta re just negative
+    }else df.TB$population[1] <- 1000  #if not provided results are just negative
 
     for(x1 in 2:length(df.TB$population)){
       df.TB$population[x1] <- df.TB$population[x1-1] * exp(-df.TB$Z[x1]*df.TB$dt[x1])
+      if(x1 == length(df.TB$population)){           ####CORRECT?????
+        df.TB$population[x1] <- df.TB$population[x1-1] * exp(-df.TB$Z[x1-1]*
+                                                               df.TB$dt[x1-1])
+      }
     }
 
     #number of deaths per time step month or year
@@ -107,15 +114,30 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
       sum(df.TB$dt,na.rm=TRUE)   ### more complicated biomass concept if dt not constant, see Chapter 5
 
 
-
-
-
-
-
-
-
-
-
+    #with plus group
+    if(!is.na(plus.group)){
+      #new dataframe
+      df.TBnew <- df.TB[1:plus.group,]
+      #new class
+      df.TBnew$classes[length(df.TBnew$classes)] <-
+        paste(df.TBnew$classes[length(df.TBnew$classes)],"+",sep='')
+      #num deaths
+      df.TBnew$num.deaths[length(df.TBnew$num.deaths)] <-
+        df.TBnew$population[plus.group]
+      #catch
+      df.TBnew$num.caught[plus.group] <- (df.TBnew$FM[plus.group]/
+                                            df.TBnew$Z[plus.group]) *
+        df.TBnew$population[plus.group]
+      catch.plus.dif <- df.TBnew$num.caught[plus.group] - df.TB$num.caught[plus.group]
+      #yield
+      df.TBnew$yield[plus.group] <- df.TBnew$mean_weight[plus.group] * catch.plus.dif
+      #value
+      df.TBnew$value_yield[plus.group] <-
+        df.TBnew$yield[plus.group] * df.TBnew$value[plus.group]
+      #biomass       ####not sure....omitted in manual
+      df.TBnew$biomass[plus.group] <-
+        df.TBnew$yield[plus.group] / (df.TBnew$FM[plus.group] * df.TBnew$dt[plus.group])
+    }
 
 
   }
