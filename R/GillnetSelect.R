@@ -17,7 +17,7 @@
 #'
 #' @details Preconditions: selection curves of two mesh sizes must overlap, nets set in same area, during the same time. To calculate selection factor (SF), L25, L50 and L75 for gillnets. Assumptions: optimum length Lm is proportional to mesh size (Lm = SF * m), two selection curves have the same standard deviation, nets have the same fishing power (same dimensions and material). Assumption that selection curves are normally distributed with a common standard deviation.
 #'
-#' @references
+#' @references XX
 #'
 #'
 #' @export
