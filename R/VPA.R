@@ -22,7 +22,7 @@
 #' @param a length-weight relationship coefficent (W = a * L^b)
 #' @param b length-weight relationship coefficent (W = a * L^b)
 #' @param algorithm Algorithm to use to solve for fishing mortality.
-#' The default setting # \code{algorithm="new"} uses \code{\link[stats]{optimize}},
+#' The default setting \code{algorithm="new"} uses \code{\link[stats]{optimize}},
 #' while \code{algorithm="old"} uses the algorithm described by
 #' Sparre and Venema (1998)
 #'
@@ -213,7 +213,7 @@ VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
       #create VPA plot
       par(mar = c(5, 4, 4, 4) + 0.3)
       barplot(df.VPAnew,col=c('darkgreen','purple','yellow'),
-              xlab = "Midlength [cm]", ylab = "Population",
+              xlab = "Age", ylab = "Population",
               ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur))
       legend(x=mids[(which(df.VPA$classes.num == max_clas)-2)],
              y = ceiling(max_sur/dim_sur)*dim_sur,
@@ -341,7 +341,7 @@ VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
       #create VPA plot
       par(mar = c(5, 4, 4, 4) + 0.3)
       barplot(df.VPAnew,col=c('darkgreen','purple','yellow'),
-              xlab = "Midlength [cm]", ylab = "Population",
+              xlab = "Age", ylab = "Population",
               ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur))
       legend(x=mids[(which(df.VPA$classes.num == max_clas)-2)],
              y = ceiling(max_sur/dim_sur)*dim_sur,

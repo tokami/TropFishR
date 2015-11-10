@@ -46,12 +46,13 @@ fleet_FM_change = matrix(ncol = 2,nrow = 8)
 fleet_FM_change[,1] <- rep(1,8)
 fleet_FM_change[,2] <- c(0,0.4,0.8,1.0,1.2,1.5,2,3)
 colnames(fleet_FM_change) <- c("artisanal", "industrial")
-
+fleet_plot_name = "industrial"   #the factor (F-factor X) of which fleet to use as x axis
 
 
 Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
                                  datatype, stock_size_1 = NA, plus.group = NA,
-                                 FM_change = NA, fleet_mat = NA,fleet_FM_change = NA){
+                                 FM_change = NA, fleet_mat = NA,
+                                 fleet_FM_change = NA, fleet_plot_name = NA){
 
   df.TB <- cbind(classes,mean_weight,value)
   df.TB <- as.data.frame(df.TB)
@@ -72,8 +73,7 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   if(datatype == 'age'){
 
-
-    calc_TB.age <- function(df.TB,unit.time,stock_size_1,fleet_sep == NA){
+    calc_TB.age <- function(df.TB,unit.time,stock_size_1){
       # delta t
       df.TB$dt <- NA
       for(x0 in 1:(length(df.TB$dt)-1)){
@@ -115,13 +115,15 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
       #value expressed in money units
       df.TB$value_yield <- df.TB$yield * df.TB$value
 
-      #total yield, value and average biomass
+      #total catch, yield, value and average biomass
+      total.catch <- sum(df.TB$num.caught,na.rm=TRUE)
       total.yield <- sum(df.TB$yield,na.rm=TRUE)
       total.value <- sum(df.TB$value_yield,na.rm=TRUE)
       mean.biomass <- sum((df.TB$biomass * df.TB$dt),na.rm=TRUE) /
         sum(df.TB$dt,na.rm=TRUE)   ### more complicated biomass concept if dt is not constant, see Chapter 5
 
-      res_funct <- data.frame(total.yield = total.yield,
+      res_funct <- data.frame(total.catch = total.catch,
+        total.yield = total.yield,
                  mean.biomass = mean.biomass,
                  total.value = total.value)
       return(list(totals = res_funct,dfs = df.TB))
@@ -248,31 +250,31 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
 
         #4 panel plot
         par(new=FALSE,mar = c(4, 4, 4, 4) + 0.1, mfrow=c(2,2))
-        plot(pred_res_df$Xfact,pred_res_df$total.value, type ='l',main='Value',
+        plot(pred_res_df$Xfact,pred_res_df$total.value, type ='o',main='Value',
              col ='darkorange', ylim = c(0,ceiling(max_val/dim_val)*dim_val),
              lwd=1.6, xlab = "F-factor X", ylab = "Value",lty=1)
         abline(v=1,col='grey',lty=2)
         for(j in 1:length(pred_fleet_mat_list)){
           lines(pred_fleet_mat_list[[j]]$Xfact,pred_fleet_mat_list[[j]]$total.value,
-                col ='darkorange',lwd=1.6,lty = (j+1))
+                col ='darkorange',lwd=1.6,lty = (j+1),type='o')
         }
         plot(pred_res_df$Xfact,pred_res_df$total.yield,
              ylim = c(0,ceiling(max_yiel/dim_yiel)*dim_yiel),
              lty = 1, col='dodgerblue',lwd=1.6,main='Yield',
-             type='l',ylab='Yield',xlab='F-factor X')
+             type='o',ylab='Yield',xlab='F-factor X')
         abline(v=1,col='grey',lty=2)
         for(j in 1:length(pred_fleet_mat_list)){
-          lines(pred_fleet_mat_list[[j]]$Xfact,pred_fleet_mat_list[[j]]$total.yield,
-                lty = (j+1), col='dodgerblue',lwd=1.6)
+          points(pred_fleet_mat_list[[j]]$Xfact,pred_fleet_mat_list[[j]]$total.yield,
+                lty = (j+1), col='dodgerblue',lwd=1.6,type='o')
         }
         plot(pred_res_df$Xfact,pred_res_df$mean.biomass,
              ylim = c(0,ceiling(max_bio/dim_bio)*dim_bio),
              lty = 1, col = 'darkgreen',lwd=1.6,main='Biomass',
-             type='l',ylab='Biomass',xlab='F-factor X')
+             type='o',ylab='Biomass',xlab='F-factor X')
         abline(v=1,col='grey',lty=2)
         for(j in 1:length(pred_fleet_mat_list)){
-          lines(pred_fleet_mat_list[[j]]$Xfact,pred_fleet_mat_list[[j]]$mean.biomass,
-                lty = (j+1), col = 'darkgreen',lwd=1.6)
+          points(pred_fleet_mat_list[[j]]$Xfact,pred_fleet_mat_list[[j]]$mean.biomass,
+                lty = (j+1), col = 'darkgreen',lwd=1.6,type='o')
         }
         plot(1,axes=F,xlab='',ylab='',type='n')
         legend("center", c("total",colnames(fleet_mat)),bty = "n",
@@ -281,8 +283,6 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
                text.width=0.3,x.intersp=0.3)
         plot2 <- recordPlot()
       }
-
-
 
 
       #if fleet_FM_change matrix is provided
@@ -296,9 +296,11 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
           pred_fleet_mat_list[[x8]] <- pred.fleet_mat
         }
 
-
+        fleet_FM.list <- list()
+        fleet_Yield.list <- list()
+        fleet_Biomass.list <- list()
+        fleet_Value.list <- list()
         for(x9 in 1:dim(pred_fleet_mat_list[[1]])[2]){
-          x9=1
           #FISHING MORTALITY
           FM_fleets.list <- lapply(pred_fleet_mat_list, function(x) x[,x9])
           FM_fleets.df <- do.call(cbind,FM_fleets.list)
@@ -310,15 +312,16 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
           df.TBfleet.loop$Z <- FM_fleets.df$FMtot + nM
 
           res <- calc_TB.age(df.TB = df.TBfleet.loop, unit.time = unit.time, stock_size_1 = stock_size_1)
-
           FM_fleets.df$Ctot <- res$dfs$num.caught
+          FM_fleets.df$w <- res$dfs$mean_weight
+          Ftots <-  colSums(FM_fleets.df[,1:3],na.rm=TRUE)
 
 
           #YIELD
           Y_fleets.list <- list()
           for(x10 in 1:length(FM_fleets.list)){
-            Y_fleets.list[[x10]] <- (FM_fleets.df$Ctot * FM_fleets.list[[x10]]) /
-              FM_fleets.df$FMtot
+            Y_fleets.list[[x10]] <- ((FM_fleets.df$Ctot * FM_fleets.list[[x10]]) /
+              FM_fleets.df$FMtot ) * FM_fleets.df$w
           }
           Y_fleets.df <- do.call(cbind,Y_fleets.list)
           Y_fleets.df <- as.data.frame(Y_fleets.df)
@@ -328,9 +331,9 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
 
           #BIOMASS
           B_fleets.list <- list()
-          for(x10 in 1:length(FM_fleets.list)){
-            B_fleets.list[[x10]] <- Y_fleets.list[[x10]] /
-              (FM_fleets.list[[x10]] * res$dfs$dt)
+          for(x11 in 1:length(FM_fleets.list)){
+            B_fleets.list[[x11]] <- Y_fleets.list[[x11]] /
+              (FM_fleets.list[[x11]] * res$dfs$dt)
           }
           B_fleets.df <- do.call(cbind,B_fleets.list)
           B_fleets.df <- as.data.frame(B_fleets.df)
@@ -341,109 +344,154 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
 
           #VALUE
           V_fleets.list <- list()
-          for(x10 in 1:length(FM_fleets.list)){
-            V_fleets.list[[x10]] <- Y_fleets.list[[x10]] * res$dfs$value
+          for(x12 in 1:length(FM_fleets.list)){
+            V_fleets.list[[x12]] <- Y_fleets.list[[x12]] * res$dfs$value
           }
           V_fleets.df <- do.call(cbind,V_fleets.list)
           V_fleets.df <- as.data.frame(V_fleets.df)
-          V_fleets.df$Ytot <- rowSums(V_fleets.df,na.rm=TRUE)
+          V_fleets.df$Vtot <- rowSums(V_fleets.df,na.rm=TRUE)
 
           Vtots <- colSums(V_fleets.df,na.rm=TRUE)
 
-
-
-
+          fleet_FM.list[[x9]] <- Ftots
+          fleet_Yield.list[[x9]] <- Ytots
+          fleet_Biomass.list[[x9]] <- Btots
+          fleet_Value.list[[x9]] <- Vtots
         }
 
+        fleet_FM.df <- do.call(rbind,fleet_FM.list)
+        fleet_Yield.df <- do.call(rbind,fleet_Yield.list)
+        fleet_Biomass.df <- do.call(rbind,fleet_Biomass.list)
+        fleet_Value.df <- do.call(rbind,fleet_Value.list)
+
+        fleet_FM.df <- as.data.frame(cbind(fleet_FM.df,fleet_FM_change))
+        fleet_Yield.df <- as.data.frame(cbind(fleet_Yield.df,fleet_FM_change))
+        fleet_Biomass.df <- as.data.frame(cbind(fleet_Biomass.df,fleet_FM_change))
+        fleet_Value.df <- as.data.frame(cbind(fleet_Value.df,fleet_FM_change))
 
 
+        #dimensions of plotting area
+        max_val <- round(max(fleet_Value.df$Vtot,na.rm=TRUE),digits=0)
+        dim_val <- 10 ^ (nchar(max_val)-1)
+        max_yiel <- round(max(fleet_Yield.df$Ytot,na.rm=TRUE),digits=0)
+        dim_yiel <- 10 ^ (nchar(max_yiel)-1)
+        max_bio <- round(max(fleet_Biomass.df$Btot,na.rm=TRUE),digits=0)
+        dim_bio <- 10 ^ (nchar(max_bio)-1)
 
+        #some info for plotting
+        num_fleets <- dim(fleet_mat)[2]
+        if(!is.na(fleet_plot_name)){
+          plot_fleet <- which(colnames(fleet_mat) == fleet_plot_name)
+        }else if(is.na(fleet_plot_name)){
+          rgi.list <- list()
+          for(x13 in 1:dim(fleet_FM_change)[2]){
+            stri <- 1
+            sopi <- dim(fleet_FM_change)[1] * x13
 
+            rgi.list[[x13]] <- range(fleet_FM_change[stri:sopi],na.rm=TRUE)
 
-
-
-
-          df.TBfleet.loop <- df.TBfleet
-          pred.fleet_res_list <- list()
-          for(x9 in 1:length(fleet_FM_change[,x8])){
-            x9=1
-
-
-
-
-
-
-
-            df.TBfleet.loop$FM <- pred.fleet_mat[,x9]
-            df.TBfleet.loop$Z <- pred.fleet_mat[,x9] + nM
-
-
-            res <- calc_TB.age(df.TB = df.TBfleet.loop, unit.time = unit.time, stock_size_1 = stock_size_1)
-            pred.fleet_res_list[[x9]] <- res$totals
+            stri <- 1 + dim(fleet_FM_change)[1]
           }
 
-          pred.fleet_res_df <- do.call(rbind, pred.fleet_res_list)
-          pred.fleet_res_df$Xfact <- fleet_FM_change[,x8]
-          #rownames(pred.fleet_res_df) <- fleet_FM_change[,x8]
-
-          pred_fleet_mat_list[[x8]] <- pred.fleet_res_df
+          rgi.upd <- lapply(rgi.list,function(x) x[2]-x[1])
+          rgi.upd <- do.call(rbind,rgi.upd)
+          plot_fleet <- which(rgi.upd == max(rgi.upd,na.rm=TRUE))
         }
 
-        pred_fleet_mat_list
-
-
-
-
+        #4 panel plot
+        par(new=FALSE,mar = c(4, 4, 4, 4) + 0.1, mfrow=c(2,2))
+        plot(fleet_FM_change[,plot_fleet],fleet_Value.df$Vtot, type ='o',main='Value',
+             col ='darkorange', ylim = c(0,ceiling(max_val/dim_val)*dim_val),
+             lwd=1.6, xlab = "F-factor X", ylab = "Value",lty=1)
+        abline(v=1,col='grey',lty=2)
+        for(j in 1:dim(fleet_FM_change)[2]){
+          points(fleet_FM_change[,plot_fleet],fleet_Value.df[,j],
+                col ='darkorange',lwd=1.6,lty = (j+1),type='o')
+        }
+        plot(fleet_FM_change[,plot_fleet], fleet_Yield.df$Ytot,
+             ylim = c(0,ceiling(max_yiel/dim_yiel)*dim_yiel),
+             lty = 1, col='dodgerblue',lwd=1.6,main='Yield',
+             type='o',ylab='Yield',xlab='F-factor X')
+        abline(v=1,col='grey',lty=2)
+        for(j in 1:dim(fleet_FM_change)[2]){
+          points(fleet_FM_change[,plot_fleet],fleet_Yield.df[,j],
+                lty = (j+1), col='dodgerblue',lwd=1.6,type='o')
+        }
+        plot(fleet_FM_change[,plot_fleet],fleet_Biomass.df$Btot,
+             ylim = c(0,ceiling(max_bio/dim_bio)*dim_bio),
+             lty = 1, col = 'darkgreen',lwd=1.6,main='Biomass',
+             type='o',ylab='Biomass',xlab='F-factor X')
+        abline(v=1,col='grey',lty=2)
+        for(j in 1:dim(fleet_FM_change)[2]){
+          points(fleet_FM_change[,plot_fleet],fleet_Biomass.df[,j],
+                lty = (j+1), col = 'darkgreen',lwd=1.6,type='o')
+        }
+        plot(1,axes=F,xlab='',ylab='',type='n')
+        legend("center", c("total",colnames(fleet_mat)),bty = "n",
+               lty = 1:(dim(fleet_FM_change)[2]+1), seg.len = 0.2,
+               col = 'black',lwd=2,xpd=TRUE,y.intersp = 0.15,
+               text.width=0.3,x.intersp=0.3)
+        plot2 <- recordPlot()
       }
 
 
-      #OOOOOLLLLLLDDDDD:::::
+      #if different Lcs are provided
+      if(!is.na(Lc_mat)){
 
 
+        #knife edge
+        #pmat with values of 0 and 1
+        # 0 until Lt >= knife_edge_size
 
-      #if fleet_FM_change matrix is provided
-      if(length(fleet_FM_change) != 1){
+        #trawl - not gillnet
 
-        pred_fleet_mat_list <- list()
-        for(x8 in 1:dim(fleet_mat)[2]){
-          x8=1
-          pred.fleet_mat <- as.matrix(fleet_mat[,x8]) %*% fleet_FM_change[,x8]
-          colnames(pred.fleet_mat) <- fleet_FM_change[,x8]
-
-          df.TBfleet.loop <- df.TBfleet
-          pred.fleet_res_list <- list()
-          for(x9 in 1:length(fleet_FM_change[,x8])){
-            x9=1
-
-
-
-
-
-
-
-            df.TBfleet.loop$FM <- pred.fleet_mat[,x9]
-            df.TBfleet.loop$Z <- pred.fleet_mat[,x9] + nM
-
-
-            res <- calc_TB.age(df.TB = df.TBfleet.loop, unit.time = unit.time, stock_size_1 = stock_size_1)
-            pred.fleet_res_list[[x9]] <- res$totals
+        #gillnet
+        function (Lt, mesh_size, mesh_size1, select_dist, select_p1,
+                  select_p2)
+        {
+          if (select_dist == "lognormal") {
+            sel <- (1/Lt) * exp(select_p1 + log(mesh_size/mesh_size1) -
+                                  (select_p2^2/2) - (((log(Lt) - select_p1 - log(mesh_size/mesh_size1))^2)/(2 *
+                                                                                                              select_p2^2)))
           }
-
-          pred.fleet_res_df <- do.call(rbind, pred.fleet_res_list)
-          pred.fleet_res_df$Xfact <- fleet_FM_change[,x8]
-          #rownames(pred.fleet_res_df) <- fleet_FM_change[,x8]
-
-          pred_fleet_mat_list[[x8]] <- pred.fleet_res_df
+          if (select_dist == "normal_fixed") {
+            sel <- exp(-((Lt - mesh_size * select_p1)^2/(2 * select_p2^2)))
+          }
+          return(sel)
         }
+        select_p1=2.7977
+        select_p2=0.1175
+        mesh_size=100
+        select_dist="lognormal"
+        mesh_size1= 60
+        Lt = Lt
+#         Lt=c(3.421323  5.032041  6.579601  8.066481  9.495060 10.867624 12.186368 13.453403
+#          14.670758 15.840379 16.964139 18.043836 19.081197 20.077882 21.035487 21.955544
+#          22.839525 23.688844 24.504861 25.288882 26.042160 26.765903 27.461267 28.129365
+#          28.771267 29.387999 29.980549 30.549865 31.096858 31.622402 32.127340 32.612479
+#          33.078595 33.526435 33.956715 34.370123 34.767321 35.148945 35.515605 35.867888
+#          36.206358 36.531556 36.844004 37.144199 37.432625 37.709740 37.975990 38.231800
+#          38.477580 38.713722 38.940606 39.158593 39.368032 39.569259 39.762597 39.948353
+#          40.126825 40.298300 40.463051 40.621342 40.773426 40.919547 41.059939 41.194826
+#          41.324424 41.448940 41.568573 41.683516 41.793952 41.900058 42.002003 42.099951
+#          42.194058 42.284475 42.371347 42.454813 42.535006 42.612055 42.686082 42.757207
+#          42.825543)
 
-        pred_fleet_mat_list
+        #any other provided pmat
 
 
 
 
+
+        Lc_change <- FM_change
+        Lc_FM_changes.df <- expand.grid(FM.new = FM_change, Lc.new = Lc_change)
+     #   Lc_FM_changes.df$Y <- calc_TB.age(df.TB = #??,unit.time = NA,
+    #                                      stock_size_1 = stock_size_1)
+    #    mat <- list(x = FM_change, y = Lc_change, z = matrix(Lc_FM_changes.df$),
+    #               nrow = length(FM_change), ncol = length(Lc_change))
+        image(mat)
+        contour()
       }
-
-
     }
   }
 
