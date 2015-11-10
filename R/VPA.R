@@ -2,49 +2,66 @@
 #'
 #' @description Virtual Population Analysis
 #'
-#' @param classes Midpoints of the length class as vector (length frequency data) or ages as vector (age composition data).
-#' @param catch Catch as vector, or a matrix with catches of subsequent years if the catch curve with constat time intervals should be applied.
-#' @param datatype Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively
-#' @param analysis.type Determines which type of assessment should be done, options: "VPA" for classical age-based VPA, "CA" for age- or length-based Cohort analysis
+#' @param classes Midpoints of the length class as vector (length frequency
+#'   data) or ages as vector (age composition data).
+#' @param catch Catch as vector, or a matrix with catches of subsequent years if
+#'   the catch curve with constat time intervals should be applied.
+#' @param datatype Type of data which is used for analysis, either 'length' or
+#'   'age', for length frequency or age composition data, respectively
+#' @param analysis.type Determines which type of assessment should be done,
+#'   options: "VPA" for classical age-based VPA, "CA" for age- or length-based
+#'   Cohort analysis
 #' @param Linf Infinite length for investigated species in cm [cm].
 #' @param K Growth coefficent for investigated species per year [1/year].
 #' @param t0 Theoretical time zero, at which individuals of this species hatch.
-#' @param catchCorFac optional: Correction factor for catch, in case provided catch does spatially or temporarily not reflect catch for fishing ground of a whole year.
+#' @param catchCorFac optional: Correction factor for catch, in case provided
+#'   catch does spatially or temporarily not reflect catch for fishing ground of
+#'   a whole year.
 #' @param M Natural mortality [1/year]
 #' @param terminalF terminal fishing mortality
 #' @param a length-weight relationship coefficent (W = a * L^b)
 #' @param b length-weight relationship coefficent (W = a * L^b)
+#' @param algorithm Algorithm to use to solve for fishing mortality.
+#' The default setting # \code{algorithm="new"} uses \code{\link[stats]{optimize}},
+#' while \code{algorithm="old"} uses the algorithm described by
+#' Sparre and Venema (1998)
 #'
 #' @examples
-#' #Jones' length-based Cohort analysis
-#' data("ex.CohortAnalysis")
-#' output <- with(ex.CohortAnalysis, VPA(classes = midLengths, catch = catch,
-#'    Linf = 130, K = 0.1, M = 0.28,terminalF = 0.28,
-#'    a = 0.00001, b = 3, datatype = 'length', analysis.type = "CA"))
-#' output
-#' #Virtual Popuation Analysis
+#' # Virtual Popuation Analysis with age-composition data
 #' data("ex.CatchCurve")
 #' output <- with(ex.CatchCurve, VPA(classes = age, catch = ex.CatchCurve[,2:8],
 #'    datatype = 'age', analysis.type = "VPA", terminalF = 0.5,
 #'    M = 0.2, a = 0.00984, b = 2.926))
 #' output
-#' #Popes Cohort Analysis based on age-composition data
+#'
+#' # Pope's Cohort Analysis with age-composition data
 #' data("ex.CatchCurve")
 #' output <- with(ex.CatchCurve, VPA(classes = age, catch = ex.CatchCurve[,2:8],
 #'    datatype = 'age', analysis.type = "CA", terminalF = 0.5,
 #'    M = 0.2, a = 0.00984, b = 2.926))
 #' output
+#'
+#' # Jones's Cohort Analysis with length-composition data
+#' data("ex.CohortAnalysis")
+#' output <- with(ex.CohortAnalysis, VPA(classes = midLengths, catch = catch,
+#'    Linf = 130, K = 0.1, M = 0.28,terminalF = 0.28,
+#'    a = 0.00001, b = 3, datatype = 'length', analysis.type = "CA"))
+#' output
+#'
+#'
 #' @details Cohort analysis
 #'
-#' @references
-#' Jones ???  Sparre?
-#' external reference for a and b in case of age composition data, because not provided by book:
-#' Dorel, D., 1986. Poissons de l'Atlantique nord-est relations taille-poids. Institut Francais de Recherche pour l'Exploitation de la Mer. Nantes, France. 165 p.
+#' @references Jones ???  Sparre? external reference for a and b in case of age
+#' composition data, because not provided by book: Dorel, D., 1986. Poissons de
+#' l'Atlantique nord-est relations taille-poids. Institut Francais de Recherche
+#' pour l'Exploitation de la Mer. Nantes, France. 165 p.
+#' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+#' Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 #'
 #' @export
 
 VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
-                           a, b, catchCorFac = NA, Linf = NA, K = NA, t0 = 0){
+                           a, b, catchCorFac = NA, Linf = NA, K = NA, t0 = 0, algorithm="new"){
 
   # Error message if catch and age do not have same length
   if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
@@ -104,15 +121,28 @@ VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
         sur.F <- 0
         seqi <- c(1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7)
 
-        #trail and error
-        for(y in seqi){
-          stepi <- y
-          for(x in seq(sur.F,10,stepi)){
-            sur.F <- x
-            RHS <- (sur.F/(sur.F + sur.M)) * (exp(sur.F+sur.M) - 1)
-            if(LHS-RHS < 0) break
+        if(algorithm == "old"){
+          LHS <-  sur.C / sur.Ntplus1
+          sur.F <- 0
+          seqi <- c(1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7)
+          #trail and error
+          for(y in seqi){
+            stepi <- y
+            for(x in seq(sur.F,10,stepi)){
+              sur.F <- x
+              RHS <- (sur.F/(sur.F + sur.M)) * (exp(sur.F+sur.M) - 1)
+              if(LHS-RHS < 0) break
+            }
+            sur.F = x-stepi
           }
-          sur.F = x-stepi
+        }
+
+        if(algorithm == "new"){
+          Fcalc <- function(sur.F=sur.M){
+            ((sur.F/(sur.F+sur.M)) * (exp(sur.F+sur.M) - 1) - (sur.C / sur.Ntplus1))^2
+          }
+          tmp <- optimize(Fcalc, interval=c(0,100))
+          sur.F <- tmp$min
         }
 
         #fill F

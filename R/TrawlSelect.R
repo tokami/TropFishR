@@ -17,7 +17,7 @@
 #'
 #' @details To calculate selection factor (SF), L25, L50 and L75 for trawl nets /fisheries.
 #'
-#' @references
+#' @references xx
 #'
 #'
 #' @export
