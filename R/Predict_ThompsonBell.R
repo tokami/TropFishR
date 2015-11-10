@@ -54,7 +54,7 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
                                  datatype, stock_size_1 = NA, plus.group = NA,
                                  FM_change = NA, fleet_mat = NA,fleet_FM_change = NA){
 
-  df.TB <- cbind(classes,mean_weight,value,FM,Z)
+  df.TB <- cbind(classes,mean_weight,value)
   df.TB <- as.data.frame(df.TB)
   df.TB$classes <- as.character(df.TB$classes)
 
@@ -62,6 +62,9 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
   classes.num <- do.call(rbind,strsplit(df.TB$classes, split="\\+"))
   df.TB$classes.num <- as.numeric(classes.num[,1])
 
+  #mortalities
+  df.TB$FM <- FM
+  df.TB$Z <- Z
   #natural Mortality
   nM <- mean(df.TB$Z - df.TB$FM,na.rm=T)
 
@@ -71,7 +74,7 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
   if(datatype == 'age'){
 
 
-    calc_TB.age <- function(df.TB,unit.time,stock_size_1){
+    calc_TB.age <- function(df.TB,unit.time,stock_size_1,fleet_sep == NA){
       # delta t
       df.TB$dt <- NA
       for(x0 in 1:(length(df.TB$dt)-1)){
@@ -205,11 +208,15 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
         total.catch <- sum(df.TBfleet$num.caught,na.rm = TRUE)
         total.FM <- sum(df.TBfleet$FM,na.rm = TRUE)
         fleet_mat.FM <- (total.catch * fleet_mat ) / total.FM
-      }
+      } #fleet_mat.Catch needed? ??? ? ? ?? ? ? ?? ??????????????????????????
       if(fleet_unit == 'FM'){
         fleet_mat.FM <- fleet_mat
       }
 
+      #if no fleet_FM_change matrix is provided FM_change is used, fleet_FM_change
+      #matrix provides a detailed manual changeable matrix with specific FM changes
+      #per fleet, FM_change is just a standard assumed vector varying FM for both
+      #fleets simultaneously
       if(length(fleet_FM_change) == 1){
         pred_fleet_mat_list <- list()
         for(x8 in 1:dim(fleet_mat)[2]){
@@ -277,6 +284,9 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
       }
 
 
+
+
+      #if fleet_FM_change matrix is provided
       if(length(fleet_FM_change) != 1){
 
         pred_fleet_mat_list <- list()
@@ -284,11 +294,138 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
           pred.fleet_mat <- as.matrix(fleet_mat[,x8]) %*% fleet_FM_change[,x8]
           colnames(pred.fleet_mat) <- fleet_FM_change[,x8]
 
+          pred_fleet_mat_list[[x8]] <- pred.fleet_mat
+        }
+
+
+        for(x9 in 1:dim(pred_fleet_mat_list[[1]])[2]){
+          x9=1
+          #FISHING MORTALITY
+          FM_fleets.list <- lapply(pred_fleet_mat_list, function(x) x[,x9])
+          FM_fleets.df <- do.call(cbind,FM_fleets.list)
+          FM_fleets.df <- as.data.frame(FM_fleets.df)
+          FM_fleets.df$FMtot <- rowSums(FM_fleets.df,na.rm=TRUE)
+
+          df.TBfleet.loop <- df.TBfleet[,1:4]
+          df.TBfleet.loop$FM <- FM_fleets.df$FMtot
+          df.TBfleet.loop$Z <- FM_fleets.df$FMtot + nM
+
+          res <- calc_TB.age(df.TB = df.TBfleet.loop, unit.time = unit.time, stock_size_1 = stock_size_1)
+
+          FM_fleets.df$Ctot <- res$dfs$num.caught
+
+
+          #YIELD
+          Y_fleets.list <- list()
+          for(x10 in 1:length(FM_fleets.list)){
+            Y_fleets.list[[x10]] <- (FM_fleets.df$Ctot * FM_fleets.list[[x10]]) /
+              FM_fleets.df$FMtot
+          }
+          Y_fleets.df <- do.call(cbind,Y_fleets.list)
+          Y_fleets.df <- as.data.frame(Y_fleets.df)
+          Y_fleets.df$Ytot <- rowSums(Y_fleets.df,na.rm=TRUE)
+
+          Ytots <- colSums(Y_fleets.df,na.rm=TRUE)
+
+          #BIOMASS
+          B_fleets.list <- list()
+          for(x10 in 1:length(FM_fleets.list)){
+            B_fleets.list[[x10]] <- Y_fleets.list[[x10]] /
+              (FM_fleets.list[[x10]] * res$dfs$dt)
+          }
+          B_fleets.df <- do.call(cbind,B_fleets.list)
+          B_fleets.df <- as.data.frame(B_fleets.df)
+          B_fleets.df$Btot <- rowSums(B_fleets.df,na.rm=TRUE)
+
+          Btots <- colSums((B_fleets.df * res$dfs$dt),na.rm=TRUE) /
+            sum(res$dfs$dt,na.rm=TRUE)
+
+          #VALUE
+          V_fleets.list <- list()
+          for(x10 in 1:length(FM_fleets.list)){
+            V_fleets.list[[x10]] <- Y_fleets.list[[x10]] * res$dfs$value
+          }
+          V_fleets.df <- do.call(cbind,V_fleets.list)
+          V_fleets.df <- as.data.frame(V_fleets.df)
+          V_fleets.df$Ytot <- rowSums(V_fleets.df,na.rm=TRUE)
+
+          Vtots <- colSums(V_fleets.df,na.rm=TRUE)
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+
           df.TBfleet.loop <- df.TBfleet
           pred.fleet_res_list <- list()
           for(x9 in 1:length(fleet_FM_change[,x8])){
+            x9=1
+
+
+
+
+
+
+
             df.TBfleet.loop$FM <- pred.fleet_mat[,x9]
             df.TBfleet.loop$Z <- pred.fleet_mat[,x9] + nM
+
+
+            res <- calc_TB.age(df.TB = df.TBfleet.loop, unit.time = unit.time, stock_size_1 = stock_size_1)
+            pred.fleet_res_list[[x9]] <- res$totals
+          }
+
+          pred.fleet_res_df <- do.call(rbind, pred.fleet_res_list)
+          pred.fleet_res_df$Xfact <- fleet_FM_change[,x8]
+          #rownames(pred.fleet_res_df) <- fleet_FM_change[,x8]
+
+          pred_fleet_mat_list[[x8]] <- pred.fleet_res_df
+        }
+
+        pred_fleet_mat_list
+
+
+
+
+      }
+
+
+      #OOOOOLLLLLLDDDDD:::::
+
+
+
+      #if fleet_FM_change matrix is provided
+      if(length(fleet_FM_change) != 1){
+
+        pred_fleet_mat_list <- list()
+        for(x8 in 1:dim(fleet_mat)[2]){
+          x8=1
+          pred.fleet_mat <- as.matrix(fleet_mat[,x8]) %*% fleet_FM_change[,x8]
+          colnames(pred.fleet_mat) <- fleet_FM_change[,x8]
+
+          df.TBfleet.loop <- df.TBfleet
+          pred.fleet_res_list <- list()
+          for(x9 in 1:length(fleet_FM_change[,x8])){
+            x9=1
+
+
+
+
+
+
+
+            df.TBfleet.loop$FM <- pred.fleet_mat[,x9]
+            df.TBfleet.loop$Z <- pred.fleet_mat[,x9] + nM
+
+
             res <- calc_TB.age(df.TB = df.TBfleet.loop, unit.time = unit.time, stock_size_1 = stock_size_1)
             pred.fleet_res_list[[x9]] <- res$totals
           }
