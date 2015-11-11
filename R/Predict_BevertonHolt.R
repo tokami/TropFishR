@@ -22,6 +22,7 @@
 #' #Xiphias gladius (Berkeley and Houde 1980)
 #' Predict_BevertonHolt(W_Linf = 309,K = 0.0949,M = 0.18,T_Lc = c(100,118,150,180),T_Lr = 90 ,datatype = 'length',a=0.0003,b=3) ## T_Lr , a, b ??? assumed
 #' ####test: E <- seq(0,0.9,0.1) F_PBH <- E * M / (1 -E)
+#'
 #' @details For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 #'
 #' @references xxx

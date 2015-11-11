@@ -7,12 +7,15 @@
 Z_CPUE(cohort, age, CPUE, method)
 }
 \arguments{
+<<<<<<< HEAD
 \item{cohort}{bla bla}
 
 \item{age}{bla bla}
 
 \item{CPUE}{bla bla}
 
+=======
+>>>>>>> 127b067cdbe1ea61a354f81b2148fe58ac08c7ea
 \item{method}{One of 3 methods to caluclate Z: "standard", "Heincke"}
 }
 \value{

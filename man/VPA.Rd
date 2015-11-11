@@ -41,7 +41,12 @@ a whole year.}
 
 \item{algorithm}{Algorithm to use to solve for fishing mortality.
 The default setting \code{algorithm="new"} uses \code{\link[stats]{optimize}},
+<<<<<<< HEAD
 while \code{algorithm="old"} uses the algorithm described by Sparre and Venema (1998)}
+=======
+while \code{algorithm="old"} uses the algorithm described by
+Sparre and Venema (1998)}
+>>>>>>> 127b067cdbe1ea61a354f81b2148fe58ac08c7ea
 }
 \description{
 Virtual Population Analysis
@@ -72,7 +77,10 @@ output <- with(ex.CohortAnalysis, VPA(classes = midLengths, catch = catch,
 output
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 127b067cdbe1ea61a354f81b2148fe58ac08c7ea
 }
 \references{
 Jones ???  Sparre? external reference for a and b in case of age
