@@ -39,8 +39,8 @@ a whole year.}
 
 \item{t0}{Theoretical time zero, at which individuals of this species hatch.}
 
-\item{algorithm}{Algorithm to use to solve for fishing mortality.
-The default setting \code{algorithm="new"} uses \code{\link[stats]{optimize}},
+\item{algorithm}{Algorithm to use to solve for fishing mortality. The default
+setting \code{algorithm="new"} uses \code{\link[stats]{optimize}},
 while \code{algorithm="old"} uses the algorithm described by
 Sparre and Venema (1998)}
 }

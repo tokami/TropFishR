@@ -28,13 +28,16 @@
 #' @details better to treat last group always as a plus group..... For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 #'
 #' @references example 1 : Kuwait (Garcia and van zalinge 1982)
+#'   Millar, R. B., & Holst, R. (1997). Estimation of gillnet and hook selectivity using log-linear models. ICES Journal of Marine Science: Journal du Conseil, 54(3), 471-477.
 #'
 #' @export
 
 Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
                                  datatype, stock_size_1 = NA, plus.group = NA,
                                  FM_change = NA, fleet_mat = NA, fleet_unit = NA,
-                                 fleet_FM_change = NA, fleet_plot_name = NA){
+                                 fleet_FM_change = NA, fleet_plot_name = NA,
+                                 s_list = NA, Linf = NA, K = NA, t0 = 0, L50 = NA,
+                                 L75 = NA){
 
   df.TB <- cbind(classes,mean_weight,value)
   df.TB <- as.data.frame(df.TB)
@@ -177,7 +180,7 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
           col='dodgerblue',lwd=1.6)
     par(oma = c(0, 0, 0, 0), new = TRUE)
     legend("top", c("value", "yield", "biomass"), xpd = TRUE,
-           horiz = TRUE, inset = c(0, -0.1), bty = "n",lty = 1,seg.len = 0.5,
+           horiz = TRUE, inset = c(0, -0.1), bty = "n",lty = 1,seg.len = 0.7,
           col = c('darkorange','dodgerblue','darkgreen'), cex = 0.8,lwd=2,
           text.width=0.3,x.intersp=0.3)
     plot1 <- recordPlot()
@@ -418,7 +421,40 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
     }
 
     #if different Lcs are provided
-    if(!is.na(Lc_mat)){}
+    if(!is.na(Lc_mat)){
+
+      Lt <- Linf * (1- exp(-K * (df.TBpred$classes.num - t0)))
+
+
+      if(s_list$selecType == 'trawl_ogive'){
+        sel <- 1 / (1 + exp(- (Lt - L50)/
+                              ((2*(L75-L50))/(log(0.75/(1-0.75))-
+                                                log(0.25/(1-0.25))))))
+
+#         #alternative:
+#         sel <- 1 / (1 + exp(S1.TS - S2.TS * Lt))
+
+
+      }else if(s_list$selecType == 'gillnet'){
+        if (s_list$selecDist == "lognormal") {
+          sel <- (1/df.TBpred$classes.num) * exp(s_list$select_p1 +
+                                                   log(s_list$mesh_size/s_list$mesh_size1) -
+                                (s_list$select_p2^2/2) -
+                                  (((log(df.TBpred$classes.num) -
+                                       s_list$select_p1 -
+                                       log(s_list$mesh_size/s_list$mesh_size1))^2)/
+                                     (2 *s_list$select_p2^2)))
+        }
+        if (s_list$selecDist == "normal_fixed") {
+          sel <- exp(-((df.TBpred$classes.num - s_list$mesh_size *
+                          s_list$select_p1)^2/
+                         (2 * s_list$select_p2^2)))
+        }
+      }
+
+
+
+    }
   }
 
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
