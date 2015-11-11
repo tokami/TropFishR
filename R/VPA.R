@@ -21,10 +21,18 @@
 #' @param terminalF terminal fishing mortality
 #' @param a length-weight relationship coefficent (W = a * L^b)
 #' @param b length-weight relationship coefficent (W = a * L^b)
+<<<<<<< HEAD
 #' @param algorithm Algorithm to use to solve for fishing mortality. The default
 #'   setting \code{algorithm="new"} uses \code{\link[stats]{optimize}},
 #'   while \code{algorithm="old"} uses the algorithm described by
 #'   Sparre and Venema (1998)
+=======
+#' @param algorithm Algorithm to use to solve for fishing mortality.
+#' The default setting \code{algorithm="new"} uses \code{\link[stats]{optimize}},
+#' while \code{algorithm="old"} uses the algorithm described by Sparre and Venema (1998)
+#'
+#' @details Cohort analysis
+>>>>>>> fee2e7053ac7ad7814ff038e82ad42ac35f0c449
 #'
 #' @examples
 #' # Virtual Popuation Analysis with age-composition data
@@ -49,7 +57,6 @@
 #' output
 #'
 #'
-#' @details Cohort analysis
 #'
 #' @references Jones ???  Sparre? external reference for a and b in case of age
 #' composition data, because not provided by book: Dorel, D., 1986. Poissons de
@@ -59,7 +66,7 @@
 #' Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 #'
 #' @export
-
+#'
 VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
                            a, b, catchCorFac = NA, Linf = NA, K = NA, t0 = 0,
                 algorithm="new"){
