@@ -2,9 +2,9 @@
 #'
 #' @description Method to estimate the total mortality (Z) from CPUE data.
 #'
-#' @param cohort
-#' @param age
-#' @param CPUE
+#' @param cohort bla bla
+#' @param age bla bla
+#' @param CPUE bla bla
 #' @param method One of 3 methods to caluclate Z: "standard", "Heincke"
 #'
 #' @examples

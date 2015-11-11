@@ -10,4 +10,4 @@ Description: Includes fisheries models based on the the FAO Manual "Introduction
 License: MIT + file LICENSE
 LazyData: TRUE
 URL: https://github.com/tokami/TropFishR
-RoxygenNote: 5.0.0
+RoxygenNote: 5.0.1
