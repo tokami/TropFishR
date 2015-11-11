@@ -3,20 +3,27 @@
 #' @description  This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.
 #'
 #' @param classes Midpoints of the length class as vector (length frequency data) or ages as vector (age composition data).
-#' @param catch Catch as vector, or a matrix with catches of subsequent years if the catch curve with constat time intervals should be applied.
+#' @param mean_weight Average weight of fish
 #' @param datatype Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively
-#' @param Linf Infinite length for investigated species in cm [cm].
-#' @param K Growth coefficent for investigated species per year [1/year].
-#' @param t0 Theoretical time zero, at which individuals of this species hatch (default: 0).
-#' @param Winf Infinite weight in grams!
+#' @param FM Fishing mortality
+#' @param Z Total mortality
+#' @param value Information about the value/price of fish per kilo or gramm
+#' @param Tr Age of recruitment
+#' @param stock_size_1 Stock size to start with
+#' @param plus.group Should a plus group be created, by default (NA) not. BUt authors advise to do so
+#' @param FM_change Vector containing new FM values
+#' @param fleet_mat Matrix providing catch or FM values separated by fleets
+#' @param fleet_unit Either 'Catch' or 'FM' indicating in which unit the fleet_mat is provided
+#' @param fleet_FM_change Matrix containing new FM values for each fishery
+#' @param fleet_plot_name Name of fishery, which should be used for plotting Yield per recurit against changes of FM
 #'
 #' @param FM reference F-at-age-array
 #'
 #' @examples
-#' data("ex.Predict_ThompsonBell")
-#' with(ex.Predict_ThompsonBell,Predict_ThompsonBell(classes = age,
-#'   mean_weight = meanWeight,value = valueGramm,FM = FM,Z = Z,
-#'   datatype = 'age',Tr = 1,stock_size_1 = NA,plus.group = 12))
+#' #data("ex.Predict_ThompsonBell")
+#' #with(ex.Predict_ThompsonBell,Predict_ThompsonBell(classes = age,
+#' #  mean_weight = meanWeight,value = valueGramm,FM = FM,Z = Z,
+#' #  datatype = 'age',Tr = 1,stock_size_1 = NA,plus.group = 12))
 #'
 #' @details better to treat last group always as a plus group..... For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 #'
@@ -24,34 +31,9 @@
 #'
 #' @export
 
-
-data("ex.Predict_ThompsonBell")
-classes = ex.Predict_ThompsonBell$age
-mean_weight = ex.Predict_ThompsonBell$meanWeight
-value = ex.Predict_ThompsonBell$valueGramm
-FM = ex.Predict_ThompsonBell$FM
-Z = ex.Predict_ThompsonBell$Z
-datatype = 'age'
-Tr = 1
-stock_size_1 = NA
-unit.time = 'month'
-plus.group = 12
-FM_change = seq(0,3,0.2)
-fleet_mat=matrix(ncol = 2,nrow = 12)
-fleet_mat[,1] <- c(0.72,0.96,0.84,0.48,0.6,0.48,1.08,0.48,0.084,0.12,0.24,0.24)
-fleet_mat[,2] <- c(0.48,0.36,0.48,0.96,1.32,0.72,0.48,0.72,1.116,1.68,2.52,2.28)
-colnames(fleet_mat) <- c("artisanal", "industrial")
-fleet_unit = "FM"   #or "Catch"
-fleet_FM_change = matrix(ncol = 2,nrow = 8)
-fleet_FM_change[,1] <- rep(1,8)
-fleet_FM_change[,2] <- c(0,0.4,0.8,1.0,1.2,1.5,2,3)
-colnames(fleet_FM_change) <- c("artisanal", "industrial")
-fleet_plot_name = "industrial"   #the factor (F-factor X) of which fleet to use as x axis
-
-
 Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
                                  datatype, stock_size_1 = NA, plus.group = NA,
-                                 FM_change = NA, fleet_mat = NA,
+                                 FM_change = NA, fleet_mat = NA, fleet_unit = NA,
                                  fleet_FM_change = NA, fleet_plot_name = NA){
 
   df.TB <- cbind(classes,mean_weight,value)
@@ -433,73 +415,15 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
                text.width=0.3,x.intersp=0.3)
         plot2 <- recordPlot()
       }
-
-
-      #if different Lcs are provided
-      if(!is.na(Lc_mat)){
-
-
-        #knife edge
-        #pmat with values of 0 and 1
-        # 0 until Lt >= knife_edge_size
-
-        #trawl - not gillnet
-
-        #gillnet
-        function (Lt, mesh_size, mesh_size1, select_dist, select_p1,
-                  select_p2)
-        {
-          if (select_dist == "lognormal") {
-            sel <- (1/Lt) * exp(select_p1 + log(mesh_size/mesh_size1) -
-                                  (select_p2^2/2) - (((log(Lt) - select_p1 - log(mesh_size/mesh_size1))^2)/(2 *
-                                                                                                              select_p2^2)))
-          }
-          if (select_dist == "normal_fixed") {
-            sel <- exp(-((Lt - mesh_size * select_p1)^2/(2 * select_p2^2)))
-          }
-          return(sel)
-        }
-        select_p1=2.7977
-        select_p2=0.1175
-        mesh_size=100
-        select_dist="lognormal"
-        mesh_size1= 60
-        Lt = Lt
-#         Lt=c(3.421323  5.032041  6.579601  8.066481  9.495060 10.867624 12.186368 13.453403
-#          14.670758 15.840379 16.964139 18.043836 19.081197 20.077882 21.035487 21.955544
-#          22.839525 23.688844 24.504861 25.288882 26.042160 26.765903 27.461267 28.129365
-#          28.771267 29.387999 29.980549 30.549865 31.096858 31.622402 32.127340 32.612479
-#          33.078595 33.526435 33.956715 34.370123 34.767321 35.148945 35.515605 35.867888
-#          36.206358 36.531556 36.844004 37.144199 37.432625 37.709740 37.975990 38.231800
-#          38.477580 38.713722 38.940606 39.158593 39.368032 39.569259 39.762597 39.948353
-#          40.126825 40.298300 40.463051 40.621342 40.773426 40.919547 41.059939 41.194826
-#          41.324424 41.448940 41.568573 41.683516 41.793952 41.900058 42.002003 42.099951
-#          42.194058 42.284475 42.371347 42.454813 42.535006 42.612055 42.686082 42.757207
-#          42.825543)
-
-        #any other provided pmat
-
-
-
-
-
-        Lc_change <- FM_change
-        Lc_FM_changes.df <- expand.grid(FM.new = FM_change, Lc.new = Lc_change)
-     #   Lc_FM_changes.df$Y <- calc_TB.age(df.TB = #??,unit.time = NA,
-    #                                      stock_size_1 = stock_size_1)
-    #    mat <- list(x = FM_change, y = Lc_change, z = matrix(Lc_FM_changes.df$),
-    #               nrow = length(FM_change), ncol = length(Lc_change))
-        image(mat)
-        contour()
-      }
     }
-  }
 
+    #if different Lcs are provided
+    if(!is.na(Lc_mat)){}
+  }
 
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   #                       Length data                        #
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-  if(datatype == 'length'){
-    }
+  if(datatype == 'length'){}
 } ## problem of two cases: Tc and Co are given or Lc and Co. case dependent or different functions?
 
