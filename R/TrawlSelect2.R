@@ -7,6 +7,7 @@
 #' @examples
 #' data(data_TrawlSelect)
 #' output <- with(data_TrawlSelect,TrawlSelect())
+#' plot(output)
 #'
 #' @details To calculate selection factor (SF), L25, L50 and L75 for trawl nets /fisheries.
 #'
@@ -15,12 +16,14 @@
 #'
 #' @export
 
+
 TrawlSelect <- function(param = data_TrawlSelect){
 
   res <- param
   classes <- as.character(res$midLengths)
   numCodend <- res$numCodend
   numCover <- res$numCover
+  meshsizeCodend <- res$meshsizeCodend
 
   # create column without plus group (sign) if present
   classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
@@ -53,7 +56,6 @@ TrawlSelect <- function(param = data_TrawlSelect){
   #Selection factor
   SF <- L50/meshsizeCodend
 
-
   #plot
   op <- par(mfrow=c(2,1), mar=c(4,4,2,2),oma=c(1,1,1,1))
   plot(classes.num,lnSL)#, main = "Regression analysis")
@@ -83,7 +85,8 @@ TrawlSelect <- function(param = data_TrawlSelect){
        col = 'gray40')
   par(op)
 
-  res2 <- list(SLobs=SLobs,
+  res2 <- list(classes.num=classes.num,
+               SLobs=SLobs,
               SLest = SLest,
               S1 = S1,
               S2 = S2,
@@ -92,6 +95,7 @@ TrawlSelect <- function(param = data_TrawlSelect){
               L75 = L75,
               SF = SF)
 
-  class(res2) = 'TrawlSelect'
-  return(c(res,res2))
+  ret <- c(res,res2)
+  class(ret) = 'TrawlSelect'
+  return(ret)
 }

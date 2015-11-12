@@ -7,6 +7,7 @@
 #' @examples
 #' data(data_TrawlSelect)
 #' output <- with(data_TrawlSelect,TrawlSelect())
+#' plot(output)
 #'
 #' @details To calculate selection factor (SF), L25, L50 and L75 for trawl nets /fisheries.
 #'
@@ -16,16 +17,21 @@
 #' @export
 
 
-
-plot.TrawlSelect <- function(param){
+plot.TrawlSelect <- function(param, ...){
   res <- param
 
   classes.num <- res$classes.num
+  SLobs <- res$SLobs
+  S1 <- res$S1
+  S2 <- res$S2
+  L25 <- res$L25
+  L50 <- res$L50
+  L75 <- res$L75
 
   xL <- seq(min(classes.num,na.rm=TRUE),max(classes.num,na.rm=TRUE),0.1)
 
-  xlim <- c(mi,xL)
-  ylim <- c(0, x$ttl + x$ws/2 + 50)
+  xlim <- c(min(xL,na.rm=TRUE),max(xL,na.rm=TRUE))
+  ylim <- c(0, max(SLobs,na.rm=TRUE))
   plot.new()
   plot.window(xlim, ylim)
 

@@ -27,7 +27,8 @@ Cohort analysis}
 
 \item{a}{length-weight relationship coefficent (W = a * L^b)}
 
-\item{b}{length-weight relationship coefficent (W = a * L^b)}
+\item{b}{length-weight relationship coefficent (W = a * L^b)
+#<<<<<<< HEAD}
 
 \item{catchCorFac}{optional: Correction factor for catch, in case provided
 catch does spatially or temporarily not reflect catch for fishing ground of
@@ -39,25 +40,22 @@ a whole year.}
 
 \item{t0}{Theoretical time zero, at which individuals of this species hatch.}
 
-<<<<<<< HEAD
 \item{algorithm}{Algorithm to use to solve for fishing mortality. The default
 setting \code{algorithm="new"} uses \code{\link[stats]{optimize}},
-=======
+while \code{algorithm="old"} uses the algorithm described by
+Sparre and Venema (1998)
+#=======}
+
 \item{algorithm}{Algorithm to use to solve for fishing mortality.
 The default setting \code{algorithm="new"} uses \code{\link[stats]{optimize}},
-<<<<<<< HEAD
 while \code{algorithm="old"} uses the algorithm described by Sparre and Venema (1998)}
-=======
->>>>>>> fee2e7053ac7ad7814ff038e82ad42ac35f0c449
-while \code{algorithm="old"} uses the algorithm described by
-Sparre and Venema (1998)}
->>>>>>> 127b067cdbe1ea61a354f81b2148fe58ac08c7ea
 }
 \description{
 Virtual Population Analysis
 }
 \details{
 Cohort analysis
+#>>>>>>> fee2e7053ac7ad7814ff038e82ad42ac35f0c449
 }
 \examples{
 # Virtual Popuation Analysis with age-composition data
@@ -82,10 +80,7 @@ output <- with(ex.CohortAnalysis, VPA(classes = midLengths, catch = catch,
 output
 
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 127b067cdbe1ea61a354f81b2148fe58ac08c7ea
 }
 \references{
 Jones ???  Sparre? external reference for a and b in case of age

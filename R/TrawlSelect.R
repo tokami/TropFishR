@@ -10,10 +10,12 @@
 #' @param t0 Theoretical time zero, at which individuals of this species hatch (default: 0).
 #'
 #' @examples
+#' \donttest{
 #' data("ex.TrawlSelect")
 #' output <- with(ex.TrawlSelect,TrawlSelect(classes = midLengths,
 #'    numCodend, numCover, meshsizeCodend = 4))
 #' output
+#' }
 #'
 #' @details To calculate selection factor (SF), L25, L50 and L75 for trawl nets /fisheries.
 #'
