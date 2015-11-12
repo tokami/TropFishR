@@ -4,9 +4,9 @@
 \alias{TrawlSelect}
 \title{Trawl net selctivity}
 \usage{
-TrawlSelect(param = data_TrawlSelect)
+TrawlSelect(param)
 
-TrawlSelect(param = data_TrawlSelect)
+TrawlSelect(param)
 }
 \arguments{
 \item{param}{List with parameters: midlengths of size classes, number in net, number in codend and meshsize of codend}
@@ -42,7 +42,7 @@ output
 }
 
 data(data_TrawlSelect)
-output <- with(data_TrawlSelect,TrawlSelect())
+output <- TrawlSelect(data_TrawlSelect)
 plot(output)
 
 }
