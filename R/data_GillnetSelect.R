@@ -1,8 +1,8 @@
 #' @name data_GillnetSelect
 #'
-#' @title Example dataset for the use of \code{\link[FishTropR]{GillnetSelect}}
+#' @title Example dataset for the use of \code{\link{GillnetSelect}}
 #'
-#' @description A list with characteristics of experimental catches of \textit{Tilapia esculenta}
+#' @description A list with characteristics of experimental catches of \emph{Tilapia esculenta}
 #'   with gillnets of two mesh sizes. The Results of the experiment are the midlengths of
 #'   size classes, the number of fish caught with net 1 & 2, and the meshsizes of both nets.
 #'
@@ -17,7 +17,7 @@
 #'   \item \code{$msNet2}  and the meshsize of net 2.
 #' }
 #'
-#' @source Garrod, D.J., 1961. The selection characteristics of nylon gill nets for \textit{Tilapia esculenta} Graham. J.Cons.CIEM, 26(2):191-203
+#' @source Garrod, D.J., 1961. The selection characteristics of nylon gill nets for \emph{Tilapia esculenta} Graham. J.Cons.CIEM, 26(2):191-203
 #'
 #' @usage data(data_GillnetSelect)
 #'

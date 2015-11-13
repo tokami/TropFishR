@@ -1,15 +1,15 @@
 #' @title Gillnet selectivity plot
 #
-#' @description  This function estimates the selecitvity of nets.
+#' @description  This function plots the selectivity estimates of the function \code{\link{GillnetSelect}}.
 #'
-#' @param param List with parameters: midlengths of size classes, number in net, number in codend and meshsize of codend
+#' @param estim A list of the class "GillnetSelect" containing the results of the gillnet selectivity function.
 #'
 #' @examples
 #' data(data_GillnetSelect)
 #' output <- GillnetSelect(data_GillnetSelect)
 #' plot(output)
 #'
-#' @details To calculate selection factor (SF), L25, L50 and L75 for trawl nets /fisheries.
+#' @details A function to plot the results of the gillnet selectivity estimation.
 #'
 #' @references
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
@@ -17,8 +17,8 @@
 #'
 #' @export
 
-plot.GillnetSelect <- function(param, ...){
-  res <- param
+plot.GillnetSelect <- function(estim, ...){
+  res <- estim
 
   classes.num <- res$classes.num
   numNet1 <- res$numNet1

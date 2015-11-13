@@ -4,16 +4,16 @@
 \alias{plot.GillnetSelect}
 \title{Gillnet selectivity plot}
 \usage{
-\method{plot}{GillnetSelect}(param, ...)
+\method{plot}{GillnetSelect}(estim, ...)
 }
 \arguments{
-\item{param}{List with parameters: midlengths of size classes, number in net, number in codend and meshsize of codend}
+\item{estim}{A list of the class "GillnetSelect" containing the results of the gillnet selectivity function.}
 }
 \description{
-This function estimates the selecitvity of trawl nets.
+This function plots the selectivity estimates of the function \code{\link{GillnetSelect}}.
 }
 \details{
-To calculate selection factor (SF), L25, L50 and L75 for trawl nets /fisheries.
+A function to plot the results of the gillnet selectivity estimation.
 }
 \examples{
 data(data_GillnetSelect)
@@ -22,6 +22,7 @@ plot(output)
 
 }
 \references{
-xx
+Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 }
 
