@@ -1,8 +1,8 @@
 #' @title Gillnet selctivity
 #
-#' @description  This function estimates the selecitvity of gillnets nets.
+#' @description  This function estimates the selecitvity of a gillnet from an experimental catch with two gillnets with different mesh sizes.
 #'
-#' @param param List with parameters: midlengths of size classes, number in net1, number in net2 and meshsizes of both nets
+#' @param param A list with following parameters: midlengths of size classes (\code{$midLengths}), number of fish caught with net 1 \code{$numNet1}, number of fish caught with net 2 (\code{$numNet2}), and the meshsizes of both nets (\code{$msNet1} & \code{$msNet2}).
 #'
 #' @examples
 #' data("data_GillnetSelect")
@@ -11,8 +11,9 @@
 #'
 #' @details Preconditions: selection curves of two mesh sizes must overlap, nets set in same area, during the same time. To calculate selection factor (SF), L25, L50 and L75 for gillnets. Assumptions: optimum length Lm is proportional to mesh size (Lm = SF * m), two selection curves have the same standard deviation, nets have the same fishing power (same dimensions and material). Assumption that selection curves are normally distributed with a common standard deviation.
 #'
-#' @references XX
-#'
+#' @references
+#' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+#' Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 #'
 #' @export
 
@@ -21,8 +22,8 @@ GillnetSelect <- function(param){
 
   res <- param
   classes <- as.character(res$midLengths)
-  numNet1 <- res$numCa1
-  numNet2 <- res$numCa2
+  numNet1 <- res$numNet1
+  numNet2 <- res$numNet2
   msNet1 <- res$msNet1
   msNet2 <- res$msNet2
 
