@@ -84,15 +84,15 @@ TrawlSelect <- function(param){
        col = 'gray40')
   par(op)
 
-  res2 <- list(classes.num=classes.num,
-               SLobs=SLobs,
-              SLest = SLest,
-              S1 = S1,
-              S2 = S2,
-              L25 = L25,
-              L50 = L50,
-              L75 = L75,
-              SF = SF)
+  res2 <- list(classes.num = classes.num,
+               SLobs = SLobs,
+               SLest = SLest,
+               S1 = S1,
+               S2 = S2,
+               L25 = L25,
+               L50 = L50,
+               L75 = L75,
+               SF = SF)
 
   ret <- c(res,res2)
   class(ret) = 'TrawlSelect'

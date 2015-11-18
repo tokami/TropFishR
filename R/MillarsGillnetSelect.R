@@ -1,6 +1,7 @@
-#' @title Millar'S gillnet selctivity
+#' @title Millar's gillnet selctivity
 #
-#' @description  This function estimates the selecitvity of a gillnet from an experimental catch with two gillnets with different mesh sizes.
+#' @description  This function estimates the selecitvity of a gillnet from an experimental
+#'    catch with two gillnets with different mesh sizes.
 #'
 #' @param param A list with following parameters: vector with midlengths of size classes
 #'    (\code{$midLengths}), vector with meshSizes in increasing order (\code{$meshSizes}),
@@ -47,7 +48,7 @@ MillarsGillnetSelect <- function(param, model = "normal_fixed", rel = NULL,
   catch_mat <- res$CatchPerNet_mat
   meshSizes <- res$meshSizes
 
-  if(sum(sort(meshSizes)==meshSizes)!=length(meshSizes))
+  if(sum(sort(meshSizes) == meshSizes) != length(meshSizes))
     stop("Mesh sizes must be ascending order")
 
   # create column without plus group (sign) if present
@@ -74,15 +75,16 @@ MillarsGillnetSelect <- function(param, model = "normal_fixed", rel = NULL,
   #necessary??????
   if(is.null(plotlens)) plotlens <- classes.num
   if(is.null(rel)){
-    os=0
-  }else os=rep(log(rel),rep(nrow(catch_mat),ncol(catch_mat)))
+    os = 0
+  }else os=rep(log(rel), rep(nrow(catch_mat), ncol(catch_mat)))
 
 
   switch(model,
 
          "normal_fixed"={
            if(is.null(rel)){
-             fit <- glm(dat ~ -1 + var1 + var2 + as.factor(lens), family = poisson)
+             fit <- glm(dat ~ -1 + var1 + var2 + as.factor(lens),
+                        family = poisson)
            } else{
              fit <- glm(dat ~ -1 + var1 + var2 + as.factor(lens) +
                           offset(os), family = poisson)
@@ -92,21 +94,25 @@ MillarsGillnetSelect <- function(param, model = "normal_fixed", rel = NULL,
 
            varx <- summary(fit)$cov.unscaled[1:2,1:2]
 
-           k <- -2*x[2]/x[1]
-           sigma <- sqrt(-2*x[2]/(x[1]^2))
+           k <- -2 * x[2]/ x[1]
+           sigma <- sqrt(-2 * x[2] /(x[1] ^ 2))
 
-           vartemp <- msm::deltamethod(list(~-2*x2/x1,~sqrt(-2*x2/(x1^2))),x,varx,ses=F)
-           pars <- c(k,sigma,k*msizes[1],sigma)
-           form1 <- as.formula(sprintf("~x1*%f",msize1)) #Deltamethod quirk
-           varpars <- msm::deltamethod(list(~x1,~x2,form1,~x2),c(k,sigma),vartemp,ses=F)
-           gear.pars <- cbind(estimate=pars,s.e.=sqrt(diag(varpars)))
-           rownames(gear.pars)=c("k","sigma","mode(mesh1)","std_dev(all meshes)")
+           vartemp <- msm::deltamethod(list(~ -2 * x2 / x1, ~ sqrt(-2 * x2 / (x1 ^ 2))),
+                                       x, varx, ses=F)
+           pars <- c(k, sigma, k * msizes[1], sigma)
+           form1 <- as.formula(sprintf("~x1*%f", msize1)) #Deltamethod quirk
+           varpars <- msm::deltamethod(list(~x1, ~x2, form1, ~x2),
+                                       c(k, sigma), vartemp, ses=F)
+           gear.pars <- cbind(estimate = pars,
+                              s.e. = sqrt(diag(varpars)))
+           rownames(gear.pars)=c("k", "sigma", "mode(mesh1)", "std_dev(all meshes)")
            },
 
          "normal"={
 
            if(missing(rel)){
-             fit <- glm(dat ~ -1 + var3 + var4 + as.factor(lens), family = poisson)
+             fit <- glm(dat ~ -1 + var3 + var4 + as.factor(lens),
+                        family = poisson)
            }else {
              fit <- glm(dat ~ -1 + var3 + var4 + as.factor(lens) +
                           offset(os), family = poisson)
@@ -118,18 +124,22 @@ MillarsGillnetSelect <- function(param, model = "normal_fixed", rel = NULL,
            k1 <- -x[2]/(2*x[1])
            k2 <- -1/(2*x[1])
 
-           vartemp <- msm::deltamethod(list(~-x2/(2*x1),~-1/(2*x1)),x,varx,ses=F)
-           pars <- c(k1,k2,k1*msizes[1],sqrt(k2*msizes[1]^2))
-           form1 <- as.formula(sprintf("~x1*%f",msize1)) #Deltamethod quirk
-           form2 <- as.formula(sprintf("~sqrt(x2*%f^2)",msize1)) #Deltamethod quirk
-           varpars <- msm::deltamethod(list(~x1,~x2,form1,form2),c(k1,k2),vartemp,ses=F)
-           gear.pars <- cbind(estimate = pars, s.e. = sqrt(diag(varpars)))
+           vartemp <- msm::deltamethod(list(~ -x2/(2*x1), ~ -1/(2*x1)),
+                                       x, varx, ses=F)
+           pars <- c(k1, k2, k1 * msizes[1], sqrt(k2 * msizes[1] ^ 2))
+           form1 <- as.formula(sprintf("~x1*%f", msize1)) #Deltamethod quirk
+           form2 <- as.formula(sprintf("~sqrt(x2*%f^2)", msize1)) #Deltamethod quirk
+           varpars <- msm::deltamethod(list(~x1, ~x2, form1, form2),
+                                       c(k1, k2), vartemp, ses=F)
+           gear.pars <- cbind(estimate = pars,
+                              s.e. = sqrt(diag(varpars)))
            rownames(gear.pars) <- c("k1","k2","mode(mesh1)","std_dev(mesh1)")
            },
 
          "gamma"={
            if(missing(rel)){
-             fit <- glm(dat ~ -1 + var4 + var5 + as.factor(lens),family=poisson)
+             fit <- glm(dat ~ -1 + var4 + var5 + as.factor(lens),
+                        family=poisson)
            }else{
              fit <- glm(dat ~ -1 + var4 + var5 + as.factor(lens) +
                           offset(os), family = poisson)
@@ -142,18 +152,22 @@ MillarsGillnetSelect <- function(param, model = "normal_fixed", rel = NULL,
            alpha <- x[2]+1
            k <- -1/x[1]
 
-           vartemp <- msm::deltamethod(list(~x2+1,~-1/x1),x,varx,ses=F)
+           vartemp <- msm::deltamethod(list(~ x2+1, ~ -1/x1), x, varx, ses=F)
 
-           pars <- c(alpha,k,(alpha-1)*k*msizes[1],sqrt(alpha*(k*msizes[1])^2))
-           form1 <- as.formula(sprintf("~(x1-1)*x2*%f",msize1)) #Deltamethod quirk
-           form2 <- as.formula(sprintf("~sqrt(x1*(x2*%f)^2)",msize1)) #Deltamethod quirk
-           varpars <- msm::deltamethod(list(~x1,~x2,form1,form2),c(alpha,k),vartemp,ses=F)
-           gear.pars <- cbind(estimate = pars,s.e. = sqrt(diag(varpars)))
+           pars <- c(alpha, k, (alpha-1) * k * msizes[1],
+                     sqrt(alpha * (k * msizes[1]) ^ 2))
+           form1 <- as.formula(sprintf("~(x1-1)*x2*%f", msize1)) #Deltamethod quirk
+           form2 <- as.formula(sprintf("~sqrt(x1*(x2*%f)^2)", msize1)) #Deltamethod quirk
+           varpars <- msm::deltamethod(list(~x1, ~x2, form1, form2),
+                                       c(alpha, k), vartemp, ses=F)
+           gear.pars <- cbind(estimate = pars,
+                              s.e. = sqrt(diag(varpars)))
            rownames(gear.pars) <- c("alpha","k","mode(mesh1)","std_dev(mesh1)")  },
 
          "lognormal"={
            if(missing(rel)){
-             fit <- glm(dat ~ -1 + var6 + var7 + as.factor(lens),family=poisson)
+             fit <- glm(dat ~ -1 + var6 + var7 + as.factor(lens),
+                        family=poisson)
            }else{
              fit <- glm(dat ~ -1 + var6 + var7 + as.factor(lens) +
                           offset(os), family = poisson)
@@ -165,12 +179,15 @@ MillarsGillnetSelect <- function(param, model = "normal_fixed", rel = NULL,
            mu1 <- -(x[1]-1)/x[2]
            sigma <- sqrt(1/x[2])
 
-           vartemp <- msm::deltamethod(list(~-(x1-1)/x2,~sqrt(1/x2)),x,varx,ses=F)
-           pars <- c(mu1,sigma,exp(mu1-sigma^2),sqrt(exp(2*mu1+sigma^2)*(exp(sigma^2)-1)))
-           varpars <- msm::deltamethod(list(~x1,~x2,~exp(x1-x2^2),
-                                    ~sqrt(exp(2*x1+x2^2)*(exp(x2^2)-1))),
-                                  c(mu1,sigma),vartemp,ses=F)
-           gear.pars <- cbind(estimate=pars,s.e.=sqrt(diag(varpars)))
+           vartemp <- msm::deltamethod(list(~-(x1-1)/x2, ~sqrt(1/x2)),
+                                       x, varx, ses=F)
+           pars <- c(mu1, sigma, exp(mu1-sigma^2),
+                     sqrt(exp(2*mu1+sigma^2) * (exp(sigma^2)-1)))
+           varpars <- msm::deltamethod(list(~ x1, ~ x2, ~ exp(x1-x2^2),
+                                    ~ sqrt(exp(2*x1+x2^2) * (exp(x2^2)-1))),
+                                  c(mu1, sigma), vartemp, ses=F)
+           gear.pars <- cbind(estimate = pars,
+                              s.e. = sqrt(diag(varpars)))
            rownames(gear.pars)=c("mu1(mode log-scale, mesh1)","sigma(std_dev log scale)",
                                  "mode(mesh1)","std_dev(mesh1)")  },
 
@@ -178,26 +195,27 @@ MillarsGillnetSelect <- function(param, model = "normal_fixed", rel = NULL,
                     "\"normal_fixed\", \"normal\", \"gamma\", and \"lognormal\"")))
 
   ### other function rcurves
-  rsel.lens <- rep(plotlens,length(meshSizes))
+  rsel.lens <- rep(plotlens, length(meshSizes))
 
   relSizes <- meshSizes / meshSizes[1]
 
   if(is.null(rel)) { releff <- 1
-  }else releff <- rep(rel,rep(length(plotlens),length(meshSizes)))
+  }else releff <- rep(rel, rep(length(plotlens), length(meshSizes)))
 
-  msizes <- rep(meshSizes,rep(length(plotlens),length(meshSizes)))
-  relSizes <- rep(relSizes,rep(length(plotlens),length(relSizes)))
+  msizes <- rep(meshSizes, rep(length(plotlens), length(meshSizes)))
+  relSizes <- rep(relSizes, rep(length(plotlens), length(relSizes)))
 
 
   switch(model,
-         "normal_fixed"={ k=pars[1]; mean1=pars[3]; sigma=pars[2]
-         rselect=exp(-((rsel.lens-k*msizes)^2)/(2*sigma^2)) },
-         "normal"={ k1=pars[1]; k2=pars[2]
-         rselect=exp(-((rsel.lens-k1*msizes)^2)/(2*k2*msizes^2)) },
-         "gamma"={ alpha=pars[1]; k=pars[2]
-         rselect=(rsel.lens/((alpha-1)*k*msizes))^(alpha-1)*exp(alpha-1-rsel.lens/(k*msizes)) },
-         "lognormal"={ mu1=pars[1]; sigma=pars[2]
-         rselect=
+         "normal_fixed" = { k=pars[1]; mean1=pars[3]; sigma=pars[2]
+         rselect = exp(-((rsel.lens-k*msizes)^2)/(2*sigma^2)) },
+         "normal" = { k1=pars[1]; k2=pars[2]
+         rselect = exp(-((rsel.lens-k1*msizes)^2)/(2*k2*msizes^2)) },
+         "gamma" = { alpha=pars[1]; k=pars[2]
+         rselect =
+           (rsel.lens/((alpha-1)*k*msizes))^(alpha-1)*exp(alpha-1-rsel.lens/(k*msizes)) },
+         "lognormal" = { mu1=pars[1]; sigma=pars[2]
+         rselect =
            (1/rsel.lens)*exp(mu1+log(relSizes)-sigma^2/2-
                           (log(rsel.lens)-mu1-log(relSizes))^2/(2*sigma^2)) })
 
@@ -230,9 +248,10 @@ MillarsGillnetSelect <- function(param, model = "normal_fixed", rel = NULL,
     }
   }
 
-  g.o.f <- c(deviance(fit),sum(resid(fit,type="pearson")^2),fit$df.res,fit$null)
-  names(g.o.f) <- c("model_dev","Pearson chi-sq","dof","null_dev")
-  fit.type <- paste(paste(model,ifelse(is.null(rel),"",": with unequal mesh efficiencies")))
+  g.o.f <- c(deviance(fit),sum(resid(fit, type = "pearson")^2), fit$df.res, fit$null)
+  names(g.o.f) <- c("model_dev", "Pearson chi-sq", "dof", "null_dev")
+  fit.type <- paste(paste(model,ifelse(is.null(rel),"",
+                                       ": with unequal mesh efficiencies")))
 
 
   res2 <- list(model = model, rselect = rselect, plotlens = plotlens, msizes = msizes,
