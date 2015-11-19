@@ -494,17 +494,80 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
 
 
 
-      pred_res_list <- list()
-      for(x7 in 1:length(FM_change)){
-        df.TBpred.loop$FM <- pred_mat[,x7]
-        df.TBpred.loop$Z <- pred_mat[,x7] + nM
-        res <- calc_TB.age(df.TB = df.TBpred.loop, unit.time = unit.time, stock_size_1 = stock_size_1)
-        pred_res_list[[x7]] <- res$totals
+
+
+      pred.FM_Lc_com_res_loopC_list <- list()
+      pred.FM_Lc_com_res_loopY_list <- list()
+      pred.FM_Lc_com_res_loopB_list <- list()
+      pred.FM_Lc_com_res_loopV_list <- list()
+      for(x21 in 1:length(FM_Lc_com_mat.list)){  #loop for length of list == Lc changes
+        mati <- FM_Lc_com_mat.list[[x21]]
+
+        pred.FM_Lc_com_res_loop1_list <- list()
+        for(x22 in 1:dim(mati)[2]){
+
+          df.TBpred.FM_Lc_com_loop$FM <- mati[,x22]
+          df.TBpred.FM_Lc_com_loop$Z <- mati[,x22] + nM
+          res <- calc_TB.age(df.TBpred.FM_Lc_com_loop, unit.time, stock_size_1)
+          pred.FM_Lc_com_res_loop1_list[[x22]] <- res$totals
+        }
+        prev_mat <- do.call(rbind, pred.FM_Lc_com_res_loop1_list)
+        prev_matC <- prev_mat[,'total.catch']
+        prev_matY <- prev_mat[,'total.yield']
+        prev_matB <- prev_mat[,'mean.biomass']
+        prev_matV <- prev_mat[,'total.value']
+
+
+        pred.FM_Lc_com_res_loopC_list[[x21]] <- prev_matC
+        pred.FM_Lc_com_res_loopY_list[[x21]] <- prev_matY
+        pred.FM_Lc_com_res_loopB_list[[x21]] <- prev_matB
+        pred.FM_Lc_com_res_loopV_list[[x21]] <- prev_matV
       }
 
-      pred_res_df <- do.call(rbind, pred_res_list)
-      pred_res_df$Xfact <- FM_change
-      rownames(pred_res_df) <- FM_change
+      #for catch
+      mat_FM_Lc_com.C <- do.call(rbind, pred.FM_Lc_com_res_loopC_list)
+      rownames(mat_FM_Lc_com.C) <- Lc_change
+      colnames(mat_FM_Lc_com.C) <- FM_change
+
+      #for yield
+      mat_FM_Lc_com.Y <- do.call(rbind, pred.FM_Lc_com_res_loopY_list)
+      rownames(mat_FM_Lc_com.Y) <- Lc_change
+      colnames(mat_FM_Lc_com.Y) <- FM_change
+
+      #for biomass
+      mat_FM_Lc_com.B <- do.call(rbind, pred.FM_Lc_com_res_loopB_list)
+      rownames(mat_FM_Lc_com.B) <- Lc_change
+      colnames(mat_FM_Lc_com.B) <- FM_change
+
+      #for value
+      mat_FM_Lc_com.V <- do.call(rbind, pred.FM_Lc_com_res_loopV_list)
+      rownames(mat_FM_Lc_com.V) <- Lc_change
+      colnames(mat_FM_Lc_com.V) <- FM_change
+
+
+
+      # transvers matrices for plotting (the opposite arrangement from book)
+      mat_FM_Lc_com.C <- t(mat_FM_Lc_com.C)
+      mat_FM_Lc_com.Y <- t(mat_FM_Lc_com.Y)
+      mat_FM_Lc_com.B <- t(mat_FM_Lc_com.B)
+      mat_FM_Lc_com.V <- t(mat_FM_Lc_com.V)
+
+      # colours for plot
+      pal <- colorRampPalette(c(
+        rgb(1,0.5,0.5), rgb(1,1,0.5), rgb(0.5,1,1), rgb(0.5,0.5,1)
+      ))
+
+
+      #plot
+      image(x = FM_change,
+            y = Lc_change,
+            z = mat_FM_Lc_com.Y, col=pal(100),
+            xlab = 'Fishing mortality', ylab = 'Lc')
+      contour(x = FM_change,
+              y = Lc_change,
+              z = mat_FM_Lc_com.Y, add=TRUE)
+      mtext("Yield", line=0.5, side=3)
+
 
 
 

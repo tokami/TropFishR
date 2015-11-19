@@ -33,28 +33,27 @@
 #' @export
 
 
+
+
+
+
 data("data_Predict_ThompsonBell")
+with(data_Predict_ThompsonBell,Predict_ThompsonBell1(param,plus.group=11))
 param = data_Predict_ThompsonBell
 unit.time = "year"
 stock_size_1 = NA
 plus.group = NA
+
+#test
+plus.group=11
 
 
 #param can be age or midLenghts
 
 
 
-Predict_ThompsonBell <- function(param, FM_change,
-
-                                 select.param = NA, unit.time = "year",
-                                 stock_size_1 = NA, plus.group = NA,
-
-
-   Tr,stock_size_1 = NA,
-   FM_change = NA,
-   s_list = NA, Linf = NA, K = NA, t0 = 0, L50 = NA,
-   L75 = NA){
-
+Predict_ThompsonBell1 <- function(param, select.param = NA, unit.time = "year",
+                                 stock_size_1 = NA, plus.group = NA){
 
 
   res <- param
@@ -77,42 +76,101 @@ Predict_ThompsonBell <- function(param, FM_change,
     classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
     classes.num <- as.numeric(classes.num[,1])
 
-    #prediction based on f_change
-    pred_mat <- as.matrix(FM) %*% FM_change
-
-    pred_res_list <- list()
-    for(x7 in 1:length(FM_change)){
-      param$Z <- pred_mat[,x7] + nM
-      param$FM <- pred_mat[,x7]
-      res <- Predict_ThompsonBell1(param)
-      pred_res_list[[x7]] <- res$totals
+    # delta t
+    dt <- rep(NA,length(classes.num))
+    for(x0 in 1:(length(classes.num)-1)){
+      dt[x0] <- classes.num[x0+1] - classes.num[x0]
+    }
+    if(unit.time == 'month'){
+      dt <- dt * 1/12
     }
 
-    ##HERE STOPPED
+    #population per age group
+    pop <- rep(NA,length(classes.num))
+    if(!is.na(stock_size_1)){
+      pop[1] <- stock_size_1
+    }else pop[1] <- 1000  #if not provided results are just negative
 
-    pred_res_df <- do.call(rbind, pred_res_list)
-    pred_res_df$Xfact <- FM_change
-    rownames(pred_res_df) <- FM_change
+    for(x1 in 2:length(classes.num)){
+      pop[x1] <- pop[x1-1] * exp(-Z[x1] * dt[x1])
+      if(x1 == length(pop)){                                ####CORRECT?????
+        pop[x1] <- pop[x1-1] * exp(-Z[x1-1] * dt[x1-1])
+      }
+    }
+
+    #number of deaths per time step month or year
+    dead <- NA
+    for(x2 in 1:length(classes.num)){
+      dead[x2] <- pop[x2] - pop[x2+1]
+    }
+
+    #catch in numbers
+    C <- dead * FM / Z
+
+    #yield in kg or g
+    Y <- C * meanWeight
+
+    #mean biomass in kg or g
+    B <- Y / (FM * dt)
+
+    #value expressed in money units
+    value.Y <- Y * meanValue
+
+    #total catch, yield, value and average biomass
+    tot.C <- sum(C, na.rm=TRUE)
+    tot.Y <- sum(Y, na.rm=TRUE)
+    tot.value <- sum(value.Y, na.rm=TRUE)
+    meanB <- sum((B * dt), na.rm=TRUE) / sum(dt, na.rm=TRUE)   ### more complicated biomass concept if dt is not constant, see Chapter 5
+
+    res2 <- list(dt = dt, pop = pop, dead = dead, C = C,
+                 Y = Y, B = B,value.Y = value.Y,
+                 tot.C = tot.C, tot.Y = tot.Y, meanB = meanB,
+                 tot.value = tot.value)
 
 
-    #save x axis positions
-    max_val <- round(max(pred_res_df$total.value,na.rm=TRUE),digits=0)
-    dim_val <- 10 ^ (nchar(max_val)-1)
+    #with plus group
+    if(!is.na(plus.group)){
 
-    par(oma = c(1, 1, 1.5, 1),new=FALSE,mar = c(5, 4, 4, 4) + 0.3)
-    plot(pred_res_df$Xfact,pred_res_df$total.value, type ='l',
-         col ='darkorange', ylim = c(0,ceiling(max_val/dim_val)*dim_val),
-         lwd=1.6, xlab = "F-factor X", ylab = "Value")
-    lines(pred_res_df$Xfact,pred_res_df$mean.biomass,
-          col = 'darkgreen',lwd=1.6)    # draw lines with small intervals: seq(0,max(),0.05) but y as to be dependent of x (formula of calculaiton of y)
-    lines(pred_res_df$Xfact,pred_res_df$total.yield,
-          col='dodgerblue',lwd=1.6)
-    par(oma = c(0, 0, 0, 0), new = TRUE)
-    legend("top", c("value", "yield", "biomass"), xpd = TRUE,
-           horiz = TRUE, inset = c(0, -0.1), bty = "n",lty = 1,seg.len = 0.7,
-           col = c('darkorange','dodgerblue','darkgreen'), cex = 0.8,lwd=2,
-           text.width=0.3,x.intersp=0.3)
+      df <- do.call(cbind,res2[1:7])
+      df <- df[1:plus.group,]
+      classes <- classes[1:plus.group]
 
+      #new class
+      classes[length(classes)] <-
+        paste(classes[length(classes)],"+",sep='')
+
+      #num deaths
+      df[plus.group, "dead"] <- df[plus.group, "pop"]
+
+      #catch
+      new.C <- (FM[plus.group] / Z[plus.group]) * df[plus.group, "pop"]
+      catch.plus.dif <- new.C - df[plus.group, "C"]
+      df[plus.group, "C"] <- new.C
+
+      #yield
+      df[plus.group, "Y"] <- meanWeight[plus.group] * catch.plus.dif
+
+      #value
+      df[plus.group, "value.Y"] <-
+        df[plus.group, "Y"] * meanValue[plus.group]
+
+      #biomass       ####not sure....omitted in manual
+      df[plus.group, "B"] <-
+        df[plus.group, "Y"] / (FM[plus.group] * df[plus.group, "dt"])
+
+
+      res2 <- as.list(as.data.frame(df))
+
+
+
+      df2 <- do.call(cbind,res)
+      df2 <- df2[1:plus.group,]
+      res <- as.list(as.data.frame(df2))
+      res$age <- classes
+    }
+    # does not cut all vectors from beginning!!! careful if you return "res" in the end!
+
+    return(c(res,res2))
   }
 
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
