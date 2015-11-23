@@ -32,19 +32,19 @@
 #'
 #' @export
 
-
 data("data_Predict_ThompsonBell")
 param = data_Predict_ThompsonBell
 unit.time = "year"
 stock_size_1 = NA
 plus.group = NA
+FM_change = seq(1,10,1)
 
 
 #param can be age or midLenghts
 
 
 
-Predict_ThompsonBell <- function(param, FM_change,
+Predict_ThompsonBell2 <- function(param, FM_change,
 
                                  select.param = NA, unit.time = "year",
                                  stock_size_1 = NA, plus.group = NA,
@@ -88,30 +88,36 @@ Predict_ThompsonBell <- function(param, FM_change,
       pred_res_list[[x7]] <- res$totals
     }
 
-    ##HERE STOPPED
-
     pred_res_df <- do.call(rbind, pred_res_list)
     pred_res_df$Xfact <- FM_change
-    rownames(pred_res_df) <- FM_change
-
 
     #save x axis positions
-    max_val <- round(max(pred_res_df$total.value,na.rm=TRUE),digits=0)
+    maxY <- round(max(pred_res_df$tot.Y,na.rm=TRUE),digits=0)
+    maxV <- round(max(pred_res_df$tot.V,na.rm=TRUE),digits=0)
+    maxB <- round(max(pred_res_df$meanB,na.rm=TRUE),digits=0)
+    #####HERE
+
+    maxis <- c(maxY,maxV,maxB)
+    which(maxis == max(maxis))
+    max_val <- round(max(pred_res_df$tot.V,na.rm=TRUE),digits=0)
     dim_val <- 10 ^ (nchar(max_val)-1)
 
     par(oma = c(1, 1, 1.5, 1),new=FALSE,mar = c(5, 4, 4, 4) + 0.3)
-    plot(pred_res_df$Xfact,pred_res_df$total.value, type ='l',
+    plot(pred_res_df$Xfact,pred_res_df$tot.V, type ='l',
          col ='darkorange', ylim = c(0,ceiling(max_val/dim_val)*dim_val),
          lwd=1.6, xlab = "F-factor X", ylab = "Value")
-    lines(pred_res_df$Xfact,pred_res_df$mean.biomass,
+    lines(pred_res_df$Xfact,pred_res_df$meanB,
           col = 'darkgreen',lwd=1.6)    # draw lines with small intervals: seq(0,max(),0.05) but y as to be dependent of x (formula of calculaiton of y)
-    lines(pred_res_df$Xfact,pred_res_df$total.yield,
+    lines(pred_res_df$Xfact,pred_res_df$tot.Y,
           col='dodgerblue',lwd=1.6)
     par(oma = c(0, 0, 0, 0), new = TRUE)
     legend("top", c("value", "yield", "biomass"), xpd = TRUE,
            horiz = TRUE, inset = c(0, -0.1), bty = "n",lty = 1,seg.len = 0.7,
            col = c('darkorange','dodgerblue','darkgreen'), cex = 0.8,lwd=2,
            text.width=0.3,x.intersp=0.3)
+
+    ret <- c(res,res2)
+    return(ret)
 
   }
 

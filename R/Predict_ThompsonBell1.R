@@ -2,28 +2,23 @@
 #
 #' @description  This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.
 #'
-#' @param param A list
+#' @param param A list containing all information
 #' @param mean_weight Average weight of fish
-#' @param datatype Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively
-#' @param FM Fishing mortality
-#' @param Z Total mortality
-#' @param value Information about the value/price of fish per kilo or gramm
-#' @param Tr Age of recruitment
-#' @param stock_size_1 Stock size to start with
-#' @param plus.group Should a plus group be created, by default (NA) not. BUt authors advise to do so
-#' @param FM_change Vector containing new FM values
-#' @param fleet_mat Matrix providing catch or FM values separated by fleets
-#' @param fleet_unit Either 'Catch' or 'FM' indicating in which unit the fleet_mat is provided
-#' @param fleet_FM_change Matrix containing new FM values for each fishery
-#' @param fleet_plot_name Name of fishery, which should be used for plotting Yield per recurit against changes of FM
-#'
-#' @param FM reference F-at-age-array
+#' @param unit.time Indicates if the age groups are per month (\code{"month"}) or per year (\code{"year"}). Default: \code{"year"}
+#' @param stock_size_1 Stock size of smallest age/length group
+#' @param plus.group Indicates age/length group, which should be turned into a plus group (i.e. all groups above are comprised in one group)
 #'
 #' @examples
-#' #data("ex.Predict_ThompsonBell")
-#' #with(ex.Predict_ThompsonBell,Predict_ThompsonBell(classes = age,
-#' #  mean_weight = meanWeight,value = valueGramm,FM = FM,Z = Z,
-#' #  datatype = 'age',Tr = 1,stock_size_1 = NA,plus.group = 12))
+#' #age-based
+#' data("data_Predict_ThompsonBell")
+#' #without plus group
+#' Predict_ThompsonBell1(data_Predict_ThompsonBell)
+#' #with plus group
+#' Predict_ThompsonBell1(data_Predict_ThompsonBell,plus.group=11)
+#'
+#' # length-based
+#' data(hake)
+#' Predict_ThompsonBell1(param = hake, stock_size_1 = 98919.3)
 #'
 #' @details better to treat last group always as a plus group..... For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 #'
@@ -32,27 +27,7 @@
 #'
 #' @export
 
-
-
-
-
-
-data("data_Predict_ThompsonBell")
-with(data_Predict_ThompsonBell,Predict_ThompsonBell1(param,plus.group=11))
-param = data_Predict_ThompsonBell
-unit.time = "year"
-stock_size_1 = NA
-plus.group = NA
-
-#test
-plus.group=11
-
-
-#param can be age or midLenghts
-
-
-
-Predict_ThompsonBell1 <- function(param, select.param = NA, unit.time = "year",
+Predict_ThompsonBell1 <- function(param, unit.time = "year",
                                  stock_size_1 = NA, plus.group = NA){
 
 
@@ -62,9 +37,16 @@ Predict_ThompsonBell1 <- function(param, select.param = NA, unit.time = "year",
 
   #mortalities
   FM <- res$FM
-  Z <- res$Z
-  #natural Mortality
-  nM <- mean(Z - FM,na.rm=T)
+  if(!is.null(res$M)){
+    nM <- res$M
+    Z <- FM + nM
+  }else{
+    Z <- res$Z
+    nM <- mean(Z - FM,na.rm=T)
+  }
+  #ifelse(is.null(res$M),nM <- mean(Z - FM,na.rm=T),nM <- res$M)
+  #ifelse(is.null(res$Z),Z <- FM + nM,Z <- res$Z)
+
 
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   #                        Age data                          #
@@ -119,13 +101,16 @@ Predict_ThompsonBell1 <- function(param, select.param = NA, unit.time = "year",
     #total catch, yield, value and average biomass
     tot.C <- sum(C, na.rm=TRUE)
     tot.Y <- sum(Y, na.rm=TRUE)
-    tot.value <- sum(value.Y, na.rm=TRUE)
+    tot.V <- sum(value.Y, na.rm=TRUE)
     meanB <- sum((B * dt), na.rm=TRUE) / sum(dt, na.rm=TRUE)   ### more complicated biomass concept if dt is not constant, see Chapter 5
+    totals <- data.frame(tot.C=tot.C,
+                         tot.Y=tot.Y,
+                         tot.V=tot.V,
+                         meanB=meanB)
 
     res2 <- list(dt = dt, pop = pop, dead = dead, C = C,
                  Y = Y, B = B,value.Y = value.Y,
-                 tot.C = tot.C, tot.Y = tot.Y, meanB = meanB,
-                 tot.value = tot.value)
+                 totals = totals)
 
 
     #with plus group
@@ -167,15 +152,110 @@ Predict_ThompsonBell1 <- function(param, select.param = NA, unit.time = "year",
       df2 <- df2[1:plus.group,]
       res <- as.list(as.data.frame(df2))
       res$age <- classes
-    }
-    # does not cut all vectors from beginning!!! careful if you return "res" in the end!
 
-    return(c(res,res2))
+      #total catch, yield, value and average biomass
+      tot.C <- sum(res2$C, na.rm=TRUE)
+      tot.Y <- sum(res$Y, na.rm=TRUE)
+      tot.V <- sum(res2$value.Y, na.rm=TRUE)
+      meanB <- sum((res2$B * res2$dt), na.rm=TRUE) / sum(dt, na.rm=TRUE)   ### more complicated biomass concept if dt is not constant, see Chapter 5
+      totals <- data.frame(tot.C=tot.C,
+                           tot.Y=tot.Y,
+                           tot.V=tot.V,
+                           meanB=meanB)
+
+      res2 <- c(res2,totals)
+    }
+
+    ret <- c(res,res2)
+    return(ret)
   }
 
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   #                       Length data                        #
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-  if('midLengths' %in% names(res)){}
+  if('midLengths' %in% names(res)){
+
+    Linf <- res$Linf
+    K <- res$K
+    a <- res$a
+    b <- res$b
+
+    classes <- as.character(res$midLengths)
+    # create column without plus group (sign) if present
+    classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
+    classes.num <- as.numeric(classes.num[,1])
+
+    #calculate size class interval
+    int <- classes.num[2] - classes.num[1]
+
+    # t of lower and upper length classes
+    lowL <- classes.num - (int / 2)
+    upL <- classes.num + (int/2)
+
+    # H
+    H <- ((Linf - lowL)/(Linf - upL)) ^ (nM/(2*K))
+
+    #population
+    N <- rep(NA,length(classes.num))
+    if(is.na(stock_size_1)) stock_size_1 <- 1000
+    N[1] <- stock_size_1
+    for(x1 in 2:length(classes.num)){
+      N[x1] <- N[x1-1] * ((1/H[x1-1]) - (FM[x1-1]/Z[x1-1])) /
+        (H[x1-1] - (FM[x1-1]/Z[x1-1]))
+    }
+
+    #number of deaths per time step month or year
+    dead <- NA
+    for(x2 in 1:length(classes.num)){
+      dead[x2] <- N[x2] - N[x2+1]
+    }
+
+    #catch
+    C <- rep(NA,length(classes.num))
+    for(x3 in 1:(length(classes.num)-1)){
+      C[x3] <- (N[x3] - N[x3+1]) * (FM[x3]/Z[x3])
+    }
+
+    #average weight
+    W <- a * ((lowL + upL)/2 ) ^ b
+
+    #yield
+    Y <- C * W
+
+    #Value
+    V <- Y * meanValue
+
+    #biomass
+    B <- rep(NA,length(classes.num))
+    for(x4 in 1:(length(classes.num)-1)){
+    B[x4] <- ((N[x4] - N[x4+1]) / Z[x4] ) * W[x4]
+    }
+
+    #last length group
+    C[length(C)] <- (N[length(N)] - 0) * FM[length(FM)]/Z[length(Z)]
+    W[length(W)] <- a * ((lowL[length(lowL)] + Linf)/2 ) ^ b
+    Y[length(Y)] <- C[length(C)] * W[length(W)]
+    B[length(B)] <- (N[length(N)] - 0) / Z[length(Z)] * W[length(W)]
+    V[length(V)] <- Y[length(Y)] * meanValue[length(meanValue)]
+
+
+    #total catch, yield, value and average biomass
+    tot.C <- sum(C, na.rm=TRUE)
+    tot.Y <- sum(Y, na.rm=TRUE)
+    tot.V <- sum(V, na.rm=TRUE)
+    meanB <- sum((B), na.rm=TRUE)
+    totals <- data.frame(tot.C=tot.C,
+                         tot.Y=tot.Y,
+                         tot.V=tot.V,
+                         meanB=meanB)
+
+    res2 <- list(N = N, dead = dead, C = C,
+                 Y = Y, B = B, V = V,
+                 totals = totals)
+
+    ret <- c(res,res2)
+    return(ret)
+
+  }
 } ## problem of two cases: Tc and Co are given or Lc and Co. case dependent or different functions?
 
