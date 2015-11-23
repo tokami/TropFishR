@@ -6,11 +6,7 @@
 \usage{
 Predict_ThompsonBell(classes, mean_weight, FM, Z, value = NA, Tr, datatype,
   stock_size_1 = NA, plus.group = NA, FM_change = NA, fleet_mat = NA,
-<<<<<<< HEAD
-  fleet_FM_change = NA, fleet_plot_name = NA)
-=======
   fleet_unit = NA, fleet_FM_change = NA, fleet_plot_name = NA)
->>>>>>> 127b067cdbe1ea61a354f81b2148fe58ac08c7ea
 }
 \arguments{
 \item{classes}{Midpoints of the length class as vector (length frequency data) or ages as vector (age composition data).}
@@ -50,17 +46,10 @@ This is a function to calculate the total mortality (Z) from length composition 
 better to treat last group always as a plus group..... For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 }
 \examples{
-<<<<<<< HEAD
-data("ex.Predict_ThompsonBell")
-with(ex.Predict_ThompsonBell,Predict_ThompsonBell(classes = age,
-  mean_weight = meanWeight,value = valueGramm,FM = FM,Z = Z,
-  datatype = 'age',Tr = 1,stock_size_1 = NA,plus.group = 12))
-=======
 #data("ex.Predict_ThompsonBell")
 #with(ex.Predict_ThompsonBell,Predict_ThompsonBell(classes = age,
 #  mean_weight = meanWeight,value = valueGramm,FM = FM,Z = Z,
 #  datatype = 'age',Tr = 1,stock_size_1 = NA,plus.group = 12))
->>>>>>> 127b067cdbe1ea61a354f81b2148fe58ac08c7ea
 
 }
 \references{
