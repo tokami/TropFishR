@@ -18,7 +18,8 @@
 #'
 #' # length-based
 #' data(hake)
-#' Predict_ThompsonBell1(param = hake, stock_size_1 = 98919.3)
+#' output <- Predict_ThompsonBell1(param = hake, stock_size_1 = 98919.3)
+#' output
 #'
 #' @details better to treat last group always as a plus group..... For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 #'
@@ -155,7 +156,7 @@ Predict_ThompsonBell1 <- function(param, unit.time = "year",
 
       #total catch, yield, value and average biomass
       tot.C <- sum(res2$C, na.rm=TRUE)
-      tot.Y <- sum(res$Y, na.rm=TRUE)
+      tot.Y <- sum(res2$Y, na.rm=TRUE)
       tot.V <- sum(res2$V, na.rm=TRUE)
       meanB <- sum((res2$B * res2$dt), na.rm=TRUE) / sum(dt, na.rm=TRUE)   ### more complicated biomass concept if dt is not constant, see Chapter 5
       totals <- data.frame(tot.C=tot.C,

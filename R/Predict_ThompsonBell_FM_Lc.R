@@ -2,19 +2,24 @@
 #
 #' @description  This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.
 #'
-#' @param param A list containing all information
-#' @param FM_change Vector with ascending Fishing mortalities
+#' @param param A list
+#' @param mean_weight Average weight of fish
+#' @param datatype Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively
+#' @param FM Fishing mortality
+#' @param Z Total mortality
+#' @param value Information about the value/price of fish per kilo or gramm
+#' @param Tr Age of recruitment
+#' @param stock_size_1 Stock size to start with
+#' @param plus.group Should a plus group be created, by default (NA) not. BUt authors advise to do so
+#' @param FM_change Vector containing new FM values
+#' @param fleet_mat Matrix providing catch or FM values separated by fleets
+#' @param fleet_unit Either 'Catch' or 'FM' indicating in which unit the fleet_mat is provided
+#' @param fleet_FM_change Matrix containing new FM values for each fishery
+#' @param fleet_plot_name Name of fishery, which should be used for plotting Yield per recurit against changes of FM
+#'
+#' @param FM reference F-at-age-array
 #'
 #' @examples
-#'
-#' # with age data
-#' data(data_Predict_ThompsonBell)
-#' output <- Predict_ThompsonBell2(data_Predict_ThompsonBell,seq(0.1,3,0.1))
-#' output
-#'
-#' # with length data
-#' data(hake)
-#' Predict_ThompsonBell2(hake,seq(0.1,3,0.1))
 #'
 #' @details better to treat last group always as a plus group..... For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 #'
@@ -23,7 +28,11 @@
 #'
 #' @export
 
-Predict_ThompsonBell2 <- function(param, FM_change){
+
+
+
+
+Predict_ThompsonBell_FM_Lc <- function(param, FM_change){
 
   res <- param
   meanWeight <- res$meanWeight
@@ -39,10 +48,10 @@ Predict_ThompsonBell2 <- function(param, FM_change){
     nM <- mean(Z - FM,na.rm=T)
   }
 
-#   FM <- res$FM
-#   Z <- res$Z
-#   #natural Mortality
-#   nM <- mean(Z - FM,na.rm=T)
+  #   FM <- res$FM
+  #   Z <- res$Z
+  #   #natural Mortality
+  #   nM <- mean(Z - FM,na.rm=T)
 
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   #                        Age data                          #
@@ -74,13 +83,6 @@ Predict_ThompsonBell2 <- function(param, FM_change){
   #save x axis positions
   max_val <- round(max(pred_res_df$tot.V,na.rm=TRUE),digits=0)
   dim_val <- 10 ^ (nchar(max_val)-1)
-  max_yiel <- round(max(pred_res_df$tot.Y,na.rm=TRUE),digits=0)
-  dim_yiel <- 10 ^ (nchar(max_yiel)-1)
-  max_bio <- round(max(pred_res_df$mean.B,na.rm=TRUE),digits=0)
-  dim_bio <- 10 ^ (nchar(max_bio)-1)
-
-#   max_val <- round(max(pred_res_df$tot.V,na.rm=TRUE),digits=0)
-#   dim_val <- 10 ^ (nchar(max_val)-1)
 
   par(oma = c(1, 1, 1.5, 1),new=FALSE,mar = c(5, 4, 4, 6) + 0.3)
   plot(pred_res_df$Xfact,pred_res_df$tot.V, type ='o',ylab='Value',xlab='F-factor X',
@@ -88,14 +90,12 @@ Predict_ThompsonBell2 <- function(param, FM_change){
        lwd=1.6)
   par(new=TRUE)
   plot(pred_res_df$Xfact,pred_res_df$tot.Y,type ='o',ylab='',xlab='',
-       col='dodgerblue',lwd=1.6,axes=FALSE,
-       ylim = c(0,ceiling(max_yiel/dim_yiel)*dim_yiel))
+       col='dodgerblue',lwd=1.6,axes=FALSE)
   axis(4,at=pretty(c(0,pred_res_df$tot.Y)))
   mtext("Yield", side=4, line=2)
   par(new=TRUE)
   plot(pred_res_df$Xfact,pred_res_df$meanB,type='o',axes=FALSE,ylab='',xlab='',
-       col = 'darkgreen',lwd=1.6,
-       ylim = c(0,ceiling(max_bio/dim_bio)*dim_bio))    # draw lines with small intervals: seq(0,max(),0.05) but y as to be dependent of x (formula of calculaiton of y)
+       col = 'darkgreen',lwd=1.6)    # draw lines with small intervals: seq(0,max(),0.05) but y as to be dependent of x (formula of calculaiton of y)
   axis(4,at=pretty(c(0,pred_res_df$meanB)),line = 3)
   mtext("Biomass", side=4, line=5)
 

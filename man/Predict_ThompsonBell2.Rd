@@ -7,35 +7,9 @@
 Predict_ThompsonBell2(param, FM_change)
 }
 \arguments{
-\item{param}{A list}
+\item{param}{A list containing all information}
 
-\item{FM_change}{Vector containing new FM values}
-
-\item{mean_weight}{Average weight of fish}
-
-\item{datatype}{Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively}
-
-\item{FM}{Fishing mortality}
-
-\item{Z}{Total mortality}
-
-\item{value}{Information about the value/price of fish per kilo or gramm}
-
-\item{Tr}{Age of recruitment}
-
-\item{stock_size_1}{Stock size to start with}
-
-\item{plus.group}{Should a plus group be created, by default (NA) not. BUt authors advise to do so}
-
-\item{fleet_mat}{Matrix providing catch or FM values separated by fleets}
-
-\item{fleet_unit}{Either 'Catch' or 'FM' indicating in which unit the fleet_mat is provided}
-
-\item{fleet_FM_change}{Matrix containing new FM values for each fishery}
-
-\item{fleet_plot_name}{Name of fishery, which should be used for plotting Yield per recurit against changes of FM}
-
-\item{FM}{reference F-at-age-array}
+\item{FM_change}{Vector with ascending Fishing mortalities}
 }
 \description{
 This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.
@@ -47,7 +21,8 @@ better to treat last group always as a plus group..... For variable parameter sy
 
 # with age data
 data(data_Predict_ThompsonBell)
-Predict_ThompsonBell2(data_Predict_ThompsonBell,seq(0.1,3,0.1))
+output <- Predict_ThompsonBell2(data_Predict_ThompsonBell,seq(0.1,3,0.1))
+output
 
 # with length data
 data(hake)

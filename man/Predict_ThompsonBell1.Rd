@@ -34,7 +34,8 @@ Predict_ThompsonBell1(data_Predict_ThompsonBell,plus.group=11)
 
 # length-based
 data(hake)
-Predict_ThompsonBell1(param = hake, stock_size_1 = 98919.3)
+output <- Predict_ThompsonBell1(param = hake, stock_size_1 = 98919.3)
+output
 
 }
 \references{
