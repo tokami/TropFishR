@@ -68,22 +68,22 @@ Predict_ThompsonBell1 <- function(param, unit.time = "year",
     }
 
     #population per age group
-    pop <- rep(NA,length(classes.num))
+    N <- rep(NA,length(classes.num))
     if(!is.na(stock_size_1)){
-      pop[1] <- stock_size_1
-    }else pop[1] <- 1000  #if not provided results are just negative
+      N[1] <- stock_size_1
+    }else N[1] <- 1000  #if not provided results are just negative
 
     for(x1 in 2:length(classes.num)){
-      pop[x1] <- pop[x1-1] * exp(-Z[x1] * dt[x1])
-      if(x1 == length(pop)){                                ####CORRECT?????
-        pop[x1] <- pop[x1-1] * exp(-Z[x1-1] * dt[x1-1])
+      N[x1] <- N[x1-1] * exp(-Z[x1] * dt[x1])
+      if(x1 == length(N)){                                ####CORRECT?????
+        N[x1] <- N[x1-1] * exp(-Z[x1-1] * dt[x1-1])
       }
     }
 
     #number of deaths per time step month or year
     dead <- NA
     for(x2 in 1:length(classes.num)){
-      dead[x2] <- pop[x2] - pop[x2+1]
+      dead[x2] <- N[x2] - N[x2+1]
     }
 
     #catch in numbers
@@ -96,20 +96,20 @@ Predict_ThompsonBell1 <- function(param, unit.time = "year",
     B <- Y / (FM * dt)
 
     #value expressed in money units
-    value.Y <- Y * meanValue
+    V <- Y * meanValue
 
     #total catch, yield, value and average biomass
     tot.C <- sum(C, na.rm=TRUE)
     tot.Y <- sum(Y, na.rm=TRUE)
-    tot.V <- sum(value.Y, na.rm=TRUE)
+    tot.V <- sum(V, na.rm=TRUE)
     meanB <- sum((B * dt), na.rm=TRUE) / sum(dt, na.rm=TRUE)   ### more complicated biomass concept if dt is not constant, see Chapter 5
     totals <- data.frame(tot.C=tot.C,
                          tot.Y=tot.Y,
                          tot.V=tot.V,
                          meanB=meanB)
 
-    res2 <- list(dt = dt, pop = pop, dead = dead, C = C,
-                 Y = Y, B = B,value.Y = value.Y,
+    res2 <- list(dt = dt, N = N, dead = dead, C = C,
+                 Y = Y, B = B, V = V,
                  totals = totals)
 
 
@@ -125,10 +125,10 @@ Predict_ThompsonBell1 <- function(param, unit.time = "year",
         paste(classes[length(classes)],"+",sep='')
 
       #num deaths
-      df[plus.group, "dead"] <- df[plus.group, "pop"]
+      df[plus.group, "dead"] <- df[plus.group, "N"]
 
       #catch
-      new.C <- (FM[plus.group] / Z[plus.group]) * df[plus.group, "pop"]
+      new.C <- (FM[plus.group] / Z[plus.group]) * df[plus.group, "N"]
       catch.plus.dif <- new.C - df[plus.group, "C"]
       df[plus.group, "C"] <- new.C
 
@@ -136,7 +136,7 @@ Predict_ThompsonBell1 <- function(param, unit.time = "year",
       df[plus.group, "Y"] <- meanWeight[plus.group] * catch.plus.dif
 
       #value
-      df[plus.group, "value.Y"] <-
+      df[plus.group, "V"] <-
         df[plus.group, "Y"] * meanValue[plus.group]
 
       #biomass       ####not sure....omitted in manual
@@ -156,7 +156,7 @@ Predict_ThompsonBell1 <- function(param, unit.time = "year",
       #total catch, yield, value and average biomass
       tot.C <- sum(res2$C, na.rm=TRUE)
       tot.Y <- sum(res$Y, na.rm=TRUE)
-      tot.V <- sum(res2$value.Y, na.rm=TRUE)
+      tot.V <- sum(res2$V, na.rm=TRUE)
       meanB <- sum((res2$B * res2$dt), na.rm=TRUE) / sum(dt, na.rm=TRUE)   ### more complicated biomass concept if dt is not constant, see Chapter 5
       totals <- data.frame(tot.C=tot.C,
                            tot.Y=tot.Y,

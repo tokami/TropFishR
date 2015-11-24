@@ -20,10 +20,14 @@
 #' @param FM reference F-at-age-array
 #'
 #' @examples
-#' #data("ex.Predict_ThompsonBell")
-#' #with(ex.Predict_ThompsonBell,Predict_ThompsonBell(classes = age,
-#' #  mean_weight = meanWeight,value = valueGramm,FM = FM,Z = Z,
-#' #  datatype = 'age',Tr = 1,stock_size_1 = NA,plus.group = 12))
+#'
+#' # with age data
+#' data(data_Predict_ThompsonBell)
+#' Predict_ThompsonBell2(data_Predict_ThompsonBell,seq(0.1,3,0.1))
+#'
+#' # with length data
+#' data(hake)
+#' Predict_ThompsonBell2(hake,seq(0.1,3,0.1))
 #'
 #' @details better to treat last group always as a plus group..... For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 #'
@@ -32,30 +36,7 @@
 #'
 #' @export
 
-data("data_Predict_ThompsonBell")
-param = data_Predict_ThompsonBell
-unit.time = "year"
-stock_size_1 = NA
-plus.group = NA
-FM_change = seq(1,10,1)
-
-
-#param can be age or midLenghts
-
-
-
-Predict_ThompsonBell2 <- function(param, FM_change,
-
-                                 select.param = NA, unit.time = "year",
-                                 stock_size_1 = NA, plus.group = NA,
-
-
-   Tr,stock_size_1 = NA,
-   FM_change = NA,
-   s_list = NA, Linf = NA, K = NA, t0 = 0, L50 = NA,
-   L75 = NA){
-
-
+Predict_ThompsonBell2 <- function(param, FM_change){
 
   res <- param
   meanWeight <- res$meanWeight
@@ -70,60 +51,54 @@ Predict_ThompsonBell2 <- function(param, FM_change,
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   #                        Age data                          #
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-  if('age' %in% names(res)){
-
-    classes <- as.character(res$age)
-    # create column without plus group (sign) if present
-    classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
-    classes.num <- as.numeric(classes.num[,1])
-
-    #prediction based on f_change
-    pred_mat <- as.matrix(FM) %*% FM_change
-
-    pred_res_list <- list()
-    for(x7 in 1:length(FM_change)){
-      param$Z <- pred_mat[,x7] + nM
-      param$FM <- pred_mat[,x7]
-      res <- Predict_ThompsonBell1(param)
-      pred_res_list[[x7]] <- res$totals
-    }
-
-    pred_res_df <- do.call(rbind, pred_res_list)
-    pred_res_df$Xfact <- FM_change
-
-    #save x axis positions
-    maxY <- round(max(pred_res_df$tot.Y,na.rm=TRUE),digits=0)
-    maxV <- round(max(pred_res_df$tot.V,na.rm=TRUE),digits=0)
-    maxB <- round(max(pred_res_df$meanB,na.rm=TRUE),digits=0)
-    #####HERE
-
-    maxis <- c(maxY,maxV,maxB)
-    which(maxis == max(maxis))
-    max_val <- round(max(pred_res_df$tot.V,na.rm=TRUE),digits=0)
-    dim_val <- 10 ^ (nchar(max_val)-1)
-
-    par(oma = c(1, 1, 1.5, 1),new=FALSE,mar = c(5, 4, 4, 4) + 0.3)
-    plot(pred_res_df$Xfact,pred_res_df$tot.V, type ='l',
-         col ='darkorange', ylim = c(0,ceiling(max_val/dim_val)*dim_val),
-         lwd=1.6, xlab = "F-factor X", ylab = "Value")
-    lines(pred_res_df$Xfact,pred_res_df$meanB,
-          col = 'darkgreen',lwd=1.6)    # draw lines with small intervals: seq(0,max(),0.05) but y as to be dependent of x (formula of calculaiton of y)
-    lines(pred_res_df$Xfact,pred_res_df$tot.Y,
-          col='dodgerblue',lwd=1.6)
-    par(oma = c(0, 0, 0, 0), new = TRUE)
-    legend("top", c("value", "yield", "biomass"), xpd = TRUE,
-           horiz = TRUE, inset = c(0, -0.1), bty = "n",lty = 1,seg.len = 0.7,
-           col = c('darkorange','dodgerblue','darkgreen'), cex = 0.8,lwd=2,
-           text.width=0.3,x.intersp=0.3)
-
-    ret <- c(res,res2)
-    return(ret)
-
-  }
-
+  if('age' %in% names(res)) classes <- as.character(res$age)
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   #                       Length data                        #
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-  if('midLengths' %in% names(res)){}
+  if('midLengths' %in% names(res)) classes <- as.character(res$midLengths)
+
+  # create column without plus group (sign) if present
+  classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
+  classes.num <- as.numeric(classes.num[,1])
+
+  #prediction based on f_change
+  pred_mat <- as.matrix(FM) %*% FM_change
+
+  pred_res_list <- list()
+  for(x7 in 1:length(FM_change)){
+    param$Z <- pred_mat[,x7] + nM
+    param$FM <- pred_mat[,x7]
+    res <- Predict_ThompsonBell1(param)
+    pred_res_list[[x7]] <- res$totals
+  }
+
+  pred_res_df <- do.call(rbind, pred_res_list)
+  pred_res_df$Xfact <- FM_change
+
+  #save x axis positions
+  max_val <- round(max(pred_res_df$tot.V,na.rm=TRUE),digits=0)
+  dim_val <- 10 ^ (nchar(max_val)-1)
+
+  par(oma = c(1, 1, 1.5, 1),new=FALSE,mar = c(5, 4, 4, 4) + 0.3)
+  plot(pred_res_df$Xfact,pred_res_df$tot.V, type ='o',ylab='',xlab='',
+       col ='darkorange', ylim = c(0,ceiling(max_val/dim_val)*dim_val),
+       lwd=1.6,axes=FALSE)
+  par(new=TRUE)
+  plot(pred_res_df$Xfact,pred_res_df$tot.Y,type ='o', xlab = "F-factor X",
+       ylab = "Yield",
+       col='dodgerblue',lwd=1.6)
+  par(new=TRUE)
+  plot(pred_res_df$Xfact,pred_res_df$meanB,type='o',axes=FALSE,ylab='',xlab='',
+       col = 'darkgreen',lwd=1.6)    # draw lines with small intervals: seq(0,max(),0.05) but y as to be dependent of x (formula of calculaiton of y)
+
+  par(oma = c(0, 0, 0, 0), new = TRUE)
+  legend("top", c("value", "yield", "biomass"), xpd = TRUE,
+         horiz = TRUE, inset = c(0, -0.1), bty = "n",lty = 1,seg.len = 0.7,
+         col = c('darkorange','dodgerblue','darkgreen'), cex = 0.8,lwd=2,
+         text.width=0.3,x.intersp=0.3)
+
+  res2 <- pred_res_df
+  ret <- c(res,res2)
+  return(ret)
 } ## problem of two cases: Tc and Co are given or Lc and Co. case dependent or different functions?
 

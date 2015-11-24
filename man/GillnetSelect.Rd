@@ -17,7 +17,7 @@ This function estimates the selecitvity of a gillnet from an experimental catch 
 \details{
 This function estimates the fractions retained by each net (SNet1 & SNet2), the
   optimum lengths for each net, the selection factor (SF), and the standard deviation
-  of the factor (stand.dev).
+  of the factor (stand.dev). Calculations are based on a normal distribution with common spread.
   Assumptions of this method are, that (i) the optimum length Lm is proportional to the mesh
   size (Lm = SF * m), (ii) the selection curves are normally distributed with a common
   standard deviation, (iii) the nets have the same fishing power (same dimensions and material).
