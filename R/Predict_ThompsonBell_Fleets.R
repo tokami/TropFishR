@@ -3,12 +3,6 @@
 #' @description  This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.
 #'
 #' @param param A list
-#' @param mean_weight Average weight of fish
-#' @param datatype Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively
-#' @param FM Fishing mortality
-#' @param Z Total mortality
-#' @param value Information about the value/price of fish per kilo or gramm
-#' @param Tr Age of recruitment
 #' @param stock_size_1 Stock size to start with
 #' @param plus.group Should a plus group be created, by default (NA) not. BUt authors advise to do so
 #' @param FM_change Vector containing new FM values
@@ -232,7 +226,7 @@ Predict_ThompsonBell_Fleets <- function(param, FM_change,fleet_mat, fleet_unit,
 
 
   #4 panel plot
-  par(new=FALSE,mar = c(4, 4, 4, 4) + 0.1, mfrow=c(2,2))
+  op <- par(new=FALSE,mar = c(4, 4, 4, 4) + 0.1, mfrow=c(2,2))
   plot(fleet_FM_change[,plot_fleet],fleet_Value.df$Vtot, type ='o',main='Value',
        col ='darkorange', ylim = c(0,ceiling(max_val/dim_val)*dim_val),
        lwd=1.6, xlab = "F-factor X", ylab = "Value",lty=1)
@@ -264,6 +258,7 @@ Predict_ThompsonBell_Fleets <- function(param, FM_change,fleet_mat, fleet_unit,
          lty = 1:(dim(fleet_FM_change)[2]+1), seg.len = 0.2,
          col = 'black',lwd=2,xpd=TRUE,y.intersp = 0.15,
          text.width=0.3,x.intersp=0.3)
+  par(op)
 
   res4 <- list(fleet_FM = fleet_FM.df,
                fleet_Yield = fleet_Yield.df,

@@ -3,23 +3,28 @@
 #' @description  This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.
 #'
 #' @param param A list
-#' @param mean_weight Average weight of fish
-#' @param datatype Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively
-#' @param FM Fishing mortality
-#' @param Z Total mortality
-#' @param value Information about the value/price of fish per kilo or gramm
-#' @param Tr Age of recruitment
 #' @param stock_size_1 Stock size to start with
 #' @param plus.group Should a plus group be created, by default (NA) not. BUt authors advise to do so
 #' @param FM_change Vector containing new FM values
-#' @param fleet_mat Matrix providing catch or FM values separated by fleets
-#' @param fleet_unit Either 'Catch' or 'FM' indicating in which unit the fleet_mat is provided
-#' @param fleet_FM_change Matrix containing new FM values for each fishery
-#' @param fleet_plot_name Name of fishery, which should be used for plotting Yield per recurit against changes of FM
+#' @param Linf growth parameter 1
+#' @param K growth parameter 2
+#' @param t0 growth parameter 3
+#' @param s_list List wit all selectivity information
+#' @param Lc_change vector with ascending Lc values
 #'
 #' @param FM reference F-at-age-array
 #'
 #' @examples
+#'
+#' data(data_Predict_ThompsonBell)
+#'
+#' select.list <- list(selecType = 'knife_edge',  #or 'gillnet' or 'trawl_ogive'
+#'    Lc = 34,tc = 5,selecDist = 'lognormal',    #or 'normal_fixed'
+#'    mesh_size = 8.1,mesh_size1 = 9.1,select_p1 = 21.1,select_p2 = 23.8)
+#'
+#' Predict_ThompsonBell_FM_Lc(data_Predict_ThompsonBell,FM_change,unit.time = 'month',
+#'   Linf=50, K=0.3, t0=0.01, s_list=select.list, Lc_change=seq(24,44,2))
+#'
 #'
 #' @details better to treat last group always as a plus group..... For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 #'
@@ -28,11 +33,16 @@
 #'
 #' @export
 
-
-
-
-
-Predict_ThompsonBell_FM_Lc <- function(param, FM_change){
+Predict_ThompsonBell_FM_Lc <- function(param,
+                                       FM_change,
+                                       stock_size_1 = NA,
+                                       unit.time = 'year',
+                                       plus.group = NA,
+                                       Linf,
+                                       K,
+                                       t0 = 0,
+                                       s_list,
+                                       Lc_change){
 
   res <- param
   meanWeight <- res$meanWeight
@@ -66,47 +76,109 @@ Predict_ThompsonBell_FM_Lc <- function(param, FM_change){
   classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
   classes.num <- as.numeric(classes.num[,1])
 
-  #prediction based on f_change
-  pred_mat <- as.matrix(FM) %*% FM_change
+  # instead of s_list the outcome of one of the other select functions?
+  #as a option or put values per hand
 
-  pred_res_list <- list()
-  for(x7 in 1:length(FM_change)){
-    param$Z <- pred_mat[,x7] + nM
-    param$FM <- pred_mat[,x7]
-    res <- Predict_ThompsonBell1(param)
-    pred_res_list[[x7]] <- res$totals
+  Lt <- Linf * (1- exp(-K * (classes.num - t0)))
+
+  sel <- select_ogive(s_list,classes.num,Lt)
+
+  sel.list <- list()
+  for(x19 in 1:length(Lc_change)){
+    sel.list[[x19]] <- selec.TB(s_list,classes.num, Lt, Lc_change[x19])
+  }
+  Lc_mat <- do.call(cbind,sel.list)
+  colnames(Lc_mat) <- Lc_change
+
+  Lc_mat_FM <- Lc_mat * max(FM,na.rm=TRUE)
+
+  #list with FM_Lc_matrices per FM_change
+  FM_Lc_com_mat.list <- list()
+  for(x20 in 1:length(colnames(Lc_mat_FM))){
+    FM_Lc_com_mat.list[[x20]] <- as.matrix(Lc_mat_FM[,x20]) %*% FM_change
+    colnames(FM_Lc_com_mat.list[[x20]]) <- FM_change
   }
 
-  pred_res_df <- do.call(rbind, pred_res_list)
-  pred_res_df$Xfact <- FM_change
+  param.loop <- res
 
-  #save x axis positions
-  max_val <- round(max(pred_res_df$tot.V,na.rm=TRUE),digits=0)
-  dim_val <- 10 ^ (nchar(max_val)-1)
+  pred.FM_Lc_com_res_loopC_list <- list()
+  pred.FM_Lc_com_res_loopY_list <- list()
+  pred.FM_Lc_com_res_loopB_list <- list()
+  pred.FM_Lc_com_res_loopV_list <- list()
 
-  par(oma = c(1, 1, 1.5, 1),new=FALSE,mar = c(5, 4, 4, 6) + 0.3)
-  plot(pred_res_df$Xfact,pred_res_df$tot.V, type ='o',ylab='Value',xlab='F-factor X',
-       col ='darkorange', ylim = c(0,ceiling(max_val/dim_val)*dim_val),
-       lwd=1.6)
-  par(new=TRUE)
-  plot(pred_res_df$Xfact,pred_res_df$tot.Y,type ='o',ylab='',xlab='',
-       col='dodgerblue',lwd=1.6,axes=FALSE)
-  axis(4,at=pretty(c(0,pred_res_df$tot.Y)))
-  mtext("Yield", side=4, line=2)
-  par(new=TRUE)
-  plot(pred_res_df$Xfact,pred_res_df$meanB,type='o',axes=FALSE,ylab='',xlab='',
-       col = 'darkgreen',lwd=1.6)    # draw lines with small intervals: seq(0,max(),0.05) but y as to be dependent of x (formula of calculaiton of y)
-  axis(4,at=pretty(c(0,pred_res_df$meanB)),line = 3)
-  mtext("Biomass", side=4, line=5)
+  for(x21 in 1:length(FM_Lc_com_mat.list)){  #loop for length of list == Lc changes
+    mati <- FM_Lc_com_mat.list[[x21]]
 
-  par(oma = c(0, 0, 0, 0), new = TRUE)
-  legend("top", c("value", "yield", "biomass"), xpd = TRUE,
-         horiz = TRUE, inset = c(0, -0.1), bty = "n",lty = 1,seg.len = 0.7,
-         col = c('darkorange','dodgerblue','darkgreen'), cex = 0.8,lwd=2,
-         text.width=0.3,x.intersp=0.3)
+    pred.FM_Lc_com_res_loop1_list <- list()
+    for(x22 in 1:dim(mati)[2]){
 
-  res2 <- pred_res_df
-  ret <- c(res,res2)
+      param.loop$FM <- mati[,x22]
+      param.loop$Z <- mati[,x22] + nM
+      res2 <- Predict_ThompsonBell1(param.loop, unit.time,
+                                    stock_size_1,plus.group=plus.group)
+      pred.FM_Lc_com_res_loop1_list[[x22]] <- res2$totals
+    }
+    prev_mat <- do.call(rbind, pred.FM_Lc_com_res_loop1_list)
+    prev_matC <- prev_mat[,'tot.C']
+    prev_matY <- prev_mat[,'tot.Y']
+    prev_matB <- prev_mat[,'meanB']
+    prev_matV <- prev_mat[,'tot.V']
+
+
+    pred.FM_Lc_com_res_loopC_list[[x21]] <- prev_matC
+    pred.FM_Lc_com_res_loopY_list[[x21]] <- prev_matY
+    pred.FM_Lc_com_res_loopB_list[[x21]] <- prev_matB
+    pred.FM_Lc_com_res_loopV_list[[x21]] <- prev_matV
+  }
+
+  #for catch
+  mat_FM_Lc_com.C <- do.call(rbind, pred.FM_Lc_com_res_loopC_list)
+  rownames(mat_FM_Lc_com.C) <- Lc_change
+  colnames(mat_FM_Lc_com.C) <- FM_change
+
+  #for yield
+  mat_FM_Lc_com.Y <- do.call(rbind, pred.FM_Lc_com_res_loopY_list)
+  rownames(mat_FM_Lc_com.Y) <- Lc_change
+  colnames(mat_FM_Lc_com.Y) <- FM_change
+
+  #for biomass
+  mat_FM_Lc_com.B <- do.call(rbind, pred.FM_Lc_com_res_loopB_list)
+  rownames(mat_FM_Lc_com.B) <- Lc_change
+  colnames(mat_FM_Lc_com.B) <- FM_change
+
+  #for value
+  mat_FM_Lc_com.V <- do.call(rbind, pred.FM_Lc_com_res_loopV_list)
+  rownames(mat_FM_Lc_com.V) <- Lc_change
+  colnames(mat_FM_Lc_com.V) <- FM_change
+
+  # transvers matrices for plotting (the opposite arrangement from book)
+  mat_FM_Lc_com.C <- t(mat_FM_Lc_com.C)
+  mat_FM_Lc_com.Y <- t(mat_FM_Lc_com.Y)
+  mat_FM_Lc_com.B <- t(mat_FM_Lc_com.B)
+  mat_FM_Lc_com.V <- t(mat_FM_Lc_com.V)
+
+  # colours for plot
+  pal <- colorRampPalette(c(
+    rgb(1,0.5,0.5), rgb(1,1,0.5), rgb(0.5,1,1), rgb(0.5,0.5,1)
+  ))
+
+
+  #plot
+  image(x = FM_change,
+        y = Lc_change,
+        z = mat_FM_Lc_com.Y, col=pal(100),
+        xlab = 'Fishing mortality', ylab = 'Lc')
+  contour(x = FM_change,
+          y = Lc_change,
+          z = mat_FM_Lc_com.Y, add=TRUE)
+  mtext("Yield", line=0.5, side=3)
+
+  ret <- c(res,
+           list(Lt=Lt,sel=sel,
+             mat_FM_Lc_com.C=mat_FM_Lc_com.C,
+           mat_FM_Lc_com.Y=mat_FM_Lc_com.Y,
+           mat_FM_Lc_com.V=mat_FM_Lc_com.V,
+           mat_FM_Lc_com.B=mat_FM_Lc_com.B))
   return(ret)
-} ## problem of two cases: Tc and Co are given or Lc and Co. case dependent or different functions?
 
+} ## problem of two cases: Tc and Co are given or Lc and Co. case dependent or different functions?
