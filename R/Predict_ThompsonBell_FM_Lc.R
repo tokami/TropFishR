@@ -22,8 +22,9 @@
 #'    Lc = 34,tc = 5,selecDist = 'lognormal',    #or 'normal_fixed'
 #'    mesh_size = 8.1,mesh_size1 = 9.1,select_p1 = 21.1,select_p2 = 23.8)
 #'
-#' Predict_ThompsonBell_FM_Lc(data_Predict_ThompsonBell,FM_change,unit.time = 'month',
-#'   Linf=50, K=0.3, t0=0.01, s_list=select.list, Lc_change=seq(24,44,2))
+#' Predict_ThompsonBell_FM_Lc(data_Predict_ThompsonBell,FM_change = seq(0,3,0.2),
+#'   unit.time = 'month', Linf=50, K=0.3, t0=0.01, s_list=select.list,
+#'   Lc_change=seq(24,44,2))
 #'
 #'
 #' @details better to treat last group always as a plus group..... For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
@@ -85,7 +86,7 @@ Predict_ThompsonBell_FM_Lc <- function(param,
 
   sel.list <- list()
   for(x19 in 1:length(Lc_change)){
-    sel.list[[x19]] <- selec.TB(s_list,classes.num, Lt, Lc_change[x19])
+    sel.list[[x19]] <- select_ogive(s_list,classes.num, Lt, Lc_change[x19])
   }
   Lc_mat <- do.call(cbind,sel.list)
   colnames(Lc_mat) <- Lc_change
@@ -171,7 +172,7 @@ Predict_ThompsonBell_FM_Lc <- function(param,
   contour(x = FM_change,
           y = Lc_change,
           z = mat_FM_Lc_com.Y, add=TRUE)
-  mtext("Yield", line=0.5, side=3)
+  #mtext("Yield", line=0.5, side=3)
 
   ret <- c(res,
            list(Lt=Lt,sel=sel,

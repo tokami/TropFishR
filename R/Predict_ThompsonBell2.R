@@ -76,7 +76,7 @@ Predict_ThompsonBell2 <- function(param, FM_change){
   dim_val <- 10 ^ (nchar(max_val)-1)
   max_yiel <- round(max(pred_res_df$tot.Y,na.rm=TRUE),digits=0)
   dim_yiel <- 10 ^ (nchar(max_yiel)-1)
-  max_bio <- round(max(pred_res_df$mean.B,na.rm=TRUE),digits=0)
+  max_bio <- round(max(pred_res_df$meanB,na.rm=TRUE),digits=0)
   dim_bio <- 10 ^ (nchar(max_bio)-1)
 
 #   max_val <- round(max(pred_res_df$tot.V,na.rm=TRUE),digits=0)

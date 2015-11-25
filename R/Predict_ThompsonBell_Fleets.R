@@ -15,21 +15,27 @@
 #'
 #' @examples
 #'
+#' # load data
 #' data(data_Predict_ThompsonBell)
 #'
+#' # construct fleet matrix
 #' fleet_mat=matrix(ncol = 2,nrow = 12)
 #' fleet_mat[,1] <- c(0.72,0.96,0.84,0.48,0.6,0.48,1.08,0.48,0.084,0.12,0.24,0.24)
 #' fleet_mat[,2] <- c(0.48,0.36,0.48,0.96,1.32,0.72,0.48,0.72,1.116,1.68,2.52,2.28)
 #' colnames(fleet_mat) <- c("artisanal", "industrial")
 #'
+#' # construct matrix with changes of fishing mortalities by fleet
 #' fleet_FM_change = matrix(ncol = 2,nrow = 8)
 #' fleet_FM_change[,1] <- rep(1,8)
 #' fleet_FM_change[,2] <- c(0,0.4,0.8,1.0,1.2,1.5,2,3)
 #' colnames(fleet_FM_change) <- c("artisanal", "industrial")
 #'
+#' # run the model
 #' output <- Predict_ThompsonBell_Fleets(data_Predict_ThompsonBell,seq(0,3,0.2),
 #'    fleet_mat,"FM",fleet_FM_change,fleet_plot_name = "industrial",
 #'    'month',plus.group = 12)
+#'
+#' # investigate results
 #' output
 #'
 #' @details better to treat last group always as a plus group..... For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
@@ -111,7 +117,6 @@ Predict_ThompsonBell_Fleets <- function(param, FM_change,fleet_mat, fleet_unit,
   fleet_Value.list <- list()
 
   for(x9 in 1:dim(pred_fleet_mat_list[[1]])[2]){
-    x9=1
     #FISHING MORTALITY
     FM_fleets.list <- lapply(pred_fleet_mat_list, function(x) x[,x9])
     FM_fleets.df <- do.call(cbind,FM_fleets.list)

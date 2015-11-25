@@ -25,18 +25,6 @@ Predict_ThompsonBell_Fleets(param, FM_change, fleet_mat, fleet_unit,
 
 \item{plus.group}{Should a plus group be created, by default (NA) not. BUt authors advise to do so}
 
-\item{mean_weight}{Average weight of fish}
-
-\item{datatype}{Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively}
-
-\item{FM}{Fishing mortality}
-
-\item{Z}{Total mortality}
-
-\item{value}{Information about the value/price of fish per kilo or gramm}
-
-\item{Tr}{Age of recruitment}
-
 \item{FM}{reference F-at-age-array}
 }
 \description{
@@ -47,21 +35,27 @@ better to treat last group always as a plus group..... For variable parameter sy
 }
 \examples{
 
+# load data
 data(data_Predict_ThompsonBell)
 
+# construct fleet matrix
 fleet_mat=matrix(ncol = 2,nrow = 12)
 fleet_mat[,1] <- c(0.72,0.96,0.84,0.48,0.6,0.48,1.08,0.48,0.084,0.12,0.24,0.24)
 fleet_mat[,2] <- c(0.48,0.36,0.48,0.96,1.32,0.72,0.48,0.72,1.116,1.68,2.52,2.28)
 colnames(fleet_mat) <- c("artisanal", "industrial")
 
+# construct matrix with changes of fishing mortalities by fleet
 fleet_FM_change = matrix(ncol = 2,nrow = 8)
 fleet_FM_change[,1] <- rep(1,8)
 fleet_FM_change[,2] <- c(0,0.4,0.8,1.0,1.2,1.5,2,3)
 colnames(fleet_FM_change) <- c("artisanal", "industrial")
 
+# run the model
 output <- Predict_ThompsonBell_Fleets(data_Predict_ThompsonBell,seq(0,3,0.2),
    fleet_mat,"FM",fleet_FM_change,fleet_plot_name = "industrial",
    'month',plus.group = 12)
+
+# investigate results
 output
 
 }

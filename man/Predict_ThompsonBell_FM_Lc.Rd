@@ -4,36 +4,27 @@
 \alias{Predict_ThompsonBell_FM_Lc}
 \title{Thompson and Bell prediction model}
 \usage{
-Predict_ThompsonBell_FM_Lc(param, FM_change)
+Predict_ThompsonBell_FM_Lc(param, FM_change, stock_size_1 = NA,
+  unit.time = "year", plus.group = NA, Linf, K, t0 = 0, s_list, Lc_change)
 }
 \arguments{
 \item{param}{A list}
 
 \item{FM_change}{Vector containing new FM values}
 
-\item{mean_weight}{Average weight of fish}
-
-\item{datatype}{Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively}
-
-\item{FM}{Fishing mortality}
-
-\item{Z}{Total mortality}
-
-\item{value}{Information about the value/price of fish per kilo or gramm}
-
-\item{Tr}{Age of recruitment}
-
 \item{stock_size_1}{Stock size to start with}
 
 \item{plus.group}{Should a plus group be created, by default (NA) not. BUt authors advise to do so}
 
-\item{fleet_mat}{Matrix providing catch or FM values separated by fleets}
+\item{Linf}{growth parameter 1}
 
-\item{fleet_unit}{Either 'Catch' or 'FM' indicating in which unit the fleet_mat is provided}
+\item{K}{growth parameter 2}
 
-\item{fleet_FM_change}{Matrix containing new FM values for each fishery}
+\item{t0}{growth parameter 3}
 
-\item{fleet_plot_name}{Name of fishery, which should be used for plotting Yield per recurit against changes of FM}
+\item{s_list}{List wit all selectivity information}
+
+\item{Lc_change}{vector with ascending Lc values}
 
 \item{FM}{reference F-at-age-array}
 }
@@ -44,6 +35,17 @@ This is a function to calculate the total mortality (Z) from length composition 
 better to treat last group always as a plus group..... For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 }
 \examples{
+
+data(data_Predict_ThompsonBell)
+
+select.list <- list(selecType = 'knife_edge',  #or 'gillnet' or 'trawl_ogive'
+   Lc = 34,tc = 5,selecDist = 'lognormal',    #or 'normal_fixed'
+   mesh_size = 8.1,mesh_size1 = 9.1,select_p1 = 21.1,select_p2 = 23.8)
+
+Predict_ThompsonBell_FM_Lc(data_Predict_ThompsonBell,FM_change = seq(0,3,0.2),
+  unit.time = 'month', Linf=50, K=0.3, t0=0.01, s_list=select.list,
+  Lc_change=seq(24,44,2))
+
 
 }
 \references{
