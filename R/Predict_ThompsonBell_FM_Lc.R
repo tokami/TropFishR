@@ -16,12 +16,15 @@
 #'
 #' @examples
 #'
+#' # load data
 #' data(data_Predict_ThompsonBell)
 #'
+#' # create list with selectivity information
 #' select.list <- list(selecType = 'knife_edge',  #or 'gillnet' or 'trawl_ogive'
 #'    Lc = 34,tc = 5,selecDist = 'lognormal',    #or 'normal_fixed'
 #'    mesh_size = 8.1,mesh_size1 = 9.1,select_p1 = 21.1,select_p2 = 23.8)
 #'
+#' # run model
 #' Predict_ThompsonBell_FM_Lc(data_Predict_ThompsonBell,FM_change = seq(0,3,0.2),
 #'   unit.time = 'month', Linf=50, K=0.3, t0=0.01, s_list=select.list,
 #'   Lc_change=seq(24,44,2))

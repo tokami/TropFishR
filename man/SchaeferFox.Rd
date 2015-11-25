@@ -18,9 +18,12 @@ Schaefer and Fox models are examples of so called surplus production models, and
 MSY
 }
 \examples{
-data(ex.SchaeferFox)
-output = SchaeferFox(Y = ex.SchaeferFox$yield,
-                     f = ex.SchaeferFox$effort)
+# load data
+data(trawl_fishery_Java)
+
+# run model
+output = SchaeferFox(Y = trawl_fishery_Java$yield,
+                     f = trawl_fishery_Java$effort)
 output[[2]]
 
 }

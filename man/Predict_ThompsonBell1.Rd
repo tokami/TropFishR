@@ -15,8 +15,6 @@ Predict_ThompsonBell1(param, unit.time = "year", stock_size_1 = NA,
 \item{stock_size_1}{Stock size of smallest age/length group}
 
 \item{plus.group}{Indicates age/length group, which should be turned into a plus group (i.e. all groups above are comprised in one group)}
-
-\item{mean_weight}{Average weight of fish}
 }
 \description{
 This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.
@@ -25,16 +23,26 @@ This is a function to calculate the total mortality (Z) from length composition 
 better to treat last group always as a plus group..... For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 }
 \examples{
-#age-based
+
+# age-based yield per recruit model
+# load data
 data("data_Predict_ThompsonBell")
-#without plus group
+
+# run model
+# option 1: without plus group
 Predict_ThompsonBell1(data_Predict_ThompsonBell)
-#with plus group
+
+# option 2: with plus group
 Predict_ThompsonBell1(data_Predict_ThompsonBell,plus.group=11)
 
-# length-based
+# length-based yield per recruit model
+# load data
 data(hake)
+
+# run model
 output <- Predict_ThompsonBell1(param = hake, stock_size_1 = 98919.3)
+
+# investigate results
 output
 
 }

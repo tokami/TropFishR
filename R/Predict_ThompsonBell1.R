@@ -3,7 +3,6 @@
 #' @description  This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.
 #'
 #' @param param A list containing all information
-#' @param mean_weight Average weight of fish
 #' @param unit.time Indicates if the age groups are per month (\code{"month"}) or per year (\code{"year"}). Default: \code{"year"}
 #' @param stock_size_1 Stock size of smallest age/length group
 #' @param plus.group Indicates age/length group, which should be turned into a plus group (i.e. all groups above are comprised in one group)

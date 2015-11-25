@@ -6,9 +6,12 @@
 #' @param f Fishing effort as vector
 #'
 #' @examples
-#' data(ex.SchaeferFox)
-#' output = SchaeferFox(Y = ex.SchaeferFox$yield,
-#'                      f = ex.SchaeferFox$effort)
+#' # load data
+#' data(trawl_fishery_Java)
+#'
+#' # run model
+#' output = SchaeferFox(Y = trawl_fishery_Java$yield,
+#'                      f = trawl_fishery_Java$effort)
 #' output[[2]]
 #'
 #' @details MSY
