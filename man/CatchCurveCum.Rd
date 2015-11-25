@@ -27,17 +27,32 @@ Not good for methods where the largest length groups are not represented fully (
 }
 \examples{
 \donttest{
+
 # Cumulative catch curve based on length frequency data
- data("ex.LengthCC")
+# load data
+ data(ex.LengthCC)
+
+# calculate cumulative catch
  cumulativeCatch <- rev(cumsum(rev(ex.LengthCC[,2])))
- output <- CatchCurveCum(midLengths = ex.LengthCC[,1],
-   cumCatch = cumulativeCatch, datatype = 'length', Linf = 23.1, K = 0.59)
+
+# run model
+ output <- CatchCurveCum(classes = ex.LengthCC[,1],
+   cumCatch = cumulativeCatch, datatype = "length", Linf = 23.1, K = 0.59)
+
+# investigate results
  output
+
 # based on age composition data
+# calculate cumulative catch
 cumulativeCatch <- rev(cumsum(rev(c(488,612,601,237,62.3,15.7,4.7,1.4))))
+
+# run model
 output <- CatchCurveCum(classes = c(0,1,2,3,4,5,6,7), cumulativeCatch,
    datatype = 'age')
+
+# investigate results
 output
+
 }
 
 }

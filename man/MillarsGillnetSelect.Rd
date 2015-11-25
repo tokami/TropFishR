@@ -2,15 +2,15 @@
 % Please edit documentation in R/MillarsGillnetSelect.R
 \name{MillarsGillnetSelect}
 \alias{MillarsGillnetSelect}
-\title{Millar'S gillnet selctivity}
+\title{Millar's gillnet selctivity}
 \usage{
 MillarsGillnetSelect(param, model = "normal_fixed", rel = NULL,
   plots = c(T, T), plotlens = NULL)
 }
 \arguments{
-\item{param}{A list with following parameters: midlengths of size classes
-(\code{$midLengths}), vector with meshSizes (\code{$meshSizes}),
-and a matrix with the number of individuals cuaght with each sized mesh
+\item{param}{A list with following parameters: vector with midlengths of size classes
+(\code{$midLengths}), vector with meshSizes in increasing order (\code{$meshSizes}),
+and a matrix with the number of individuals caught with each sized mesh
 (\code{$CatchPerNet_mat}).}
 
 \item{model}{A character string indicating which type fo model for the estimation
@@ -22,7 +22,8 @@ of the selection curves should be used: \code{"fixed_normal"}, \code{"normal"},
 \item{plotlens}{Vector of lengths for which values of relative retention are required}
 }
 \description{
-This function estimates the selecitvity of a gillnet from an experimental catch with two gillnets with different mesh sizes.
+This function estimates the selecitvity of a gillnet from an experimental
+   catch with two gillnets with different mesh sizes.
 }
 \details{
 This function estimates the fractions retained by each net (SNet1 & SNet2), the
@@ -36,19 +37,18 @@ This function estimates the fractions retained by each net (SNet1 & SNet2), the
   same time.
 }
 \examples{
-data(data_GillnetSelect3)
-output <- MillarsGillnetSelect(data_GillnetSelect3,model = "normal_fixed",
+data(data_MillarsGillnet)
+output <- MillarsGillnetSelect(data_MillarsGillnet, model = "normal_fixed",
    plotlens = NULL, rel = NULL)
 output
 plot(output)
 
 }
 \references{
-\itemize{
- \item Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
+Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
  using log-linear models. ICES Journal of Marine Science: Journal du Conseil, 54(3), 471-477.
- \item Holt, S. J. 1963. A method for determining gear selectivity and its application.
-ICNAF Special Publication, 5: 106–115.
-}
+
+ Holt, S. J. 1963. A method for determining gear selectivity and its application.
+ ICNAF Special Publication, 5: 106–115.
 }
 
