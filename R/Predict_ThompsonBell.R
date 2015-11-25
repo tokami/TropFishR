@@ -28,13 +28,19 @@
 #' @details better to treat last group always as a plus group..... For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 #'
 #' @references example 1 : Kuwait (Garcia and van zalinge 1982)
+#'   Millar, R. B., & Holst, R. (1997). Estimation of gillnet and hook selectivity using log-linear models. ICES Journal of Marine Science: Journal du Conseil, 54(3), 471-477.
 #'
 #' @export
+
+
+
 
 Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
                                  datatype, stock_size_1 = NA, plus.group = NA,
                                  FM_change = NA, fleet_mat = NA, fleet_unit = NA,
-                                 fleet_FM_change = NA, fleet_plot_name = NA){
+                                 fleet_FM_change = NA, fleet_plot_name = NA,
+                                 s_list = NA, Linf = NA, K = NA, t0 = 0, L50 = NA,
+                                 L75 = NA, Lc_change = NA){
 
   df.TB <- cbind(classes,mean_weight,value)
   df.TB <- as.data.frame(df.TB)
@@ -177,7 +183,7 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
           col='dodgerblue',lwd=1.6)
     par(oma = c(0, 0, 0, 0), new = TRUE)
     legend("top", c("value", "yield", "biomass"), xpd = TRUE,
-           horiz = TRUE, inset = c(0, -0.1), bty = "n",lty = 1,seg.len = 0.5,
+           horiz = TRUE, inset = c(0, -0.1), bty = "n",lty = 1,seg.len = 0.7,
           col = c('darkorange','dodgerblue','darkgreen'), cex = 0.8,lwd=2,
           text.width=0.3,x.intersp=0.3)
     plot1 <- recordPlot()
@@ -418,7 +424,154 @@ Predict_ThompsonBell <- function(classes, mean_weight, FM, Z, value = NA, Tr,
     }
 
     #if different Lcs are provided
-    if(!is.na(Lc_mat)){}
+    if(!is.na(Lc_mat)){ # instead of s_list the outcome of one of the other select functions? as a option or put values per hand
+
+      Lt <- Linf * (1- exp(-K * (df.TBpred$classes.num - t0)))
+
+      selec.TB <- function(s_list, Lt, Lc = NA){
+
+        if(s_list$selecType == 'knife_edge'){
+          if(is.na(Lc)) Lc <- s_list$Lc
+          sel <- rep(0, length(Lt))
+          sel[Lt >= Lc] <- 1
+
+        }else if(s_list$selecType == 'trawl_ogive'){
+          if(is.na(Lc)) Lc <- s_list$L50
+          L50 <-  Lc    #correct???
+          #and L75 ???   -> same relationship between L50 and L75 ? then:
+          L75 <-  Lc / (s_list$L50 / s_list$L75)
+
+          sel <- 1 / (1 + exp(- (Lt - L50)/
+                                ((2*(L75 - L50))/(log(0.75/(1-0.75))-
+                                                  log(0.25/(1-0.25))))))
+
+          #         #alternative:
+          #         sel <- 1 / (1 + exp(S1.TS - S2.TS * Lt))
+
+        }else if (s_list$selecType == "lognormal") {
+          sel <- (1/df.TBpred$classes.num) * exp(s_list$select_p1 +
+                                                   log(s_list$mesh_size/s_list$mesh_size1) -
+                                                   (s_list$select_p2^2/2) -
+                                                   (((log(df.TBpred$classes.num) -
+                                                        s_list$select_p1 -
+                                                        log(s_list$mesh_size/s_list$mesh_size1))^2)/
+                                                      (2 *s_list$select_p2^2)))
+        }
+        if (s_list$selecType == "normal_fixed") {
+          sel <- exp(-((df.TBpred$classes.num - s_list$mesh_size *
+                          s_list$select_p1)^2/
+                         (2 * s_list$select_p2^2)))
+        }
+        return(sel)
+      }
+
+
+
+      sel <- selec.TB(s_list,Lt)
+
+      sel.list <- list()
+      for(x19 in 1:length(Lc_change)){
+        sel.list[[x19]] <- selec.TB(s_list, Lt, Lc_change[x19])
+      }
+      Lc_mat <- do.call(cbind,sel.list)
+      colnames(Lc_mat) <- Lc_change
+
+      Lc_mat_FM <- Lc_mat * max(df.TBpred$FM,na.rm=TRUE)
+
+      #list with FM_Lc_matrices per FM_change
+      FM_Lc_com_mat.list <- list()
+      for(x20 in 1:length(colnames(Lc_mat_FM))){
+        FM_Lc_com_mat.list[[x20]] <- as.matrix(Lc_mat_FM[,x20]) %*% FM_change
+        colnames(FM_Lc_com_mat.list[[x20]]) <- FM_change
+      }
+
+
+
+      df.TBpred.FM_Lc_com_loop <- df.TBpred
+
+
+      ##### START HERE
+
+
+
+
+
+      pred.FM_Lc_com_res_loopC_list <- list()
+      pred.FM_Lc_com_res_loopY_list <- list()
+      pred.FM_Lc_com_res_loopB_list <- list()
+      pred.FM_Lc_com_res_loopV_list <- list()
+      for(x21 in 1:length(FM_Lc_com_mat.list)){  #loop for length of list == Lc changes
+        mati <- FM_Lc_com_mat.list[[x21]]
+
+        pred.FM_Lc_com_res_loop1_list <- list()
+        for(x22 in 1:dim(mati)[2]){
+
+          df.TBpred.FM_Lc_com_loop$FM <- mati[,x22]
+          df.TBpred.FM_Lc_com_loop$Z <- mati[,x22] + nM
+          res <- calc_TB.age(df.TBpred.FM_Lc_com_loop, unit.time, stock_size_1)
+          pred.FM_Lc_com_res_loop1_list[[x22]] <- res$totals
+        }
+        prev_mat <- do.call(rbind, pred.FM_Lc_com_res_loop1_list)
+        prev_matC <- prev_mat[,'total.catch']
+        prev_matY <- prev_mat[,'total.yield']
+        prev_matB <- prev_mat[,'mean.biomass']
+        prev_matV <- prev_mat[,'total.value']
+
+
+        pred.FM_Lc_com_res_loopC_list[[x21]] <- prev_matC
+        pred.FM_Lc_com_res_loopY_list[[x21]] <- prev_matY
+        pred.FM_Lc_com_res_loopB_list[[x21]] <- prev_matB
+        pred.FM_Lc_com_res_loopV_list[[x21]] <- prev_matV
+      }
+
+      #for catch
+      mat_FM_Lc_com.C <- do.call(rbind, pred.FM_Lc_com_res_loopC_list)
+      rownames(mat_FM_Lc_com.C) <- Lc_change
+      colnames(mat_FM_Lc_com.C) <- FM_change
+
+      #for yield
+      mat_FM_Lc_com.Y <- do.call(rbind, pred.FM_Lc_com_res_loopY_list)
+      rownames(mat_FM_Lc_com.Y) <- Lc_change
+      colnames(mat_FM_Lc_com.Y) <- FM_change
+
+      #for biomass
+      mat_FM_Lc_com.B <- do.call(rbind, pred.FM_Lc_com_res_loopB_list)
+      rownames(mat_FM_Lc_com.B) <- Lc_change
+      colnames(mat_FM_Lc_com.B) <- FM_change
+
+      #for value
+      mat_FM_Lc_com.V <- do.call(rbind, pred.FM_Lc_com_res_loopV_list)
+      rownames(mat_FM_Lc_com.V) <- Lc_change
+      colnames(mat_FM_Lc_com.V) <- FM_change
+
+
+
+      # transvers matrices for plotting (the opposite arrangement from book)
+      mat_FM_Lc_com.C <- t(mat_FM_Lc_com.C)
+      mat_FM_Lc_com.Y <- t(mat_FM_Lc_com.Y)
+      mat_FM_Lc_com.B <- t(mat_FM_Lc_com.B)
+      mat_FM_Lc_com.V <- t(mat_FM_Lc_com.V)
+
+      # colours for plot
+      pal <- colorRampPalette(c(
+        rgb(1,0.5,0.5), rgb(1,1,0.5), rgb(0.5,1,1), rgb(0.5,0.5,1)
+      ))
+
+
+      #plot
+      image(x = FM_change,
+            y = Lc_change,
+            z = mat_FM_Lc_com.Y, col=pal(100),
+            xlab = 'Fishing mortality', ylab = 'Lc')
+      contour(x = FM_change,
+              y = Lc_change,
+              z = mat_FM_Lc_com.Y, add=TRUE)
+      mtext("Yield", line=0.5, side=3)
+
+
+
+
+    }
   }
 
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#

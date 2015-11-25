@@ -21,11 +21,18 @@
 #' @param terminalF terminal fishing mortality
 #' @param a length-weight relationship coefficent (W = a * L^b)
 #' @param b length-weight relationship coefficent (W = a * L^b)
+#' #<<<<<<< HEAD
+#' @param algorithm Algorithm to use to solve for fishing mortality. The default
+#'   setting \code{algorithm="new"} uses \code{\link[stats]{optimize}},
+#'   while \code{algorithm="old"} uses the algorithm described by
+#'   Sparre and Venema (1998)
+#'   #=======
 #' @param algorithm Algorithm to use to solve for fishing mortality.
 #' The default setting \code{algorithm="new"} uses \code{\link[stats]{optimize}},
 #' while \code{algorithm="old"} uses the algorithm described by Sparre and Venema (1998)
 #'
 #' @details Cohort analysis
+#' #>>>>>>> fee2e7053ac7ad7814ff038e82ad42ac35f0c449
 #'
 #' @examples
 #' # Virtual Popuation Analysis with age-composition data
@@ -61,7 +68,8 @@
 #' @export
 #'
 VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
-                           a, b, catchCorFac = NA, Linf = NA, K = NA, t0 = 0, algorithm="new"){
+                           a, b, catchCorFac = NA, Linf = NA, K = NA, t0 = 0,
+                algorithm="new"){
 
   # Error message if catch and age do not have same length
   if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
@@ -207,13 +215,13 @@ VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
       max_FM <- ceiling(max(df.VPA$FM,na.rm=TRUE))
       max_clas <- max(df.VPA$classes.num,na.rm=TRUE)
       par(new = FALSE)
-      mids <- barplot(df.VPAnew, xlab="",
+      mids <- barplot(df.VPAnew, xlab="",ann=TRUE,
                       ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur))
 
       #create VPA plot
       par(mar = c(5, 4, 4, 4) + 0.3)
       barplot(df.VPAnew,col=c('darkgreen','purple','yellow'),
-              xlab = "Age", ylab = "Population",
+              xlab = "Age", ylab = "Population",xlim=c(0,ceiling(max(mids))),
               ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur))
       legend(x=mids[(which(df.VPA$classes.num == max_clas)-2)],
              y = ceiling(max_sur/dim_sur)*dim_sur,
@@ -221,10 +229,11 @@ VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
              col = c('darkgreen','purple','yellow','red'),xpd = TRUE,
              pch=c(rep(15,3),NA), lty = c(NA,NA,NA,1), lwd=2,seg.len = 0.3,
              pt.cex = 2, x.intersp = c(0.3,0.3,0.3,0.3),merge=TRUE,
-             y.intersp = 0.2, box.lty=0,cex=0.8,xjust = 0,yjust = 0.8)
-      par(new = TRUE)
-      plot(df.VPA$classes.num, df.VPA$FM, type = "l", col='red',lwd=2,
-           axes = FALSE, bty = "n", xlab = "", ylab = "")
+             y.intersp = 0.6, box.lty=0,cex=0.8,xjust = 0,yjust = 0.8)
+      par(new = TRUE,mar = c(5, 4, 4, 4) + 0.3)
+      plot(mids, df.VPA$FM, col='red',xlim=c(0,ceiling(max(mids))),
+           type = "n",axes = FALSE, bty = "n", xlab = "", ylab = "",ann=TRUE)
+      lines(x=mids,y=df.VPA$FM,col='red',lwd=2)
       usr <- par("usr")
       par(usr=c(usr[1:2], 0, max_FM))
       axis(4,at=pretty(c(0,max_FM)))
@@ -341,7 +350,7 @@ VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
       #create VPA plot
       par(mar = c(5, 4, 4, 4) + 0.3)
       barplot(df.VPAnew,col=c('darkgreen','purple','yellow'),
-              xlab = "Age", ylab = "Population",
+              xlab = "Age", ylab = "Population",xlim=c(0,ceiling(max(mids))),
               ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur))
       legend(x=mids[(which(df.VPA$classes.num == max_clas)-2)],
              y = ceiling(max_sur/dim_sur)*dim_sur,
@@ -349,10 +358,11 @@ VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
              col = c('darkgreen','purple','yellow','red'),xpd = TRUE,
              pch=c(rep(15,3),NA), lty = c(NA,NA,NA,1), lwd=2,seg.len = 0.3,
              pt.cex = 2, x.intersp = c(0.3,0.3,0.3,0.3),merge=TRUE,
-             y.intersp = 0.2, box.lty=0,cex=0.8,xjust = 0,yjust = 0.8)
-      par(new = TRUE)
-      plot(df.VPA$classes.num, df.VPA$FM, type = "l", col='red',lwd=2,
-           axes = FALSE, bty = "n", xlab = "", ylab = "")
+             y.intersp = 0.6, box.lty=0,cex=0.8,xjust = 0,yjust = 0.8)
+      par(new = TRUE,mar = c(5, 4, 4, 4) + 0.3)
+      plot(mids, df.VPA$FM, col='red',xlim=c(0,ceiling(max(mids))),
+           type = "n",axes = FALSE, bty = "n", xlab = "", ylab = "",ann=TRUE)
+      lines(x=mids,y=df.VPA$FM,col='red',lwd=2)
       usr <- par("usr")
       par(usr=c(usr[1:2], 0, max_FM))
       axis(4,at=pretty(c(0,max_FM)))
@@ -498,7 +508,7 @@ VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
     #create VPA plot
     par(mar = c(5, 4, 4, 4) + 0.3)
     barplot(df.VPAnew,col=c('darkgreen','purple','yellow'),
-            xlab = "Midlength [cm]", ylab = "Population",
+            xlab = "Midlength [cm]", ylab = "Population",xlim=c(0,ceiling(max(mids))),
             ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur))
     legend(x=mids[(which(df.VPA$classes.num == max_clas)-3)],
            y = (ceiling(max_sur/dim_sur)*dim_sur),
@@ -506,10 +516,11 @@ VPA <- function(classes, catch, datatype, analysis.type, M, terminalF,
            col = c('darkgreen','purple','yellow','red'),xpd = TRUE,
            pch=c(rep(15,3),NA), lty = c(NA,NA,NA,1), lwd=2,seg.len = 0.3,
            pt.cex = 2, x.intersp = c(0.3,0.3,0.3,0.3),merge=TRUE,
-           y.intersp = 0.2, box.lty=0,cex=0.8,xjust = 0,yjust = 0.8)
-    par(new = TRUE)
-    plot(df.VPA$classes.num, df.VPA$FM, type = "l", col='red',lwd=2,
-         axes = FALSE, bty = "n", xlab = "", ylab = "")
+           y.intersp = 0.6, box.lty=0,cex=0.8,xjust = 0,yjust = 0.8)
+    par(new = TRUE,mar = c(5, 4, 4, 4) + 0.3)
+    plot(mids, df.VPA$FM, col='red',xlim=c(0,ceiling(max(mids))),
+         type = "n",axes = FALSE, bty = "n", xlab = "", ylab = "",ann=TRUE)
+    lines(x=mids,y=df.VPA$FM,col='red',lwd=2)
     usr <- par("usr")
     par(usr=c(usr[1:2], 0, max_FM))
     axis(4,at=pretty(c(0,max_FM)))

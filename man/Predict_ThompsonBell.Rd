@@ -6,7 +6,12 @@
 \usage{
 Predict_ThompsonBell(classes, mean_weight, FM, Z, value = NA, Tr, datatype,
   stock_size_1 = NA, plus.group = NA, FM_change = NA, fleet_mat = NA,
+<<<<<<< HEAD
   fleet_unit = NA, fleet_FM_change = NA, fleet_plot_name = NA)
+=======
+  fleet_unit = NA, fleet_FM_change = NA, fleet_plot_name = NA,
+  s_list = NA, Linf = NA, K = NA, t0 = 0, L50 = NA, L75 = NA)
+>>>>>>> 1536cdd9b2668bf517ddbb56e372d9add9ffb9d2
 }
 \arguments{
 \item{classes}{Midpoints of the length class as vector (length frequency data) or ages as vector (age composition data).}
@@ -54,5 +59,6 @@ better to treat last group always as a plus group..... For variable parameter sy
 }
 \references{
 example 1 : Kuwait (Garcia and van zalinge 1982)
+  Millar, R. B., & Holst, R. (1997). Estimation of gillnet and hook selectivity using log-linear models. ICES Journal of Marine Science: Journal du Conseil, 54(3), 471-477.
 }
 

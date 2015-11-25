@@ -7,6 +7,8 @@ Author: Tobias Mildenberger, Marc Taylor
 Maintainer: Tobias Mildenberger <joslas@web.de>
 Description: Includes fisheries models based on the the FAO Manual "Introduction
     to tropical fish stock assessment" by P.Sparre and S.C. Venema
+Imports:
+    msm
 License: MIT + file LICENSE
 LazyData: TRUE
 URL: https://github.com/tokami/TropFishR
