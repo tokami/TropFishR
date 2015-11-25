@@ -10,19 +10,35 @@
 #' @param PowellWetherall A logical parameter indicating if the Powell Wetherall method should be applied to length frequency data.
 #'
 #' @examples
+#' # load data
 #' data("ex.BevertonHoltsZ")
+#'
+#' # run model
 #' with(ex.BevertonHoltsZ, BevertonHoltsZ(midLength,
-#' catch1960, datatype="length", Linf = 100, K = 0.3))
+#'  catch1960, datatype="length", Linf = 100, K = 0.3))
+#'
+#' # load data
 #' data("ex.ageBevertonHoltsZ")
+#'
+#' #run model
 #' with(ex.ageBevertonHoltsZ,BevertonHoltsZ(midAge,
-#' catch1960,datatype = 'age'))
+#'  catch1960,datatype = 'age'))
+#'
 #' \donttest{
+#'
+#' # load data
 #' data("ex.PowellWetherall")
+#'
+#' # run model
 #' with(ex.PowellWetherall, BevertonHoltsZ(midLength,
-#' catch, datatype="length", PowellWetherall = T))
+#'   catch, datatype="length", PowellWetherall = T))
+#'
+#' # load data
 #' data("ex.PowellWetherall2")
+#'
+#' # run model
 #' with(ex.PowellWetherall2, BevertonHoltsZ(midLength,
-#' catch, datatype="length", PowellWetherall = T))
+#'   catch, datatype="length", PowellWetherall = T))
 #' }
 #'
 #' @details Lprime or tprime will be identified via the first length (or age) class inserted.For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
