@@ -15,7 +15,7 @@
 #' \donttest{
 #' # Variable paramter system
 #' # based on length frequency data
-#' data("ex.LengthCC")
+#' data("ex.LengthCC")    ### == goatfish
 #'
 #' output <- with(ex.LengthCC,CatchCurve(ex.LengthCC[,1], ex.LengthCC[,2],
 #' Linf = 23.1, K = 0.59, datatype = 'length'))
@@ -24,7 +24,7 @@
 #'
 #'
 #' # based on age composition data
-#' data("ex.CatchCurve")
+#' data("ex.CatchCurve")    #### == whiting
 #' output <- with(ex.CatchCurve,CatchCurve(age, ex.CatchCurve[,2],datatype = 'age'))
 #' output
 #'

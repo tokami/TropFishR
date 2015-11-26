@@ -1,25 +1,16 @@
 #' @name ex.CatchCurve
-#' @title Example dataset of length for use in CatchCurve
 #'
+#' @title Data of North sea whiting \emph{Merlangius merlangus} caught during the period 1974-1980.
 #'
-#' @description First sentence. second sentence.
-#'
-#' \itemize{
-#'   \item bla1. Dateframe of lon/lat coordinates corresponding to columns of sst$field (5 deg resolution)
-#'   \item bla2. Vector of monthly date values corresponding to rows of sst$field
-#'   \item bla3. Matrix of sea level pressure values by month and lon/lat position.
-#' }
+#' @description Data of North sea whiting \emph{Merlangius merlangus} caught during the period 1974-1980.
+#'   Can be used for \code{\link{CatchCurve}} and \code{\link{VPA}}
 #'
 #' @docType data
-#' @format A list consisting of: 1. a dataframe for lon/lat positions, 2. a vector of
-#' monthly date values, and 3. a matrix of sst anomaly values by month and lon/lat position
-#' (1906 rows, 264 columns)
-#' @source \url{http://www.esrl.noaa.gov/psd/data/gridded/data.kaplan_sst.html}
+#' @format A list consisting of: 1. a vector with age groups, 2. a vector or matrix with catches
+#' @source ICES, 1981. Report of the \emph{Ad hoc} working group on the use of effort data in assessment, Copenhagen, 2-6 March 1981. ICES C.M. 1981/G:5 (mimeo)
 #' @usage data(ex.CatchCurve)
-#' @keywords datasets length
+#' @keywords dataset catch
 #' @examples
-#'
-#' ### Ex 1. Plot of single month
 #' data(ex.CatchCurve)
 #' head(ex.CatchCurve)
 #'

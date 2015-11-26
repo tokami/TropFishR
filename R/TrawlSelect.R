@@ -7,7 +7,7 @@
 #'
 #' @examples
 #' # load data
-#' data(data_TrawlSelect)
+#' data(data_TrawlSelect)   #### == bream (list)
 #'
 #' # run model
 #' output <- TrawlSelect(data_TrawlSelect)

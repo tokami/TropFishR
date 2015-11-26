@@ -8,7 +8,7 @@
 #'
 #' @examples
 #' \donttest{
-#'  data("ex.Bhattacharya")
+#'  data("ex.Bhattacharya")   ### == synLFQ1 (list) with catch_mat single columns have to be summed up
 #'  output = with(Bhattacharya(midLengths,catch))
 #'  output
 #' }

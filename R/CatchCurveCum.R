@@ -16,7 +16,7 @@
 #'
 #' # Cumulative catch curve based on length frequency data
 #' # load data
-#'  data(ex.LengthCC)
+#'  data(ex.LengthCC)  ### == goatfish
 #'
 #' # calculate cumulative catch
 #'  cumulativeCatch <- rev(cumsum(rev(ex.LengthCC[,2])))

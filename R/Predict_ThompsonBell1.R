@@ -13,7 +13,7 @@
 #'
 #' # age-based yield per recruit model
 #' # load data
-#' data("data_Predict_ThompsonBell")
+#' data("data_Predict_ThompsonBell")   #### == shrimps but: M instead of Z !!!!
 #'
 #' # run model
 #' # option 1: without plus group

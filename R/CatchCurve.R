@@ -16,7 +16,7 @@
 #' # Variable paramter system
 #' # based on length frequency data
 #' # load data
-#' data("ex.LengthCC")
+#' data("ex.LengthCC")   #### == goatfish (list)
 #'
 #' # run model
 #' output <- with(ex.LengthCC,CatchCurve(classes = ex.LengthCC[,1], catch = ex.LengthCC[,2],
@@ -27,7 +27,7 @@
 #'
 #' # based on age composition data
 #' # load data
-#' data("ex.CatchCurve")
+#' data("ex.CatchCurve")   ### == whiting
 #'
 #' # run model
 #' output <- with(ex.CatchCurve,CatchCurve(age, ex.CatchCurve[,2],datatype = 'age'))
