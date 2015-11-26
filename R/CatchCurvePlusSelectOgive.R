@@ -1,6 +1,8 @@
 #' @title Catch curve with selection ogive
-#
-#' @description  This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.
+#'
+#' @description  This is a function to calculate the total mortality (Z) from length
+#'    composition data via the length converted catch curve or from age at length data
+#'    with catch curve.
 #'
 #' @param classes Midpoints of the length class as vector (length frequency data) or ages as vector (age composition data).
 #' @param catch Catch as vector, or a matrix with catches of subsequent years if the catch curve with constat time intervals should be applied.
@@ -110,7 +112,7 @@ CatchCurve <- function(classes, catch, datatype, Linf = NULL, K = NULL, t0 = 0){
                x1=df.CC$classes.num[cutter[2]],
                y1=df.CC$lnC[cutter[2]],
                col="blue",lwd = 1.7)
-      mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"±",
+      mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"+/-",
                                    round(SE_Z_lm1,2)), col = 'blue')
       plot1 = recordPlot()
 
@@ -118,7 +120,7 @@ CatchCurve <- function(classes, catch, datatype, Linf = NULL, K = NULL, t0 = 0){
       #save all in list
       results.CC <- list()
       results.CC[[1]] <- df.CC
-      results.CC[[2]] <- paste("Z =",round(Z_lm1,2),"±", round(SE_Z_lm1,2))
+      results.CC[[2]] <- paste("Z =",round(Z_lm1,2),"+/-", round(SE_Z_lm1,2))
       results.CC[[3]] <- plot1
       names(results.CC) <- c("Dataframe","Total_mortality","Plot")
 
@@ -192,7 +194,7 @@ CatchCurve <- function(classes, catch, datatype, Linf = NULL, K = NULL, t0 = 0){
                x1=df.CC$t_midL[cutter[2]],
                y1=df.CC$lnC_dt[cutter[2]],
                col="blue",lwd = 1.7)
-      mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"±",
+      mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"+/-",
                                    round(SE_Z_lm1,2)), col = 'blue')
       plot1 = recordPlot()
 
@@ -200,7 +202,7 @@ CatchCurve <- function(classes, catch, datatype, Linf = NULL, K = NULL, t0 = 0){
       #save all in list
       results.CC <- list()
       results.CC[[1]] <- df.CC
-      results.CC[[2]] <- paste("Z =",round(Z_lm1,2),"±", round(SE_Z_lm1,2))
+      results.CC[[2]] <- paste("Z =",round(Z_lm1,2),"+/-", round(SE_Z_lm1,2))
       results.CC[[3]] <- plot1
       names(results.CC) <- c("Dataframe","Total_mortality","Plot")
 
@@ -260,7 +262,7 @@ CatchCurve <- function(classes, catch, datatype, Linf = NULL, K = NULL, t0 = 0){
                x1=df.CC$tplusdt_2[cutter[2]],
                y1=df.CC$lnC_dt[cutter[2]],
                col="blue",lwd = 1.7)
-      mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"±",
+      mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"+/-",
                                    round(SE_Z_lm1,2)), col = 'blue')
       plot1 = recordPlot()
 
@@ -268,7 +270,7 @@ CatchCurve <- function(classes, catch, datatype, Linf = NULL, K = NULL, t0 = 0){
       #save all in list
       results.CC <- list()
       results.CC[[1]] <- df.CC
-      results.CC[[2]] <- paste("Z =",round(Z_lm1,2),"±", round(SE_Z_lm1,2))
+      results.CC[[2]] <- paste("Z =",round(Z_lm1,2),"+/-", round(SE_Z_lm1,2))
       results.CC[[3]] <- plot1
       names(results.CC) <- c("Dataframe","Total_mortality","Plot")
 

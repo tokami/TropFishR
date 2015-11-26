@@ -26,11 +26,11 @@ This function estimates the selecitvity of a gillnet from an experimental
    catch with two gillnets with different mesh sizes.
 }
 \details{
-This function estimates the fractions retained by each net (SNet1 & SNet2), the
+This function estimates the fractions retained by each net (SNet1 and SNet2), the
   optimum lengths for each net, the selection factor (SF), and the standard deviation
   of the factor (stand.dev).
   Assumptions of this method are, that (i) the optimum length Lm is proportional to the mesh
-  size (Lm = SF * m), (ii) the selection curves are normally distributed with a common
+  size (Lm equals SF times m), (ii) the selection curves are normally distributed with a common
   standard deviation, (iii) the nets have the same fishing power (same dimensions and material).
   Requirements for the experimental set-up are: selection curves corresponding to the two
   mesh sizes have to overlap, and the nets have to be set in the same area, during the
@@ -56,6 +56,6 @@ Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
  using log-linear models. ICES Journal of Marine Science: Journal du Conseil, 54(3), 471-477.
 
  Holt, S. J. 1963. A method for determining gear selectivity and its application.
- ICNAF Special Publication, 5: 106–115.
+ ICNAF Special Publication, 5: 106-115.
 }
 

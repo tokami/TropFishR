@@ -12,7 +12,8 @@ Bhattacharya(midLengths, catch)
 \item{catch}{Catch per sampling time as matrix or the total catch as vector.}
 }
 \description{
-Separating normal distributions of several cohorts in distinct distributions representing cohorts.
+Separating normal distributions of several cohorts in distinct
+  distributions representing cohorts. Second sentence.
 }
 \details{
 Bhattacharya

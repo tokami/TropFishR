@@ -12,7 +12,9 @@ SchaeferFox(Y, f)
 \item{f}{Fishing effort as vector}
 }
 \description{
-Schaefer and Fox models are examples of so called surplus production models, and are used to calculate MSY and BMSY and so on.
+Schaefer and Fox models are examples of so called surplus production
+   models, and are used to calculate MSY and BMSY and so on.
+   First sentence. second sentence.
 }
 \details{
 MSY

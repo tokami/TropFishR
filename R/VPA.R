@@ -1,6 +1,6 @@
 #' @title Virtual Population Analysis (VPA)
 #'
-#' @description Virtual Population Analysis
+#' @description Virtual Population Analysis. First sentence. second sentence.
 #'
 #' @param classes Midpoints of the length class as vector (length frequency
 #'   data) or ages as vector (age composition data).

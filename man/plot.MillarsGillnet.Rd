@@ -4,20 +4,23 @@
 \alias{plot.MillarsGillnet}
 \title{Millar's gillnet selectivity plot}
 \usage{
-\method{plot}{MillarsGillnet}(estim, ret_dev = c(T, T), cex = 1,
-  title = "Deviance residuals")
+\method{plot}{MillarsGillnet}(x, ret_dev = c(T, T), cex = 1,
+  title = "Deviance residuals", ...)
 }
 \arguments{
-\item{estim}{A list of the class "GillnetSelect" containing the results of the gillnet selectivity function.}
+\item{x}{A list of the class "GillnetSelect" containing the results of the gillnet selectivity function.}
 
 \item{ret_dev}{draw both plots? Default = c(T,T)}
 
 \item{cex}{thickness of points Default = 1}
 
 \item{title}{Title of plot Default = "Deviance residuals"}
+
+\item{...}{normal parameter options from plot function}
 }
 \description{
-This function plots the selectivity estimates of the function \code{\link{GillnetSelect}}.
+This function plots the selectivity estimates of the function
+   \code{\link{GillnetSelect}}. First sentence. second sentence.
 }
 \details{
 A function to plot the results of the gillnet selectivity estimation.

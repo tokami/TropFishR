@@ -45,7 +45,7 @@ while \code{algorithm="old"} uses the algorithm described by
 Sparre and Venema (1998)}
 }
 \description{
-Virtual Population Analysis
+Virtual Population Analysis. First sentence. second sentence.
 }
 \details{
 Cohort analysis

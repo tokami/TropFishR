@@ -1,8 +1,10 @@
 #' @title Gillnet selectivity plot
 #
-#' @description  This function plots the selectivity estimates of the function \code{\link{GillnetSelect}}.
+#' @description  This function plots the selectivity estimates of the
+#'   function \code{\link{GillnetSelect}}. Second sentence.
 #'
-#' @param estim A list of the class "GillnetSelect" containing the results of the gillnet selectivity function.
+#' @param x A list of the class "GillnetSelect" containing the results of the gillnet selectivity function.
+#' @param ... normal parameters from plot function
 #'
 #' @examples
 #' # load data
@@ -22,8 +24,8 @@
 #'
 #' @export
 
-plot.GillnetSelect <- function(estim){
-  res <- estim
+plot.GillnetSelect <- function(x,...){
+  res <- x
 
   classes.num <- res$classes.num
   numNet1 <- res$numNet1

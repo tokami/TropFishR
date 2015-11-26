@@ -14,7 +14,7 @@ monthly date values, and 3. a matrix of sst anomaly values by month and lon/lat 
 data(ex.Z_CPUE)
 }
 \description{
-from exercise 4.3
+from exercise 4.3. First sentence. second sentence.
 
 \itemize{
   \item bla1. Dateframe of lon/lat coordinates corresponding to columns of sst$field (5 deg resolution)

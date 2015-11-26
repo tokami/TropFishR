@@ -1,6 +1,8 @@
 #' @title Beverton and Holt's prediction model
 #
-#' @description  This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.
+#' @description  This is a function to calculate the total mortality (Z) from
+#'    length composition data via the length converted catch curve or from age at
+#'    length data with catch curve.
 #'
 #' @param datatype Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively
 #' @param W_Linf Infinite length (or weight) for investigated species in cm [cm] or gramm [g].

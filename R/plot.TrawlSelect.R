@@ -1,8 +1,10 @@
 #' @title Trawl net selectivity plot
 #
 #' @description  This function estimates the selecitvity of trawl nets.
+#'    First sentence. second sentence.
 #'
-#' @param estim results of trawl select function
+#' @param x results of trawl select function
+#' @param ... parameter of plot function
 #'
 #' @examples
 #' data(data_TrawlSelect)
@@ -17,8 +19,8 @@
 #' @export
 
 
-plot.TrawlSelect <- function(estim){
-  res <- estim
+plot.TrawlSelect <- function(x,...){
+  res <- x
 
   classes.num <- res$classes.num
   SLobs <- res$SLobs

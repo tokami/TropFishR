@@ -16,7 +16,8 @@ PaulysM(Linf, K, Temp, schooling = FALSE)
 \item{schooling}{Logical parameter accounting for schooling behaviour, according to Pauly (1983). Default is FALSE.}
 }
 \description{
-Pauly's empirical formula to calculate natural mortality (M)
+Pauly's empirical formula to calculate natural mortality (M).
+   First sentence. second sentence.
 }
 \details{
 Pauly's empirical formula to calculate natural mortality (M). If accounting for schooling behaviour M is multiplied by 0.8 according to Pauly (1983).

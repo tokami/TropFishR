@@ -7,10 +7,12 @@
 RikhterEfanovsM(Tm50)
 }
 \arguments{
-\item{Tm50}{Age when 50\% of the population is mature [year] ("the age of massive maturation")}
+\item{Tm50}{Age when 50\% of the population is mature [year]
+("the age of massive maturation")}
 }
 \description{
-Rikhter and Efanov's formula to calculate natural mortality (M)
+Rikhter and Efanov's formula to calculate natural mortality (M).
+   First sentence. second sentence.
 }
 \details{
 Rikhter and Efanov's formula to calculate natural mortality (M).

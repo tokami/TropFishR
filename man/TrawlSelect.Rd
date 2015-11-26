@@ -11,6 +11,7 @@ TrawlSelect(param)
 }
 \description{
 This function estimates the selecitvity of trawl nets.
+   First sentence. second sentence.
 }
 \details{
 To calculate selection factor (SF), L25, L50 and L75 for trawl nets /fisheries.

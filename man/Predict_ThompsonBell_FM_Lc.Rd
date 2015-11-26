@@ -29,7 +29,9 @@ Predict_ThompsonBell_FM_Lc(param, FM_change, stock_size_1 = NA,
 \item{Lc_change}{vector with ascending Lc values}
 }
 \description{
-This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.
+This is a function to calculate the total mortality (Z) from
+   length composition data via the length converted catch curve or from age at
+   length data with catch curve.
 }
 \details{
 better to treat last group always as a plus group..... For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.

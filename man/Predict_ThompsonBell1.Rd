@@ -17,7 +17,9 @@ Predict_ThompsonBell1(param, unit.time = "year", stock_size_1 = NA,
 \item{plus.group}{Indicates age/length group, which should be turned into a plus group (i.e. all groups above are comprised in one group)}
 }
 \description{
-This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.
+This is a function to calculate the total mortality (Z) from
+   length composition data via the length converted catch curve or from age at
+   length data with catch curve.
 }
 \details{
 better to treat last group always as a plus group..... For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.

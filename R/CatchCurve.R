@@ -1,11 +1,13 @@
-#' @title Catch curve
-#
-#' @description  This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.
+#' @title catch curve
+#'
+#' @description  This is a function to calculate the total mortality (Z) from length
+#'   composition data via the length converted catch curve or from age at length data
+#'   with catch curve.
 #'
 #' @param classes Midpoints of the length class as vector (length frequency data) or ages as vector (age composition data).
 #' @param catch The catch as vector, or a matrix with catches of subsequent years if the catch curve with constat time intervals should be applied.
 #' @param datatype Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively
-#' @param Linf Infinite length for investigated species in cm [cm].
+#' @param Linf Infinite length for investigated species in cm [cm
 #' @param K Growth coefficent for investigated species per year [1/year].
 #' @param t0 Theoretical time zero, at which individuals of this species hatch (default: 0).
 #'
@@ -38,14 +40,19 @@
 #' output
 #'  }
 #'
-#' @details For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
+#' @details For variable parameter system vectors are reuqired for constant parameter
+#'   systems matrices or data.frames have to be inserted. or vectors The length converted
+#'   linearised catch curve is used to calculate the total mortality (Z). This function
+#'   includes a so called locator function, which asks you to choose points from a graph
+#'   manually. Based on these points the regression line is calculated.
 #'
 #' @references
-#' Sparre ??? data from ICES 1981a
+#'  Sparre
+#'  data from ICES 1981a
 #'
 #' @export
 
-CatchCurve <- function(classes, catch, datatype, Linf = NULL, K = NULL, t0 = 0){
+CatchCurve <- function(classes, catch, datatype, Linf = NA, K = NA, t0 = 0){
 
   # Error message if catch and age do not have same length
   if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
@@ -117,7 +124,7 @@ CatchCurve <- function(classes, catch, datatype, Linf = NULL, K = NULL, t0 = 0){
                x1=df.CC$classes.num[cutter[2]],
                y1=df.CC$lnC[cutter[2]],
                col="blue",lwd = 1.7)
-      mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"±",
+      mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"+/-",
                                    round(SE_Z_lm1,2)), col = 'blue')
       plot1 = recordPlot()
 
@@ -125,7 +132,7 @@ CatchCurve <- function(classes, catch, datatype, Linf = NULL, K = NULL, t0 = 0){
       #save all in list
       results.CC <- list()
       results.CC[[1]] <- df.CC
-      results.CC[[2]] <- paste("Z =",round(Z_lm1,2),"±", round(SE_Z_lm1,2))
+      results.CC[[2]] <- paste("Z =",round(Z_lm1,2),"+/-", round(SE_Z_lm1,2))
       results.CC[[3]] <- plot1
       names(results.CC) <- c("Dataframe","Total_mortality","Plot")
 
@@ -141,7 +148,7 @@ CatchCurve <- function(classes, catch, datatype, Linf = NULL, K = NULL, t0 = 0){
     #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
     #      Length converted catch curve     #
     #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-    if(datatype == 'length' & (is.null(Linf) | is.null(K))) stop("You need to assign values to Linf and K for the Catch curve based on length frequency data!")
+    if(datatype == 'length' & (is.na(Linf) | is.na(K))) stop("You need to assign values to Linf and K for the Catch curve based on length frequency data!")
     if(datatype == 'length'){
 
       #calculate size class interval
@@ -199,7 +206,7 @@ CatchCurve <- function(classes, catch, datatype, Linf = NULL, K = NULL, t0 = 0){
                x1=df.CC$t_midL[cutter[2]],
                y1=df.CC$lnC_dt[cutter[2]],
                col="blue",lwd = 1.7)
-      mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"±",
+      mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"+/-",
                                    round(SE_Z_lm1,2)), col = 'blue')
       plot1 = recordPlot()
 
@@ -207,7 +214,7 @@ CatchCurve <- function(classes, catch, datatype, Linf = NULL, K = NULL, t0 = 0){
       #save all in list
       results.CC <- list()
       results.CC[[1]] <- df.CC
-      results.CC[[2]] <- paste("Z =",round(Z_lm1,2),"±", round(SE_Z_lm1,2))
+      results.CC[[2]] <- paste("Z =",round(Z_lm1,2),"+/-", round(SE_Z_lm1,2))
       results.CC[[3]] <- plot1
       names(results.CC) <- c("Dataframe","Total_mortality","Plot")
 
@@ -267,7 +274,7 @@ CatchCurve <- function(classes, catch, datatype, Linf = NULL, K = NULL, t0 = 0){
                x1=df.CC$tplusdt_2[cutter[2]],
                y1=df.CC$lnC_dt[cutter[2]],
                col="blue",lwd = 1.7)
-      mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"±",
+      mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"+/-",
                                    round(SE_Z_lm1,2)), col = 'blue')
       plot1 = recordPlot()
 
@@ -275,7 +282,7 @@ CatchCurve <- function(classes, catch, datatype, Linf = NULL, K = NULL, t0 = 0){
       #save all in list
       results.CC <- list()
       results.CC[[1]] <- df.CC
-      results.CC[[2]] <- paste("Z =",round(Z_lm1,2),"±", round(SE_Z_lm1,2))
+      results.CC[[2]] <- paste("Z =",round(Z_lm1,2),"+/-", round(SE_Z_lm1,2))
       results.CC[[3]] <- plot1
       names(results.CC) <- c("Dataframe","Total_mortality","Plot")
 

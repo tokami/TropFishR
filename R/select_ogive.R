@@ -1,6 +1,7 @@
 #' @title Selectivity function
 #
-#' @description  This function estimates the selecitvity
+#' @description  This function estimates the selecitvity.
+#'    First sentence. second sentence.
 #'
 #' @param s_list list of selectivity parameters
 #' @param classes age or size classes

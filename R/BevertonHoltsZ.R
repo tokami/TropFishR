@@ -1,6 +1,8 @@
 #' @title Beverton and Holt's Z-Equations
 #
-#' @description  This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.
+#' @description  This is a function to calculate the total mortality (Z) from length
+#'   composition data via the length converted catch curve or from age at length data
+#'   with catch curve.
 #'
 #' @param classes Midpoints of the length class as vector (length frequency data) or ages as vector (age composition data).
 #' @param catch Catch as vector, or a matrix with catches of subsequent years if the catch curve with constat time intervals should be applied.

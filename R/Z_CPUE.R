@@ -1,6 +1,7 @@
 #' @title Methods to calculate Z from CPUE data
 #'
 #' @description Method to estimate the total mortality (Z) from CPUE data.
+#'    First sentence. second sentence.
 #'
 #' @param cohort bla bla
 #' @param age bla bla

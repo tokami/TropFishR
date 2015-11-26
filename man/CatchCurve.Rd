@@ -9,17 +9,17 @@ CatchCurve(classes, catch, datatype, Linf = NULL, K = NULL, t0 = 0)
 CatchCurve(classes, catch, datatype, Linf = NULL, K = NULL, t0 = 0)
 }
 \arguments{
-\item{classes}{Midpoints of the length class as vector (length frequency data) or ages as vector (age composition data).}
+\item{classes}{Midpoints of the length class as vector}
 
-\item{catch}{The catch as vector, or a matrix with catches of subsequent years if the catch curve with constat time intervals should be applied.}
+\item{catch}{Catch per sampling time as matrix or the total catch as vector.}
 
-\item{datatype}{Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively}
+\item{datatype}{bla}
 
-\item{Linf}{Infinite length for investigated species in cm [cm].}
+\item{Linf}{bla}
 
-\item{K}{Growth coefficent for investigated species per year [1/year].}
+\item{K}{bla}
 
-\item{t0}{Theoretical time zero, at which individuals of this species hatch (default: 0).}
+\item{t0}{bla}
 
 \item{classes}{Midpoints of the length class as vector (length frequency data) or ages as vector (age composition data).}
 
@@ -34,44 +34,19 @@ CatchCurve(classes, catch, datatype, Linf = NULL, K = NULL, t0 = 0)
 \item{t0}{Theoretical time zero, at which individuals of this species hatch (default: 0).}
 }
 \description{
-This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.
+Separating normal distributions of several cohorts in distinct
+  distributions representing cohorts. Second sentence.
 
-This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.
+This is a function to calculate the total mortality (Z) from length
+   composition data via the length converted catch curve or from age at length data
+   with catch curve.
 }
 \details{
-For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
+Bhattacharya
 
 For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 }
 \examples{
-\donttest{
-# Variable paramter system
-# based on length frequency data
-# load data
-data("ex.LengthCC")
-
-# run model
-output <- with(ex.LengthCC,CatchCurve(classes = ex.LengthCC[,1], catch = ex.LengthCC[,2],
-  Linf = 23.1, K = 0.59, datatype = 'length'))
-
-# investigate results
-output
-
-# based on age composition data
-# load data
-data("ex.CatchCurve")
-
-# run model
-output <- with(ex.CatchCurve,CatchCurve(age, ex.CatchCurve[,2],datatype = 'age'))
-
-output
-
-# Constant parameter system based on age composition data
-output <- with(ex.CatchCurve,CatchCurve(age, ex.CatchCurve[,2:8],datatype = 'age'))
-
-output
- }
-
 \donttest{
 # Variable paramter system
 # based on length frequency data
@@ -95,7 +70,7 @@ output
 
 }
 \references{
-Sparre ??? data from ICES 1981a
+Jones Sparre
 
 Sparre ??? data from ICES 1981a
 }

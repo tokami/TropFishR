@@ -4,13 +4,16 @@
 \alias{plot.TrawlSelect}
 \title{Trawl net selectivity plot}
 \usage{
-\method{plot}{TrawlSelect}(estim)
+\method{plot}{TrawlSelect}(x, ...)
 }
 \arguments{
-\item{estim}{results of trawl select function}
+\item{x}{results of trawl select function}
+
+\item{...}{parameter of plot function}
 }
 \description{
 This function estimates the selecitvity of trawl nets.
+   First sentence. second sentence.
 }
 \details{
 To calculate selection factor (SF), L25, L50 and L75 for trawl nets /fisheries.

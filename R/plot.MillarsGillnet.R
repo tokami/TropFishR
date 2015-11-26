@@ -1,11 +1,13 @@
 #' @title Millar's gillnet selectivity plot
 #
-#' @description  This function plots the selectivity estimates of the function \code{\link{GillnetSelect}}.
+#' @description  This function plots the selectivity estimates of the function
+#'    \code{\link{GillnetSelect}}. First sentence. second sentence.
 #'
-#' @param estim A list of the class "GillnetSelect" containing the results of the gillnet selectivity function.
+#' @param x A list of the class "GillnetSelect" containing the results of the gillnet selectivity function.
 #' @param ret_dev draw both plots? Default = c(T,T)
 #' @param cex  thickness of points Default = 1
 #' @param title Title of plot Default = "Deviance residuals"
+#' @param ... normal parameter options from plot function
 #'
 #' @examples
 #' # load data
@@ -29,10 +31,10 @@
 #'
 #' @export
 
-plot.MillarsGillnet <- function(estim, ret_dev = c(T,T), cex = 1,
-                                title = "Deviance residuals"){  ###,...
+plot.MillarsGillnet <- function(x, ret_dev = c(T,T), cex = 1,
+                                title = "Deviance residuals",...){
 
-  res <- estim
+  res <- x
   classes.num <- res$midLengths
   model <- res$model
   plotlens <- res$plotlens

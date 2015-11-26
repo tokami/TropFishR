@@ -1,6 +1,7 @@
 #' @title Bhattacharya's method
 #'
-#' @description Separating normal distributions of several cohorts in distinct distributions representing cohorts.
+#' @description Separating normal distributions of several cohorts in distinct
+#'   distributions representing cohorts. Second sentence.
 #'
 #' @param midLengths Midpoints of the length class as vector
 #' @param catch Catch per sampling time as matrix or the total catch as vector.

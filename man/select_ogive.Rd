@@ -16,7 +16,8 @@ select_ogive(s_list, classes, Lt, Lc = NA)
 \item{Lc}{length-at-first-capture Default = \code{NA}}
 }
 \description{
-This function estimates the selecitvity
+This function estimates the selecitvity.
+   First sentence. second sentence.
 }
 \details{
 To calculate selection factor (SF), L25, L50 and L75 for trawl nets /fisheries.

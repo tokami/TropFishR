@@ -20,6 +20,7 @@ A matrix with total moratlity rates with column names ... and row names ... .
 }
 \description{
 Method to estimate the total mortality (Z) from CPUE data.
+   First sentence. second sentence.
 }
 \details{
 Z from CPUE data

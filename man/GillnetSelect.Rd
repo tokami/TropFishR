@@ -7,10 +7,14 @@
 GillnetSelect(param)
 }
 \arguments{
-\item{param}{A list with following parameters: midlengths of size classes (\code{$midLengths}), number of fish caught with net 1 (\code{$numNet1}), number of fish caught with net 2 (\code{$numNet2}), and the meshsizes of both nets (\code{$msNet1} & \code{$msNet2}).}
+\item{param}{A list with following parameters: midlengths of size classes
+(\code{$midLengths}), number of fish caught with net 1 (\code{$numNet1}),
+number of fish caught with net 2 (\code{$numNet2}), and the meshsizes of both
+nets (\code{$msNet1} & \code{$msNet2}).}
 }
 \description{
-This function estimates the selecitvity of a gillnet from an experimental catch with two gillnets with different mesh sizes.
+This function estimates the selecitvity of a gillnet from an
+   experimental catch with two gillnets with different mesh sizes.
 }
 \details{
 This function estimates the fractions retained by each net (SNet1 & SNet2), the

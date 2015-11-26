@@ -1,6 +1,8 @@
 #' @title Cumulative catch curve (The Jones and van Zalinge method)
-#
-#' @description  This is a function to calculate the total mortality (Z) from length composition data via the length converted cumulative catch curve or from age composition data via the cumulative catch curve.
+#'
+#' @description  This is a function to calculate the total mortality (Z) from length
+#'    composition data via the length converted cumulative catch curve or from age
+#'    composition data via the cumulative catch curve.
 #'
 #' @param classes Midpoints of the size class intervals as vector
 #' @param cumCatch Cumulative catch per sampling time as matrix or the total cumulative catch as vector.
@@ -121,14 +123,14 @@ CatchCurveCum <- function(classes, cumCatch, datatype,
                x1=df.CCC$ln_Linf_L[cutter[2]],
                y1=df.CCC$ln_C[cutter[2]],
                col="blue",lwd = 1.7)
-      mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"±",
+      mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"+/-",
                                    round(SE_Z_lm1,2)), col = 'blue')
       plot1 = recordPlot()
 
       #save all in list
       results.CCC <- list()
       results.CCC[[1]] <- df.CCC
-      results.CCC[[2]] <- paste("Z =",round(Z_lm1,2),"±", round(SE_Z_lm1,2))
+      results.CCC[[2]] <- paste("Z =",round(Z_lm1,2),"+/-", round(SE_Z_lm1,2))
       results.CCC[[3]] <- plot1
       names(results.CCC) <- c("Dataframe","Total_mortality","Plot")
 
@@ -188,14 +190,14 @@ CatchCurveCum <- function(classes, cumCatch, datatype,
                x1=df.CCC$tplusdt_2[cutter[2]],
                y1=df.CCC$ln_C[cutter[2]],
                col="blue",lwd = 1.7)
-      mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"±",
+      mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"+/-",
                                    round(SE_Z_lm1,2)), col = 'blue')
       plot1 = recordPlot()
 
       #save all in list
       results.CCC <- list()
       results.CCC[[1]] <- df.CCC
-      results.CCC[[2]] <- paste("Z =",round(Z_lm1,2),"±", round(SE_Z_lm1,2))
+      results.CCC[[2]] <- paste("Z =",round(Z_lm1,2),"+/-", round(SE_Z_lm1,2))
       results.CCC[[3]] <- plot1
       names(results.CCC) <- c("Dataframe","Total_mortality","Plot")
 

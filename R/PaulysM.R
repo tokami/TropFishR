@@ -1,6 +1,7 @@
 #' @title Pauly's empirical formula for natural mortality (M)
 #
-#' @description Pauly's empirical formula to calculate natural mortality (M)
+#' @description Pauly's empirical formula to calculate natural mortality (M).
+#'    First sentence. second sentence.
 #'
 #' @param Linf Infinite length for investigated species in cm [cm].
 #' @param K Growth coefficient for investigated species per year [1/year].

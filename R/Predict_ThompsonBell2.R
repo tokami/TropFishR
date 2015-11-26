@@ -1,6 +1,8 @@
 #' @title Thompson and Bell prediction model
 #
-#' @description  This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.
+#' @description  This is a function to calculate the total mortality (Z) from
+#'    length composition data via the length converted catch curve or from age at
+#'    length data with catch curve.
 #'
 #' @param param A list containing all information
 #' @param FM_change Vector with ascending Fishing mortalities

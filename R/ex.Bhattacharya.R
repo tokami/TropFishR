@@ -2,7 +2,7 @@
 #' @title Example dataset of length for use in Bhattacharya's method
 #'
 #'
-#' @description bla bla
+#' @description First sentence. second sentence.
 #'
 #' \itemize{
 #'   \item bla1. Dateframe of lon/lat coordinates corresponding to columns of sst$field (5 deg resolution)

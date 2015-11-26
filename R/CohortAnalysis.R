@@ -1,6 +1,6 @@
 #' @title Cohort analysis
 #'
-#' @description Cohort analysis
+#' @description Cohort analysis. Second sentence.
 #'
 #' @param midLengths Midpoints of the length class as vector
 #' @param catch Catch per sampling time as matrix or the total catch as vector.

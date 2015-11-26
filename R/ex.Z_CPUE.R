@@ -2,7 +2,7 @@
 #' @title Example dataset of length for the calculation of Z form CPUE data
 #'
 #'
-#' @description from exercise 4.3
+#' @description from exercise 4.3. First sentence. second sentence.
 #'
 #' \itemize{
 #'   \item bla1. Dateframe of lon/lat coordinates corresponding to columns of sst$field (5 deg resolution)

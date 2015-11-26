@@ -29,7 +29,7 @@ CohortAnalysis(midLengths, catch, Linf, K, t0 = 0, M, terminalF, a, b,
 \item{catchCorFac}{optional: Correction factor for catch, in case provided catch does spatially or temporarily not reflect catch for fishing ground of a whole year.}
 }
 \description{
-Cohort analysis
+Cohort analysis. Second sentence.
 }
 \details{
 Cohort analysis

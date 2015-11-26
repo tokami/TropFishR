@@ -20,7 +20,9 @@ CatchCurveCum(classes, cumCatch, datatype, Linf = NULL, K = NULL, t0 = 0)
 \item{t0}{Theoretical time zero, at which individuals of this species hatch (default = 0).}
 }
 \description{
-This is a function to calculate the total mortality (Z) from length composition data via the length converted cumulative catch curve or from age composition data via the cumulative catch curve.
+This is a function to calculate the total mortality (Z) from length
+   composition data via the length converted cumulative catch curve or from age
+   composition data via the cumulative catch curve.
 }
 \details{
 Not good for methods where the largest length groups are not represented fully (highly selective gear). The length converted linearised cumulative catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.

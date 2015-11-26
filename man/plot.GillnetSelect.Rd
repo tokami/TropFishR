@@ -4,13 +4,16 @@
 \alias{plot.GillnetSelect}
 \title{Gillnet selectivity plot}
 \usage{
-\method{plot}{GillnetSelect}(estim)
+\method{plot}{GillnetSelect}(x, ...)
 }
 \arguments{
-\item{estim}{A list of the class "GillnetSelect" containing the results of the gillnet selectivity function.}
+\item{x}{A list of the class "GillnetSelect" containing the results of the gillnet selectivity function.}
+
+\item{...}{normal parameters from plot function}
 }
 \description{
-This function plots the selectivity estimates of the function \code{\link{GillnetSelect}}.
+This function plots the selectivity estimates of the
+  function \code{\link{GillnetSelect}}. Second sentence.
 }
 \details{
 A function to plot the results of the gillnet selectivity estimation.

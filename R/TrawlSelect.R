@@ -1,6 +1,7 @@
 #' @title Trawl net selctivity
 #
 #' @description  This function estimates the selecitvity of trawl nets.
+#'    First sentence. second sentence.
 #'
 #' @param param List with parameters: midlengths of size classes, number in net, number in codend and meshsize of codend
 #'
