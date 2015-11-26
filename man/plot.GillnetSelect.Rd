@@ -4,7 +4,7 @@
 \alias{plot.GillnetSelect}
 \title{Gillnet selectivity plot}
 \usage{
-\method{plot}{GillnetSelect}(estim, ...)
+\method{plot}{GillnetSelect}(estim)
 }
 \arguments{
 \item{estim}{A list of the class "GillnetSelect" containing the results of the gillnet selectivity function.}
@@ -16,8 +16,13 @@ This function plots the selectivity estimates of the function \code{\link{Gillne
 A function to plot the results of the gillnet selectivity estimation.
 }
 \examples{
+# load data
 data(data_GillnetSelect)
+
+# run model
 output <- GillnetSelect(data_GillnetSelect)
+
+# plot results
 plot(output)
 
 }

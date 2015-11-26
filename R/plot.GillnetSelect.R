@@ -5,8 +5,13 @@
 #' @param estim A list of the class "GillnetSelect" containing the results of the gillnet selectivity function.
 #'
 #' @examples
+#' # load data
 #' data(data_GillnetSelect)
+#'
+#' # run model
 #' output <- GillnetSelect(data_GillnetSelect)
+#'
+#' # plot results
 #' plot(output)
 #'
 #' @details A function to plot the results of the gillnet selectivity estimation.
@@ -17,7 +22,7 @@
 #'
 #' @export
 
-plot.GillnetSelect <- function(estim, ...){
+plot.GillnetSelect <- function(estim){
   res <- estim
 
   classes.num <- res$classes.num

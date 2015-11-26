@@ -1,4 +1,4 @@
-#' @title Catch curve
+#' @title Catch curve with selection ogive
 #
 #' @description  This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.
 #'
@@ -14,13 +14,18 @@
 #' # Variable paramter system
 #' # based on length frequency data
 #' data("ex.LengthCC")
+#'
 #' output <- with(ex.LengthCC,CatchCurve(ex.LengthCC[,1], ex.LengthCC[,2],
-#' Linf = 23.1, K = 0.59, datatype = 'length')
+#' Linf = 23.1, K = 0.59, datatype = 'length'))
+#'
 #' output
+#'
+#'
 #' # based on age composition data
 #' data("ex.CatchCurve")
 #' output <- with(ex.CatchCurve,CatchCurve(age, ex.CatchCurve[,2],datatype = 'age'))
 #' output
+#'
 #' # Constant parameter system based on age composition data
 #' output <- with(ex.CatchCurve,CatchCurve(age, ex.CatchCurve[,2:8],datatype = 'age'))
 #' output

@@ -16,16 +16,20 @@
 #' @examples
 #' # age structured data
 #' # example 1 - Nemipterus marginatus
-#' Predict_BevertonHolt(K = 0.37,M = 1.1,T_Lc = seq(0.2,1,0.2),T_Lr = 0.4,t0 = -0.2,W_Linf = 286,FM = seq(0,6,0.1),datatype = 'age')
+#' Predict_BevertonHolt(K = 0.37,M = 1.1,T_Lc = seq(0.2,1,0.2),
+#'    T_Lr = 0.4,t0 = -0.2,W_Linf = 286,FM = seq(0,6,0.1),datatype = 'age')
 #' #where it is maximal  = MSY
 #'
 #'
 #' # example 2 - Leiognathus spendens (Pauly 1980)
-#' Predict_BevertonHolt(W_Linf = 64,K = 1,t0 = -0.2,T_Lr = 0.2,M = 1.8,T_Lc = c(0.2,0.3,1.0),datatype = 'age')
+#' Predict_BevertonHolt(W_Linf = 64,K = 1,t0 = -0.2,T_Lr = 0.2,M = 1.8,
+#'    T_Lc = c(0.2,0.3,1.0),datatype = 'age')
 #'
 #' # length structured data
 #' # Xiphias gladius (Berkeley and Houde 1980)
-#' Predict_BevertonHolt(W_Linf = 309,K = 0.0949,M = 0.18,T_Lc = c(100,118,150,180),T_Lr = 90 ,datatype = 'length',a=0.0003,b=3) ## T_Lr , a, b ??? assumed
+#' Predict_BevertonHolt(W_Linf = 309,K = 0.0949,M = 0.18,
+#'    T_Lc = c(100,118,150,180),T_Lr = 90 ,datatype = 'length',a=0.0003,b=3)
+#' ## T_Lr , a, b ??? assumed
 #'
 #' ####test: E <- seq(0,0.9,0.1) F_PBH <- E * M / (1 -E)
 #'

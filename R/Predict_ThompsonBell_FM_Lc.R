@@ -11,8 +11,7 @@
 #' @param t0 growth parameter 3
 #' @param s_list List wit all selectivity information
 #' @param Lc_change vector with ascending Lc values
-#'
-#' @param FM reference F-at-age-array
+#' @param unit.time Time unit "year" or "month", Default "year"
 #'
 #' @examples
 #'

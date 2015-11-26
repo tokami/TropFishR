@@ -7,6 +7,8 @@
 CatchCurveCum(classes, cumCatch, datatype, Linf = NULL, K = NULL, t0 = 0)
 }
 \arguments{
+\item{classes}{Midpoints of the size class intervals as vector}
+
 \item{cumCatch}{Cumulative catch per sampling time as matrix or the total cumulative catch as vector.}
 
 \item{datatype}{Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively}
@@ -16,8 +18,6 @@ CatchCurveCum(classes, cumCatch, datatype, Linf = NULL, K = NULL, t0 = 0)
 \item{K}{Growth coefficient for investigated species per year [1/year].}
 
 \item{t0}{Theoretical time zero, at which individuals of this species hatch (default = 0).}
-
-\item{midLengths}{Midpoints of the size class intervals as vector}
 }
 \description{
 This is a function to calculate the total mortality (Z) from length composition data via the length converted cumulative catch curve or from age composition data via the cumulative catch curve.

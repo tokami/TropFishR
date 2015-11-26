@@ -4,20 +4,9 @@
 \alias{Predict_ThompsonBell_Fleets}
 \title{Thompson and Bell prediction model}
 \usage{
-<<<<<<< HEAD:man/Predict_ThompsonBell.Rd
-Predict_ThompsonBell(classes, mean_weight, FM, Z, value = NA, Tr, datatype,
-  stock_size_1 = NA, plus.group = NA, FM_change = NA, fleet_mat = NA,
-<<<<<<< HEAD
-  fleet_unit = NA, fleet_FM_change = NA, fleet_plot_name = NA)
-=======
-  fleet_unit = NA, fleet_FM_change = NA, fleet_plot_name = NA,
-  s_list = NA, Linf = NA, K = NA, t0 = 0, L50 = NA, L75 = NA)
->>>>>>> 1536cdd9b2668bf517ddbb56e372d9add9ffb9d2
-=======
 Predict_ThompsonBell_Fleets(param, FM_change, fleet_mat, fleet_unit,
   fleet_FM_change, fleet_plot_name = NA, unit.time = "year",
   stock_size_1 = NA, plus.group = NA)
->>>>>>> 5138cd9cc43af0588ed99bd0456e59c932fdadc0:man/Predict_ThompsonBell_Fleets.Rd
 }
 \arguments{
 \item{param}{A list}
@@ -32,11 +21,11 @@ Predict_ThompsonBell_Fleets(param, FM_change, fleet_mat, fleet_unit,
 
 \item{fleet_plot_name}{Name of fishery, which should be used for plotting Yield per recurit against changes of FM}
 
+\item{unit.time}{Time unit "year" or "month", Default "year"}
+
 \item{stock_size_1}{Stock size to start with}
 
 \item{plus.group}{Should a plus group be created, by default (NA) not. BUt authors advise to do so}
-
-\item{FM}{reference F-at-age-array}
 }
 \description{
 This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.

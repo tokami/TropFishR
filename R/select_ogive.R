@@ -50,7 +50,7 @@ select_ogive <- function(s_list, classes, Lt, Lc = NA){
     sel <- (1/classes) * exp(s_list$select_p1 +
                                              log(s_list$mesh_size/s_list$mesh_size1) -
                                              (s_list$select_p2^2/2) -
-                                             (((log(df.TBpred$classes.num) -
+                                             (((log(classes) -
                                                   s_list$select_p1 -
                                                   log(s_list$mesh_size/s_list$mesh_size1))^2)/
                                                 (2 *s_list$select_p2^2)))

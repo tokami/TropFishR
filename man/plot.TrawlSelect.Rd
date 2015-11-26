@@ -4,10 +4,10 @@
 \alias{plot.TrawlSelect}
 \title{Trawl net selectivity plot}
 \usage{
-\method{plot}{TrawlSelect}(param, ...)
+\method{plot}{TrawlSelect}(estim)
 }
 \arguments{
-\item{param}{List with parameters: midlengths of size classes, number in net, number in codend and meshsize of codend}
+\item{estim}{results of trawl select function}
 }
 \description{
 This function estimates the selecitvity of trawl nets.

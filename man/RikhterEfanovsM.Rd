@@ -16,6 +16,7 @@ Rikhter and Efanov's formula to calculate natural mortality (M)
 Rikhter and Efanov's formula to calculate natural mortality (M).
 }
 \examples{
+# run model
 RikhterEfanovsM(Tm50 = 1)
 
 }

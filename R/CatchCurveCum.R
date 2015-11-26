@@ -2,7 +2,7 @@
 #
 #' @description  This is a function to calculate the total mortality (Z) from length composition data via the length converted cumulative catch curve or from age composition data via the cumulative catch curve.
 #'
-#' @param midLengths Midpoints of the size class intervals as vector
+#' @param classes Midpoints of the size class intervals as vector
 #' @param cumCatch Cumulative catch per sampling time as matrix or the total cumulative catch as vector.
 #' @param datatype Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively
 #' @param Linf Infinite length for investigated species in cm [cm].

@@ -21,18 +21,12 @@
 #' @param terminalF terminal fishing mortality
 #' @param a length-weight relationship coefficent (W = a * L^b)
 #' @param b length-weight relationship coefficent (W = a * L^b)
-#' #<<<<<<< HEAD
-#' @param algorithm Algorithm to use to solve for fishing mortality. The default
+#' @param algorithm An Algorithm to use to solve for fishing mortality. The default
 #'   setting \code{algorithm="new"} uses \code{\link[stats]{optimize}},
 #'   while \code{algorithm="old"} uses the algorithm described by
 #'   Sparre and Venema (1998)
-#'   #=======
-#' @param algorithm Algorithm to use to solve for fishing mortality.
-#' The default setting \code{algorithm="new"} uses \code{\link[stats]{optimize}},
-#' while \code{algorithm="old"} uses the algorithm described by Sparre and Venema (1998)
 #'
 #' @details Cohort analysis
-#' #>>>>>>> fee2e7053ac7ad7814ff038e82ad42ac35f0c449
 #'
 #' @examples
 #' # Virtual Popuation Analysis with age-composition data

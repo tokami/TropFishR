@@ -3,7 +3,7 @@
 #' @description  This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.
 #'
 #' @param classes Midpoints of the length class as vector (length frequency data) or ages as vector (age composition data).
-#' @param catch Catch as vector, or a matrix with catches of subsequent years if the catch curve with constat time intervals should be applied.
+#' @param catch The catch as vector, or a matrix with catches of subsequent years if the catch curve with constat time intervals should be applied.
 #' @param datatype Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively
 #' @param Linf Infinite length for investigated species in cm [cm].
 #' @param K Growth coefficent for investigated species per year [1/year].
@@ -13,16 +13,28 @@
 #' \donttest{
 #' # Variable paramter system
 #' # based on length frequency data
+#' # load data
 #' data("ex.LengthCC")
-#' output <- with(ex.LengthCC,CatchCurve(ex.LengthCC[,1], ex.LengthCC[,2],
-#' Linf = 23.1, K = 0.59, datatype = 'length')
+#'
+#' # run model
+#' output <- with(ex.LengthCC,CatchCurve(classes = ex.LengthCC[,1], catch = ex.LengthCC[,2],
+#'   Linf = 23.1, K = 0.59, datatype = 'length'))
+#'
+#' # investigate results
 #' output
+#'
 #' # based on age composition data
+#' # load data
 #' data("ex.CatchCurve")
+#'
+#' # run model
 #' output <- with(ex.CatchCurve,CatchCurve(age, ex.CatchCurve[,2],datatype = 'age'))
+#'
 #' output
+#'
 #' # Constant parameter system based on age composition data
 #' output <- with(ex.CatchCurve,CatchCurve(age, ex.CatchCurve[,2:8],datatype = 'age'))
+#'
 #' output
 #'  }
 #'

@@ -5,10 +5,16 @@
 \title{Millar's gillnet selectivity plot}
 \usage{
 \method{plot}{MillarsGillnet}(estim, ret_dev = c(T, T), cex = 1,
-  title = "Deviance residuals", ...)
+  title = "Deviance residuals")
 }
 \arguments{
 \item{estim}{A list of the class "GillnetSelect" containing the results of the gillnet selectivity function.}
+
+\item{ret_dev}{draw both plots? Default = c(T,T)}
+
+\item{cex}{thickness of points Default = 1}
+
+\item{title}{Title of plot Default = "Deviance residuals"}
 }
 \description{
 This function plots the selectivity estimates of the function \code{\link{GillnetSelect}}.
@@ -17,10 +23,17 @@ This function plots the selectivity estimates of the function \code{\link{Gillne
 A function to plot the results of the gillnet selectivity estimation.
 }
 \examples{
+# load data
 data(data_GillnetSelect3)
+
+# run model
 output <- MillarsGillnetSelect(data_GillnetSelect3, model = "normal_fixed",
    plotlens = NULL, rel = NULL)
+
+# investigate results
 output
+
+#plot results
 plot(output)
 
 }

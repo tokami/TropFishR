@@ -14,11 +14,17 @@
 #' @param b length-weight relationship coefficent (W = a * L^b)
 #'
 #' @examples
+#' # load data
 #' data("ex.CohortAnalysis")
+#'
+#' # run model
 #' output = CohortAnalysis(midLengths = ex.CohortAnalysis$midLengths,
 #'  catch = ex.CohortAnalysis$catch, Linf = 130, K = 0.1, M = 0.28,
 #'  terminalF = 0.28, a = 0.00001, b = 3)
+#'
+#' # investigate results
 #' output
+#'
 #' @details Cohort analysis
 #'
 #' @references

@@ -3,11 +3,15 @@
 #' @description  This function estimates the selecitvity of a gillnet from an experimental catch with two gillnets with different mesh sizes.
 #'
 #' @param param A list with following parameters: midlengths of size classes (\code{$midLengths}), number of fish caught with net 1 (\code{$numNet1}), number of fish caught with net 2 (\code{$numNet2}), and the meshsizes of both nets (\code{$msNet1} & \code{$msNet2}).
-#' @param numNets A number indicating how many nets (with different mesh sizes) were used in the experiment (default: \code{numNets = 2}).
 #'
 #' @examples
+#' # load data
 #' data(data_GillnetSelect)
+#'
+#' # run model
 #' output <- GillnetSelect(data_GillnetSelect)
+#'
+#' # plot results
 #' plot(output)
 #'
 #' @details This function estimates the fractions retained by each net (SNet1 & SNet2), the

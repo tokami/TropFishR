@@ -14,6 +14,8 @@ Predict_ThompsonBell_FM_Lc(param, FM_change, stock_size_1 = NA,
 
 \item{stock_size_1}{Stock size to start with}
 
+\item{unit.time}{Time unit "year" or "month", Default "year"}
+
 \item{plus.group}{Should a plus group be created, by default (NA) not. BUt authors advise to do so}
 
 \item{Linf}{growth parameter 1}
@@ -25,8 +27,6 @@ Predict_ThompsonBell_FM_Lc(param, FM_change, stock_size_1 = NA,
 \item{s_list}{List wit all selectivity information}
 
 \item{Lc_change}{vector with ascending Lc values}
-
-\item{FM}{reference F-at-age-array}
 }
 \description{
 This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.

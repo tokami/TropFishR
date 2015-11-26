@@ -11,7 +11,7 @@ CatchCurve(classes, catch, datatype, Linf = NULL, K = NULL, t0 = 0)
 \arguments{
 \item{classes}{Midpoints of the length class as vector (length frequency data) or ages as vector (age composition data).}
 
-\item{catch}{Catch as vector, or a matrix with catches of subsequent years if the catch curve with constat time intervals should be applied.}
+\item{catch}{The catch as vector, or a matrix with catches of subsequent years if the catch curve with constat time intervals should be applied.}
 
 \item{datatype}{Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively}
 
@@ -47,16 +47,28 @@ For variable parameter system vectors are reuqired for constant parameter system
 \donttest{
 # Variable paramter system
 # based on length frequency data
+# load data
 data("ex.LengthCC")
-output <- with(ex.LengthCC,CatchCurve(ex.LengthCC[,1], ex.LengthCC[,2],
-Linf = 23.1, K = 0.59, datatype = 'length')
+
+# run model
+output <- with(ex.LengthCC,CatchCurve(classes = ex.LengthCC[,1], catch = ex.LengthCC[,2],
+  Linf = 23.1, K = 0.59, datatype = 'length'))
+
+# investigate results
 output
+
 # based on age composition data
+# load data
 data("ex.CatchCurve")
+
+# run model
 output <- with(ex.CatchCurve,CatchCurve(age, ex.CatchCurve[,2],datatype = 'age'))
+
 output
+
 # Constant parameter system based on age composition data
 output <- with(ex.CatchCurve,CatchCurve(age, ex.CatchCurve[,2:8],datatype = 'age'))
+
 output
  }
 
@@ -64,13 +76,18 @@ output
 # Variable paramter system
 # based on length frequency data
 data("ex.LengthCC")
+
 output <- with(ex.LengthCC,CatchCurve(ex.LengthCC[,1], ex.LengthCC[,2],
-Linf = 23.1, K = 0.59, datatype = 'length')
+Linf = 23.1, K = 0.59, datatype = 'length'))
+
 output
+
+
 # based on age composition data
 data("ex.CatchCurve")
 output <- with(ex.CatchCurve,CatchCurve(age, ex.CatchCurve[,2],datatype = 'age'))
 output
+
 # Constant parameter system based on age composition data
 output <- with(ex.CatchCurve,CatchCurve(age, ex.CatchCurve[,2:8],datatype = 'age'))
 output

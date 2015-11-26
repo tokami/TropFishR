@@ -17,7 +17,7 @@
 #' @export
 
 
-plot.TrawlSelect <- function(estim, ...){
+plot.TrawlSelect <- function(estim){
   res <- estim
 
   classes.num <- res$classes.num

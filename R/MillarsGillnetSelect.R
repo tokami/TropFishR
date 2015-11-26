@@ -14,10 +14,17 @@
 #' @param rel Vector of realtive efficencies
 #'
 #' @examples
+#' # load data
 #' data(data_MillarsGillnet)
+#'
+#' # run model
 #' output <- MillarsGillnetSelect(data_MillarsGillnet, model = "normal_fixed",
 #'    plotlens = NULL, rel = NULL)
+#'
+#' # investigate results
 #' output
+#'
+#' # plot results
 #' plot(output)
 #'
 #' @details This function estimates the fractions retained by each net (SNet1 & SNet2), the
@@ -41,7 +48,7 @@
 #' @export
 
 MillarsGillnetSelect <- function(param, model = "normal_fixed", rel = NULL,
-                           plots=c(T,T),plotlens=NULL){
+                            plotlens=NULL){ #plots=c(T,T),
 
   res <- param
   classes <- as.character(res$midLengths)

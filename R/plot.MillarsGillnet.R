@@ -3,9 +3,9 @@
 #' @description  This function plots the selectivity estimates of the function \code{\link{GillnetSelect}}.
 #'
 #' @param estim A list of the class "GillnetSelect" containing the results of the gillnet selectivity function.
-#' @param ret_dev = c(T,T)
-#' @param cex = 1
-#' @param title = "Deviance residuals"
+#' @param ret_dev draw both plots? Default = c(T,T)
+#' @param cex  thickness of points Default = 1
+#' @param title Title of plot Default = "Deviance residuals"
 #'
 #' @examples
 #' # load data
@@ -30,7 +30,7 @@
 #' @export
 
 plot.MillarsGillnet <- function(estim, ret_dev = c(T,T), cex = 1,
-                                title = "Deviance residuals",...){
+                                title = "Deviance residuals"){  ###,...
 
   res <- estim
   classes.num <- res$midLengths

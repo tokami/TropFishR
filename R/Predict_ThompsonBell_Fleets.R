@@ -10,8 +10,7 @@
 #' @param fleet_unit Either 'Catch' or 'FM' indicating in which unit the fleet_mat is provided
 #' @param fleet_FM_change Matrix containing new FM values for each fishery
 #' @param fleet_plot_name Name of fishery, which should be used for plotting Yield per recurit against changes of FM
-#'
-#' @param FM reference F-at-age-array
+#' @param unit.time Time unit "year" or "month", Default "year"
 #'
 #' @examples
 #'
