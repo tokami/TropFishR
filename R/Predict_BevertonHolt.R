@@ -2,25 +2,31 @@
 #
 #' @description  This is a function to calculate the total mortality (Z) from length composition data via the length converted catch curve or from age at length data with catch curve.
 #'
-#' @param classes Midpoints of the length class as vector (length frequency data) or ages as vector (age composition data).
-#' @param catch Catch as vector, or a matrix with catches of subsequent years if the catch curve with constat time intervals should be applied.
 #' @param datatype Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively
-#' @param Linf Infinite length for investigated species in cm [cm].
+#' @param W_Linf Infinite length (or weight) for investigated species in cm [cm] or gramm [g].
 #' @param K Growth coefficent for investigated species per year [1/year].
 #' @param t0 Theoretical time zero, at which individuals of this species hatch (default: 0).
-#' @param Winf Infinite weight in grams!
-#'
+#' @param M Natural mortality
+#' @param T_Lr Age or Length of recruitment
+#' @param T_Lc Age or length of first capture
+#' @param FM  fishing mortlality Default FM = NA
+#' @param a length weight relationship coefficient 1 Default = NA
+#' @param b length weight relationship coefficient 2 Default = NA
+
 #' @examples
-#' #age data example 1
-#' # Nemipterus marginatus
+#' # age structured data
+#' # example 1 - Nemipterus marginatus
 #' Predict_BevertonHolt(K = 0.37,M = 1.1,T_Lc = seq(0.2,1,0.2),T_Lr = 0.4,t0 = -0.2,W_Linf = 286,FM = seq(0,6,0.1),datatype = 'age')
 #' #where it is maximal  = MSY
-#' #age data example 2
-#' #Leiognathus spendens (Pauly 1980)
+#'
+#'
+#' # example 2 - Leiognathus spendens (Pauly 1980)
 #' Predict_BevertonHolt(W_Linf = 64,K = 1,t0 = -0.2,T_Lr = 0.2,M = 1.8,T_Lc = c(0.2,0.3,1.0),datatype = 'age')
-#' #length data example
-#' #Xiphias gladius (Berkeley and Houde 1980)
+#'
+#' # length structured data
+#' # Xiphias gladius (Berkeley and Houde 1980)
 #' Predict_BevertonHolt(W_Linf = 309,K = 0.0949,M = 0.18,T_Lc = c(100,118,150,180),T_Lr = 90 ,datatype = 'length',a=0.0003,b=3) ## T_Lr , a, b ??? assumed
+#'
 #' ####test: E <- seq(0,0.9,0.1) F_PBH <- E * M / (1 -E)
 #'
 #' @details For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
@@ -31,7 +37,7 @@
 #' @export
 
 Predict_BevertonHolt <- function(W_Linf, K, M, T_Lr, T_Lc, t0 = NA,
-                                  FM = NA, datatype,a=NA,b=NA){
+                                  FM = NA, datatype, a=NA, b=NA){
 
   F_PBH <- FM
   if(length(F_PBH) == 1 & is.na(F_PBH[1])){
