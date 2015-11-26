@@ -2,7 +2,7 @@
 #
 #' @description  This function estimates the selecitvity of trawl nets.
 #'
-#' @param param List with parameters: midlengths of size classes, number in net, number in codend and meshsize of codend
+#' @param estim results of trawl select function
 #'
 #' @examples
 #' data(data_TrawlSelect)
@@ -17,8 +17,8 @@
 #' @export
 
 
-plot.TrawlSelect <- function(param, ...){
-  res <- param
+plot.TrawlSelect <- function(estim, ...){
+  res <- estim
 
   classes.num <- res$classes.num
   SLobs <- res$SLobs

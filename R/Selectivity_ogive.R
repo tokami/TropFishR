@@ -8,11 +8,15 @@
 #' @param Lc length-at-first-capture Default = \code{NA}
 #'
 #' @examples
-#'
+#' # create list with selectivity information
 #' select.list <- list(selecType = 'knife_edge',  #or 'gillnet' or 'trawl_ogive'
 #'    Lc = 34,tc = 5,selecDist = 'lognormal',    #or 'normal_fixed'
 #'    mesh_size = 8.1,mesh_size1 = 9.1,select_p1 = 21.1,select_p2 = 23.8)
-#' Lt <- c(12,22,29,34,38,41,43,45, 46,47,48,49,49)
+#'
+#' # create vector with mid lengths
+#' Lt <- c(12,22,29,34,38,41,43,45,46,47,48,49,49)
+#'
+#' # run model
 #' select_ogive(select.list, seq(1,13,1),Lt)
 #'
 #' @details To calculate selection factor (SF), L25, L50 and L75 for trawl nets /fisheries.

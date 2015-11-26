@@ -5,8 +5,13 @@
 #' @param param List with parameters: midlengths of size classes, number in net, number in codend and meshsize of codend
 #'
 #' @examples
+#' # load data
 #' data(data_TrawlSelect)
+#'
+#' # run model
 #' output <- TrawlSelect(data_TrawlSelect)
+#'
+#' # plot results graphically
 #' plot(output)
 #'
 #' @details To calculate selection factor (SF), L25, L50 and L75 for trawl nets /fisheries.

@@ -3,12 +3,22 @@
 #' @description  This function plots the selectivity estimates of the function \code{\link{GillnetSelect}}.
 #'
 #' @param estim A list of the class "GillnetSelect" containing the results of the gillnet selectivity function.
+#' @param ret_dev = c(T,T)
+#' @param cex = 1
+#' @param title = "Deviance residuals"
 #'
 #' @examples
+#' # load data
 #' data(data_GillnetSelect3)
+#'
+#' # run model
 #' output <- MillarsGillnetSelect(data_GillnetSelect3, model = "normal_fixed",
 #'    plotlens = NULL, rel = NULL)
+#'
+#' # investigate results
 #' output
+#'
+#' #plot results
 #' plot(output)
 #'
 #' @details A function to plot the results of the gillnet selectivity estimation.
