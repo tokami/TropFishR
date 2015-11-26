@@ -4,9 +4,7 @@
 \name{data_TrawlSelect}
 \alias{data_TrawlSelect}
 \title{Example dataset of length for use in TrawlSelect}
-\format{A list consisting of: 1. a dataframe for lon/lat positions, 2. a vector of
-monthly date values, and 3. a matrix of sst anomaly values by month and lon/lat position
-(1906 rows, 264 columns)}
+\format{A list consisting of: 1. a da}
 \usage{
 data(data_TrawlSelect)
 }

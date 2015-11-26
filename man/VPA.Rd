@@ -45,30 +45,30 @@ while \code{algorithm="old"} uses the algorithm described by
 Sparre and Venema (1998)}
 }
 \description{
-Virtual Population Analysis. First sentence. second sentence.
+This function enables a Virtual Population Analysis and Cohort analysis.
 }
 \details{
 Cohort analysis
 }
 \examples{
 # Virtual Popuation Analysis with age-composition data
-data("ex.CatchCurve")
+data("ex.CatchCurve")   ### == whiting
 output <- with(ex.CatchCurve, VPA(classes = age, catch = ex.CatchCurve[,2:8],
    datatype = 'age', analysis.type = "VPA", terminalF = 0.5,
    M = 0.2, a = 0.00984, b = 2.926))
 output
 
 # Pope's Cohort Analysis with age-composition data
-data("ex.CatchCurve")
+data("ex.CatchCurve")   ### == whiting
 output <- with(ex.CatchCurve, VPA(classes = age, catch = ex.CatchCurve[,2:8],
    datatype = 'age', analysis.type = "CA", terminalF = 0.5,
    M = 0.2, a = 0.00984, b = 2.926))
 output
 
 # Jones's Cohort Analysis with length-composition data
-data("ex.CohortAnalysis")
+data("ex.CohortAnalysis")   ### == hake data
 output <- with(ex.CohortAnalysis, VPA(classes = midLengths, catch = catch,
-   Linf = 130, K = 0.1, M = 0.28,terminalF = 0.28,
+   Linf = 130, K = 0.1, M = 0.28, terminalF = 0.28,
    a = 0.00001, b = 3, datatype = 'length', analysis.type = "CA"))
 output
 

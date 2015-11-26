@@ -1,4 +1,4 @@
-#' @name data_GillnetSelect3
+#' @name tilapia
 #'
 #' @title Example dataset for the use of \code{\link{GillnetSelect}}
 #'
@@ -19,13 +19,13 @@
 #'
 #' @source Garrod, D.J., 1961. The selection characteristics of nylon gill nets for \emph{Tilapia esculenta} Graham. J.Cons.CIEM, 26(2):191-203
 #'
-#' @usage data(data_GillnetSelect3)
+#' @usage data(tilapia)
 #'
-#' @keywords dataset selectivity
+#' @keywords dataset selectivity gillnet
 #'
 #' @examples
-#' data(data_GillnetSelect3)
-#' summary(data_GillnetSelect3)
-#' str(data_GillnetSelect3)
+#' data(tilapia)
+#' summary(tilapia)
+#' str(tilapia)
 #'
 NULL

@@ -37,11 +37,18 @@ This function estimates the fractions retained by each net (SNet1 and SNet2), th
   same time.
 }
 \examples{
+# Trouser trawl net
+# do also example with haddock data (gillnet)
 # load data
-data(data_MillarsGillnet)
+data(haddock)
+
+
+# Gillnet
+# load data
+data(gillnet)
 
 # run model
-output <- MillarsGillnetSelect(data_MillarsGillnet, model = "normal_fixed",
+output <- MillarsGillnetSelect(gillnet, model = "normal_fixed",
    plotlens = NULL, rel = NULL)
 
 # investigate results
@@ -49,6 +56,14 @@ output
 
 # plot results
 plot(output)
+
+
+# Stacked trammel net
+#Here, the data are from two expts using different mesh sizes
+#This analysis assumes common retention curve in both expts.
+#Note that summary function does not produce residual plot
+#since lengths are not unique
+data(trammelnet)
 
 }
 \references{

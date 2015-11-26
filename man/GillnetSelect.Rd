@@ -29,10 +29,10 @@ This function estimates the fractions retained by each net (SNet1 & SNet2), the
 }
 \examples{
 # load data
-data(data_GillnetSelect)
+data(tilapia)   ### == data_GillnetSelect
 
 # run model
-output <- GillnetSelect(data_GillnetSelect)
+output <- GillnetSelect(tilapia)
 
 # plot results
 plot(output)

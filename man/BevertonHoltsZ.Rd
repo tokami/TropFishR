@@ -30,14 +30,14 @@ Lprime or tprime will be identified via the first length (or age) class inserted
 }
 \examples{
 # load data
-data("ex.BevertonHoltsZ")
+data("ex.BevertonHoltsZ")   ### == synLFQ2 (list)
 
 # run model
 with(ex.BevertonHoltsZ, BevertonHoltsZ(midLength,
  catch1960, datatype="length", Linf = 100, K = 0.3))
 
 # load data
-data("ex.ageBevertonHoltsZ")
+data("ex.ageBevertonHoltsZ")     #### == synCAA (list)  with catch_mat
 
 #run model
 with(ex.ageBevertonHoltsZ,BevertonHoltsZ(midAge,

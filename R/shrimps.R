@@ -3,7 +3,7 @@
 #' @title Data from the Kuwait shrimp (\emph{Penaeus semisulcatus}) fishery.
 #'
 #' @description Data from the Kuwait shrimp (\emph{Penaeus semisulcatus}) fishery.
-#'    Can be used with \code{\link{Predict_ThompsonBell}}.
+#'    Can be used with \code{\link{Predict_ThompsonBell1}}.
 #'    Fishing mortalities were estimated from catch data and biomass estimates were
 #'    obtained from the swept area method. Recuritment to fishery at the age of one month (Tr = 1).
 #'

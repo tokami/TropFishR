@@ -11,10 +11,10 @@
 #'
 #' @examples
 #' # load data
-#' data(data_GillnetSelect3)
+#' data(gillnet) #data_GillnetSelect3
 #'
 #' # run model
-#' output <- MillarsGillnetSelect(data_GillnetSelect3, model = "normal_fixed",
+#' output <- MillarsGillnetSelect(gillnet, model = "normal_fixed",
 #'    plotlens = NULL, rel = NULL)
 #'
 #' # investigate results
