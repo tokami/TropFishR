@@ -72,10 +72,15 @@ Predict_ThompsonBell_FM_Lc <- function(param,
   #                        Age data                          #
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   if('age' %in% names(res)) classes <- as.character(res$age)
+
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   #                       Length data                        #
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   if('midLengths' %in% names(res)) classes <- as.character(res$midLengths)
+
+  #HHHHHHHHHHHH#
+  #     ALL    #
+  #HHHHHHHHHHHH#
 
   # create column without plus group (sign) if present
   classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
@@ -86,11 +91,11 @@ Predict_ThompsonBell_FM_Lc <- function(param,
 
   Lt <- Linf * (1- exp(-K * (classes.num - t0)))
 
-  sel <- select_ogive(s_list,classes.num,Lt)
+  sel <- select_ogive(s_list,Lt = Lt) #classes.num
 
   sel.list <- list()
   for(x19 in 1:length(Lc_change)){
-    sel.list[[x19]] <- select_ogive(s_list,classes.num, Lt, Lc_change[x19])
+    sel.list[[x19]] <- select_ogive(s_list, Lt = Lt, Lc = Lc_change[x19]) #classes.num
   }
   Lc_mat <- do.call(cbind,sel.list)
   colnames(Lc_mat) <- Lc_change

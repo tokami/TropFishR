@@ -2,40 +2,45 @@
 % Please edit documentation in R/select_ogive.R
 \name{select_ogive}
 \alias{select_ogive}
-\title{Selectivity function}
+\title{Selectivity function for prediction models}
 \usage{
-select_ogive(s_list, classes, Lt, Lc = NA)
+select_ogive(s_list, Lt, Lc = NA)
 }
 \arguments{
-\item{s_list}{list of selectivity parameters}
+\item{s_list}{A list with a range of selectivity parameters dependent of the type of
+selection curve: \code{$selecType} the type of
+selection curves to use for the calculation (options: "knife_edge",
+"trawl_ogive", "lognormal", "normal_fixed"), \code{Lc} length-at-first-capture,
+\code{meshSizes} a vector with mesh sizes in increasing order, \code{select_ps}
+selectivity parameters, \code{L75} length at which individuals are caught with a
+probability of 75%;}
 
-\item{classes}{age or size classes}
+\item{Lt}{A vector with lengths corresponding to age classes}
 
-\item{Lt}{lengths corresponding to age classes}
-
-\item{Lc}{length-at-first-capture Default = \code{NA}}
+\item{Lc}{length-at-first-capture (Default: \code{Lc = NA})}
 }
 \description{
-This function estimates the selecitvity.
-   First sentence. second sentence.
+This function estimates the fraction retained in the net for corresponding
+   lengths of fish. Different selection curves can be used.
 }
 \details{
-To calculate selection factor (SF), L25, L50 and L75 for trawl nets /fisheries.
+Used within predicition models.
 }
 \examples{
 # create list with selectivity information
-select.list <- list(selecType = 'knife_edge',  #or 'gillnet' or 'trawl_ogive'
-   Lc = 34,tc = 5,selecDist = 'lognormal',    #or 'normal_fixed'
-   mesh_size = 8.1,mesh_size1 = 9.1,select_p1 = 21.1,select_p2 = 23.8)
+select.list <- list(selecType = 'knife_edge',
+   Lc = 34, tc = 5, mesh_size = 8.1, mesh_size1 = 9.1,
+   select_p1 = 21.1, select_p2 = 23.8)
 
 # create vector with mid lengths
 Lt <- c(12,22,29,34,38,41,43,45,46,47,48,49,49)
 
 # run model
-select_ogive(select.list, seq(1,13,1),Lt)
+select_ogive(select.list, Lt)
 
 }
 \references{
-xx
+Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 }
 
