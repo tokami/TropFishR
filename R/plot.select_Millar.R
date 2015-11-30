@@ -10,18 +10,19 @@
 #' @param ... normal parameter options from plot function
 #'
 #' @examples
+#' # Gillnet
 #' # load data
-#' data(gillnet) #data_GillnetSelect3
+#' data(gillnet)
 #'
 #' # run model
-#' output <- MillarsGillnetSelect(gillnet, model = "normal_fixed",
-#'    plotlens = NULL, rel = NULL)
+#' output <- select_Millar(gillnet, x0 = c(60,4), rel.power = rep(1,8),
+#'    rtype = "norm.loc")
 #'
 #' # investigate results
 #' output
 #'
-#' #plot results
-#' plot(output)
+#' # plot results
+#' plot(output,plotlens=seq(40,90,0.1))
 #'
 #' @details A function to plot the results of the gillnet selectivity estimation.
 #'
@@ -31,38 +32,34 @@
 #'
 #' @export
 
-
-
-x = fit # from Netfit
-
-
 plot.select_Millar <- function(x,
-                               Meshsize=NULL,
                                plotlens=NULL,
                                standardize=TRUE,
                                ...
                                ){
 
-  r=selncurves(fit$rtype) #Get selection curve function
-  if(is.null(plotlens)) plotlens=fit$Data[,1]
-  if(is.null(Meshsize)) Meshsize=fit$Meshsize
-  plot.title=switch(fit$rtype,
+  res <- x
+  r <- rtypes_Millar(res$rtype) #Get selection curve function
+  if(is.null(plotlens)) plotlens <- res$midLengths
+  #if(is.null(meshSizes)) meshSizes <- res$meshSizes
+
+  plot.title <- switch(res$rtype,
                     "norm.loc"="Normal (common spread)",
                     "norm.sca"="Normal",
                     "lognorm"="Lognormal",
                     "binorm.sca"="Bi-normal",
                     "bilognorm"="Bi-lognormal",
                     "tt.logistic"="Control and logistic","")
-  rmatrix=outer(plotlens,Meshsize,r,fit$par)
-  rmatrix=t(t(rmatrix)*fit$rel.power)
+
+  rmatrix <- outer(plotlens,res$meshSizes,r,res$par)
+  rmatrix=t(t(rmatrix)*res$rel.power)
   if(standardize) rmatrix=rmatrix/max(rmatrix)
   matplot(plotlens,rmatrix,type="l",las=1,ylim=c(0,1),
           xlab="Length (cm)",ylab="Relative retention",...)
   #abline(h=seq(0,1,0.25),lty=3)
   lenrmatrix=cbind(plotlens,rmatrix)
-  colnames(lenrmatrix)=c("Length",Meshsize)
+  colnames(lenrmatrix)=c("Length",res$meshSizes)
   invisible(lenrmatrix)
-
 }
 
 

@@ -4,7 +4,7 @@
 #'    catch with two gillnets with different mesh sizes.
 #'
 #' @param param A list with following parameters: vector with midlengths of size classes
-#'    (\code{$midLengths}), vector with meshSizess in increasing order (\code{$meshSizess}),
+#'    (\code{$midLengths}), vector with meshSizes in increasing order (\code{$meshSizes}),
 #'    and a matrix with the number of individuals caught with each sized mesh
 #'    (\code{$CatchPerNet_mat}).
 #' @param model A character string indicating which type fo model for the estimation
@@ -16,16 +16,15 @@
 #'
 #' @examples
 #' # Trouser trawl net
-#' # do also example with haddock data (gillnet)
 #' # load data
 #' data(haddock)
 #'
 #' # run model
-#' output <- select_Millar(haddock, x0 = c(0,130),
-#'    rel.power = c(-10,0.3,0), rtype = "tt.logistic")
+#' output <- select_Millar(haddock, x0 = c(-10,0.3,0),
+#'    rtype = "tt.logistic", rel.power = NULL)
 #'
 #' # plot results
-#' plot(output,plotlens=seq(25,35,0.1))
+#' plot(output, plotlens=seq(25,35,0.1))
 #' legend(32,0.5,c("Control","Experimental"),lty=1:2,col=1:2,cex=0.8,bg="white")
 #'
 #'
@@ -34,7 +33,8 @@
 #' data(gillnet)
 #'
 #' # run model
-#' output <- select_Millar(gillnet, x0 = c(60,4), rel.power = rep(1,8), rtype="norm.loc")
+#' output <- select_Millar(gillnet, x0 = c(60,4), rel.power = rep(1,8),
+#'    rtype = "norm.loc")
 #'
 #' # investigate results
 #' output
@@ -84,35 +84,18 @@
 #'
 #' @export
 
-
-data(gillnet)
-param = gillnet
-x0 = c(60,4)
-rel.power = rep(1,8)
-rtype="norm.loc"
-
-theta  #  = ???
-
-meshSizes=NULL
-plotlens=NULL
-standardize=TRUE
-
-label="Deviance residuals"
-xlabel="Length (cm)"
-ylabel="Mesh size (cm)"
-cex=1
-
-
-
 select_Millar <- function(param,
                           x0,
-                          rtype="norm.loc",
-                          rel.power=NULL
+                          rtype = "norm.loc",
+                          rel.power = NULL
                           ){
   res <- param
-  meshSizess <- res$meshSizess
+  meshSizes <- res$meshSizes
   classes <- res$midLengths
   CatchPerNet_mat <- res$CatchPerNet_mat
+
+  if(is.null(CatchPerNet_mat)) CatchPerNet_mat <- cbind(res$numCover,res$numCodend)
+  res$CatchPerNet_mat <- CatchPerNet_mat
 
   #  NetFit  #
   if(sum(sort(meshSizes)==meshSizes)!=length(meshSizes))
@@ -120,7 +103,7 @@ select_Millar <- function(param,
 
   if(is.null(rel.power)) rel.power=rep(1,length(meshSizes))
 
-  if(ncol(CatchPerNet_mat) != length(meshSizes))
+  if(!is.null(meshSizes) & ncol(CatchPerNet_mat) != length(meshSizes))
     stop("Number of mesh sizes should be ", ncol(CatchPerNet_mat))
 
   CountPropns <- CatchPerNet_mat/apply(CatchPerNet_mat,1,sum,na.rm=TRUE)
@@ -133,17 +116,17 @@ select_Millar <- function(param,
   nllhood <- function(theta,classes,CatchPerNet_mat,meshSizes,r,rel.power){
     rmatrix <- outer(classes,meshSizes,r,theta)
     rmatrix[is.na(CatchPerNet_mat)] <- NA #No fitted retention for missing meshSizes
-    rmatrix <- t(t(rmatrix)*rel.power)
+    rmatrix <- t(t(rmatrix) * rel.power)
     phi <- rmatrix/apply(rmatrix,1,sum,na.rm=TRUE)
-    nll <- -sum(CatchPerNet_mat*log(phi),na.rm=TRUE)
+    nll <- - sum(CatchPerNet_mat * log(phi),na.rm=TRUE)
     return(nll)
   }
 
-  res2 <- optim(x0,nllhood,classes=classes,CatchPerNet_mat=CatchPerNet_mat,
-               meshSizes=meshSizes,r=r,rel.power=rel.power,
-               hessian=T,control=list(trace=F))
+  res2 <- optim(x0, nllhood, classes = classes, CatchPerNet_mat = CatchPerNet_mat,
+               meshSizes = meshSizes, r = r, rel.power = rel.power,
+               hessian = T, control = list(trace = F))
 
-  cat("Parameters=",fit$par,",    Deviance=",2*(fullfit.l+fit$value),"\n")
+  cat("Parameters=",fit$par,",  Deviance=",2*(fullfit.l + fit$value),"\n")
 
   res3 <- c(res,res2,deviance=deviance,rtype=rtype,rel.power=list(rel.power))  # invisible
 
@@ -198,7 +181,7 @@ select_Millar <- function(param,
   O=res3$CatchPerNet_mat; #Matrix of observed classes
 
   rmatrix=outer(classes,meshSizes,r,res3$par)
-  rmatrix[is.na(O)]=NA #No fitted retention for missing meshSizess
+  rmatrix[is.na(O)]=NA #No fitted retention for missing meshSizes
   rmatrix=t(t(rmatrix)*res3$rel.power)
   phi=rmatrix/apply(rmatrix,1,sum,na.rm=TRUE)
   E=apply(O,1,sum,na.rm=TRUE)*phi #Matrix of expected classes
@@ -215,20 +198,21 @@ select_Millar <- function(param,
   d.o.f.=nrow(NonZeroDat)*(nmeshes-1)-length(res3$par)-sum(is.na(NonZeroDat))
   out=rbind(null.l,model.l,full.l,Deviance,Pearson.chisq,d.o.f.)
   AreLensUnique=(length(classes)==length(unique(classes)))
+  op <- par(mfrow=c(2,1), mar=c(4,4,2,2),oma=c(1,1,1,1))
   if(nmeshes>2&AreLensUnique) {
-    plot(1,1,xlim=range(classes),xlab=xlabel,ylab=ylabel,
-         ylim=range(meshSizes)+(cex/50)*c(-1,1)*(max(meshSizes)-min(meshSizes)),
-         yaxt="n",type="n",main=label)
+    plot(1,1,xlim=range(classes),xlab="Length (cm)",ylab="Mesh size (cm)",
+         ylim=range(meshSizes)+(1/50)*c(-1,1)*(max(meshSizes)-min(meshSizes)), # (cex/50)
+         yaxt="n",type="n",main="Deviance residuals")
     axis(2,meshSizes,meshSizes,las=1)
     for(i in 1:nlens)
       for(j in 1:nmeshes)
         points(classes[i],meshSizes[j],pch=ifelse(Dev.resids[i,j]>0,16,1),
-               cex=3*abs(Dev.resids[i,j])*cex/(abs(max(Dev.resids))))
+               cex=3*abs(Dev.resids[i,j])*1/(abs(max(Dev.resids))))   # cex / (abs...)
     }else
     if(nmeshes==2) {
       Dev.resids.len=sign(Dev.resids[,2])*sqrt(apply(Dev.resids^2,1,sum))
       plot(classes,Dev.resids.len,type=ifelse(AreLensUnique,"h","p"),las=1,
-           main=label,xlab=xlabel,ylab=ylabel,cex=cex)
+           main="Deviance residuals",xlab="Length (cm)",ylab="Mesh size (cm)",cex=1)   # cex = cex
       abline(h=0) }
   #return(out)
 
@@ -236,7 +220,7 @@ select_Millar <- function(param,
   #   PlotCurves  #
 
   r=rtypes_Millar(res3$rtype) #Get selection curve function
-  if(is.null(plotlens)) plotlens=res3$Data[,1]
+  if(is.null(plotlens)) plotlens=classes
   if(is.null(meshSizes)) meshSizes=res3$meshSizes
   plot.title=switch(res3$rtype,
                     "norm.loc"="Normal (common spread)",
@@ -247,16 +231,16 @@ select_Millar <- function(param,
                     "tt.logistic"="Control and logistic","")
   rmatrix=outer(plotlens,meshSizes,r,res3$par)
   rmatrix=t(t(rmatrix)*res3$rel.power)
-  if(standardize) rmatrix=rmatrix/max(rmatrix)
+  rmatrix=rmatrix/max(rmatrix)
   matplot(plotlens,rmatrix,type="l",las=1,ylim=c(0,1),
-          xlab="Length (cm)",ylab="Relative retention",...)
+          xlab="Length (cm)",ylab="Relative retention")
   #abline(h=seq(0,1,0.25),lty=3)
   lenrmatrix=cbind(plotlens,rmatrix)
   colnames(lenrmatrix)=c("Length",meshSizes)
   invisible(lenrmatrix)
+  par(op)
 
+  ret <- res3
+  class(ret) <- "select_Millar"
+  return(ret)
 }
-
-
-
-

@@ -19,9 +19,6 @@ This function estimates the selecitvity of trawl nets.
 To calculate selection factor (SF), L25, L50 and L75 for trawl nets /fisheries.
 }
 \examples{
-data(data_TrawlSelect)
-output <- TrawlSelect(data_TrawlSelect)
-plot(output)
 
 }
 \references{

@@ -19,14 +19,6 @@ This function plots the selectivity estimates of the
 A function to plot the results of the gillnet selectivity estimation.
 }
 \examples{
-# load data
-data(data_GillnetSelect)
-
-# run model
-output <- GillnetSelect(data_GillnetSelect)
-
-# plot results
-plot(output)
 
 }
 \references{

@@ -7,9 +7,6 @@
 #' @param ... parameter of plot function
 #'
 #' @examples
-#' data(data_TrawlSelect)
-#' output <- TrawlSelect(data_TrawlSelect)
-#' plot(output)
 #'
 #' @details To calculate selection factor (SF), L25, L50 and L75 for trawl nets /fisheries.
 #'
