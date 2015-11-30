@@ -1,17 +1,23 @@
 #' @title Millar's selectivity model
 #
-#' @description  This function estimates the selecitvity of a gillnet from an experimental
-#'    catch with two gillnets with different mesh sizes.
+#' @description  This model estimates the selecitvity of different gears from experimental
+#'    catches.
 #'
 #' @param param A list with following parameters: vector with midlengths of size classes
 #'    (\code{$midLengths}), vector with meshSizes in increasing order (\code{$meshSizes}),
 #'    and a matrix with the number of individuals caught with each sized mesh
 #'    (\code{$CatchPerNet_mat}).
-#' @param model A character string indicating which type fo model for the estimation
-#'   of the selection curves should be used: \code{"fixed_normal"}, \code{"normal"},
-#'   \code{"gamma"}, or \code{"lognormal"}.
-#' @param plotlens Vector of lengths for which values of relative retention are required
-#' @param rel Vector of realtive efficencies
+#' @param x0 A string of initial values for the parameters to be optimized over when applying the
+#'    function \code{\link[stats]{optim}}.
+#' @param rtype A character string indicating which method for estimating selection curves
+#'    should be used: \code{"norm.loc"} for a normal curve with common spread,
+#'    \code{"norm.sca"} for a normal curve with variable spread,
+#'    \code{"lognorm"} for a lognormal curve,
+#'    \code{"binorm.sca"} for a bi-normal curve,
+#'    \code{"bilognorm"} for a bi-lognormal curve,
+#'    \code{"tt.logistic"} for a control and logistic curve
+#' @param rel.power A string indicating the relative power of different meshSizes,
+#'    must have same length as \code{meshSizes} (Default: \code{rel.power = NULL}).
 #'
 #'
 #' @examples
@@ -64,15 +70,6 @@
 #' @details Model adapted from the selectivity functions provided by Prof. Dr. Russell Millar
 #'   (https://www.stat.auckland.ac.nz/~millar/).
 #'
-#'   This function estimates the fractions retained by each net (SNet1 and SNet2), the
-#'   optimum lengths for each net, the selection factor (SF), and the standard deviation
-#'   of the factor (stand.dev).
-#'   Assumptions of this method are, that (i) the optimum length Lm is proportional to the mesh
-#'   size (Lm equals SF times m), (ii) the selection curves are normally distributed with a common
-#'   standard deviation, (iii) the nets have the same fishing power (same dimensions and material).
-#'   Requirements for the experimental set-up are: selection curves corresponding to the two
-#'   mesh sizes have to overlap, and the nets have to be set in the same area, during the
-#'   same time.
 #'
 #' @references
 #'  Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
@@ -199,7 +196,7 @@ select_Millar <- function(param,
   out=rbind(null.l,model.l,full.l,Deviance,Pearson.chisq,d.o.f.)
   AreLensUnique=(length(classes)==length(unique(classes)))
   op <- par(mfrow=c(2,1), mar=c(4,4,2,2),oma=c(1,1,1,1))
-  if(nmeshes>2&AreLensUnique) {
+  if(nmeshes > 2 & AreLensUnique) {
     plot(1,1,xlim=range(classes),xlab="Length (cm)",ylab="Mesh size (cm)",
          ylim=range(meshSizes)+(1/50)*c(-1,1)*(max(meshSizes)-min(meshSizes)), # (cex/50)
          yaxt="n",type="n",main="Deviance residuals")
@@ -209,7 +206,7 @@ select_Millar <- function(param,
         points(classes[i],meshSizes[j],pch=ifelse(Dev.resids[i,j]>0,16,1),
                cex=3*abs(Dev.resids[i,j])*1/(abs(max(Dev.resids))))   # cex / (abs...)
     }else
-    if(nmeshes==2) {
+    if(nmeshes == 2) {
       Dev.resids.len=sign(Dev.resids[,2])*sqrt(apply(Dev.resids^2,1,sum))
       plot(classes,Dev.resids.len,type=ifelse(AreLensUnique,"h","p"),las=1,
            main="Deviance residuals",xlab="Length (cm)",ylab="Mesh size (cm)",cex=1)   # cex = cex

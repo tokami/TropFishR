@@ -1,49 +1,39 @@
-#' @title Millar's selectivity types
+#' @title Millar's selectivity curve types
 #
-#' @description  This function estimates the selecitvity of a gillnet from an experimental
-#'    catch with two gillnets with different mesh sizes.
+#' @description  This function returns a function corresponding to the type of curve which was selected
+#'    to represent the selectivity of nets or hooks.
 #'
-#' @param param A list with following parameters: vector with midlengths of size classes
-#'    (\code{$midLengths}), vector with meshSizesss in increasing order (\code{$meshSizesss}),
-#'    and a matrix with the number of individuals caught with each sized mesh
-#'    (\code{$CatchPerNet_mat}).
-#' @param model A character string indicating which type fo model for the estimation
-#'   of the selection curves should be used: \code{"fixed_normal"}, \code{"normal"},
-#'   \code{"gamma"}, or \code{"lognormal"}.
+#' @param rtype A character string indicating which method for estimating selection curves
+#'    should be used: \code{"norm.loc"} for normal with common spread method,
+#'    \code{"norm.sca"} for normal with variable spread method,
+#'    \code{"lognorm"} for lognormal method,
+#'    \code{"binorm.sca"} for bi-normal method,
+#'    \code{"bilognorm"} for bi-lognormal method,
+#'    \code{"tt.logistic"} for control and logistic method.
 #'
 #' @examples
-#'
+#' rtypes_Millar('lognorm')
 #'
 #' @source https://www.stat.auckland.ac.nz/~millar/selectware/
 #'
-#' @details Model adapted from the selectivity functions provided by Prof. Dr. Russell Millar
-#'   (https://www.stat.auckland.ac.nz/~millar/).
+#' @details Function adapted from the selectivity functions provided by Prof. Dr. Russell Millar
+#'   (https://www.stat.auckland.ac.nz/~millar/). Until now following curves are incorporated:
+#'   \code{"norm.loc"} for a normal curve with common spread,
+#'    \code{"norm.sca"} for a normal curve with variable spread,
+#'    \code{"lognorm"} for a lognormal curve,
+#'    \code{"binorm.sca"} for a bi-normal curve,
+#'    \code{"bilognorm"} for a bi-lognormal curve,
+#'    \code{"tt.logistic"} for a control and logistic curve. Curves to be added include:
+#'    \code{"tt.richards"}, for richards fit to trouser trawl data, and \code{"gamma"},
+#'    for a gamma curve.
 #'
-#'   This function estimates the fractions retained by each net (SNet1 and SNet2), the
-#'   optimum lengths for each net, the selection factor (SF), and the standard deviation
-#'   of the factor (stand.dev).
-#'   Assumptions of this method are, that (i) the optimum length Lm is proportional to the mesh
-#'   size (Lm equals SF times m), (ii) the selection curves are normally distributed with a common
-#'   standard deviation, (iii) the nets have the same fishing power (same dimensions and material).
-#'   Requirements for the experimental set-up are: selection curves corresponding to the two
-#'   mesh sizes have to overlap, and the nets have to be set in the same area, during the
-#'   same time.
 #'
 #' @references
 #'  Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
 #'  using log-linear models. ICES Journal of Marine Science: Journal du Conseil, 54(3), 471-477.
 #'
-#'  Holt, S. J. 1963. A method for determining gear selectivity and its application.
-#'  ICNAF Special Publication, 5: 106-115.
-#'
 #'
 #' @export
-
-
-
-#Curves to be added include:
-#tt.richards, for richards fit to trouser trawl data
-#gamma, for net selectivity.
 
 rtypes_Millar <- function(rtype) {
   switch(rtype,
