@@ -2,6 +2,7 @@
 
 S3method(plot,GillnetSelect)
 S3method(plot,TrawlSelect)
+S3method(plot,VPA)
 S3method(plot,select_Millar)
 export(BevertonHoltsZ)
 export(CatchCurve)

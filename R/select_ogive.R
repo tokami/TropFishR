@@ -1,5 +1,5 @@
 #' @title Selectivity function for prediction models
-#
+#'
 #' @description  This function estimates the fraction retained in the net for corresponding
 #'    lengths of fish. Different selection curves can be used.
 #'

@@ -2,85 +2,68 @@
 % Please edit documentation in R/VPA.R
 \name{VPA}
 \alias{VPA}
-\title{Virtual Population Analysis (VPA)}
+\title{Virtual Population Analysis (VPA) model}
 \usage{
-VPA(classes, catch, datatype, analysis.type, M, terminalF, a, b,
-  catchCorFac = NA, Linf = NA, K = NA, t0 = 0, algorithm = "new")
+VPA(param, terminalF, analysis.type, catch_corFac = NA, algorithm = "new")
 }
 \arguments{
-\item{classes}{Midpoints of the length class as vector (length frequency
-data) or ages as vector (age composition data).}
+\item{param}{A list consisting of following parameters:
+\code{$age} or \code{$midLengths} midpoints of the length class as vector (length frequency
+data) or ages as vector (age composition data),
+\code{$Linf} Infinite length for investigated species in cm [cm],
+\code{$K} Growth coefficent for investigated species per year [1/year],
+\code{t0} Theoretical time zero, at which individuals of this species hatch,
+\code{M} Natural mortality [1/year],
+\code{a} length-weight relationship coefficent (W = a * L^b),
+\code{b} length-weight relationship coefficent (W = a * L^b),
+\code{catch} Catch as vector, or a matrix with catches of subsequent years if
+the catch curve with constat time intervals should be applied;}
 
-\item{catch}{Catch as vector, or a matrix with catches of subsequent years if
-the catch curve with constat time intervals should be applied.}
-
-\item{datatype}{Type of data which is used for analysis, either 'length' or
-'age', for length frequency or age composition data, respectively}
+\item{terminalF}{A fishing mortality value which is used as the terminal FM for the last age/length group.}
 
 \item{analysis.type}{Determines which type of assessment should be done,
 options: "VPA" for classical age-based VPA, "CA" for age- or length-based
 Cohort analysis}
 
-\item{M}{Natural mortality [1/year]}
-
-\item{terminalF}{terminal fishing mortality}
-
-\item{a}{length-weight relationship coefficent (W = a * L^b)}
-
-\item{b}{length-weight relationship coefficent (W = a * L^b)}
-
-\item{catchCorFac}{optional: Correction factor for catch, in case provided
+\item{catch_corFac}{optional: Correction factor for catch, in case provided
 catch does spatially or temporarily not reflect catch for fishing ground of
 a whole year.}
-
-\item{Linf}{Infinite length for investigated species in cm [cm].}
-
-\item{K}{Growth coefficent for investigated species per year [1/year].}
-
-\item{t0}{Theoretical time zero, at which individuals of this species hatch.}
 
 \item{algorithm}{An Algorithm to use to solve for fishing mortality. The default
 setting \code{algorithm="new"} uses \code{\link[stats]{optimize}},
 while \code{algorithm="old"} uses the algorithm described by
-Sparre and Venema (1998)}
+Sparre and Venema (1998).}
 }
 \description{
-This function enables a Virtual Population Analysis and Cohort analysis.
+This function applies the Virtual Population Analysis or Cohort analysis,
+   respectively. A method used to estimate fishing mortality per age/length group and
+   to get a first estimate of stock biomass.
 }
 \details{
-Cohort analysis
+VPA and Cohort analyses
 }
 \examples{
 # Virtual Popuation Analysis with age-composition data
-data("ex.CatchCurve")   ### == whiting
-output <- with(ex.CatchCurve, VPA(classes = age, catch = ex.CatchCurve[,2:8],
-   datatype = 'age', analysis.type = "VPA", terminalF = 0.5,
-   M = 0.2, a = 0.00984, b = 2.926))
-output
+data(whiting)
+output <- VPA(whiting, terminalF = 0.5, analysis.type = "VPA")
 
 # Pope's Cohort Analysis with age-composition data
-data("ex.CatchCurve")   ### == whiting
-output <- with(ex.CatchCurve, VPA(classes = age, catch = ex.CatchCurve[,2:8],
-   datatype = 'age', analysis.type = "CA", terminalF = 0.5,
-   M = 0.2, a = 0.00984, b = 2.926))
-output
+data(whiting)
+output <- VPA(whiting, terminalF = 0.5, analysis.type = "CA")
 
 # Jones's Cohort Analysis with length-composition data
-data("ex.CohortAnalysis")   ### == hake data
-output <- with(ex.CohortAnalysis, VPA(classes = midLengths, catch = catch,
-   Linf = 130, K = 0.1, M = 0.28, terminalF = 0.28,
-   a = 0.00001, b = 3, datatype = 'length', analysis.type = "CA"))
-output
-
-
+data(hake)
+output <- VPA(hake, terminalF = 0.5, analysis.type = "CA")
 
 }
 \references{
-Jones ???  Sparre? external reference for a and b in case of age
-composition data, because not provided by book: Dorel, D., 1986. Poissons de
-l'Atlantique nord-est relations taille-poids. Institut Francais de Recherche
-pour l'Exploitation de la Mer. Nantes, France. 165 p.
+Jones?
+
 Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
+
+References for weight-length relationship parameters (a & b):
+Dorel, D., 1986. Poissons del'Atlantique nord-est relations taille-poids. Institut Francais de Recherche
+pour l'Exploitation de la Mer. Nantes, France. 165 p.
 }
 
