@@ -37,22 +37,26 @@
 
 rtypes_Millar <- function(rtype) {
   switch(rtype,
+
          "norm.loc"={
            r=function(classes,meshSizes,th) {
              relsize=meshSizes/meshSizes[1]
              seln=exp(-(classes-th[1]*relsize)^2/(2*th[2]^2))
              return(seln) } },
+
          "norm.sca"={
            r=function(classes,meshSizes,th) {
              relsize=meshSizes/meshSizes[1]
              seln=exp(-(classes-th[1]*relsize)^2/(2*th[2]^2*relsize^2))
              return(seln) } },
+
          "lognorm"={
            r=function(classes,meshSizes,th) {
              relsize=meshSizes/meshSizes[1]
              seln=(relsize/classes)*exp(th[1]-th[2]^2/2)
              seln=seln*exp( -(log(classes)-th[1]-log(relsize))^2/(2*th[2]^2) )
              return(seln) } },
+
          "binorm.sca"={
            r=function(classes,meshSizes,th) {
              relsize=meshSizes/meshSizes[1]
@@ -61,6 +65,7 @@ rtypes_Millar <- function(rtype) {
              p=exp(th[5])/(1+exp(th[5])) #i.e., th[5]=logit(p)
              seln=p*seln1+(1-p)*seln2
              return(seln) } },
+
          "bilognorm"={
            r=function(classes,meshSizes,th) {
              relsize=meshSizes/meshSizes[1]
@@ -71,6 +76,7 @@ rtypes_Millar <- function(rtype) {
              p=exp(th[5])/(1+exp(th[5])) #i.e., th[5]=logit(p)
              seln=p*seln1+(1-p)*seln2
              return(seln) } },
+
          "tt.logistic"={
            r=function(classes,meshSizes,th) {
              control=(meshSizes==meshSizes[1])
@@ -79,6 +85,7 @@ rtypes_Millar <- function(rtype) {
              lselect=wk/(1+wk)
              seln=(1-p)*control+p*lselect*(1-control)
              return(seln) } },
+
          stop(paste("\n",rtype, "not recognised, possible curve types are \n",
                     "\"norm.loc\", \"norm.sca\", \"lognorm\" \n",
                     "\"binorm.sca\", \"bilognorm\", and \"tt.logistic\""))

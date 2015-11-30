@@ -3,10 +3,18 @@
 #' @description  This function plots the selectivity estimates of the
 #'   function \code{\link{GillnetSelect}}. Second sentence.
 #'
-#' @param x A list of the class "GillnetSelect" containing the results of the gillnet selectivity function.
+#' @param x A list of the class \code{"GillnetSelect"} containing the results of the gillnet selectivity function.
 #' @param ... normal parameters from plot function
 #'
 #' @examples
+#' # load data
+#' data(tilapia)
+#'
+#' # run model
+#' output <- select(tilapia)
+#'
+#' # plot results
+#' #plot(output)
 #'
 #' @details A function to plot the results of the gillnet selectivity estimation.
 #'

@@ -3,14 +3,25 @@
 #' @description  This function estimates the selecitvity of trawl nets.
 #'    First sentence. second sentence.
 #'
-#' @param x results of trawl select function
+#' @param x Results of the trawl select function in the class \code{"TrawlSelect"}.
 #' @param ... parameter of plot function
 #'
 #' @examples
+#' # load data
+#' data(bream)
+#'
+#' # run model
+#' output <- select(bream)
+#'
+#' # plot results
+#' #plot(output)
 #'
 #' @details To calculate selection factor (SF), L25, L50 and L75 for trawl nets /fisheries.
 #'
-#' @references xx
+#'
+#' @references
+#' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+#' Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 #'
 #'
 #' @export

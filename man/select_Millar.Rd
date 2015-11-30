@@ -15,31 +15,28 @@ select_Millar(param, x0, rtype = "norm.loc", rel.power = NULL)
 and a matrix with the number of individuals caught with each sized mesh
 (\code{$CatchPerNet_mat}).}
 
-\item{model}{A character string indicating which type fo model for the estimation
-of the selection curves should be used: \code{"fixed_normal"}, \code{"normal"},
-\code{"gamma"}, or \code{"lognormal"}.}
+\item{x0}{A string of initial values for the parameters to be optimized over when applying the
+function \code{\link[stats]{optim}}.}
 
-\item{plotlens}{Vector of lengths for which values of relative retention are required}
+\item{rtype}{A character string indicating which method for estimating selection curves
+should be used:
+\code{"norm.loc"} for a normal curve with common spread,
+\code{"norm.sca"} for a normal curve with variable spread,
+\code{"lognorm"} for a lognormal curve,
+\code{"binorm.sca"} for a bi-normal curve,
+\code{"bilognorm"} for a bi-lognormal curve,
+\code{"tt.logistic"} for a control and logistic curve}
 
-\item{rel}{Vector of realtive efficencies}
+\item{rel.power}{A string indicating the relative power of different meshSizes,
+must have same length as \code{meshSizes} (Default: \code{rel.power = NULL}).}
 }
 \description{
-This function estimates the selecitvity of a gillnet from an experimental
-   catch with two gillnets with different mesh sizes.
+This model estimates the selecitvity of different gears from experimental
+   catches.
 }
 \details{
 Model adapted from the selectivity functions provided by Prof. Dr. Russell Millar
   (https://www.stat.auckland.ac.nz/~millar/).
-
-  This function estimates the fractions retained by each net (SNet1 and SNet2), the
-  optimum lengths for each net, the selection factor (SF), and the standard deviation
-  of the factor (stand.dev).
-  Assumptions of this method are, that (i) the optimum length Lm is proportional to the mesh
-  size (Lm equals SF times m), (ii) the selection curves are normally distributed with a common
-  standard deviation, (iii) the nets have the same fishing power (same dimensions and material).
-  Requirements for the experimental set-up are: selection curves corresponding to the two
-  mesh sizes have to overlap, and the nets have to be set in the same area, during the
-  same time.
 }
 \examples{
 # Trouser trawl net

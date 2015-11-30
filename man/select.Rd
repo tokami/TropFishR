@@ -8,16 +8,16 @@ select(param)
 }
 \arguments{
 \item{param}{A list with following parameters: midlengths of size classes
-(\code{$midLengths}), number of fish caught with net 1 (\code{$numNet1}),
-number of fish caught with net 2 (\code{$numNet2}), and the meshsizes of both
-nets (\code{$msNet1} & \code{$msNet2}).}
+(\code{$midLengths}), a string indicating which type of gear was used (\code{$type}) so far
+\code{"gillnet"} or \code{"trawl_net"} are possible types, a vector with increasing mesh sizes (\code{$meshSizes}),
+and a matrix with the catches per net in corresponding order of mesh sizes (\code{$CatchPerNet_mat}).}
 }
 \description{
-This function estimates the selecitvity of different gillnet and trawl nets
+This function estimates the selecitvity of different gillnets and trawl nets
    from experimental catches.
 }
 \details{
-This function estimates the fractions retained by each net (SNet1 & SNet2), the
+This function estimates the fractions retained by each net, the
   optimum lengths for each net, the selection factor (SF), and the standard deviation
   of the factor (stand.dev). Calculations are based on a normal distribution with common spread.
   Assumptions of this method are, that (i) the optimum length Lm is proportional to the mesh
@@ -31,23 +31,23 @@ This function estimates the fractions retained by each net (SNet1 & SNet2), the
 \examples{
 # Gillnet selectivity
 # load data
-data(tilapia)              ### == data_GillnetSelect
+data(tilapia)
 
 # run model
 output <- select(tilapia)
 
 # plot results
-plot(output)
+#plot(output)
 
 # Trawl selectivity
 # load data
-data(bream)                #### == data_TrawlSelect
+data(bream)
 
 # run model
 output <- select(bream)
 
 # plot results
-plot(output)
+#plot(output)
 
 }
 \references{

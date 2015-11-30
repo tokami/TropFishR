@@ -4,25 +4,25 @@
 \alias{plot.select_Millar}
 \title{Millar's selectivity plot}
 \usage{
-\method{plot}{select_Millar}(x, plotlens = NULL, standardize = TRUE, ...)
+\method{plot}{select_Millar}(x, plotlens = NULL, standardise = TRUE, ...)
 }
 \arguments{
-\item{x}{A list of the class "GillnetSelect" containing the results of the gillnet selectivity function.}
+\item{x}{A list of the class \code{"select_Millar"} containing the results of Millar's selectivity model}
 
-\item{...}{normal parameter options from plot function}
+\item{plotlens}{A vector with lengths which should be used for drawing the selection curves}
 
-\item{ret_dev}{draw both plots? Default = c(T,T)}
+\item{standardise}{A parameter indicating if the retention should be realtive to the maximum value (Default: \code{standardise = TRUE}).}
 
-\item{cex}{thickness of points Default = 1}
-
-\item{title}{Title of plot Default = "Deviance residuals"}
+\item{...}{Default parameter options from plot function}
 }
 \description{
-This function plots the selectivity estimates of the function
-   \code{\link{GillnetSelect}}. First sentence. second sentence.
+This function plots the selectivity estimates of Millar's selectivity model
+   (\code{\link{select_Millar}}).
 }
 \details{
-A function to plot the results of the gillnet selectivity estimation.
+This function draws a selectivity plot for the object class
+   \code{"select_Millar"}, which is created by applying Millar's selectivity model
+   \code{\link{select_Millar}}.
 }
 \examples{
 # Gillnet
@@ -32,9 +32,6 @@ data(gillnet)
 # run model
 output <- select_Millar(gillnet, x0 = c(60,4), rel.power = rep(1,8),
    rtype = "norm.loc")
-
-# investigate results
-output
 
 # plot results
 plot(output,plotlens=seq(40,90,0.1))

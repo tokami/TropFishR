@@ -10,7 +10,8 @@
 #' @param x0 A string of initial values for the parameters to be optimized over when applying the
 #'    function \code{\link[stats]{optim}}.
 #' @param rtype A character string indicating which method for estimating selection curves
-#'    should be used: \code{"norm.loc"} for a normal curve with common spread,
+#'    should be used:
+#'    \code{"norm.loc"} for a normal curve with common spread,
 #'    \code{"norm.sca"} for a normal curve with variable spread,
 #'    \code{"lognorm"} for a lognormal curve,
 #'    \code{"binorm.sca"} for a bi-normal curve,
@@ -123,7 +124,7 @@ select_Millar <- function(param,
                meshSizes = meshSizes, r = r, rel.power = rel.power,
                hessian = T, control = list(trace = F))
 
-  cat("Parameters=",fit$par,",  Deviance=",2*(fullfit.l + fit$value),"\n")
+  cat("Parameters=",res2$par,",  Deviance=",2*(fullfit.l + res2$value),"\n")
 
   res3 <- c(res,res2,deviance=deviance,rtype=rtype,rel.power=list(rel.power))  # invisible
 
@@ -217,7 +218,7 @@ select_Millar <- function(param,
   #   PlotCurves  #
 
   r=rtypes_Millar(res3$rtype) #Get selection curve function
-  if(is.null(plotlens)) plotlens=classes
+  plotlens=classes
   if(is.null(meshSizes)) meshSizes=res3$meshSizes
   plot.title=switch(res3$rtype,
                     "norm.loc"="Normal (common spread)",

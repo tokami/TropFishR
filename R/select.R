@@ -1,35 +1,35 @@
 #' @title Selectivity model
 #
-#' @description  This function estimates the selecitvity of different gillnet and trawl nets
+#' @description  This function estimates the selecitvity of different gillnets and trawl nets
 #'    from experimental catches.
 #'
 #' @param param A list with following parameters: midlengths of size classes
-#'    (\code{$midLengths}), number of fish caught with net 1 (\code{$numNet1}),
-#'    number of fish caught with net 2 (\code{$numNet2}), and the meshsizes of both
-#'    nets (\code{$msNet1} & \code{$msNet2}).
+#'    (\code{$midLengths}), a string indicating which type of gear was used (\code{$type}) so far
+#'    \code{"gillnet"} or \code{"trawl_net"} are possible types, a vector with increasing mesh sizes (\code{$meshSizes}),
+#'    and a matrix with the catches per net in corresponding order of mesh sizes (\code{$CatchPerNet_mat}).
 #'
 #' @examples
 #' # Gillnet selectivity
 #' # load data
-#' data(tilapia)              ### == data_GillnetSelect
+#' data(tilapia)
 #'
 #' # run model
 #' output <- select(tilapia)
 #'
 #' # plot results
-#' plot(output)
+#' #plot(output)
 #'
 #' # Trawl selectivity
 #' # load data
-#' data(bream)                #### == data_TrawlSelect
+#' data(bream)
 #'
 #' # run model
 #' output <- select(bream)
 #'
 #' # plot results
-#' plot(output)
+#' #plot(output)
 #'
-#' @details This function estimates the fractions retained by each net (SNet1 & SNet2), the
+#' @details This function estimates the fractions retained by each net, the
 #'   optimum lengths for each net, the selection factor (SF), and the standard deviation
 #'   of the factor (stand.dev). Calculations are based on a normal distribution with common spread.
 #'   Assumptions of this method are, that (i) the optimum length Lm is proportional to the mesh
@@ -59,11 +59,11 @@ select <- function(param){
   #HHHHHHHHHHH#
   #  GILLNET  #
   #HHHHHHHHHHH#
-  if("numCodend" %in% names(res) == FALSE){
-    numNet1 <- res$numNet1
-    numNet2 <- res$numNet2
-    msNet1 <- res$msNet1
-    msNet2 <- res$msNet2
+  if(res$type == "gillnet"){  #if("msCodend" %in% names(res) == FALSE){
+    numNet1 <- res$CatchPerNet_mat[,1]
+    numNet2 <- res$CatchPerNet_mat[,2]
+    msNet1 <- res$meshSizes[1]
+    msNet2 <- res$meshSizes[2]
 
     # log ratios y = ln(numNet2 / numNet1)
     lnNet2_Net1 <- log(numNet2 / numNet1)
@@ -112,11 +112,11 @@ select <- function(param){
     plot(classes.num,lnNet2_Net1)
     abline(a=sum.mod$coefficients[1], b=sum.mod$coefficients[2])
 
-    plot(classes.num.plot,XX,type='n', bty='n',xaxt ='n',
-         ylab="numbers caught",xlab="fish length [cm]")
-    lines(classes.num.plot,numNet1,type='s')
-    axis(side=1,at=classes.num)
-    lines(classes.num.plot,numNet2,type='s', lty=2)
+    plot(classes.num.plot, XX, type='n', bty='n',xaxt ='n', ylim = c(0,max(XX,ra.rm = TRUE)),
+         ylab="numbers caught", xlab="fish length [cm]")
+    lines(classes.num.plot, numNet1, type='s')
+    axis(side=1, at=classes.num)
+    lines(classes.num.plot, numNet2, type='s', lty=2)
     par(new=TRUE)
     plot(xL, exp(- ((xL - LmNet1)^2 / (2 * s2))), type = "l", col='darkgreen',lwd=2.5,
          axes=F,bty = "n", xlab = "", ylab = "")
@@ -148,10 +148,10 @@ select <- function(param){
   #HHHHHHHHHHH#
   #   TRAWL   #
   #HHHHHHHHHHH#
-  if("numCodend" %in% names(res) == TRUE){
-    numCodend <- res$numCodend
-    numCover <- res$numCover
-    meshsizeCodend <- res$meshsizeCodend
+  if(res$type == "trawl_net"){  #if("msCodend" %in% names(res) == TRUE){
+    numCodend <- res$CatchPerNet_mat[,2]
+    numCover <- res$CatchPerNet_mat[,1]
+    meshsizeCodend <- res$meshSizes[2]   #check, so far works just for two meshsizes
 
     # calculate fraction retained (SL obs)
     SLobs <- numCodend/(numCodend + numCover)
