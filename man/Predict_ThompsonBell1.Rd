@@ -28,14 +28,14 @@ better to treat last group always as a plus group..... For variable parameter sy
 
 # age-based yield per recruit model
 # load data
-data("data_Predict_ThompsonBell")   #### == shrimps but: M instead of Z !!!!
+data(shrimps)
 
 # run model
 # option 1: without plus group
-Predict_ThompsonBell1(data_Predict_ThompsonBell)
+Predict_ThompsonBell1(shrimps)
 
 # option 2: with plus group
-Predict_ThompsonBell1(data_Predict_ThompsonBell,plus.group=11)
+Predict_ThompsonBell1(shrimps,plus.group=11)
 
 # length-based yield per recruit model
 # load data

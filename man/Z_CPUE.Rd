@@ -2,35 +2,53 @@
 % Please edit documentation in R/Z_CPUE.R
 \name{Z_CPUE}
 \alias{Z_CPUE}
-\title{Methods to calculate Z from CPUE data}
+\title{Model to calculate Z from CPUE data}
 \usage{
-Z_CPUE(cohort, age, CPUE, method)
+Z_CPUE(param, method = "standard", omit_age1 = FALSE)
 }
 \arguments{
-\item{cohort}{bla bla}
+\item{param}{A list consisting of following parameters:
+\code{$cohort} a vector with with a cohort label,
+\code{$age} a vector with ages,
+\code{$CPUE} a vector with Catch per unit of effort (CPUE) values;}
 
-\item{age}{bla bla}
+\item{method}{A character string indicating which assessment method should be used:
+\code{"standard"}, \code{"Heincke"}, or \code{"RobsonChapman"}.}
 
-\item{CPUE}{bla bla}
-
-\item{method}{One of 3 methods to caluclate Z: "standard", "Heincke"}
+\item{omit_age1}{A logical parameter indicating if the first age group should omitted.}
 }
 \value{
-A matrix with total moratlity rates with column names ... and row names ... .
+A list with input parameters and a Z value or matrix.
 }
 \description{
-Method to estimate the total mortality (Z) from CPUE data.
-   First sentence. second sentence.
+Model to estimate the instantaneous total mortality rate (Z) from
+   CPUE data according to standard, Heincke's, or Robson & Chapman's method.
 }
 \details{
-Z from CPUE data
+In Heincke's and RobsonChapman's method age groups older than 4 are lumped,
+  because age groups older than 3 or 4 are said to be hard to seperate (Ricker, 1975).
+  Sparre and Venema (1998) recommend to omit the first age group in case it is not fully
+  exploited by the fishery.
 }
 \examples{
-data("ex.Z_CPUE")
-with(ex.Z_CPUE,Z_CPUE(cohort, age.t1, CPUE, method = "standard"))
+# load data
+data("synCPUE")
+
+# run model
+Z_CPUE(synCPUE, method = "standard")
+
+# alternative method:
+Z_CPUE(synCPUE, method = "RobsonChapman", omit_age1  = TRUE)
 
 }
 \references{
-Jones ???  Sparre?
+Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
+
+Sparre, P., Venema, S.C., 1999. Introduction to tropical fish stock assessment.
+Part 2. Excercises. FAO Fisheries Technical Paper, (306.2, Rev. 2). 94 p.
+
+Ricker, W.E., 1975. Computation and interpretation of biological statistics of fish
+populations. \emph{Bull.Fish.Res.Board Can.}, (191):382 p.
 }
 

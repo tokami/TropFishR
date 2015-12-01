@@ -53,31 +53,24 @@ For variable parameter system vectors are reuqired for constant parameter system
 }
 \examples{
 \donttest{
-# Variable paramter system
+# Variable paramter system (with catch vector)
 # based on length frequency data
 # load data
-data("ex.LengthCC")   #### == goatfish (list)
+load(goatfish)
 
 # run model
-output <- with(ex.LengthCC,CatchCurve(classes = ex.LengthCC[,1], catch = ex.LengthCC[,2],
-  Linf = 23.1, K = 0.59, datatype = 'length'))
-
-# investigate results
-output
+CatchCurve(goatfish)
 
 # based on age composition data
 # load data
-data("ex.CatchCurve")   ### == whiting
+data(whiting)
 
 # run model
-output <- with(ex.CatchCurve,CatchCurve(age, ex.CatchCurve[,2],datatype = 'age'))
+CatchCurve(whiting, catch_column = 1)
 
-output
+# Constant parameter system based on age composition data (with catch matrix)
+CatchCurve(whiting)
 
-# Constant parameter system based on age composition data
-output <- with(ex.CatchCurve,CatchCurve(age, ex.CatchCurve[,2:8],datatype = 'age'))
-
-output
  }
 
 \donttest{
