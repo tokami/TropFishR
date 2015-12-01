@@ -3,25 +3,36 @@
 #' @description Separating normal distributions of several cohorts in distinct
 #'   distributions representing cohorts. Second sentence.
 #'
-#' @param midLengths Midpoints of the length class as vector
-#' @param catch Catch per sampling time as matrix or the total catch as vector.
+#' @param param A list consisting of following parameters:
+#'   \code{$age} or \code{$midLengths} midpoints of the length class as vector (length frequency
+#'   data) or ages as vector (age composition data),
+#'   \code{catch} Catch as vector, or a matrix with catches of subsequent years if
+#'   the catch curve with constat time intervals should be applied;
 #'
 #' @examples
 #' \donttest{
-#'  data("ex.Bhattacharya")   ### == synLFQ1 (list) with catch_mat single columns have to be summed up
-#'  output = with(ex.Bhattacharya,Bhattacharya(midLengths,catch))
-#'  output
+#'  data(synLFQ1)
+#'  Bhattacharya(synLFQ1)
 #' }
 #' @details Bhattacharya
 #'
 #' @references
-#' Jones Sparre
+#' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+#' Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
+#'
+#' @export
+#'
 
-Bhattacharya <- function(midLengths, catch){
+Bhattacharya <- function(param){
+
+  res <- param
+  midLengths <- as.character(res$midLengths)
+  if("catch_mat" %in% names(res) == TRUE) catch <- res$catch_mat
+  if("catch" %in% names(res) == TRUE) catch <- res$catch
 
   #Transform all input variables to correct class
   midLengths <- as.numeric(as.character(midLengths))
-  catch <- as.numeric(as.character(catch))
+  #catch <- as.numeric(as.character(catch))
 
   #Transform matrix into vector if provided
   if(class(catch) == 'matrix'){
