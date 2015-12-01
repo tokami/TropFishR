@@ -1,4 +1,5 @@
 #' @name trawl_fishery_Java
+#'
 #' @title Data from the trawl fishery off the North coast of Java
 #'
 #' @description Times series of catch and effort data from the trawl fishery off the
@@ -19,7 +20,6 @@
 #' @examples
 #'
 #' data(trawl_fishery_Java)
-#' head(trawl_fishery_Java)
 #' str(trawl_fishery_Java)
 #'
 #'

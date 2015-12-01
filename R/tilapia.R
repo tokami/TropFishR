@@ -17,7 +17,8 @@
 #'   \item \code{$msNet2}  and the meshsize of net 2.
 #' }
 #'
-#' @source Garrod, D.J., 1961. The selection characteristics of nylon gill nets for \emph{Tilapia esculenta} Graham. J.Cons.CIEM, 26(2):191-203
+#' @source Garrod, D.J., 1961. The selection characteristics of nylon gill nets for
+#'    \emph{Tilapia esculenta} Graham. J.Cons.CIEM, 26(2):191-203
 #'
 #' @usage data(tilapia)
 #'

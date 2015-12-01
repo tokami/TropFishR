@@ -16,7 +16,8 @@
 #'   \item \code{$catch_mat} a matrix with the catches for different years.
 #' }
 #'
-#' @source Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment. Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
+#' @source Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+#'    Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 #'
 #' @usage data(synLFQ2)
 #' @keywords data dataset length-frequency

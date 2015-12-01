@@ -13,6 +13,7 @@
 #'   \item \code{$midLengths} a vector of the mid lengths of the length groups,
 #'   \item \code{$Linf} Infinite length for investigated species in cm [cm],
 #'   \item \code{$K} Growth coefficent for investigated species per year [1/year],
+#'   \item \code{$t0} Theoretical time zero, at which individuals of this species hatch,
 #'   \item \code{$catch} a vector with catches.
 #' }
 #'
@@ -22,7 +23,6 @@
 #' @keywords data dataset length-frequency
 #'
 #' @examples
-#'
 #' data(synLFQ3)
 #' str(synLFQ3)
 #'
