@@ -4,64 +4,55 @@
 \alias{BevertonHoltsZ}
 \title{Beverton and Holt's Z-Equations}
 \usage{
-BevertonHoltsZ(classes, catch, datatype, PowellWetherall = FALSE,
-  Linf = NULL, K = NULL)
+BevertonHoltsZ(param, catch_column = NA, PowellWetherall = FALSE)
 }
 \arguments{
-\item{classes}{Midpoints of the length class as vector (length frequency data) or ages as vector (age composition data).}
+\item{param}{A list consisting of following parameters:
+\code{$midAge} or \code{$midLengths} ages as vector (age composition data) or
+midpoints of the length class as vector (length frequency data),
+\code{$Linf} Infinite length for investigated species in cm [cm],
+\code{$K} Growth coefficent for investigated species per year [1/year],
+\code{t0} Theoretical time zero, at which individuals of this species hatch,
+\code{catch} or \code{catch_mat} Catch as vector, or a matrix with catches of subsequent years if
+the catch curve with constat time intervals should be applied;}
 
-\item{catch}{Catch as vector, or a matrix with catches of subsequent years if the catch curve with constat time intervals should be applied.}
+\item{catch_column}{A Number indicating which column of \code{catch_mat} should be analysed (Default: \code{catch_column = NA}).}
 
-\item{datatype}{Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively}
-
-\item{PowellWetherall}{A logical parameter indicating if the Powell Wetherall method should be applied to length frequency data.}
-
-\item{Linf}{Infinite length for investigated species in cm [cm].}
-
-\item{K}{Growth coefficent for investigated species per year [1/year].}
+\item{PowellWetherall}{A logical parameter indicating if the Powell Wetherall method should be applied to length frequency data (Default: \code{PowellWetherall = FALSE})}
 }
 \description{
-This is a function to calculate the total mortality (Z) from length
-  composition data via the length converted catch curve or from age at length data
-  with catch curve.
+
 }
 \details{
 Lprime or tprime will be identified via the first length (or age) class inserted.For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 }
 \examples{
+# Length based model
 # load data
-data("ex.BevertonHoltsZ")   ### == synLFQ2 (list)
+data(synLFQ2)
 
 # run model
-with(ex.BevertonHoltsZ, BevertonHoltsZ(midLength,
- catch1960, datatype="length", Linf = 100, K = 0.3))
+BevertonHoltsZ(synLFQ2, catch_column = 2)
 
+# Age based model
 # load data
-data("ex.ageBevertonHoltsZ")     #### == synCAA (list)  with catch_mat
+data(synCAA)
 
 #run model
-with(ex.ageBevertonHoltsZ,BevertonHoltsZ(midAge,
- catch1960,datatype = 'age'))
+BevertonHoltsZ(synCAA, catch_column = 3)
 
 \donttest{
 
 # load data
-data("ex.PowellWetherall")
+data(synLFQ3)
 
 # run model
-with(ex.PowellWetherall, BevertonHoltsZ(midLength,
-  catch, datatype="length", PowellWetherall = T))
-
-# load data
-data("ex.PowellWetherall2")
-
-# run model
-with(ex.PowellWetherall2, BevertonHoltsZ(midLength,
-  catch, datatype="length", PowellWetherall = T))
+BevertonHoltsZ(synLFQ3,PowellWetherall = T)
 }
 
 }
 \references{
-Sparre ???
+Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 }
 

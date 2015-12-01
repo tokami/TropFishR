@@ -1,9 +1,9 @@
-#' @name synLFQ2
+#' @name synLFQ3
 #'
-#' @title Synthetic length frequency data II from Sparre & Venema (1998)
+#' @title Synthetic length frequency data III from Sparre & Venema (1998)
 #'
 #'
-#' @description Synthetic length frequency data II. Can be used for the calculation of Z
+#' @description Synthetic length frequency data III. Can be used for the calculation of Z
 #'    by means of \code{\link{BevertonHoltsZ}}.
 #'
 #' @docType data
@@ -13,18 +13,18 @@
 #'   \item \code{$midLengths} a vector of the mid lengths of the length groups,
 #'   \item \code{$Linf} Infinite length for investigated species in cm [cm],
 #'   \item \code{$K} Growth coefficent for investigated species per year [1/year],
-#'   \item \code{$catch_mat} a matrix with the catches for different years.
+#'   \item \code{$catch} a vector with catches.
 #' }
 #'
 #' @source Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment. Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 #'
-#' @usage data(synLFQ2)
+#' @usage data(synLFQ3)
 #' @keywords data dataset length-frequency
 #'
 #' @examples
 #'
-#' data(synLFQ2)
-#' str(synLFQ2)
+#' data(synLFQ3)
+#' str(synLFQ3)
 #'
 #'
 NULL

@@ -1,97 +1,101 @@
 #' @title Beverton and Holt's Z-Equations
 #
-#' @description  This is a function to calculate the total mortality (Z) from length
-#'   composition data via the length converted catch curve or from age at length data
-#'   with catch curve.
+#' @description
 #'
-#' @param classes Midpoints of the length class as vector (length frequency data) or ages as vector (age composition data).
-#' @param catch Catch as vector, or a matrix with catches of subsequent years if the catch curve with constat time intervals should be applied.
-#' @param datatype Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively
-#' @param Linf Infinite length for investigated species in cm [cm].
-#' @param K Growth coefficent for investigated species per year [1/year].
-#' @param PowellWetherall A logical parameter indicating if the Powell Wetherall method should be applied to length frequency data.
+#' @param param A list consisting of following parameters:
+#'   \code{$midAge} or \code{$midLengths} ages as vector (age composition data) or
+#'   midpoints of the length class as vector (length frequency data),
+#'   \code{$Linf} Infinite length for investigated species in cm [cm],
+#'   \code{$K} Growth coefficent for investigated species per year [1/year],
+#'   \code{t0} Theoretical time zero, at which individuals of this species hatch,
+#'   \code{catch} or \code{catch_mat} Catch as vector, or a matrix with catches of subsequent years if
+#'   the catch curve with constat time intervals should be applied;
+#' @param catch_column A Number indicating which column of \code{catch_mat} should be analysed (Default: \code{catch_column = NA}).
+#' @param PowellWetherall A logical parameter indicating if the Powell Wetherall method should be applied to length frequency data (Default: \code{PowellWetherall = FALSE})
 #'
 #' @examples
+#' # Length based model
 #' # load data
-#' data("ex.BevertonHoltsZ")   ### == synLFQ2 (list)
+#' data(synLFQ2)
 #'
 #' # run model
-#' with(ex.BevertonHoltsZ, BevertonHoltsZ(midLength,
-#'  catch1960, datatype="length", Linf = 100, K = 0.3))
+#' BevertonHoltsZ(synLFQ2, catch_column = 2)
 #'
+#' # Age based model
 #' # load data
-#' data("ex.ageBevertonHoltsZ")     #### == synCAA (list)  with catch_mat
+#' data(synCAA)
 #'
 #' #run model
-#' with(ex.ageBevertonHoltsZ,BevertonHoltsZ(midAge,
-#'  catch1960,datatype = 'age'))
+#' BevertonHoltsZ(synCAA, catch_column = 3)
 #'
 #' \donttest{
 #'
 #' # load data
-#' data("ex.PowellWetherall")
+#' data(synLFQ3)
 #'
 #' # run model
-#' with(ex.PowellWetherall, BevertonHoltsZ(midLength,
-#'   catch, datatype="length", PowellWetherall = T))
-#'
-#' # load data
-#' data("ex.PowellWetherall2")
-#'
-#' # run model
-#' with(ex.PowellWetherall2, BevertonHoltsZ(midLength,
-#'   catch, datatype="length", PowellWetherall = T))
+#' BevertonHoltsZ(synLFQ3,PowellWetherall = T)
 #' }
 #'
 #' @details Lprime or tprime will be identified via the first length (or age) class inserted.For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 #'
 #' @references
-#' Sparre ???
+#' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+#' Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 #'
 #' @export
 
-BevertonHoltsZ <- function(classes, catch, datatype, PowellWetherall = FALSE,
-                           Linf = NULL, K = NULL){
+BevertonHoltsZ <- function(param, catch_column = NA, PowellWetherall = FALSE){
 
-  # Error message if catch and age do not have same length
-  if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
-    if(length(classes) != length(catch[,1])) stop("Ages and catch do not have the same length!")
-  }else if(class(catch) == 'numeric'){
-    if(length(classes) != length(catch)) stop("Ages and catch do not have the same length!")
+  res <- param
+  if("catch_mat" %in% names(res)) catch <- res$catch_mat
+  if("catch" %in% names(res)) catch <- res$catch
+
+  if(class(catch) == "data.frame" | class(catch) == "matrix"){
+    if(is.na(catch_column)) stop("Please provide a number indicating which column of the catch matrix should be analysed!")
+    catch <- catch[,catch_column]
   }
-
-  df.BH <- cbind(classes,catch)
-  df.BH <- as.data.frame(df.BH)
-  df.BH$classes <- as.character(df.BH$classes)
-
-  # create column without plus group (sign) if present
-  classes.num <- do.call(rbind,strsplit(df.BH$classes, split="\\+"))
-  df.BH$classes.num <- as.numeric(classes.num[,1])
 
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   #   Length based equation    #
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-  if(datatype == 'length'){
+  if("midLengths" %in% names(res)){
+
+    classes <- as.character(res$midLengths)
+    # create column without plus group (sign) if present
+    classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
+    classes.num <- as.numeric(classes.num[,1])
+
+    Linf <- res$Linf
+    K <- res$K
+
+    # Error message if catch and age do not have same length
+    if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
+      if(length(classes) != length(catch[,1])) stop("Ages and catch do not have the same length!")
+    }else if(class(catch) == 'numeric'){
+      if(length(classes) != length(catch)) stop("Ages and catch do not have the same length!")
+    }
+
     if(PowellWetherall == FALSE){
       # calculate  C * (L1 + L2) / 2
-      df.BH$c_midlength <- df.BH$catch * df.BH$classes.num
+      c_midlength <- catch * classes.num
 
       # calculate L mean
-      Lmean <- sum(df.BH$c_midlength) / sum(df.BH$catch)
+      Lmean <- sum(c_midlength) / sum(catch)
 
       # calculate L prime
-      Lprime <- df.BH$classes.num[1] -
-        ((df.BH$classes.num[2] - df.BH$classes.num[1]) / 2 )
+      Lprime <- classes.num[1] -
+        ((classes.num[2] - classes.num[1]) / 2 )
 
-      Z.BH = K * (Linf - Lmean) / (Lmean - Lprime)
+      Z = K * (Linf - Lmean) / (Lmean - Lprime)
 
       #save all in list
-      results.BH <- list()
-      results.BH[[1]] <- df.BH
-      results.BH[[2]] <- paste("Z =",round(Z.BH,2))
-      names(results.BH) <- c("Dataframe","Total_mortality")
-
-      return(results.BH)
+      ret <- c(res,list(
+        Lmean = Lmean,
+        Lprime = Lprime,
+        Z = Z
+      ))
+      return(ret)
     }
 
 
@@ -101,35 +105,36 @@ BevertonHoltsZ <- function(classes, catch, datatype, PowellWetherall = FALSE,
     if(PowellWetherall == TRUE){
 
       # calculate cumulative catch
-      df.BH$cumCatch <- rev(cumsum(rev(df.BH$catch)))
+      cumCatch <- rev(cumsum(rev(catch)))
 
       # calculate  C * (L1 + L2) / 2
-      df.BH$c_midlength <- df.BH$catch * df.BH$classes.num
+      c_midlength <- catch * classes.num
 
       # calculate L prime   ===   x
-      interval.BH <-  (df.BH$classes.num[2] - df.BH$classes.num[1]) / 2
-      df.BH$Lprime <- df.BH$classes.num - interval.BH
+      interval <-  (classes.num[2] - classes.num[1]) / 2
+      Lprime <- classes.num - interval
 
       # calculate L mean
-      for(i in 1:length(df.BH$c_midlength)){
-        df.BH$sum_midL_c[i] <- sum(df.BH$c_midlength[i:length(df.BH$c_midlength)])
-        df.BH$Lmean[i] <- sum(df.BH$c_midlength[i:length(df.BH$c_midlength)]) /
-          sum(df.BH$catch[i:length(df.BH$catch)])
+      sum_midL_c <- rep(NA,length(classes.num))
+      Lmean <- rep(NA,length(classes.num))
+      for(i in 1:length(c_midlength)){
+        sum_midL_c[i] <- sum(c_midlength[i:length(c_midlength)])
+        Lmean[i] <- sum(c_midlength[i:length(c_midlength)]) /
+          sum(catch[i:length(catch)])
       }
 
       # calculate Lmean - Lprime
-      df.BH$Lmean_Lprime <- df.BH$Lmean - df.BH$Lprime
-
-
+      Lmean_Lprime <- Lmean - Lprime
 
       #identify plot
-      plot(x = df.BH$Lprime,y = df.BH$Lmean_Lprime,
+      plot(x = Lprime,y = Lmean_Lprime,
            xlab = "Lprime", ylab = "Lmean - Lprime")
       print("Please choose the minimum and maximum point in the graph to include for the regression line!")
-      cutter <- identify(x = df.BH$Lprime,y = df.BH$Lmean_Lprime,
-                         labels = rownames(df.BH), n=2)
+      cutter <- identify(x = Lprime,y = Lmean_Lprime,
+                         labels = order(Lprime), n=2)
 
       #calculations + model
+      df.BH <- as.data.frame(cbind(classes.num,Lmean_Lprime,Lprime))
       df.BH.cut <- df.BH[cutter[1]:cutter[2],]
       lm1 <- lm(Lmean_Lprime ~ Lprime, data = df.BH.cut)
       sum_lm1 <- summary(lm1)
@@ -149,49 +154,61 @@ BevertonHoltsZ <- function(classes, catch, datatype, PowellWetherall = FALSE,
       ZK.BH <- - (1+slope_lm1)/slope_lm1
 
       #final plot
-      plot(x = df.BH$Lprime,y = df.BH$Lmean_Lprime,
+      plot(x = Lprime,y = Lmean_Lprime,
            xlab = "Lprime", ylab = "Lmean- Lprime",
-           cex = 1.5, bty = 'n')
+           cex = 1.5)
       par(new=T)
       points(x = df.BH.cut$Lprime,y = df.BH.cut$Lmean_Lprime,
              pch = 19, col = 'blue', cex = 1.5)
       abline(a=intercept_lm1,b=slope_lm1,col="blue",lwd = 1.7)
       #mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"±",
       #                             round(SE_Z_lm1,2)), col = 'blue')
-      plot1 = recordPlot()
+
 
       #save all in list
-      results.BH <- list()
-      results.BH[[1]] <- df.BH
-      results.BH[[2]] <- paste("Z/K =",round(ZK.BH,2))
-      results.BH[[3]] <- paste("Linf =",round(Linf.BH,2))
-      results.BH[[4]] <- plot1
-      names(results.BH) <- c("Dataframe","Total_mortality_K","Linf","Plot")
-
-      return(results.BH)
+      ret <- c(res,list(
+        Lmean_Lprime = Lmean_Lprime,
+        Lprime = Lprime,
+        Linf_calc = Linf.BH,
+        Z_K = ZK.BH
+      ))
+      return(ret)
     }
   }
 
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   #     Aged based equation    #
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-  if(datatype == 'age'){
+  if("midAge" %in% names(res) | "age" %in% names(res)){
 
-    sample.size <- sum(df.BH$catch,na.rm=T)
-    sum.age.number <- sum((df.BH$catch * df.BH$classes.num), na.rm=T)
+    if("midAge" %in% names(res)) classes <- as.character(res$midAge)
+    if("age" %in% names(res)) classes <- as.character(res$age)
+    # create column without plus group (sign) if present
+    classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
+    classes.num <- as.numeric(classes.num[,1])
+
+    # Error message if catch and age do not have same length
+    if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
+      if(length(classes) != length(catch[,1])) stop("Ages and catch do not have the same length!")
+    }else if(class(catch) == 'numeric'){
+      if(length(classes) != length(catch)) stop("Ages and catch do not have the same length!")
+    }
+
+    sample.size <- sum(catch,na.rm=T)
+    sum.age.number <- sum((catch * classes.num), na.rm=T)
     tmean <- sum.age.number/sample.size
-    interval.age.BH <- (df.BH$classes.num[2] - df.BH$classes.num[1]) / 2
-    tprime <- df.BH$classes.num[1] - interval.age.BH
+    interval <- (classes.num[2] - classes.num[1]) / 2
+    tprime <- classes.num[1] - interval
 
     Z.BH <- 1 / (tmean - tprime)
 
     #save all in list
-    results.BH <- list()
-    results.BH[[1]] <- df.BH
-    results.BH[[2]] <- paste("Z =",round(Z.BH,2))
-    names(results.BH) <- c("Dataframe","Total_mortality")
-
-    return(results.BH)
+    ret <- c(res,list(
+      tmean = tmean,
+      tprime = tprime,
+      Z = Z.BH
+    ))
+    return(ret)
   }
 
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#

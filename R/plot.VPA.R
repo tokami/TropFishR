@@ -32,7 +32,7 @@ plot.VPA <- function(x,...){
   max_FM <- ceiling(max(FM,na.rm=TRUE))
   max_clas <- max(classes.num,na.rm=TRUE)
   par(new = FALSE)
-  mids <- barplot(df.VPAnew, xlab="", ann=TRUE,
+  mids <- barplot(df.VPAnew, xlab="", ann=TRUE, plot = FALSE,
                   ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur))
 
   #create VPA plot
