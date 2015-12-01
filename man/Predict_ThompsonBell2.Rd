@@ -23,10 +23,10 @@ better to treat last group always as a plus group..... For variable parameter sy
 
 # yield per recruit with age structured data
 # load data
-data(data_Predict_ThompsonBell)
+data(shrimps)
 
 # run model
-output <- Predict_ThompsonBell2(data_Predict_ThompsonBell,seq(0.1,3,0.1))
+output <- Predict_ThompsonBell2(shrimps,seq(0.1,3,0.1))
 
 # investigate results
 output

@@ -12,7 +12,7 @@
 #' @keywords dataset catch
 #' @examples
 #' data(whiting)
-#' head(whiting)
+#' str(whiting)
 #'
 #'
 NULL

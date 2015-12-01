@@ -17,7 +17,7 @@
 #' @examples
 #'
 #' # load data
-#' data(data_Predict_ThompsonBell)
+#' data(shrimps)
 #'
 #' # construct fleet matrix
 #' fleet_mat=matrix(ncol = 2,nrow = 12)
@@ -32,7 +32,7 @@
 #' colnames(fleet_FM_change) <- c("artisanal", "industrial")
 #'
 #' # run the model
-#' output <- Predict_ThompsonBell_Fleets(data_Predict_ThompsonBell,seq(0,3,0.2),
+#' output <- Predict_ThompsonBell_Fleets(shrimps,seq(0,3,0.2),
 #'    fleet_mat,"FM",fleet_FM_change,fleet_plot_name = "industrial",
 #'    'month',plus.group = 12)
 #'

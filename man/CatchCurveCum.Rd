@@ -4,20 +4,20 @@
 \alias{CatchCurveCum}
 \title{Cumulative catch curve (The Jones and van Zalinge method)}
 \usage{
-CatchCurveCum(classes, cumCatch, datatype, Linf = NULL, K = NULL, t0 = 0)
+CatchCurveCum(param)
 }
 \arguments{
-\item{classes}{Midpoints of the size class intervals as vector}
+\item{param}{A list consisting of following parameters:
+\code{$age} or \code{$midLengths} midpoints of the length class as vector (length frequency
+data) or ages as vector (age composition data),
+\code{$Linf} Infinite length for investigated species in cm [cm],
+\code{$K} Growth coefficent for investigated species per year [1/year],
+\code{t0} Theoretical time zero, at which individuals of this species hatch,
+\code{catch} Catch as vector, or a matrix with catches of subsequent years if
+the catch curve with constat time intervals should be applied;}
 
-\item{cumCatch}{Cumulative catch per sampling time as matrix or the total cumulative catch as vector.}
-
-\item{datatype}{Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively}
-
-\item{Linf}{Infinite length for investigated species in cm [cm].}
-
-\item{K}{Growth coefficient for investigated species per year [1/year].}
-
-\item{t0}{Theoretical time zero, at which individuals of this species hatch (default = 0).}
+\item{catch_column}{A number indicating the column of the catch matrix which should be
+used for the anaalysis.}
 }
 \description{
 This is a function to calculate the total mortality (Z) from length
@@ -32,30 +32,28 @@ Not good for methods where the largest length groups are not represented fully (
 
 # Cumulative catch curve based on length frequency data
 # load data
- data(ex.LengthCC)  ### == goatfish
+data(goatfish)
 
-# calculate cumulative catch
- cumulativeCatch <- rev(cumsum(rev(ex.LengthCC[,2])))
+# calculate cumulative catch and add to data list
+goatfish$cumCatch <- rev(cumsum(rev(goatfish$catch)))
 
 # run model
- output <- CatchCurveCum(classes = ex.LengthCC[,1],
-   cumCatch = cumulativeCatch, datatype = "length", Linf = 23.1, K = 0.59)
-
-# investigate results
- output
+CatchCurveCum(goatfish)
 
 # based on age composition data
+data(synCAA2)
+
 # calculate cumulative catch
-cumulativeCatch <- rev(cumsum(rev(c(488,612,601,237,62.3,15.7,4.7,1.4))))
+synCAA2$cumCatch <- rev(cumsum(rev(synCAA2$catch)))
 
 # run model
-output <- CatchCurveCum(classes = c(0,1,2,3,4,5,6,7), cumulativeCatch,
-   datatype = 'age')
-
-# investigate results
-output
+CatchCurveCum(synCAA2)
 
 }
 
+}
+\references{
+Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 }
 

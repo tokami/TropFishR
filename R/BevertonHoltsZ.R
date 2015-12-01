@@ -23,10 +23,10 @@
 #'
 #' # Age based model
 #' # load data
-#' data(synCAA)
+#' data(synCAA1)
 #'
 #' #run model
-#' BevertonHoltsZ(synCAA, catch_column = 3)
+#' BevertonHoltsZ(synCAA1, catch_column = 3)
 #'
 #' \donttest{
 #'

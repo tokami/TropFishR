@@ -17,7 +17,7 @@
 #'
 #' @examples
 #' data(shrimps)
-#' head(shrimps)
+#' str(shrimps)
 #'
 #'
 NULL

@@ -19,7 +19,7 @@ Data from the Kuwait shrimp (\emph{Penaeus semisulcatus}) fishery.
 }
 \examples{
 data(shrimps)
-head(shrimps)
+str(shrimps)
 
 
 }

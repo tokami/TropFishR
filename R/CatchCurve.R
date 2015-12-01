@@ -10,9 +10,6 @@
 #'   \code{$Linf} Infinite length for investigated species in cm [cm],
 #'   \code{$K} Growth coefficent for investigated species per year [1/year],
 #'   \code{t0} Theoretical time zero, at which individuals of this species hatch,
-#'   \code{M} Natural mortality [1/year],
-#'   \code{a} length-weight relationship coefficent (W = a * L^b),
-#'   \code{b} length-weight relationship coefficent (W = a * L^b),
 #'   \code{catch} Catch as vector, or a matrix with catches of subsequent years if
 #'   the catch curve with constat time intervals should be applied;
 #' @param catch_column A number indicating the column of the catch matrix which should be
@@ -48,8 +45,11 @@
 #'   manually. Based on these points the regression line is calculated.
 #'
 #' @references
-#'  Sparre
-#'  data from ICES 1981a
+#' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+#' Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
+#'
+#' ICES, 1981. Report of the \emph{Ad hoc} working group on the use of effort data in
+#' assessment, Copenhagen, 2-6 March 1981. ICES C.M. 1981/G:5 (mimeo)
 #'
 #' @export
 

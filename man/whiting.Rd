@@ -17,7 +17,7 @@ Data of North sea whiting \emph{Merlangius merlangus} caught during the period 1
 }
 \examples{
 data(whiting)
-head(whiting)
+str(whiting)
 
 
 }

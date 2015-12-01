@@ -38,7 +38,7 @@ better to treat last group always as a plus group..... For variable parameter sy
 \examples{
 
 # load data
-data(data_Predict_ThompsonBell)
+data(shrimps)
 
 # construct fleet matrix
 fleet_mat=matrix(ncol = 2,nrow = 12)
@@ -53,7 +53,7 @@ fleet_FM_change[,2] <- c(0,0.4,0.8,1.0,1.2,1.5,2,3)
 colnames(fleet_FM_change) <- c("artisanal", "industrial")
 
 # run the model
-output <- Predict_ThompsonBell_Fleets(data_Predict_ThompsonBell,seq(0,3,0.2),
+output <- Predict_ThompsonBell_Fleets(shrimps,seq(0,3,0.2),
    fleet_mat,"FM",fleet_FM_change,fleet_plot_name = "industrial",
    'month',plus.group = 12)
 
