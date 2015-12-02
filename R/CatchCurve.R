@@ -139,9 +139,11 @@ CatchCurve <- function(param, catch_column = NA){
       ret <- c(res,list(
         classes.num = classes.num,
         lnC = lnC,
+        reg_int = cutter,
        Z =  Z_lm1,
        se = SE_Z_lm1
       ))
+      class(ret) <- "CatchCurve"
       return(ret)
     }
   }
@@ -230,9 +232,11 @@ CatchCurve <- function(param, catch_column = NA){
       ret <- c(res,list(
         t_midL = t_midL,
         lnC_dt = lnC_dt,
+        reg_int = cutter,
         Z =  Z_lm1,
         se = SE_Z_lm1
       ))
+      class(ret) <- "CatchCurve"
       return(ret)
     }
 
@@ -302,9 +306,11 @@ CatchCurve <- function(param, catch_column = NA){
       ret <- c(res,list(
         tplusdt_2 = tplusdt_2,
         lnC_dt = lnC_dt,
+        reg_int = cutter,
         Z =  Z_lm1,
         se = SE_Z_lm1
       ))
+      class(ret) <- "CatchCurve"
       return(ret)
     }
   }

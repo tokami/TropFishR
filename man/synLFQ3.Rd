@@ -9,6 +9,7 @@
   \item \code{$midLengths} a vector of the mid lengths of the length groups,
   \item \code{$Linf} Infinite length for investigated species in cm [cm],
   \item \code{$K} Growth coefficent for investigated species per year [1/year],
+  \item \code{$t0} Theoretical time zero, at which individuals of this species hatch,
   \item \code{$catch} a vector with catches.
 }}
 \source{
@@ -22,7 +23,6 @@ Synthetic length frequency data III. Can be used for the calculation of Z
    by means of \code{\link{BevertonHoltsZ}}.
 }
 \examples{
-
 data(synLFQ3)
 str(synLFQ3)
 
