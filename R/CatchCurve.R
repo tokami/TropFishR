@@ -4,7 +4,7 @@
 #'   composition data via the length converted catch curve or from age at length data
 #'   with catch curve.
 #'
-#' @param param A list consisting of following parameters:
+#' @param param a list consisting of following parameters:
 #'   \code{$age} or \code{$midLengths} midpoints of the length class as vector (length frequency
 #'   data) or ages as vector (age composition data),
 #'   \code{$Linf} Infinite length for investigated species in cm [cm],
@@ -12,10 +12,12 @@
 #'   \code{t0} Theoretical time zero, at which individuals of this species hatch,
 #'   \code{catch} Catch as vector, or a matrix with catches of subsequent years if
 #'   the catch curve with constat time intervals should be applied;
-#' @param catch_column A number indicating the column of the catch matrix which should be
+#' @param catch_column numerical; indicating the column of the catch matrix which should be
 #'   used for the anaalysis.
-#' @param cumulative A logical parameter indicating if the cumulative catch curve should be
-#'   applied (Jones and van Zalinge method)
+#' @param cumulative logical; if \code{TRUE} instead of normal catch curve the cumulative
+#'   catch curve is applied (Jones and van Zalinge method)
+#' @param calc_ogive logical; if \code{TRUE} the selection ogive is additionally
+#'   calculated from the catch curve
 #'
 #'
 #' @examples
@@ -51,7 +53,7 @@
 #' data(synCAA2)
 #'
 #' # run model
-#' CatchCurve(synCAA2,, cumulative = TRUE)
+#' CatchCurve(synCAA2, cumulative = TRUE)
 #'
 #'  }
 #'
@@ -70,7 +72,7 @@
 #'
 #' @export
 
-CatchCurve <- function(param, catch_column = NA, cumulative = FALSE){
+CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive = FALSE){
 
   res <- param
 
@@ -519,4 +521,8 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE){
     }
   }
 
+  # Calculate selection ogive from catch curve and add to ret
+  if(calc_ogive){
+
+  }
 }
