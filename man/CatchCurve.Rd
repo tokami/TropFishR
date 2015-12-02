@@ -2,9 +2,9 @@
 % Please edit documentation in R/CatchCurve.R
 \name{CatchCurve}
 \alias{CatchCurve}
-\title{catch curve}
+\title{Catch curve}
 \usage{
-CatchCurve(param, catch_column = NA)
+CatchCurve(param, catch_column = NA, cumulative = FALSE)
 }
 \arguments{
 \item{param}{A list consisting of following parameters:
@@ -18,6 +18,9 @@ the catch curve with constat time intervals should be applied;}
 
 \item{catch_column}{A number indicating the column of the catch matrix which should be
 used for the anaalysis.}
+
+\item{cumulative}{A logical parameter indicating if the cumulative catch curve should be
+applied (Jones and van Zalinge method)}
 }
 \description{
 This is a function to calculate the total mortality (Z) from length
@@ -50,6 +53,21 @@ CatchCurve(whiting, catch_column = 1)
 
 # Constant parameter system based on age composition data (with catch matrix)
 CatchCurve(whiting)
+
+
+# Cumulative Catch Curve
+# based on length frequency data
+# load data
+data(goatfish)
+
+# run model
+CatchCurve(goatfish, cumulative = TRUE)
+
+# based on age composition data
+data(synCAA2)
+
+# run model
+CatchCurve(synCAA2,, cumulative = TRUE)
 
  }
 
