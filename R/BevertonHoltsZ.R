@@ -2,7 +2,7 @@
 #
 #' @description A method to calculate Z from a range of equations derived by Beverton and
 #'    Holt (1956) with the option to perform the Powell and Wetherall method (Powell, 1979;
-#'    Wetherall et al., 1987).
+#'    Wetherall et al., 1987). Refers to Chapter 4.5 in Sparre & Venema (1998).
 #'
 #' @param param a list consisting of following parameters:
 #'   \code{$midAge} or \code{$midLengths} ages as vector (age composition data) or
