@@ -1,17 +1,21 @@
 #' @title Beverton and Holt's Z-Equations
 #
-#' @description
+#' @description A method to calculate Z from a range of equations derived by Beverton and
+#'    Holt (1956) with the option to perform the Powell and Wetherall method (Powell, 1979;
+#'    Wetherall et al., 1987).
 #'
-#' @param param A list consisting of following parameters:
+#' @param param a list consisting of following parameters:
 #'   \code{$midAge} or \code{$midLengths} ages as vector (age composition data) or
 #'   midpoints of the length class as vector (length frequency data),
-#'   \code{$Linf} Infinite length for investigated species in cm [cm],
-#'   \code{$K} Growth coefficent for investigated species per year [1/year],
-#'   \code{t0} Theoretical time zero, at which individuals of this species hatch,
-#'   \code{catch} or \code{catch_mat} Catch as vector, or a matrix with catches of subsequent years if
+#'   \code{$Linf} infinite length for investigated species in cm [cm],
+#'   \code{$K} growth coefficent for investigated species per year [1/year],
+#'   \code{t0} theoretical time zero, at which individuals of this species hatch,
+#'   \code{catch} or \code{catch_mat} catch as vector, or a matrix with catches of subsequent years if
 #'   the catch curve with constat time intervals should be applied;
-#' @param catch_column A Number indicating which column of \code{catch_mat} should be analysed (Default: \code{catch_column = NA}).
-#' @param PowellWetherall A logical parameter indicating if the Powell Wetherall method should be applied to length frequency data (Default: \code{PowellWetherall = FALSE})
+#' @param catch_column optional; a number indicating which column of \code{catch_mat} should be
+#'    analysed (Default: \code{NA}).
+#' @param PowellWetherall logical; if \code{TRUE} the Powell Wetherall method is
+#'   applied (Default: \code{FALSE}).
 #'
 #' @examples
 #' # Length based model
@@ -37,11 +41,28 @@
 #' BevertonHoltsZ(synLFQ3,PowellWetherall = T)
 #' }
 #'
-#' @details Lprime or tprime will be identified via the first length (or age) class inserted.For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
+#' @details PowellWetherall only works with length frequency data.
+#'    Lprime or tprime will be identified via the first length (or age) class inserted.
+#'    For variable parameter system vectors are reuqired for constant parameter systems
+#'    matrices or data.frames have to be inserted. or vectors The length converted
+#'    linearised catch curve is used to calculate the total mortality (Z). This function
+#'    includes a so called locator function, which asks you to choose points from a graph
+#'    manually. Based on these points the regression line is calculated.
 #'
 #' @references
+#' Beverton R.J.H and S.J. Holt, 1956. A review of methods of estimating mortality rates
+#' in exploited fish populations, with special reference to sources of bias in catch
+#' sampling. \emph{Rapp.P.-v.Réun.CIEM}, 140:67-83
+#'
+#' Powell, D.G., 1979. Estimation of mortality and growth parameters from the length-
+#' frequency of a catch. \emph{Rapp.P.-v.Réun.CIEM}, 175:167-169
+#'
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
-#' Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
+#' Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.
+#'
+#' Wetherall, J.A., J.J. Polovina and S. Ralston, 1987. Estimating growth and mortality
+#' in steady-state fish stocks from length-frequency data. \emph{ICLARM Conf.Proc.},
+#' (13):53-74
 #'
 #' @export
 
