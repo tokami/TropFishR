@@ -26,11 +26,13 @@
 #' @export
 #'
 
-ELEFAN <- function(param, srt.Linf, srt.K){
+
+ELEFAN <- function(param, srt.Linf, srt.K, interval){
 
   res <- param
   classes <- res$midLengths
   catch <- res$catch
+  interval <- interval
 
 
   #________________________DATA ARRANGEMENT________________________#
@@ -287,61 +289,51 @@ ELEFAN <- function(param, srt.Linf, srt.K){
 
 
 
+
+
   #for t
   #retrieve dates from headers of columns
-  names(data.aAF)[3:length(names(data.aAF))] <- unlist(strsplit(names(data)[3:length(names(data))],split = 'X'))[seq(2,((length(names(data))-2)*2),2)]
-  names(data)[3:length(names(data))] <- unlist(strsplit(names(data)[3:length(names(data))],split = 'X'))[seq(2,((length(names(data))-2)*2),2)]
+  names(catch)[1:length(names(catch))] <- unlist(strsplit(names(catch)[1:length(names(catch))],split = 'X'))[seq(2,(length(names(catch))*2),2)]
   #bring sample dates in right format
-  dates <- as.POSIXlt(as.Date(names(data)[3:length(names(data))],format = "%d.%m.%Y"))
-  #add same samples one year before and after
-  dates.before <- dates
-  dates.after <- dates
-  dates.before$year <- dates$year - 1
-  dates.after$year <- dates$year + 1
-  dates.all <- c(dates.before,dates,dates.after)
-  dates.all <- as.Date(dates.all)
+  dates <- as.POSIXlt(as.Date(names(catch)[1:length(names(catch))],format = "%d.%m.%Y"))
+  dates.all <- as.Date(dates)
   #get continuous time in years
   days <- as.numeric(dates.all - as.Date(cut(dates.all[1], "year")))
+
+
+  #for plotting
+  xplot <- c(0,(max(days)+50))
+  yplot <- c(classes[1],classes[length(classes)])
+
+  ## Plotting
+  par(mar = c(5, 5, 1, 1) + .1)
+  plot(xplot, yplot, type = "n",axes = FALSE,
+       ann = FALSE,  xaxs = "i", yaxs = "i")
+  text(days, par("usr")[3] - 0.7,
+       labels = dates.all, srt = 45, pos = 1, xpd = TRUE)
+  axis(2, cex.axis = 1.2)
+  mtext(side = 2, outer = F, line = 3.5, "Length [cm]", cex = 1.2)
+  box( col = "gray40") #bty = "L"
+
+  #Histograms
+  y.b <- classes - interval / 2
+  y.t <- classes + interval / 2
+  for(histi in 1:dim(catch)[2]){
+    x.l <- rep(days[histi],length(classes))
+    x.r <- x.l + catch.aAF[,histi] * 10
+    rect(xleft = x.l, ybottom = y.b, xright = x.r, ytop = y.t,
+         col = "gray80", border = "gray40")
+  }
+
+
+
+
+
   t.days <- seq(1,days[length(days)],1)
   t.years <- (t.days)/365
-
   #start with seed values for L8 and K and create growth functions from every peak
-  peaks <- which(!is.na(pos.NA.df[,3:length(names(pos.NA.df))]))
+  peaks <- which(!is.na(pos.NA.df))
   #project backward and forward in time? wtf
-
-
-  L8 = 3:30
-  K = seq(0.1,0.9,0.1)
-  t0 = seq(0,1,0.1)
-  vec.Lt <- list()
-  vec.K <- list()
-  vec.t0 <- list()
-  for(i in 1:length(L8)){
-    for(j in 1:length(K)){
-      for(k in 1:length(t0)){
-        Lt  =  L8[i] * (1 - exp(-K[j] * (t.years - t0[k])))
-        vec.t0[[k]] <- Lt
-      }
-
-      vec.K[[j]] <- vec.t0
-    }
-
-    vec.Lt[[i]] <- vec.K
-  }
-
-  plot(vec.Lt[[length(vec.Lt)]][[length(vec.K)]][[length(vec.t0)]] ~ t.years,type='l',col='blue',lwd=2,
-       ylim=c(0,20))
-  abline(v=((days - 4)) / 365)
-  for(i in 1:(length(vec.Lt)-1)){
-    for(j in 2:length(vec.Lt[[1]])){
-      for(k in 2:length(vec.Lt[[1]][[1]])){
-        lines(vec.Lt[[i]][[j]][[k]] ~ t.years,col='blue')
-      }
-    }
-  }
-
-
-
 
 
 }
