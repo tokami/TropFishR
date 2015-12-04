@@ -12,6 +12,11 @@
 #' \donttest{
 #' data(trout)
 #' param = trout
+#' range.Linf <- c(11,15)
+#' step.Linf <- 1
+#' range.K <- c(0.2,1)
+#' step.K <- 0.1
+#' t0 <- 0
 #' }
 #' @details ELEFAN
 #'
@@ -27,7 +32,7 @@
 #'
 
 
-ELEFAN <- function(param, srt.Linf, srt.K, interval){
+ELEFAN <- function(param, range.Linf, step.Linf, range.K, step.K, t0 = NA, interval){
 
   res <- param
   classes <- res$midLengths
@@ -285,12 +290,6 @@ ELEFAN <- function(param, srt.Linf, srt.K, interval){
   #________________________GROWTH CURVE________________________#
   #problem of arrangement of t, in literature: samples sequentially arranged in time
 
-
-
-
-
-
-
   #for t
   #retrieve dates from headers of columns
   names(catch)[1:length(names(catch))] <- unlist(strsplit(names(catch)[1:length(names(catch))],split = 'X'))[seq(2,(length(names(catch))*2),2)]
@@ -298,7 +297,57 @@ ELEFAN <- function(param, srt.Linf, srt.K, interval){
   dates <- as.POSIXlt(as.Date(names(catch)[1:length(names(catch))],format = "%d.%m.%Y"))
   dates.all <- as.Date(dates)
   #get continuous time in years
-  days <- as.numeric(dates.all - as.Date(cut(dates.all[1], "year")))
+  days <- as.numeric(dates.all - as.Date(cut(dates.all[1], "year")))  # takes beginning of year, what if one sampled on 1st of January? better to take a certain time period before first sampling time
+  t.days <- seq(1,days[length(days)],1)
+  t.years <- (t.days)/365
+
+  rownames(catch.aAF) <- classes
+  colnames(catch.aAF) <- days
+
+  Linfs <- seq(range.Linf[1],range.Linf[2],step.Linf)
+  Ks <- seq(range.K[1],range.K[2],step.K)
+
+  t <- t.days
+
+
+  ESP.list.L <- list()
+  for(li in 1:length(Linfs)){
+    ESP.list.k <- list()
+    for(ki in 1:length(Ks)){
+
+      # VBGF
+      Lt <-  Linfs[li] * ( 1 - exp( - Ks[ki] * (t - t0)))
+
+      # get lengths which fall into sampling times
+      lt.classes <- Lt[which(colnames(catch.aAF) %in% order(Lt))]
+
+      # get size classes in which calculated Lt values fall into
+      hit.list <- NA
+      for(hits in 1:length(lt.classes)){
+        hit.list[hits] <- which.min(abs(classes - lt.classes[hits]))
+      }
+
+      # get ASP values from catch.aAF matrix which are hit by growth curve
+      ESPs <- NA
+      for(indi in 1:length(hit.list)){
+        ESPs[indi] <- catch.aAF[hit.list[indi],indi]
+      }
+      # get ESP by summing up
+      ESP <- sum(ESPs)
+
+      ESP.list.k[[ki]] <- c(Linfs[li],Ks[ki],ESP)
+    }
+    ESP.list.L[[li]] <- do.call(rbind,ESP.list.k)
+  }
+
+  ESP.df <- do.call(rbind,ESP.list.L)
+  tapply(ESP.df[,3],list(ESP.df[,1],ESP.df[,2]),round,digits = 2)
+
+#   tvar.list <- list()
+#   for(tvar in 0:length(t.days)){
+#     Lt <-  Linfs[li] * ( 1 - exp( - K[ki] * ((t+tvar) - t0)))
+#     tvar.list[[tvar+1]] <- Lt
+#   }
 
 
   #for plotting
@@ -325,17 +374,20 @@ ELEFAN <- function(param, srt.Linf, srt.K, interval){
          col = "gray80", border = "gray40")
   }
 
+  lines(y = Lt,x = t+20,lty=2)
 
 
 
 
-  t.days <- seq(1,days[length(days)],1)
-  t.years <- (t.days)/365
-  #start with seed values for L8 and K and create growth functions from every peak
-  peaks <- which(!is.na(pos.NA.df))
-  #project backward and forward in time? wtf
 
 
+
+
+
+
+#   #start with seed values for L8 and K and create growth functions from every peak
+#   peaks <- which(!is.na(pos.NA.df))
+#   #project backward and forward in time? wtf
 }
 
 
