@@ -2,7 +2,9 @@
 #' @title Trout data
 #'
 #' @description This dataset contains information about coral trout
-#'  (\emph{Plectropomus leopardus}). It can be used for the estimation of growth parameters,
+#'  (\emph{Plectropomus leopardus}) caught near Heron Island (Great Barrier Reef,
+#'  Australia) in October 1971.
+#'  It can be used for the estimation of growth parameters,
 #'   \code{\link{ELEFAN}}.
 #'
 #' @docType data
