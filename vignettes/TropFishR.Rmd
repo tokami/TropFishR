@@ -1,0 +1,109 @@
+---
+title: "Tropical fish stock assessment with R"
+author: "Tobias Mildenberger, Marc Taylor"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{TropFishR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This vignette describes the functions of the package "TropFishR" in detail, puts them into context and explains strenghts and shortcomings. 
+The package TropFishR is a compilation of fish stock assessment methods and models listed in the FAO Technical Manual "Introduction into tropical fish stock assessment" by Sparre and Venema (1998) and its exercise book (Spaare & Venema 1999).
+
+
+
+## Contents
+
+1. Growth parameters
+
+    * `Bhattacharya.R`
+    
+    * `ELEFAN.R`
+
+1. Mortality parameters
+
+    * `Z_CPUE.R`
+   
+    * `CatchCurve.R`
+   
+    * `BevertonHoltsZ.R`
+   
+    * `PaulysM.R`
+   
+    * `RikhterEfanovsM.R`
+   
+1. Virtual population dynamics
+
+    * `VPA.R`
+
+1. Gear selectivity
+
+    * `select.R`
+    
+    * `select_ogive.R`
+    
+    * `rtypes_Millar.R`
+    
+    * `select_Millar.R`
+
+1. Prediction models
+
+    * `Predict_BevertonHolt.R`
+
+    * `Predict_ThompsonBell1.R`
+    
+    * `Predict_ThompsonBell2.R`
+    
+    * `Predict_ThompsonBell_Fleets.R`
+    
+    * `Predict_ThompsonBell_FM_Lc.R`
+
+1. Surplus production models
+
+    * `SchaeferFox.R`
+
+
+
+
+## 1. Growth parameters
+
+### Bhattacharya method
+
+### ELEFAN
+
+
+## 2. Mortality parameters
+
+
+
+## Figures
+
+The figure sizes have been customised so that you can easily put two images side-by-side. 
+
+```{r, fig.show='hold'}
+plot(1:10)
+plot(10:1)
+```
+
+You can enable figure captions by `fig_caption: yes` in YAML:
+
+    output:
+      rmarkdown::html_vignette:
+        fig_caption: yes
+
+Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
+
+## More Examples
+
+You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
+
+```{r, echo=FALSE, results='asis'}
+knitr::kable(head(mtcars, 10))
+```
+
+Also a quote using `>`:
+
+> "He who gives up [code] safety for [code] speed deserves neither."
+([via](https://twitter.com/hadleywickham/status/504368538874703872))
