@@ -310,8 +310,10 @@ ELEFAN <- function(param, range.Linf, step.Linf, range.K, step.K, t0 = NA, inter
   t <- t.days
 
 
+  ESP.tshift.L <- list()
   ESP.list.L <- list()
   for(li in 1:length(Linfs)){
+    ESP.tshift.k <- list()
     ESP.list.k <- list()
     for(ki in 1:length(Ks)){
 
@@ -319,29 +321,57 @@ ELEFAN <- function(param, range.Linf, step.Linf, range.K, step.K, t0 = NA, inter
       Lt <-  Linfs[li] * ( 1 - exp( - Ks[ki] * (t - t0)))
 
       # get lengths which fall into sampling times
-      lt.classes <- Lt[which(colnames(catch.aAF) %in% order(Lt))]
+      samp.times <- as.numeric(colnames(catch.aAF))   # what about the next cohort one year later or one year ago if totap period is over one year???
+
+      lt.classes.list <- list()
+      for(tshift in 0:(length(t.days)-1)){
+        diff <- samp.times - tshift
+        diff[which(diff < 0)] <- NA
+        lt.classes <- Lt[diff]
+        lt.classes.list[[tshift+1]] <- data.frame(tshift = rep(tshift,length(lt.classes)),
+                                                lt.classes)
+      }
+      #lt.classes.df <- do.call(rbind,lt.classes.list)
+
 
       # get size classes in which calculated Lt values fall into
-      hit.list <- NA
-      for(hits in 1:length(lt.classes)){
-        hit.list[hits] <- which.min(abs(classes - lt.classes[hits]))
+      for(hits in 1:length(lt.classes.list)){
+        df <- lt.classes.list[[hits]]
+        for(hiti in 1:length(df[,1])){
+          if(all(is.na(classes - df[,2][hiti]))){df$cor.class[hiti] <- NA
+          }else df$cor.class[hiti] <- which.min(abs(classes - df[,2][hiti]))
+        }
+        lt.classes.list[[hits]] <- df
       }
 
-      # get ASP values from catch.aAF matrix which are hit by growth curve
-      ESPs <- NA
-      for(indi in 1:length(hit.list)){
-        ESPs[indi] <- catch.aAF[hit.list[indi],indi]
-      }
-      # get ESP by summing up
-      ESP <- sum(ESPs)
 
-      ESP.list.k[[ki]] <- c(Linfs[li],Ks[ki],ESP)
+      # get ESP values from catch.aAF matrix entries which are hit by growth curve
+      ESP.list <- list()
+      for(inds in 1:length(lt.classes.list)){
+        df <- lt.classes.list[[inds]]
+        ESPs <- NA
+        for(indi in 1:length(df[,1])){
+          ESPs[indi] <- catch.aAF[df$cor.class[indi],indi]
+        }
+        # get ESP by summing up
+        ESP.list[[inds]] <- c(inds,sum(ESPs,na.rm=TRUE))
+      }
+      # choose best ESP value of all starting times (tshift)
+      ESP.pre.df <- do.call(rbind,ESP.list)
+      ESPx <- ESP.pre.df[which(ESP.pre.df[,2] == max(ESP.pre.df[,2],na.rm=TRUE)),]
+
+      ESP.tshift.k[[ki]] <- c(Linfs[li],Ks[ki],ESPx[1])
+      ESP.list.k[[ki]] <- c(Linfs[li],Ks[ki],ESPx[2])
     }
+    ESP.tshift.L[[li]] <- do.call(rbind,ESP.tshift.k)
     ESP.list.L[[li]] <- do.call(rbind,ESP.list.k)
   }
 
   ESP.df <- do.call(rbind,ESP.list.L)
   tapply(ESP.df[,3],list(ESP.df[,1],ESP.df[,2]),round,digits = 2)
+  ESP.time <- do.call(rbind,ESP.tshift.L)
+
+
 
 #   tvar.list <- list()
 #   for(tvar in 0:length(t.days)){
@@ -374,7 +404,8 @@ ELEFAN <- function(param, range.Linf, step.Linf, range.K, step.K, t0 = NA, inter
          col = "gray80", border = "gray40")
   }
 
-  lines(y = Lt,x = t+20,lty=2)
+  Lt <- 13 * (1 - exp(-0.6 * (t - 80)))
+  lines(y = Lt, x = t+80, lty=2)
 
 
 
@@ -391,5 +422,38 @@ ELEFAN <- function(param, range.Linf, step.Linf, range.K, step.K, t0 = NA, inter
 }
 
 
+# works:
+ESP.list.L <- list()
+for(li in 1:length(Linfs)){
+  ESP.list.k <- list()
+  for(ki in 1:length(Ks)){
+
+    # VBGF
+    Lt <-  Linfs[li] * ( 1 - exp( - Ks[ki] * (t - t0)))
+
+    # get lengths which fall into sampling times
+    lt.classes <- Lt[which(colnames(catch.aAF) %in% order(Lt))]
+
+    # get size classes in which calculated Lt values fall into
+    hit.list <- NA
+    for(hits in 1:length(lt.classes)){
+      hit.list[hits] <- which.min(abs(classes - lt.classes[hits]))
+    }
+
+    # get ESP values from catch.aAF matrix entries which are hit by growth curve
+    ESPs <- NA
+    for(indi in 1:length(hit.list)){
+      ESPs[indi] <- catch.aAF[hit.list[indi],indi]
+    }
+    # get ESP by summing up
+    ESP <- sum(ESPs)
+
+    ESP.list.k[[ki]] <- c(Linfs[li],Ks[ki],ESP)
+  }
+  ESP.list.L[[li]] <- do.call(rbind,ESP.list.k)
+}
+
+ESP.df <- do.call(rbind,ESP.list.L)
+tapply(ESP.df[,3],list(ESP.df[,1],ESP.df[,2]),round,digits = 2)
 
 
