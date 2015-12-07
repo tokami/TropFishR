@@ -13,7 +13,7 @@
 #'   \code{catch} Catch as vector, or a matrix with catches of subsequent years if
 #'   the catch curve with constat time intervals should be applied;
 #' @param catch_column numerical; indicating the column of the catch matrix which should be
-#'   used for the anaalysis.
+#'   used for the analysis.
 #' @param cumulative logical; if \code{TRUE} instead of normal catch curve the cumulative
 #'   catch curve is applied (Jones and van Zalinge method)
 #' @param calc_ogive logical; if \code{TRUE} the selection ogive is additionally
@@ -25,7 +25,7 @@
 #' # Variable paramter system (with catch vector)
 #' # based on length frequency data
 #' # load data
-#' load(goatfish)
+#' data(goatfish)
 #'
 #' # run model
 #' CatchCurve(goatfish)
