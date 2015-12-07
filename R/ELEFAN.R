@@ -18,6 +18,7 @@
 #' step.K <- 0.1
 #' t0 <- 0
 #' interval = 1
+#' tmax = 5
 #' }
 #' @details ELEFAN
 #'
@@ -33,15 +34,17 @@
 #'
 
 
-ELEFAN <- function(param, range.Linf, step.Linf, range.K, step.K, t0 = NA, interval){
+ELEFAN <- function(param, range.Linf, step.Linf,
+                   range.K, step.K, t0 = NA, interval,
+                   tmax){
 
   res <- param
   classes <- res$midLengths
   catch <- res$catch
-  interval <- interval
 
 
   #________________________DATA ARRANGEMENT________________________#
+#--------
 
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   #         moving average           #
@@ -287,6 +290,7 @@ ELEFAN <- function(param, range.Linf, step.Linf, range.K, step.K, t0 = NA, inter
 #     accumulates the "points" obtained by each growth curve when passing through peaks (positive points) or through the troughs separating peaks (negative points) (see Fig. 1 B and C).
 #     selects the curve which, by passing through most peaks and avoiding most troughs best "explains" the peaks in the (set of) sample(s) and therefore accumulates the largest number of points. This new sum is called "explained sum of peaks" (ESP). decrements or increments the "seeded" values of Lex> and K until the ratio ESP/ASP reaches a maximum, and gives the growth parameters corresponding to this optimum ratio.
 
+  #-------
 
   #________________________GROWTH CURVE________________________#
   #problem of arrangement of t, in literature: samples sequentially arranged in time
@@ -298,10 +302,13 @@ ELEFAN <- function(param, range.Linf, step.Linf, range.K, step.K, t0 = NA, inter
   dates <- as.POSIXlt(as.Date(names(catch)[1:length(names(catch))],format = "%d.%m.%Y"))
   dates.all <- as.Date(dates)
   #get continuous time in years
-  days <- as.numeric(dates.all - as.Date(cut(dates.all[1], "year")))  # takes beginning of year, what if one sampled on 1st of January? better to take a certain time period before first sampling time
   #alternative: + - 100 days as full range
   days <- as.numeric(dates.all - as.Date((dates.all[1] - 100)))     #cut(dates.all[1], "year")))
   days.years <- days/365
+  #sampling period
+  sample.period.days <- days[length(days)] - days[1]
+  sp.years <- sample.period.days/365
+
   t.days <- seq(1,days[length(days)],1)
   t.years <- (t.days)/365
   #  full range + / - days to sampling times
@@ -314,19 +321,39 @@ ELEFAN <- function(param, range.Linf, step.Linf, range.K, step.K, t0 = NA, inter
   Ks <- seq(range.K[1],range.K[2],step.K)
 
   #t <- t.days
-  t <- t.years
+  t <- t.years   ## for whoel range of t max?
+  #for whole live of fish:
+  t <- 1:(tmax * 365) / 365
 
 
   ESP.tshift.L <- list()
   ESP.list.L <- list()
   for(li in 1:length(Linfs)){
+    li =1
 
     ESP.tshift.k <- list()
     ESP.list.k <- list()
     for(ki in 1:length(Ks)){
+      ki = 1
 
       # VBGF
-      Lt <-  Linfs[li] * ( 1 - exp( - Ks[ki] * (t - t0)))
+      #Lt <-  Linfs[li] * ( 1 - exp( - Ks[ki] * (t - t0)))
+
+      # get other growth curves going through data which is dependent on tmax
+      if(sp.years > 0 & sp.years < 1) repro.add <- 0
+      if(sp.years > 1 & sp.years < 2) repro.add <- 1
+      if(sp.years > 2 & sp.years < 3) repro.add <- 2
+      if(sp.years > 3 & sp.years < 4) repro.add <- 3
+      if(sp.years > 4 & sp.years < 5) repro.add <- 4
+
+      Lt.list <- list()
+      for(co.rep in -repro.add:tmax){    ## make option for two or more reproduction events per year
+        Lt <- Linfs[li] * ( 1 - exp( - Ks[ki] * ((t+co.rep) - t0)))
+        Lt.list[[co.rep+repro.add+1]] <- Lt
+      }
+
+      Lt.list[[1]]
+
 
       # get lengths which fall into sampling times
       samp.times <- as.numeric(colnames(catch.aAF))   # what about the next cohort one year later or one year ago if totap period is over one year???
@@ -381,6 +408,7 @@ ELEFAN <- function(param, range.Linf, step.Linf, range.K, step.K, t0 = NA, inter
   ESP.time <- do.call(rbind,ESP.tshift.L)
   tapply(ESP.time[,3],list(ESP.time[,1],ESP.time[,2]),round,digits = 2)
 
+  #PEAKS which are hit have to be flagged out, troughs can be hit several times
 
 
 #   tvar.list <- list()
@@ -414,6 +442,13 @@ ELEFAN <- function(param, range.Linf, step.Linf, range.K, step.K, t0 = NA, inter
          col = "gray80", border = "gray40")
   }
 
+
+
+  for(xyx in 1:length(Lt.list)){
+    lines(y = Lt.list[[xyx]], x = t, lty=2, col='darkgreen')
+  }
+
+
   # growth curves
   Lt <- 11 * (1 - exp(-0.9 * (t.years.fr - 0)))    ### choose correct t -> tshift
   lines(y = Lt, x = t.years.fr, lty=2, col='blue')
@@ -422,6 +457,10 @@ ELEFAN <- function(param, range.Linf, step.Linf, range.K, step.K, t0 = NA, inter
   lines(y = Lt, x = t.years.fr, lty=2, col='blue')
   Lt <- 11 * (1 - exp(-0.9 * (t.years.fr - 1)))
   lines(y = Lt, x = t.years.fr , lty=2, col='blue')
+  Lt <- 11 * (1 - exp(-0.9 * (t.years.fr + 2)))
+  lines(y = Lt, x = t.years.fr, lty=2, col='blue')
+  Lt <- 11 * (1 - exp(-0.9 * (t.years.fr + 5)))
+  lines(y = Lt, x = t.years.fr, lty=2, col='blue')
 
 
 
@@ -430,6 +469,17 @@ ELEFAN <- function(param, range.Linf, step.Linf, range.K, step.K, t0 = NA, inter
 #   peaks <- which(!is.na(pos.NA.df))
 #   #project backward and forward in time? wtf
 }
+
+
+
+
+
+
+
+
+
+
+days <- as.numeric(dates.all - as.Date(cut(dates.all[1], "year")))  # takes beginning of year, what if one sampled on 1st of January? better to take a certain time period before first sampling time
 
 
 # works:
