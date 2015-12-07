@@ -1,6 +1,6 @@
 #' @title ELEFAN
 #'
-#' @description Electronic length frequency analysis
+#' @description Electronic length frequency analysis for estimating growth parameter of exploited fish populations.
 #'
 #' @param param A list consisting of following parameters:
 #'   \code{$age} or \code{$midLengths} midpoints of the length class as vector (length frequency
