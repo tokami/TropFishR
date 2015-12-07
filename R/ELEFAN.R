@@ -17,6 +17,7 @@
 #' range.K <- c(0.2,1)
 #' step.K <- 0.1
 #' t0 <- 0
+#' interval = 1
 #' }
 #' @details ELEFAN
 #'
@@ -298,21 +299,28 @@ ELEFAN <- function(param, range.Linf, step.Linf, range.K, step.K, t0 = NA, inter
   dates.all <- as.Date(dates)
   #get continuous time in years
   days <- as.numeric(dates.all - as.Date(cut(dates.all[1], "year")))  # takes beginning of year, what if one sampled on 1st of January? better to take a certain time period before first sampling time
+  #alternative: + - 100 days as full range
+  days <- as.numeric(dates.all - as.Date((dates.all[1] - 100)))     #cut(dates.all[1], "year")))
+  days.years <- days/365
   t.days <- seq(1,days[length(days)],1)
   t.years <- (t.days)/365
+  #  full range + / - days to sampling times
+  t.years.fr <- seq(1,days[length(days)]+100,1)/365
 
   rownames(catch.aAF) <- classes
-  colnames(catch.aAF) <- days
+  colnames(catch.aAF) <- days.years   ## OLD: days
 
   Linfs <- seq(range.Linf[1],range.Linf[2],step.Linf)
   Ks <- seq(range.K[1],range.K[2],step.K)
 
-  t <- t.days
+  #t <- t.days
+  t <- t.years
 
 
   ESP.tshift.L <- list()
   ESP.list.L <- list()
   for(li in 1:length(Linfs)){
+
     ESP.tshift.k <- list()
     ESP.list.k <- list()
     for(ki in 1:length(Ks)){
@@ -324,14 +332,14 @@ ELEFAN <- function(param, range.Linf, step.Linf, range.K, step.K, t0 = NA, inter
       samp.times <- as.numeric(colnames(catch.aAF))   # what about the next cohort one year later or one year ago if totap period is over one year???
 
       lt.classes.list <- list()
-      for(tshift in 0:(length(t.days)-1)){
-        diff <- samp.times - tshift
+      for(tshift in 1:(length(t.days)-1)){
+        ttx <- t.years[tshift]
+        diff <- samp.times - ttx
         diff[which(diff < 0)] <- NA
-        lt.classes <- Lt[diff]
-        lt.classes.list[[tshift+1]] <- data.frame(tshift = rep(tshift,length(lt.classes)),
+        lt.classes <- Lt[(diff*365)]
+        lt.classes.list[[tshift]] <- data.frame(tshift = rep(tshift,length(lt.classes)),
                                                 lt.classes)
       }
-      #lt.classes.df <- do.call(rbind,lt.classes.list)
 
 
       # get size classes in which calculated Lt values fall into
@@ -358,8 +366,9 @@ ELEFAN <- function(param, range.Linf, step.Linf, range.K, step.K, t0 = NA, inter
       }
       # choose best ESP value of all starting times (tshift)
       ESP.pre.df <- do.call(rbind,ESP.list)
-      ESPx <- ESP.pre.df[which(ESP.pre.df[,2] == max(ESP.pre.df[,2],na.rm=TRUE)),]
+      ESPx <- ESP.pre.df[which(ESP.pre.df[,2] == max(ESP.pre.df[,2],na.rm=TRUE)),]   ### here more than one combination of thsift and ESP can be resulting
 
+      if(is.matrix(ESPx)) ESPx <- ESPx[1,]           ### with the one before the comma it isdefined that always the first of multiple best fits is taking (= the one with the smallest tshift)
       ESP.tshift.k[[ki]] <- c(Linfs[li],Ks[ki],ESPx[1])
       ESP.list.k[[ki]] <- c(Linfs[li],Ks[ki],ESPx[2])
     }
@@ -370,6 +379,7 @@ ELEFAN <- function(param, range.Linf, step.Linf, range.K, step.K, t0 = NA, inter
   ESP.df <- do.call(rbind,ESP.list.L)
   tapply(ESP.df[,3],list(ESP.df[,1],ESP.df[,2]),round,digits = 2)
   ESP.time <- do.call(rbind,ESP.tshift.L)
+  tapply(ESP.time[,3],list(ESP.time[,1],ESP.time[,2]),round,digits = 2)
 
 
 
@@ -381,14 +391,14 @@ ELEFAN <- function(param, range.Linf, step.Linf, range.K, step.K, t0 = NA, inter
 
 
   #for plotting
-  xplot <- c(0,(max(days)+50))
-  yplot <- c(classes[1],classes[length(classes)])
+  xplot <- c(min(t.years.fr),(max(t.years.fr)))
+  yplot <- c(0,classes[length(classes)]+interval)
 
-  ## Plotting
+  # Plot with rearranged histogramms
   par(mar = c(5, 5, 1, 1) + .1)
   plot(xplot, yplot, type = "n",axes = FALSE,
        ann = FALSE,  xaxs = "i", yaxs = "i")
-  text(days, par("usr")[3] - 0.7,
+  text(days.years, par("usr")[3] - 0.7,
        labels = dates.all, srt = 45, pos = 1, xpd = TRUE)
   axis(2, cex.axis = 1.2)
   mtext(side = 2, outer = F, line = 3.5, "Length [cm]", cex = 1.2)
@@ -398,20 +408,20 @@ ELEFAN <- function(param, range.Linf, step.Linf, range.K, step.K, t0 = NA, inter
   y.b <- classes - interval / 2
   y.t <- classes + interval / 2
   for(histi in 1:dim(catch)[2]){
-    x.l <- rep(days[histi],length(classes))
-    x.r <- x.l + catch.aAF[,histi] * 10
+    x.l <- rep(days.years[histi],length(classes))
+    x.r <- x.l + catch.aAF[,histi] * 0.03   ### make this number dependent on data!?!?
     rect(xleft = x.l, ybottom = y.b, xright = x.r, ytop = y.t,
          col = "gray80", border = "gray40")
   }
 
-  Lt <- 13 * (1 - exp(-0.6 * (t - 80)))
-  lines(y = Lt, x = t+80, lty=2)
-
-
-
-
-
-
+  # growth curves
+  Lt <- 11 * (1 - exp(-0.9 * (t.years.fr - 0)))    ### choose correct t -> tshift
+  lines(y = Lt, x = t.years.fr, lty=2, col='blue')
+  #t.years.frA <- seq(xplot[1],xplot[2],1/365)
+  Lt <- 11 * (1 - exp(-0.9 * (t.years.fr + 1)))
+  lines(y = Lt, x = t.years.fr, lty=2, col='blue')
+  Lt <- 11 * (1 - exp(-0.9 * (t.years.fr - 1)))
+  lines(y = Lt, x = t.years.fr , lty=2, col='blue')
 
 
 
@@ -423,6 +433,19 @@ ELEFAN <- function(param, range.Linf, step.Linf, range.K, step.K, t0 = NA, inter
 
 
 # works:
+
+lt.classes.list <- list()
+for(tshift in 0:(length(t.days)-1)){
+  diff <- samp.times - tshift
+  diff[which(diff < 0)] <- NA
+  lt.classes <- Lt[diff]
+  lt.classes.list[[tshift+1]] <- data.frame(tshift = rep(tshift,length(lt.classes)),
+                                            lt.classes)
+}
+#lt.classes.df <- do.call(rbind,lt.classes.list)
+
+
+
 ESP.list.L <- list()
 for(li in 1:length(Linfs)){
   ESP.list.k <- list()
@@ -456,4 +479,51 @@ for(li in 1:length(Linfs)){
 ESP.df <- do.call(rbind,ESP.list.L)
 tapply(ESP.df[,3],list(ESP.df[,1],ESP.df[,2]),round,digits = 2)
 
+#for plotting
+xplot <- c(0,(max(days)+50))
+yplot <- c(classes[1],classes[length(classes)])
+
+# Plot with rearranged histogramms
+par(mar = c(5, 5, 1, 1) + .1)
+plot(xplot, yplot, type = "n",axes = FALSE,
+     ann = FALSE,  xaxs = "i", yaxs = "i")
+text(days, par("usr")[3] - 0.7,
+     labels = dates.all, srt = 45, pos = 1, xpd = TRUE)
+axis(2, cex.axis = 1.2)
+mtext(side = 2, outer = F, line = 3.5, "Length [cm]", cex = 1.2)
+box( col = "gray40") #bty = "L"
+
+#Histograms
+y.b <- classes - interval / 2
+y.t <- classes + interval / 2
+for(histi in 1:dim(catch)[2]){
+  x.l <- rep(days[histi],length(classes))
+  x.r <- x.l + catch.aAF[,histi] * 10      ### make this number dependent on data!?!?
+  rect(xleft = x.l, ybottom = y.b, xright = x.r, ytop = y.t,
+       col = "gray80", border = "gray40")
+}
+
+Lt <- 10 * (1 - exp(-0.1 * (t - 80)))    ### choose correct t -> tshift
+lines(y = Lt, x = t+320, lty=2, col='blue')
+
+
+# Plot with real histogramms
+par(mar = c(5, 5, 1, 1) + .1)
+plot(xplot, yplot, type = "n",axes = FALSE,
+     ann = FALSE,  xaxs = "i", yaxs = "i")
+text(days, par("usr")[3] - 0.7,
+     labels = dates.all, srt = 45, pos = 1, xpd = TRUE)
+axis(2, cex.axis = 1.2)
+mtext(side = 2, outer = F, line = 3.5, "Length [cm]", cex = 1.2)
+box( col = "gray40") #bty = "L"
+
+#Histograms
+y.b <- classes - interval / 2
+y.t <- classes + interval / 2
+for(histi in 1:dim(catch)[2]){
+  x.l <- rep(days[histi],length(classes))
+  x.r <- x.l + catch[,histi] * 0.6     ### make this number dependent on data!?!?
+  rect(xleft = x.l, ybottom = y.b, xright = x.r, ytop = y.t,
+       col = "gray80", border = "gray40")
+}
 
