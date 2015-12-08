@@ -35,20 +35,8 @@
 #' @export
 #'
 
-require(gdata)
-dat_gash <- read.xls("~/Documents/Scientific Assistant ZMT/Tropical Fish Stock Assessment in R/Literature review/ELEFAN/data_gashaw/Gashaw data _Lake Koka_Ethiopia.xlsx")
-names(dat_gash) <- c("ML","X01.02.2010","X01.05.2010","X01.11.2010","X01.02.2011",
-                     "X01.05.2011","X01.08.2011","X01.11.2011","X01.02.2012","X01.05.2012",
-                     "X01.08.2012","X01.11.2012")
-param <- list(midLengths = dat_gash$ML,
-              catch = dat_gash[,2:length(dat_gash)])
-range.Linf = c(42,46)
-step.Linf = 0.1
-range.K = c(0.1,1)
-step.K = 0.1
-
 ELEFAN <- function(param, range.Linf, step.Linf,
-                   range.K, step.K, t0 = NA, interval,
+                   range.K, step.K, t0 = 0, interval,
                    tmax){
 
   res <- param
@@ -352,7 +340,7 @@ ELEFAN <- function(param, range.Linf, step.Linf,
   #for whole live of fish:
   t <- 0:(tmax * 365) / 365
 
-
+sys_timeBF <- Sys.time()
   ESP.tshift.L <- list()
   ESP.list.L <- list()
   for(li in 1:length(Linfs)){
@@ -360,7 +348,6 @@ ELEFAN <- function(param, range.Linf, step.Linf,
     ESP.tshift.k <- list()
     ESP.list.k <- list()
     for(ki in 1:length(Ks)){
-
       # get other growth curves going through data which is dependent on tmax
       if(sp.years > 0 & sp.years < 1) repro.add <- 0
       if(sp.years > 1 & sp.years < 2) repro.add <- 1
@@ -451,9 +438,12 @@ ELEFAN <- function(param, range.Linf, step.Linf,
   tapply(ESP.df[,3],list(ESP.df[,1],ESP.df[,2]),round,digits = 2)
   ESP.time <- do.call(rbind,ESP.tshift.L)
   tapply(ESP.time[,3],list(ESP.time[,1],ESP.time[,2]),round,digits = 2)
-
+  sys_timeAW <- Sys.time()
+  sys_timeAW
+  sys_timeBF
   #PEAKS which are hit have to be flagged out, troughs can be hit several times
 
+10^(8.78/ASP) /10
 
   #   tvar.list <- list()
   #   for(tvar in 0:length(t.days)){
@@ -464,7 +454,7 @@ ELEFAN <- function(param, range.Linf, step.Linf,
 
   #for plotting
   xplot <- c(min(t.years.fr),(max(t.years.fr)))
-  yplot <- c(0,classes[length(classes)]+interval)
+  yplot <- c(classes[1]-interval,classes[length(classes)]+interval)
 
   # Plot with rearranged histogramms
   par(mar = c(5, 5, 1, 1) + .1)
@@ -484,7 +474,7 @@ ELEFAN <- function(param, range.Linf, step.Linf,
     x.l <- rep(days.years[histi],length(classes))
     x.x <- catch.aAF[,histi]
     x.x[which(x.x < 0)] <- 0
-    x.r <- x.l + x.x * 0.03   ### make this number dependent on data!?!?
+    x.r <- x.l - x.x * 0.05   ### make this number dependent on data!?!?
     rect(xleft = x.l, ybottom = y.b, xright = x.r, ytop = y.t,
          col = "gray40", border = "black")
   }
@@ -494,7 +484,7 @@ ELEFAN <- function(param, range.Linf, step.Linf,
     x.l <- rep(days.years[histi],length(classes))
     x.x <- catch.aAF[,histi]
     x.x[which(x.x > 0)] <- 0
-    x.r <- x.l + x.x * 0.03   ### make this number dependent on data!?!?
+    x.r <- x.l - x.x * 0.05   ### make this number dependent on data!?!?
     rect(xleft = x.l, ybottom = y.b, xright = x.r, ytop = y.t,
          col = "gray80", border = "black")
   }
@@ -506,9 +496,9 @@ ELEFAN <- function(param, range.Linf, step.Linf,
 #   }
 
 
-  Linf.p = 15
-  K.p = 0.9
-  tshift.p = 92/365
+  Linf.p = 44.3
+  K.p = 0.41
+  tshift.p = 422/365
   # growth curves
   Lt <- Linf.p * (1 - exp(-K.p * (t.years.fr - tshift.p)))    ### choose correct t -> tshift
   lines(y = Lt, x = t.years.fr, lty=2, col='blue')
