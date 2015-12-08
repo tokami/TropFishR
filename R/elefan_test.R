@@ -35,6 +35,17 @@
 #' @export
 #'
 
+require(gdata)
+dat_gash <- read.xls("~/Documents/Scientific Assistant ZMT/Tropical Fish Stock Assessment in R/Literature review/ELEFAN/data_gashaw/Gashaw data _Lake Koka_Ethiopia.xlsx")
+names(dat_gash) <- c("ML","X01.02.2010","X01.05.2010","X01.11.2010","X01.02.2011",
+                     "X01.05.2011","X01.08.2011","X01.11.2011","X01.02.2012","X01.05.2012",
+                     "X01.08.2012","X01.11.2012")
+param <- list(midLengths = dat_gash$ML,
+              catch = dat_gash[,2:length(dat_gash)])
+range.Linf = c(42,46)
+step.Linf = 0.1
+range.K = c(0.1,1)
+step.K = 0.1
 
 ELEFAN <- function(param, range.Linf, step.Linf,
                    range.K, step.K, t0 = NA, interval,
@@ -287,6 +298,20 @@ ELEFAN <- function(param, range.Linf, step.Linf,
   ASP <- sum(vec.ASP,na.rm=T)
 
 
+  # create peak matrix
+  prep_mat <- catch.aAF
+  prep_mat <- ifelse(prep_mat > 0,1,prep_mat)
+  prep_mat <- ifelse(prep_mat <= 0,0,prep_mat)
+  peak.list <- list()
+  for(coli in 1:dim(prep_mat)[2]){
+    vec.peaki <- prep_mat[,coli]
+    rle.val <- rle(vec.peaki)$values
+    rle.val[which(rle.val == 1)] <- 1:length(rle.val[which(rle.val == 1)])
+    peak.list[[coli]] <- rep(rle.val,rle(vec.peaki)$lengths)
+  }
+  peaks_mat <- do.call(cbind,peak.list)
+
+
   #     calculates the maximum sum of points "available" in a (set of) length-frequency sample(s) (see Fig. 1 C) ["available points" refers here to points which can possibly be "accumulated" by one single growth curve; see below]. This sum is termed "available sum of peaks" (ASP).
   #     "traces" through the (set of) length-frequency sample(s) sequentially arranged in time, for any arbitrary "seed" input of Lex> and K, a series of growth curves started from the base of each of the peaks, and projected backward and forward in time to meet all other samples of the sample set (Fig. 2) and/or the same sample repeated again and again (Fig. 3).
   #     accumulates the "points" obtained by each growth curve when passing through peaks (positive points) or through the troughs separating peaks (negative points) (see Fig. 1 B and C).
@@ -331,13 +356,10 @@ ELEFAN <- function(param, range.Linf, step.Linf,
   ESP.tshift.L <- list()
   ESP.list.L <- list()
   for(li in 1:length(Linfs)){
-    li =1
 
     ESP.tshift.k <- list()
     ESP.list.k <- list()
     for(ki in 1:length(Ks)){
-      ki = 1
-
 
       # get other growth curves going through data which is dependent on tmax
       if(sp.years > 0 & sp.years < 1) repro.add <- 0
@@ -346,21 +368,12 @@ ELEFAN <- function(param, range.Linf, step.Linf,
       if(sp.years > 3 & sp.years < 4) repro.add <- 3
       if(sp.years > 4 & sp.years < 5) repro.add <- 4
 
-
       # VBGF
       Lt <-  Linfs[li] * ( 1 - exp( - Ks[ki] * (t - t0)))
       Lt.cohis <- tmax + repro.add
 
-      #necessary? or enough: vector with
-      Lt.list <- list(Lt)
-      Lt.list <- rep(Lt.list[1],tmax+repro.add)
-
-
       # get lengths which fall into sampling times
       samp.times <- as.numeric(colnames(catch.aAF))   # what about the next cohort one year later or one year ago if totap period is over one year???
-
-
-
 
       # improve these loops by defining when smaller than smallest length group or larger than largest length group it turns into NA and not the extreme groups
       options(warn = -1) # turn warning messages off globally
@@ -400,32 +413,23 @@ ELEFAN <- function(param, range.Linf, step.Linf,
 
 
       # get ESP values from catch.aAF matrix entries which are hit by growth curve
-      true_mat <- catch.aAF
-      true_mat <- ifelse(true_mat > 0,"T",true_mat)
-      true_mat <- ifelse(true_mat <= 0,"F",true_mat)
       ESP.list <- list()
       for(inds in 1:length(lt.classes.list)){
         df <- lt.classes.list[[inds]]
-
         loop_mat <- catch.aAF
         ESPs <- NA
         ESP.loop <- list()
         for(indi in 2:length(df)){
-          indi = 4
           for(indx in 1:length(df[,1])){
-            indx = 4
             ESPs[indx] <- loop_mat[df[indx,indi],indx]
             #flagging out of hit peaks (Pauly,1985)
-            loop_mat[df[indx,indi],indx] <-
-              ifelse(true_mat[df[indx,indi],indx] == "T",NA,loop_mat)
-            #OOOOOR:
-            if(true_mat[df[indx,indi],indx] == "T"){
-              loop_mat[which(true_mat[,indx] == "T" & ),indx] <- NA
+            if(!is.na(df[indx,indi]) & peaks_mat[df[indx,indi],indx] != 0){
+              peakX <- peaks_mat[df[indx,indi],indx]
+              loop_mat[which(peaks_mat[,indx] != 0 &
+                               peaks_mat[,indx] == peakX ),indx] <- NA
             }
-
-
           }
-          ESP.loop[[indi-1]] <- ESPs
+        ESP.loop[[indi-1]] <- ESPs
         }
 
         # get ESP by summing up
@@ -497,22 +501,25 @@ ELEFAN <- function(param, range.Linf, step.Linf,
 
 
 
-  for(xyx in 1:length(Lt.list)){
-    lines(y = Lt.list[[xyx]], x = t, lty=2, col='darkgreen')
-  }
+#   for(xyx in 1:length(Lt.list)){
+#     lines(y = Lt.list[[xyx]], x = t, lty=2, col='darkgreen')
+#   }
 
 
+  Linf.p = 15
+  K.p = 0.9
+  tshift.p = 92/365
   # growth curves
-  Lt <- 11 * (1 - exp(-0.9 * (t.years.fr - 0)))    ### choose correct t -> tshift
+  Lt <- Linf.p * (1 - exp(-K.p * (t.years.fr - tshift.p)))    ### choose correct t -> tshift
   lines(y = Lt, x = t.years.fr, lty=2, col='blue')
   #t.years.frA <- seq(xplot[1],xplot[2],1/365)
-  Lt <- 11 * (1 - exp(-0.9 * (t.years.fr + 1)))
+  Lt <- Linf.p * (1 - exp(-K.p * (t.years.fr - tshift.p - 1)))
   lines(y = Lt, x = t.years.fr, lty=2, col='blue')
-  Lt <- 11 * (1 - exp(-0.9 * (t.years.fr - 1)))
+  Lt <- Linf.p * (1 - exp(-K.p * (t.years.fr - tshift.p + 1)))
   lines(y = Lt, x = t.years.fr , lty=2, col='blue')
-  Lt <- 11 * (1 - exp(-0.9 * (t.years.fr + 2)))
+  Lt <- Linf.p * (1 - exp(-K.p * (t.years.fr - tshift.p + 2)))
   lines(y = Lt, x = t.years.fr, lty=2, col='blue')
-  Lt <- 11 * (1 - exp(-0.9 * (t.years.fr + 5)))
+  Lt <- Linf.p * (1 - exp(-K.p * (t.years.fr - tshift.p + 3)))
   lines(y = Lt, x = t.years.fr, lty=2, col='blue')
 
 
@@ -524,5 +531,35 @@ ELEFAN <- function(param, range.Linf, step.Linf,
 }
 
 
+
+
+#for plotting
+xplot <- c(min(t.years.fr),(max(t.years.fr)))     # display months on x axis
+yplot <- c(0,classes[length(classes)]+interval)
+
+# Plot with rearranged histogramms
+par(mar = c(5, 5, 1, 1) + .1)
+plot(xplot, yplot, type = "n",axes = FALSE,
+     ann = FALSE,  xaxs = "i", yaxs = "i")
+text(days.years, par("usr")[3] - 0.7,
+     labels = dates.all, srt = 45, pos = 1, xpd = TRUE)
+axis(2, cex.axis = 1.2)
+mtext(side = 2, outer = F, line = 3.5, "Length [cm]", cex = 1.2)
+box( col = "gray40") #bty = "L"
+
+#Histograms
+# true distributions
+for(histi in 1:dim(catch)[2]){
+  x.r <- rep(days.years[histi],length(classes))
+  x.x <- catch[,histi]
+  x.l <- x.r - x.x * 0.002   ### make this number dependent on data!?!?
+  rect(xleft = x.l, ybottom = y.b, xright = x.r, ytop = y.t,
+       col = "gray80", border = "black")
+}
+
+
+#   for(xyx in 1:length(Lt.list)){
+#     lines(y = Lt.list[[xyx]], x = t, lty=2, col='darkgreen')
+#   }
 
 
