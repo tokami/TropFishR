@@ -325,7 +325,7 @@ ELEFAN <- function(param, range.Linf, step.Linf,
   #t <- t.days
   t <- t.years   ## for whoel range of t max?
   #for whole live of fish:
-  t <- 1:(tmax * 365) / 365
+  t <- 0:(tmax * 365) / 365
 
 
   ESP.tshift.L <- list()
@@ -339,22 +339,22 @@ ELEFAN <- function(param, range.Linf, step.Linf,
       ki = 1
 
       # VBGF
-      Lt <-  Linfs[li] * ( 1 - exp( - Ks[ki] * (t - t0)))
+      # Lt <-  Linfs[li] * ( 1 - exp( - Ks[ki] * (t - t0)))
 
-#       # get other growth curves going through data which is dependent on tmax
-#       if(sp.years > 0 & sp.years < 1) repro.add <- 0
-#       if(sp.years > 1 & sp.years < 2) repro.add <- 1
-#       if(sp.years > 2 & sp.years < 3) repro.add <- 2
-#       if(sp.years > 3 & sp.years < 4) repro.add <- 3
-#       if(sp.years > 4 & sp.years < 5) repro.add <- 4
-#
-#       Lt.list <- list()
-#       for(co.rep in -repro.add:tmax){    ## make option for two or more reproduction events per year
-#         Lt <- Linfs[li] * ( 1 - exp( - Ks[ki] * ((t+co.rep) - t0)))
-#         Lt.list[[co.rep+repro.add+1]] <- Lt
-#       }
-#
-#       Lt.list[[1]]
+      # get other growth curves going through data which is dependent on tmax
+      if(sp.years > 0 & sp.years < 1) repro.add <- 0
+      if(sp.years > 1 & sp.years < 2) repro.add <- 1
+      if(sp.years > 2 & sp.years < 3) repro.add <- 2
+      if(sp.years > 3 & sp.years < 4) repro.add <- 3
+      if(sp.years > 4 & sp.years < 5) repro.add <- 4
+
+      Lt.list <- list()
+      for(co.rep in -repro.add:tmax){    ## make option for two or more reproduction events per year
+        Lt <- Linfs[li] * ( 1 - exp( - Ks[ki] * ((t+co.rep) - t0)))
+        Lt.list[[co.rep+repro.add+1]] <- Lt
+      }
+
+      Lt.list[[1]]
 
 
       # get lengths which fall into sampling times
@@ -508,6 +508,16 @@ for(tshift in 0:(length(t.days)-1)){
                                             lt.classes)
 }
 #lt.classes.df <- do.call(rbind,lt.classes.list)
+
+
+#necessary? or enough: vector with
+Lt.list <- list(Lt)
+Lt.list <- rep(Lt.list[1],tmax+repro.add)
+
+
+true_mat <- catch.aAF
+true_mat <- ifelse(true_mat > 0,"T",true_mat)
+true_mat <- ifelse(true_mat <= 0,"F",true_mat)
 
 
 
