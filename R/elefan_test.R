@@ -45,7 +45,7 @@ ELEFAN <- function(param, range.Linf, step.Linf,
 
 
   #________________________DATA ARRANGEMENT________________________#
-  #--------
+  #--------------
 
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   #         moving average           #
@@ -340,7 +340,21 @@ ELEFAN <- function(param, range.Linf, step.Linf,
   #for whole live of fish:
   t <- 0:(tmax * 365) / 365
 
+
+  # get other growth curves going through data which is dependent on tmax
+  if(sp.years > 0 & sp.years < 1) repro.add <- 0
+  if(sp.years > 1 & sp.years < 2) repro.add <- 1
+  if(sp.years > 2 & sp.years < 3) repro.add <- 2
+  if(sp.years > 3 & sp.years < 4) repro.add <- 3
+  if(sp.years > 4 & sp.years < 5) repro.add <- 4
+
+  samp.times <- as.numeric(colnames(catch.aAF))   # what about the next cohort one year later or one year ago if totap period is over one year???
+
+
+
 sys_timeBF <- Sys.time()
+
+
   ESP.tshift.L <- list()
   ESP.list.L <- list()
   for(li in 1:length(Linfs)){
@@ -348,20 +362,12 @@ sys_timeBF <- Sys.time()
     ESP.tshift.k <- list()
     ESP.list.k <- list()
     for(ki in 1:length(Ks)){
-      # get other growth curves going through data which is dependent on tmax
-      if(sp.years > 0 & sp.years < 1) repro.add <- 0
-      if(sp.years > 1 & sp.years < 2) repro.add <- 1
-      if(sp.years > 2 & sp.years < 3) repro.add <- 2
-      if(sp.years > 3 & sp.years < 4) repro.add <- 3
-      if(sp.years > 4 & sp.years < 5) repro.add <- 4
 
       # VBGF
       Lt <-  Linfs[li] * ( 1 - exp( - Ks[ki] * (t - t0)))
       Lt.cohis <- tmax + repro.add
 
       # get lengths which fall into sampling times
-      samp.times <- as.numeric(colnames(catch.aAF))   # what about the next cohort one year later or one year ago if totap period is over one year???
-
       # improve these loops by defining when smaller than smallest length group or larger than largest length group it turns into NA and not the extreme groups
       options(warn = -1) # turn warning messages off globally
       lt.classes.list <- list()
@@ -371,57 +377,54 @@ sys_timeBF <- Sys.time()
         lt.class.cohi <- list()
         for(cohi in -repro.add:tmax){
           diff <- samp.times - (ttx - cohi)
-
           diff[which(diff < 0)] <- NA
-
           lt.classes <- Lt[(diff*365)]
+
+          # get corresponding length groups instead of exact lengths
+          for(hitx in 1:length(lt.classes)){
+            if(all(is.na(classes - lt.classes[hitx]))){lt.classes[hitx] <- NA
+            }else lt.classes[hitx] <- which.min(abs(classes - lt.classes[hitx]))
+          }
 
           lt.class.cohi[[cohi+repro.add+1]] <- lt.classes
         }
         lt.class.cohi.df <- do.call(cbind,lt.class.cohi)
-
         lt.classes.list[[tshift]] <- data.frame(tshift = rep(tshift,
                                                              length(lt.class.cohi.df[,1])),
                                                 lt.class.cohi.df)
       }
       options(warn = 0)
 
-      # get size classes in which calculated Lt values fall into
-      for(hits in 1:length(lt.classes.list)){
-        df <- lt.classes.list[[hits]]
-        for(hiti in 2:length(df)){
-          for(hitx in 1:length(df[,2])){
-            if(all(is.na(classes - df[hitx,hiti]))){df[hitx,hiti] <- NA
-            }else df[hitx,hiti] <- which.min(abs(classes - df[hitx,hiti]))
-          }
-        }
-        lt.classes.list[[hits]] <- df
-      }
-
 
       # get ESP values from catch.aAF matrix entries which are hit by growth curve
       ESP.list <- list()
       for(inds in 1:length(lt.classes.list)){
+
         df <- lt.classes.list[[inds]]
         loop_mat <- catch.aAF
         ESPs <- NA
         ESP.loop <- list()
         for(indi in 2:length(df)){
-          for(indx in 1:length(df[,1])){
-            ESPs[indx] <- loop_mat[df[indx,indi],indx]
+          res.ind <- df[,indi]
+          for(indx in 1:length(res.ind)){
+
+            ESPs[indx] <- loop_mat[res.ind[indx],indx]
+
             #flagging out of hit peaks (Pauly,1985)
-            if(!is.na(df[indx,indi]) & peaks_mat[df[indx,indi],indx] != 0){
-              peakX <- peaks_mat[df[indx,indi],indx]
+            if(!is.na(res.ind[indx]) & peaks_mat[res.ind[indx],indx] != 0){
+              peakX <- peaks_mat[res.ind[indx],indx]
               loop_mat[which(peaks_mat[,indx] != 0 &
                                peaks_mat[,indx] == peakX ),indx] <- NA
             }
+
           }
         ESP.loop[[indi-1]] <- ESPs
         }
-
         # get ESP by summing up
         ESP.list[[inds]] <- c(inds,sum(unlist(ESP.loop),na.rm=TRUE))
       }
+
+
       # choose best ESP value of all starting times (tshift)
       ESP.pre.df <- do.call(rbind,ESP.list)
       ESPx <- ESP.pre.df[which(ESP.pre.df[,2] == max(ESP.pre.df[,2],na.rm=TRUE)),]   ### here more than one combination of thsift and ESP can be resulting
@@ -439,8 +442,7 @@ sys_timeBF <- Sys.time()
   ESP.time <- do.call(rbind,ESP.tshift.L)
   tapply(ESP.time[,3],list(ESP.time[,1],ESP.time[,2]),round,digits = 2)
   sys_timeAW <- Sys.time()
-  sys_timeAW
-  sys_timeBF
+  sys_timeAW - sys_timeBF
   #PEAKS which are hit have to be flagged out, troughs can be hit several times
 
 10^(8.78/ASP) /10
@@ -553,3 +555,36 @@ for(histi in 1:dim(catch)[2]){
 #   }
 
 
+
+
+
+
+
+## OLD
+# get size classes in which calculated Lt values fall into
+for(hits in 1:length(lt.classes.list)){
+  df <- lt.classes.list[[hits]]
+  for(hiti in 2:length(df)){
+    hi.res <- df[,hiti]
+    for(hitx in 1:length(hi.res)){
+      if(all(is.na(classes - hi.res[hitx]))){hi.res[hitx] <- NA
+      }else hi.res[hitx] <- which.min(abs(classes - hi.res[hitx]))
+    }
+    df[,hiti] <- hi.res
+  }
+  lt.classes.list[[hits]] <- df
+}
+
+
+
+# get size classes in which calculated Lt values fall into
+for(hits in 1:length(lt.classes.list)){
+  df <- lt.classes.list[[hits]]
+  for(hiti in 2:length(df)){
+    for(hitx in 1:length(df[,2])){
+      if(all(is.na(classes - df[hitx,hiti]))){df[hitx,hiti] <- NA
+      }else df[hitx,hiti] <- which.min(abs(classes - df[hitx,hiti]))
+    }
+  }
+  lt.classes.list[[hits]] <- df
+}
