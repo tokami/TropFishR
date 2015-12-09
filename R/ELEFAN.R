@@ -7,6 +7,12 @@
 #'   data) or ages as vector (age composition data),
 #'   \code{catch} Catch as vector, or a matrix with catches of subsequent years if
 #'   the catch curve with constat time intervals should be applied;
+#' @param range.Linf lower and upper limit of range of Linf values
+#' @param step.Linf step size between Linf values
+#' @param range.K lower and upper limit of range of K values
+#' @param step.K step size between K values
+#' @param t0 theoretical age of fish at length zero
+#' @param tmax maximal age of fish from literature only estimate needed
 #'
 #' @examples
 #' \donttest{
@@ -35,18 +41,18 @@
 #' @export
 #'
 
-
 ELEFAN <- function(param, range.Linf, step.Linf,
-                   range.K, step.K, t0 = NA, interval,
+                   range.K, step.K, t0 = 0,
                    tmax){
 
   res <- param
   classes <- res$midLengths
   catch <- res$catch
+  interval <- classes[1]-classes[2]
 
 
   #________________________DATA ARRANGEMENT________________________#
-#--------
+  #--------------
 
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   #         moving average           #
@@ -287,10 +293,24 @@ ELEFAN <- function(param, range.Linf, step.Linf,
   ASP <- sum(vec.ASP,na.rm=T)
 
 
-#     calculates the maximum sum of points "available" in a (set of) length-frequency sample(s) (see Fig. 1 C) ["available points" refers here to points which can possibly be "accumulated" by one single growth curve; see below]. This sum is termed "available sum of peaks" (ASP).
-#     "traces" through the (set of) length-frequency sample(s) sequentially arranged in time, for any arbitrary "seed" input of Lex> and K, a series of growth curves started from the base of each of the peaks, and projected backward and forward in time to meet all other samples of the sample set (Fig. 2) and/or the same sample repeated again and again (Fig. 3).
-#     accumulates the "points" obtained by each growth curve when passing through peaks (positive points) or through the troughs separating peaks (negative points) (see Fig. 1 B and C).
-#     selects the curve which, by passing through most peaks and avoiding most troughs best "explains" the peaks in the (set of) sample(s) and therefore accumulates the largest number of points. This new sum is called "explained sum of peaks" (ESP). decrements or increments the "seeded" values of Lex> and K until the ratio ESP/ASP reaches a maximum, and gives the growth parameters corresponding to this optimum ratio.
+  # create peak matrix
+  prep_mat <- catch.aAF
+  prep_mat <- ifelse(prep_mat > 0,1,prep_mat)
+  prep_mat <- ifelse(prep_mat <= 0,0,prep_mat)
+  peak.list <- list()
+  for(coli in 1:dim(prep_mat)[2]){
+    vec.peaki <- prep_mat[,coli]
+    rle.val <- rle(vec.peaki)$values
+    rle.val[which(rle.val == 1)] <- 1:length(rle.val[which(rle.val == 1)])
+    peak.list[[coli]] <- rep(rle.val,rle(vec.peaki)$lengths)
+  }
+  peaks_mat <- do.call(cbind,peak.list)
+
+
+  #     calculates the maximum sum of points "available" in a (set of) length-frequency sample(s) (see Fig. 1 C) ["available points" refers here to points which can possibly be "accumulated" by one single growth curve; see below]. This sum is termed "available sum of peaks" (ASP).
+  #     "traces" through the (set of) length-frequency sample(s) sequentially arranged in time, for any arbitrary "seed" input of Lex> and K, a series of growth curves started from the base of each of the peaks, and projected backward and forward in time to meet all other samples of the sample set (Fig. 2) and/or the same sample repeated again and again (Fig. 3).
+  #     accumulates the "points" obtained by each growth curve when passing through peaks (positive points) or through the troughs separating peaks (negative points) (see Fig. 1 B and C).
+  #     selects the curve which, by passing through most peaks and avoiding most troughs best "explains" the peaks in the (set of) sample(s) and therefore accumulates the largest number of points. This new sum is called "explained sum of peaks" (ESP). decrements or increments the "seeded" values of Lex> and K until the ratio ESP/ASP reaches a maximum, and gives the growth parameters corresponding to this optimum ratio.
 
   #-------
 
@@ -322,77 +342,91 @@ ELEFAN <- function(param, range.Linf, step.Linf,
   Linfs <- seq(range.Linf[1],range.Linf[2],step.Linf)
   Ks <- seq(range.K[1],range.K[2],step.K)
 
-  #t <- t.days
-  t <- t.years   ## for whoel range of t max?
   #for whole live of fish:
-  t <- 0:(tmax * 365) / 365
+  t <- 0:(tmax * 365) / 365   #t <- t.years   ## for whoel range of t max?
+
+  # get other growth curves going through data which is dependent on tmax
+  if(sp.years > 0 & sp.years < 1) repro.add <- 0
+  if(sp.years > 1 & sp.years < 2) repro.add <- 1
+  if(sp.years > 2 & sp.years < 3) repro.add <- 2
+  if(sp.years > 3 & sp.years < 4) repro.add <- 3
+  if(sp.years > 4 & sp.years < 5) repro.add <- 4
+
+  samp.times <- as.numeric(colnames(catch.aAF))   # what about the next cohort one year later or one year ago if totap period is over one year???
+
+sys_timeBF <- Sys.time()
 
 
   ESP.tshift.L <- list()
   ESP.list.L <- list()
   for(li in 1:length(Linfs)){
-    li =1
 
     ESP.tshift.k <- list()
     ESP.list.k <- list()
     for(ki in 1:length(Ks)){
-      ki = 1
 
       # VBGF
-      # Lt <-  Linfs[li] * ( 1 - exp( - Ks[ki] * (t - t0)))
-
-      # get other growth curves going through data which is dependent on tmax
-      if(sp.years > 0 & sp.years < 1) repro.add <- 0
-      if(sp.years > 1 & sp.years < 2) repro.add <- 1
-      if(sp.years > 2 & sp.years < 3) repro.add <- 2
-      if(sp.years > 3 & sp.years < 4) repro.add <- 3
-      if(sp.years > 4 & sp.years < 5) repro.add <- 4
-
-      Lt.list <- list()
-      for(co.rep in -repro.add:tmax){    ## make option for two or more reproduction events per year
-        Lt <- Linfs[li] * ( 1 - exp( - Ks[ki] * ((t+co.rep) - t0)))
-        Lt.list[[co.rep+repro.add+1]] <- Lt
-      }
-
-      Lt.list[[1]]
-
+      Lt <-  Linfs[li] * ( 1 - exp( - Ks[ki] * (t - t0)))
+      Lt.cohis <- tmax + repro.add
 
       # get lengths which fall into sampling times
-      samp.times <- as.numeric(colnames(catch.aAF))   # what about the next cohort one year later or one year ago if totap period is over one year???
-
+      # improve these loops by defining when smaller than smallest length group or larger than largest length group it turns into NA and not the extreme groups
+      options(warn = -1) # turn warning messages off globally
       lt.classes.list <- list()
-      for(tshift in 1:(length(t.days)-1)){
+      for(tshift in 1:(length(t.days)-1)){ # produces warnings because latest cohort will not be represented by data and thereby produce NA
         ttx <- t.years[tshift]
-        diff <- samp.times - ttx
-        diff[which(diff < 0)] <- NA
-        lt.classes <- Lt[(diff*365)]
-        lt.classes.list[[tshift]] <- data.frame(tshift = rep(tshift,length(lt.classes)),
-                                                lt.classes)
-      }
 
+        lt.class.cohi <- list()
+        for(cohi in -repro.add:tmax){
+          diff <- samp.times - (ttx - cohi)
+          diff[which(diff < 0)] <- NA
+          lt.classes <- Lt[(diff*365)]
 
-      # get size classes in which calculated Lt values fall into
-      for(hits in 1:length(lt.classes.list)){
-        df <- lt.classes.list[[hits]]
-        for(hiti in 1:length(df[,1])){
-          if(all(is.na(classes - df[,2][hiti]))){df$cor.class[hiti] <- NA
-          }else df$cor.class[hiti] <- which.min(abs(classes - df[,2][hiti]))
+          # get corresponding length groups instead of exact lengths, IMPROVE smaller than smallest group, larger than largest group
+          for(hitx in 1:length(lt.classes)){
+            if(all(is.na(classes - lt.classes[hitx]))){lt.classes[hitx] <- NA
+            }else lt.classes[hitx] <- which.min(abs(classes - lt.classes[hitx]))
+          }
+
+          lt.class.cohi[[cohi+repro.add+1]] <- lt.classes
         }
-        lt.classes.list[[hits]] <- df
+        lt.class.cohi.df <- do.call(cbind,lt.class.cohi)
+        lt.classes.list[[tshift]] <- data.frame(tshift = rep(tshift,
+                                                             length(lt.class.cohi.df[,1])),
+                                                lt.class.cohi.df)
       }
+      options(warn = 0)
 
 
       # get ESP values from catch.aAF matrix entries which are hit by growth curve
       ESP.list <- list()
       for(inds in 1:length(lt.classes.list)){
+
         df <- lt.classes.list[[inds]]
+        loop_mat <- catch.aAF
         ESPs <- NA
-        for(indi in 1:length(df[,1])){
-          ESPs[indi] <- catch.aAF[df$cor.class[indi],indi]
+        ESP.loop <- list()
+        for(indi in 2:length(df)){
+          res.ind <- df[,indi]
+          for(indx in 1:length(res.ind)){
+
+            ESPs[indx] <- loop_mat[res.ind[indx],indx]
+
+            #flagging out of hit peaks (Pauly,1985)
+            if(!is.na(res.ind[indx]) & peaks_mat[res.ind[indx],indx] != 0){
+              peakX <- peaks_mat[res.ind[indx],indx]
+              loop_mat[which(peaks_mat[,indx] != 0 &
+                               peaks_mat[,indx] == peakX ),indx] <- NA
+            }
+
+          }
+        ESP.loop[[indi-1]] <- ESPs
         }
         # get ESP by summing up
-        ESP.list[[inds]] <- c(inds,sum(ESPs,na.rm=TRUE))
+        ESP.list[[inds]] <- c(inds,sum(unlist(ESP.loop),na.rm=TRUE))
       }
+
+
       # choose best ESP value of all starting times (tshift)
       ESP.pre.df <- do.call(rbind,ESP.list)
       ESPx <- ESP.pre.df[which(ESP.pre.df[,2] == max(ESP.pre.df[,2],na.rm=TRUE)),]   ### here more than one combination of thsift and ESP can be resulting
@@ -406,199 +440,27 @@ ELEFAN <- function(param, range.Linf, step.Linf,
   }
 
   ESP.df <- do.call(rbind,ESP.list.L)
-  tapply(ESP.df[,3],list(ESP.df[,1],ESP.df[,2]),round,digits = 2)
+  ESP.df[,3] <- ESP.df[,3]/ASP
+  grid <- tapply(ESP.df[,3],list(ESP.df[,1],ESP.df[,2]),round,digits = 2)
+
   ESP.time <- do.call(rbind,ESP.tshift.L)
   tapply(ESP.time[,3],list(ESP.time[,1],ESP.time[,2]),round,digits = 2)
-
-  #PEAKS which are hit have to be flagged out, troughs can be hit several times
-
-
-#   tvar.list <- list()
-#   for(tvar in 0:length(t.days)){
-#     Lt <-  Linfs[li] * ( 1 - exp( - K[ki] * ((t+tvar) - t0)))
-#     tvar.list[[tvar+1]] <- Lt
-#   }
+  sys_timeAW <- Sys.time()
+  sys_timeAW - sys_timeBF
 
 
-  #for plotting
-  xplot <- c(min(t.years.fr),(max(t.years.fr)))
-  yplot <- c(0,classes[length(classes)]+interval)
-
-  # Plot with rearranged histogramms
-  par(mar = c(5, 5, 1, 1) + .1)
-  plot(xplot, yplot, type = "n",axes = FALSE,
-       ann = FALSE,  xaxs = "i", yaxs = "i")
-  text(days.years, par("usr")[3] - 0.7,
-       labels = dates.all, srt = 45, pos = 1, xpd = TRUE)
-  axis(2, cex.axis = 1.2)
-  mtext(side = 2, outer = F, line = 3.5, "Length [cm]", cex = 1.2)
-  box( col = "gray40") #bty = "L"
-
-  #Histograms
-  # positive histograms or peaks
-  y.b <- classes - interval / 2
-  y.t <- classes + interval / 2
-  for(histi in 1:dim(catch)[2]){
-    x.l <- rep(days.years[histi],length(classes))
-    x.x <- catch.aAF[,histi]
-    x.x[which(x.x < 0)] <- 0
-    x.r <- x.l + x.x * 0.03   ### make this number dependent on data!?!?
-    rect(xleft = x.l, ybottom = y.b, xright = x.r, ytop = y.t,
-         col = "gray40", border = "black")
-  }
-
-  # negative histograms or troughs
-  for(histi in 1:dim(catch)[2]){
-    x.l <- rep(days.years[histi],length(classes))
-    x.x <- catch.aAF[,histi]
-    x.x[which(x.x > 0)] <- 0
-    x.r <- x.l + x.x * 0.03   ### make this number dependent on data!?!?
-    rect(xleft = x.l, ybottom = y.b, xright = x.r, ytop = y.t,
-         col = "gray80", border = "black")
-  }
+  # GRAPHICS
+  # Response surface analysis
+  image(x = Ks,
+      y = Linfs,
+      z = t(grid), col=colorRampPalette(c("yellow","red"), space="Lab")(6),
+      main = 'Response surface analysis', ylab = 'K', xlab='Linf')
+  #grid (NULL,NULL, lty = 6, col = "cornsilk2")
+  text(x=ESP.df[,2],y=ESP.df[,1],round(ESP.df[,3],digits = 2),cex = 0.6)
 
 
-
-  for(xyx in 1:length(Lt.list)){
-    lines(y = Lt.list[[xyx]], x = t, lty=2, col='darkgreen')
-  }
-
-
-  # growth curves
-  Lt <- 11 * (1 - exp(-0.9 * (t.years.fr - 0)))    ### choose correct t -> tshift
-  lines(y = Lt, x = t.years.fr, lty=2, col='blue')
-  #t.years.frA <- seq(xplot[1],xplot[2],1/365)
-  Lt <- 11 * (1 - exp(-0.9 * (t.years.fr + 1)))
-  lines(y = Lt, x = t.years.fr, lty=2, col='blue')
-  Lt <- 11 * (1 - exp(-0.9 * (t.years.fr - 1)))
-  lines(y = Lt, x = t.years.fr , lty=2, col='blue')
-  Lt <- 11 * (1 - exp(-0.9 * (t.years.fr + 2)))
-  lines(y = Lt, x = t.years.fr, lty=2, col='blue')
-  Lt <- 11 * (1 - exp(-0.9 * (t.years.fr + 5)))
-  lines(y = Lt, x = t.years.fr, lty=2, col='blue')
-
-
-
-
-#   #start with seed values for L8 and K and create growth functions from every peak
-#   peaks <- which(!is.na(pos.NA.df))
-#   #project backward and forward in time? wtf
+  res2
+  ret <- c(res,res2)
+  return(ret)
+  class(ret) <- 'ELEFAN'
 }
-
-
-
-
-
-
-
-
-
-
-days <- as.numeric(dates.all - as.Date(cut(dates.all[1], "year")))  # takes beginning of year, what if one sampled on 1st of January? better to take a certain time period before first sampling time
-
-
-# works:
-
-lt.classes.list <- list()
-for(tshift in 0:(length(t.days)-1)){
-  diff <- samp.times - tshift
-  diff[which(diff < 0)] <- NA
-  lt.classes <- Lt[diff]
-  lt.classes.list[[tshift+1]] <- data.frame(tshift = rep(tshift,length(lt.classes)),
-                                            lt.classes)
-}
-#lt.classes.df <- do.call(rbind,lt.classes.list)
-
-
-#necessary? or enough: vector with
-Lt.list <- list(Lt)
-Lt.list <- rep(Lt.list[1],tmax+repro.add)
-
-
-true_mat <- catch.aAF
-true_mat <- ifelse(true_mat > 0,"T",true_mat)
-true_mat <- ifelse(true_mat <= 0,"F",true_mat)
-
-
-
-ESP.list.L <- list()
-for(li in 1:length(Linfs)){
-  ESP.list.k <- list()
-  for(ki in 1:length(Ks)){
-
-    # VBGF
-    Lt <-  Linfs[li] * ( 1 - exp( - Ks[ki] * (t - t0)))
-
-    # get lengths which fall into sampling times
-    lt.classes <- Lt[which(colnames(catch.aAF) %in% order(Lt))]
-
-    # get size classes in which calculated Lt values fall into
-    hit.list <- NA
-    for(hits in 1:length(lt.classes)){
-      hit.list[hits] <- which.min(abs(classes - lt.classes[hits]))
-    }
-
-    # get ESP values from catch.aAF matrix entries which are hit by growth curve
-    ESPs <- NA
-    for(indi in 1:length(hit.list)){
-      ESPs[indi] <- catch.aAF[hit.list[indi],indi]
-    }
-    # get ESP by summing up
-    ESP <- sum(ESPs)
-
-    ESP.list.k[[ki]] <- c(Linfs[li],Ks[ki],ESP)
-  }
-  ESP.list.L[[li]] <- do.call(rbind,ESP.list.k)
-}
-
-ESP.df <- do.call(rbind,ESP.list.L)
-tapply(ESP.df[,3],list(ESP.df[,1],ESP.df[,2]),round,digits = 2)
-
-#for plotting
-xplot <- c(0,(max(days)+50))
-yplot <- c(classes[1],classes[length(classes)])
-
-# Plot with rearranged histogramms
-par(mar = c(5, 5, 1, 1) + .1)
-plot(xplot, yplot, type = "n",axes = FALSE,
-     ann = FALSE,  xaxs = "i", yaxs = "i")
-text(days, par("usr")[3] - 0.7,
-     labels = dates.all, srt = 45, pos = 1, xpd = TRUE)
-axis(2, cex.axis = 1.2)
-mtext(side = 2, outer = F, line = 3.5, "Length [cm]", cex = 1.2)
-box( col = "gray40") #bty = "L"
-
-#Histograms
-y.b <- classes - interval / 2
-y.t <- classes + interval / 2
-for(histi in 1:dim(catch)[2]){
-  x.l <- rep(days[histi],length(classes))
-  x.r <- x.l + catch.aAF[,histi] * 10      ### make this number dependent on data!?!?
-  rect(xleft = x.l, ybottom = y.b, xright = x.r, ytop = y.t,
-       col = "gray80", border = "gray40")
-}
-
-Lt <- 10 * (1 - exp(-0.1 * (t - 80)))    ### choose correct t -> tshift
-lines(y = Lt, x = t+320, lty=2, col='blue')
-
-
-# Plot with real histogramms
-par(mar = c(5, 5, 1, 1) + .1)
-plot(xplot, yplot, type = "n",axes = FALSE,
-     ann = FALSE,  xaxs = "i", yaxs = "i")
-text(days, par("usr")[3] - 0.7,
-     labels = dates.all, srt = 45, pos = 1, xpd = TRUE)
-axis(2, cex.axis = 1.2)
-mtext(side = 2, outer = F, line = 3.5, "Length [cm]", cex = 1.2)
-box( col = "gray40") #bty = "L"
-
-#Histograms
-y.b <- classes - interval / 2
-y.t <- classes + interval / 2
-for(histi in 1:dim(catch)[2]){
-  x.l <- rep(days[histi],length(classes))
-  x.r <- x.l + catch[,histi] * 0.6     ### make this number dependent on data!?!?
-  rect(xleft = x.l, ybottom = y.b, xright = x.r, ytop = y.t,
-       col = "gray80", border = "gray40")
-}
-
