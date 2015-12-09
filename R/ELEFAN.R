@@ -13,6 +13,8 @@
 #' @param step.K step size between K values
 #' @param t0 theoretical age of fish at length zero
 #' @param tmax maximal age of fish from literature only estimate needed
+#' @param conf.int logical; if \code{TRUE} calculates the 95% confidence intervals for
+#'   calculated Linf and K parameters by means of the jackknife method (Quenouille, 1956; Tukey, 1958, 1986),
 #'
 #' @examples
 #' \donttest{
@@ -32,18 +34,31 @@
 #' Pauly, D. and N. David, 1981. ELEFAN I, a BASIC program for the objective extraction of
 #' growth parameters from length-frequency data. \emph{Meeresforschung}, 28(4):205-211
 #'
+#' Pauly, D., 1985. On improving operation and use of ELEFAN programs. Part I: Avoiding
+#' "drift" of K towards low values. \emph{ICLARM Conf. Proc.}, 13-14
+#'
 #' Pauly, D., 1987. A review of the ELEFAN system for analysis of length-frequency data in
 #' fish and aquatic invertebrates. \emph{ICLARM Conf. Proc.}, (13):7-34
 #'
+#' Quenouille, M. H., 1956. Notes on bias in estimation. \emph{Biometrika}, 43:353-360
+#'
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
-#' Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
+#' Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2): 407 p.
+#'
+#' Tukey, J., 1958. Bias and confidence in not quite large samples.
+#' \emph{Annals of Mathematical Statistics}, 29: 614
+#'
+#' Tukey, J., 1986. The future of processes of data analysis.
+#' In L. V. Jones (Eds.), The Collected Works of John W. Tukey- philosophy and principles
+#' of data analysis: 1965-1986 (Vol. 4, pp. 517-549). Monterey, CA, USA: Wadsworth &
+#' Brooks/Cole.
 #'
 #' @export
 #'
 
 ELEFAN <- function(param, range.Linf, step.Linf,
                    range.K, step.K, t0 = 0,
-                   tmax){
+                   tmax, conf.int = FALSE){
 
   res <- param
   classes <- res$midLengths
@@ -52,8 +67,9 @@ ELEFAN <- function(param, range.Linf, step.Linf,
 
 
   #________________________DATA ARRANGEMENT________________________#
-  #--------------
+  #  ELEFAN 0
 
+#--------------
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   #         moving average           #
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
@@ -305,31 +321,12 @@ ELEFAN <- function(param, range.Linf, step.Linf,
     peak.list[[coli]] <- rep(rle.val,rle(vec.peaki)$lengths)
   }
   peaks_mat <- do.call(cbind,peak.list)
+#-------------
 
+  #__________________________GROWTH CURVE__________________________#
+  #  ELEFAN I
 
-#   calculates the maximum sum of points "available" in a (set of) length-frequency
-#   sample(s) (see Fig. 1 C) ["available points" refers here to points which can possibly
-#   be "accumulated" by one single growth curve; see below].
-
-#   This sum is termed "available sum of peaks" (ASP).
-#   "traces" through the (set of) length-frequency sample(s) sequentially arranged
-#   in time, for any arbitrary "seed" input of Lex> and K, a series of growth curves
-#   started from the base of each of the peaks, and projected backward and forward in
-#   time to meet all other samples of the sample set (Fig. 2) and/or the same sample
-#   repeated again and again (Fig. 3).
-#   accumulates the "points" obtained by each growth curve when passing through
-#   peaks (positive points) or through the troughs separating peaks (negative points)
-#   (see Fig. 1 B and C).
-#   selects the curve which, by passing through most peaks and avoiding most
-#   troughs best "explains" the peaks in the (set of) sample(s) and therefore
-#   accumulates the largest number of points. This new sum is called "explained
-#   sum of peaks" (ESP). decrements or increments the "seeded" values of Lex> and
-#   K until the ratio ESP/ASP reaches a maximum, and gives the growth parameters
-#   corresponding to this optimum ratio.
-
-  #-------
-
-  #________________________GROWTH CURVE________________________#
+#-------------
   #problem of arrangement of t, in literature: samples sequentially arranged in time
 
   #for t
@@ -369,7 +366,10 @@ ELEFAN <- function(param, range.Linf, step.Linf,
 
   samp.times <- as.numeric(colnames(catch.aAF))   # what about the next cohort one year later or one year ago if totap period is over one year???
 
-sys_timeBF <- Sys.time()
+
+
+  #for CHECKING run time of big loop
+  sys_timeBF <- Sys.time()
 
 
   ESP.tshift.L <- list()
@@ -455,24 +455,28 @@ sys_timeBF <- Sys.time()
   }
 
   ESP.df <- do.call(rbind,ESP.list.L)
-  ESP.df[,3] <- ESP.df[,3]/ASP
-  grid <- tapply(ESP.df[,3],list(ESP.df[,1],ESP.df[,2]),round,digits = 2)
+  #old:
+  #ESP.df[,3] <- ESP.df[,3]/ASP
+  #new: (Pauly, 1987)
+  ESP.df[,3] <- (10^(ESP.df[,3]/ASP)) /10
+  score_mat <- tapply(ESP.df[,3],list(ESP.df[,1],ESP.df[,2]),round,digits = 2)
 
   ESP.time <- do.call(rbind,ESP.tshift.L)
-  tapply(ESP.time[,3],list(ESP.time[,1],ESP.time[,2]),round,digits = 2)
+  time_mat <- tapply(ESP.time[,3],list(ESP.time[,1],ESP.time[,2]),round,digits = 2)
+#-------------
+
+  #for CHECKING run time of big loop
   sys_timeAW <- Sys.time()
   sys_timeAW - sys_timeBF
 
-  10^(ESP.df[,3]/ASP) /10
+  #____________________RESPONSE SURFACE ANALYSIS___________________#
 
-  # GRAPHICS
-  # Response surface analysis
-  image(x = Ks,
-      y = Linfs,
-      z = t(grid), col=colorRampPalette(c("yellow","red"), space="Lab")(6),
-      main = 'Response surface analysis', ylab = 'Linf', xlab='K')
+  image(x = Linfs,
+      y = Ks,
+      z = score_mat, col=colorRampPalette(c("yellow","red"), space="Lab")(5),
+      main = 'Response surface analysis', ylab = 'K', xlab='Linf')
   #grid (NULL,NULL, lty = 6, col = "cornsilk2")
-  text(x=ESP.df[,2],y=ESP.df[,1],round(ESP.df[,3],digits = 2),cex = 0.6)
+  text(x=ESP.df[,1],y=ESP.df[,2],round(ESP.df[,3],digits = 2),cex = 0.6)
 
 
   res2
