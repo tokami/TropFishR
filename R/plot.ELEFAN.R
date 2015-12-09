@@ -1,9 +1,9 @@
 #' @title ELEFAN plot
 #
-#' @description  This function plots the selectivity estimates of ELEFAN
+#' @description  This function plots the growth curves calculated by means of ELEFAN
 #'    (\code{\link{ELEFAN}}).
 #'
-#' @param x A list of the class \code{"ELEFAN"} containing the results of Millar's selectivity model
+#' @param x A list of the class \code{"ELEFAN"} containing the results of ELEFAN
 #' @param ... Default parameter options from plot function
 #'
 #' @examples
