@@ -1,24 +1,22 @@
 #' @title ELEFAN plot
 #
-#' @description  This function plots the selectivity estimates of Millar's selectivity model
-#'    (\code{\link{select_Millar}}).
+#' @description  This function plots the selectivity estimates of ELEFAN
+#'    (\code{\link{ELEFAN}}).
 #'
-#' @param x A list of the class \code{"select_Millar"} containing the results of Millar's selectivity model
-#' @param plotlens A vector with lengths which should be used for drawing the selection curves
-#' @param standardise A parameter indicating if the retention should be realtive to the maximum value (Default: \code{standardise = TRUE}).
+#' @param x A list of the class \code{"ELEFAN"} containing the results of Millar's selectivity model
 #' @param ... Default parameter options from plot function
 #'
 #' @examples
-#' # Gillnet
-#' # load data
-#' data(gillnet)
+#' \donttest{
+#' #load data
+#'   Linf.p = 45.2
+#'   K.p = 0.6
+#'   tshift.p = 360/365
 #'
-#' # run model
-#' output <- select_Millar(gillnet, x0 = c(60,4), rel.power = rep(1,8),
-#'    rtype = "norm.loc")
+#' plot(output, Linf= , K=, )  # with entering tshift? or it looks up tshift from time matrix but what happens if user choose L and K values outside of time mat???
 #'
-#' # plot results
-#' plot(output,plotlens=seq(40,90,0.1))
+#' }
+
 #'
 #' @details This function draws a selectivity plot for the object class
 #'    \code{"ELEFAN"}, which is created by applying ELEFAN
@@ -78,9 +76,7 @@ plot.ELEFAN <- function(x,...
   }
 
 
-  Linf.p = 45.2
-  K.p = 0.6
-  tshift.p = 360/365
+
   # growth curves
   Lt <- Linf.p * (1 - exp(-K.p * (t.years.fr - tshift.p)))    ### choose correct t -> tshift
   lines(y = Lt, x = t.years.fr, lty=2, col='blue')
@@ -123,17 +119,9 @@ plot.ELEFAN <- function(x,...
 
 
 
-
-
   #   for(xyx in 1:length(Lt.list)){
   #     lines(y = Lt.list[[xyx]], x = t, lty=2, col='darkgreen')
   #   }
-
-
-  #   for(xyx in 1:length(Lt.list)){
-  #     lines(y = Lt.list[[xyx]], x = t, lty=2, col='darkgreen')
-  #   }
-
 
 }
 

@@ -307,10 +307,25 @@ ELEFAN <- function(param, range.Linf, step.Linf,
   peaks_mat <- do.call(cbind,peak.list)
 
 
-  #     calculates the maximum sum of points "available" in a (set of) length-frequency sample(s) (see Fig. 1 C) ["available points" refers here to points which can possibly be "accumulated" by one single growth curve; see below]. This sum is termed "available sum of peaks" (ASP).
-  #     "traces" through the (set of) length-frequency sample(s) sequentially arranged in time, for any arbitrary "seed" input of Lex> and K, a series of growth curves started from the base of each of the peaks, and projected backward and forward in time to meet all other samples of the sample set (Fig. 2) and/or the same sample repeated again and again (Fig. 3).
-  #     accumulates the "points" obtained by each growth curve when passing through peaks (positive points) or through the troughs separating peaks (negative points) (see Fig. 1 B and C).
-  #     selects the curve which, by passing through most peaks and avoiding most troughs best "explains" the peaks in the (set of) sample(s) and therefore accumulates the largest number of points. This new sum is called "explained sum of peaks" (ESP). decrements or increments the "seeded" values of Lex> and K until the ratio ESP/ASP reaches a maximum, and gives the growth parameters corresponding to this optimum ratio.
+#   calculates the maximum sum of points "available" in a (set of) length-frequency
+#   sample(s) (see Fig. 1 C) ["available points" refers here to points which can possibly
+#   be "accumulated" by one single growth curve; see below].
+
+#   This sum is termed "available sum of peaks" (ASP).
+#   "traces" through the (set of) length-frequency sample(s) sequentially arranged
+#   in time, for any arbitrary "seed" input of Lex> and K, a series of growth curves
+#   started from the base of each of the peaks, and projected backward and forward in
+#   time to meet all other samples of the sample set (Fig. 2) and/or the same sample
+#   repeated again and again (Fig. 3).
+#   accumulates the "points" obtained by each growth curve when passing through
+#   peaks (positive points) or through the troughs separating peaks (negative points)
+#   (see Fig. 1 B and C).
+#   selects the curve which, by passing through most peaks and avoiding most
+#   troughs best "explains" the peaks in the (set of) sample(s) and therefore
+#   accumulates the largest number of points. This new sum is called "explained
+#   sum of peaks" (ESP). decrements or increments the "seeded" values of Lex> and
+#   K until the ratio ESP/ASP reaches a maximum, and gives the growth parameters
+#   corresponding to this optimum ratio.
 
   #-------
 
@@ -448,13 +463,14 @@ sys_timeBF <- Sys.time()
   sys_timeAW <- Sys.time()
   sys_timeAW - sys_timeBF
 
+  10^(ESP.df[,3]/ASP) /10
 
   # GRAPHICS
   # Response surface analysis
   image(x = Ks,
       y = Linfs,
       z = t(grid), col=colorRampPalette(c("yellow","red"), space="Lab")(6),
-      main = 'Response surface analysis', ylab = 'K', xlab='Linf')
+      main = 'Response surface analysis', ylab = 'Linf', xlab='K')
   #grid (NULL,NULL, lty = 6, col = "cornsilk2")
   text(x=ESP.df[,2],y=ESP.df[,1],round(ESP.df[,3],digits = 2),cex = 0.6)
 
@@ -464,3 +480,5 @@ sys_timeBF <- Sys.time()
   return(ret)
   class(ret) <- 'ELEFAN'
 }
+
+
