@@ -7,6 +7,12 @@
 #'   data) or ages as vector (age composition data),
 #'   \code{catch} Catch as vector, or a matrix with catches of subsequent years if
 #'   the catch curve with constat time intervals should be applied;
+#' @param range.Linf lower and upper limit of range of Linf values
+#' @param step.Linf step size between Linf values
+#' @param range.K lower and upper limit of range of K values
+#' @param step.K step size between K values
+#' @param t0 theoretical age of fish at length zero
+#' @param tmax maximal age of fish from literature only estimate needed
 #'
 #' @examples
 #' \donttest{
@@ -36,12 +42,13 @@
 #'
 
 ELEFAN <- function(param, range.Linf, step.Linf,
-                   range.K, step.K, t0 = 0, interval,
+                   range.K, step.K, t0 = 0,
                    tmax){
 
   res <- param
   classes <- res$midLengths
   catch <- res$catch
+  interval <- classes[1]-classes[2]
 
 
   #________________________DATA ARRANGEMENT________________________#
