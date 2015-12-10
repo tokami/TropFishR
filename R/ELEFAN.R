@@ -22,6 +22,7 @@
 #' ELEFAN(trout, range.Linf = c(11,15), step.Linf = 1, range.K = c(0.2,1),
 #'    step.K = 0.1, tmax = 5)
 #'
+#' param = trout
 #' range.Linf = c(11,15)
 #' step.Linf = 1
 #' range.K = c(0.2,1)
