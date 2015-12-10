@@ -19,13 +19,14 @@
 #' @examples
 #' \donttest{
 #' data(trout)
-#' param = trout
-#' range.Linf <- c(11,15)
-#' step.Linf <- 1
-#' range.K <- c(0.2,1)
-#' step.K <- 0.1
-#' t0 <- 0
-#' interval = 1
+#' ELEFAN(trout, range.Linf = c(11,15), step.Linf = 1, range.K = c(0.2,1),
+#'    step.K = 0.1, tmax = 5)
+#'
+#' range.Linf = c(11,15)
+#' step.Linf = 1
+#' range.K = c(0.2,1)
+#' step.K = 0.1
+#' t0 = 0
 #' tmax = 5
 #' }
 #' @details ELEFAN
@@ -478,8 +479,11 @@ ELEFAN <- function(param, range.Linf, step.Linf,
   #grid (NULL,NULL, lty = 6, col = "cornsilk2")
   text(x=ESP.df[,1],y=ESP.df[,2],round(ESP.df[,3],digits = 2),cex = 0.6)
 
+  #identify(x = Linfs,y = Ks)
 
-  res2
+
+  res2 <- list(score_mat = score_mat,
+               time_mat = time_mat)
   ret <- c(res,res2)
   return(ret)
   class(ret) <- 'ELEFAN'

@@ -30,6 +30,16 @@ output[[2]]
 
 }
 \references{
-Graham 1935 Schaefer 1954 Fox 1970
+Fox, W. W. Jr., 1970. An exponential surplus-yield model for optimizing exploited fish
+populations. \emph{Trans.Am.Fish.Soc.}, 99:80-88
+
+Graham, M., 1935. Modern theory of exploiting a fishery and application to North Sea
+trawling. \emph{J.Cons.CIEM}, 10(3):264-274
+
+Schaefer, M., 1954. Some aspects of the dynamics of populations important to the
+management of the commercial marine fisheries. \emph{Bull.I-ATTC/Bol. CIAT}, 1(2):27-56
+
+Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 }
 

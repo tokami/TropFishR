@@ -27,6 +27,9 @@ Bhattacharya
 }
 }
 \references{
+Bhattacharya, C.G., 1967. A simple method of resolution of a distribution into Gaussian
+components, \emph{Biometrics}, 23:115-135
+
 Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 }

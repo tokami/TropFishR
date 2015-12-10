@@ -4,7 +4,8 @@
 \alias{ELEFAN}
 \title{ELEFAN}
 \usage{
-ELEFAN(param, range.Linf, step.Linf, range.K, step.K, t0 = 0, tmax)
+ELEFAN(param, range.Linf, step.Linf, range.K, step.K, t0 = 0, tmax,
+  conf.int = FALSE)
 }
 \arguments{
 \item{param}{A list consisting of following parameters:
@@ -24,6 +25,9 @@ the catch curve with constat time intervals should be applied;}
 \item{t0}{theoretical age of fish at length zero}
 
 \item{tmax}{maximal age of fish from literature only estimate needed}
+
+\item{conf.int}{logical; if \code{TRUE} calculates the 95% confidence intervals for
+calculated Linf and K parameters by means of the jackknife method (Quenouille, 1956; Tukey, 1958, 1986),}
 }
 \description{
 Electronic length frequency analysis for estimating growth parameter of exploited fish populations.
@@ -34,13 +38,14 @@ ELEFAN
 \examples{
 \donttest{
 data(trout)
-param = trout
-range.Linf <- c(11,15)
-step.Linf <- 1
-range.K <- c(0.2,1)
-step.K <- 0.1
-t0 <- 0
-interval = 1
+ELEFAN(trout, range.Linf = c(11,15), step.Linf = 1, range.K = c(0.2,1),
+   step.K = 0.1, tmax = 5)
+
+range.Linf = c(11,15)
+step.Linf = 1
+range.K = c(0.2,1)
+step.K = 0.1
+t0 = 0
 tmax = 5
 }
 }
@@ -48,10 +53,23 @@ tmax = 5
 Pauly, D. and N. David, 1981. ELEFAN I, a BASIC program for the objective extraction of
 growth parameters from length-frequency data. \emph{Meeresforschung}, 28(4):205-211
 
+Pauly, D., 1985. On improving operation and use of ELEFAN programs. Part I: Avoiding
+"drift" of K towards low values. \emph{ICLARM Conf. Proc.}, 13-14
+
 Pauly, D., 1987. A review of the ELEFAN system for analysis of length-frequency data in
 fish and aquatic invertebrates. \emph{ICLARM Conf. Proc.}, (13):7-34
 
+Quenouille, M. H., 1956. Notes on bias in estimation. \emph{Biometrika}, 43:353-360
+
 Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
-Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
+Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2): 407 p.
+
+Tukey, J., 1958. Bias and confidence in not quite large samples.
+\emph{Annals of Mathematical Statistics}, 29: 614
+
+Tukey, J., 1986. The future of processes of data analysis.
+In L. V. Jones (Eds.), The Collected Works of John W. Tukey- philosophy and principles
+of data analysis: 1965-1986 (Vol. 4, pp. 517-549). Monterey, CA, USA: Wadsworth &
+Brooks/Cole.
 }
 

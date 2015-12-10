@@ -7,12 +7,12 @@
 \method{plot}{ELEFAN}(x, ...)
 }
 \arguments{
-\item{x}{A list of the class \code{"ELEFAN"} containing the results of Millar's selectivity model}
+\item{x}{A list of the class \code{"ELEFAN"} containing the results of ELEFAN}
 
 \item{...}{Default parameter options from plot function}
 }
 \description{
-This function plots the selectivity estimates of ELEFAN
+This function plots the growth curves calculated by means of ELEFAN
    (\code{\link{ELEFAN}}).
 }
 \details{
