@@ -30,7 +30,7 @@
 #'
 #'
 #'
-#' @export
+#' #@export
 
 
 prod_mod_dyn <- function(param){
@@ -85,12 +85,15 @@ prod_mod_dyn <- function(param){
   r <- estA$est[3]
   q <- mean(I)/B0
   input2 <- c(r,q)
-  B <- B0 ssefn2<-function(input){
-    r<-input[1] q<-input[2]
-    B<-B0 Yvec<-NULL
+  B <- B0
+  ssefn2<-function(input){
+    r<-input[1]
+    q<-input[2]
+    B<-B0
+    Yvec<-NULL
     # now we estimate the two parameters
-    UNU-Fisheries Training Programme 54
-    Dharmendra
+    #UNU-Fisheries Training Programme 54
+    #Dharmendra
     Bvec<-NULL
     Ihat<-NULL
     yrs<-1:length(Y)
@@ -139,9 +142,11 @@ prod_mod_dyn <- function(param){
        main="Corr. between yield and biomass")
   cor(Bvec,Y)
   plot(Bvec, I, xlab="Bvec-biomass", ylab="I-cpue",
-       main="Corr. between biomass and CPUE") lines(lowess(Bvec, I), col=2)
+       main="Corr. between biomass and CPUE")
+  lines(lowess(Bvec, I), col=2)
   plot(log(Bvec), log(I), xlab="Bvec-biomass", ylab="I-cpue",
-       main="Corr. between biomass and CPUE") plot(yrs,I, type="b",xlab="Year", ylab="CPUE", ylim=c(0, max(I)*1.05))
+       main="Corr. between biomass and CPUE")
+  plot(yrs,I, type="b",xlab="Year", ylab="CPUE", ylim=c(0, max(I)*1.05))
   plot(I, Ihat, xlab="observed CPUE", ylab="Ihat",
        xlim=c(0, max(c(I,Ihat))), ylim=c(0, max(c(I,Ihat))))
   plot(yrs, I, xlab="years", ylab="CPUE", ylim=c(0, max(I)*1.05), type="b")
@@ -155,14 +160,16 @@ prod_mod_dyn <- function(param){
   plot(Blevels, EYlevels, type="l" , xlab="Biomass",
        ylab="Yield", main="Yield Curve NAZARETH", ylim=c(0,max(c(EYlevels,Yvec))))
   lines(Bvec,Yvec,type="b", col=2)
-  Elevels <- seq(0,10000,1000) plot(Elevels, EYlevels, type="l")
+  Elevels <- seq(0,10000,1000)
+  plot(Elevels, EYlevels, type="l")
   MSY <- r*K/4
   Bmsy <- K/2
   Emsy <- r/(2*q)*1000
   Fmsy <- r/2
   MSY
   Emsy
-  abline(h=MSY, type="b",col=2) abline(v=Bmsy, col=2)
+  abline(h=MSY, type="b",col=2)
+  abline(v=Bmsy, col=2)
 
 }
 
