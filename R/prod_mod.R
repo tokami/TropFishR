@@ -1,4 +1,4 @@
-#' @title Schaefer and Fox models
+#' @title Production models: Schaefer and Fox models
 #'
 #' @description Schaefer and Fox models are examples of so called surplus production
 #'    models, and are used to calculate MSY and BMSY and so on.
@@ -12,7 +12,7 @@
 #' data(trawl_fishery_Java)
 #'
 #' # run model
-#' output = SchaeferFox(Y = trawl_fishery_Java$yield,
+#' output = prod_mod(Y = trawl_fishery_Java$yield,
 #'                      f = trawl_fishery_Java$effort)
 #' output[[2]]
 #'
@@ -33,7 +33,7 @@
 #'
 #' @export
 
-SchaeferFox <- function(Y, f){
+prod_mod <- function(Y, f){
 
   mean.f <- mean(f,na.rm=T)
   sd.f <- sd(f,na.rm=T)
