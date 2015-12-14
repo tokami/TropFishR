@@ -1,8 +1,6 @@
-#' @title Plot of production models: Schaefer and Fox models
+#' @title Plotting production models
 #'
-#' @description Schaefer and Fox models are examples of so called surplus production
-#'    models, and are used to calculate MSY and BMSY and so on.
-#'    First sentence. second sentence.
+#' @description This function plots objects of the class "prod_mod".
 #'
 #' @param x a object of the class 'prod_mod',
 #' @param ... optional parameters of plot function
@@ -12,11 +10,11 @@
 #' data(trawl_fishery_Java)
 #'
 #' # run model
-#' output = prod_mod(Y = trawl_fishery_Java$yield,
-#'                      f = trawl_fishery_Java$effort)
-#' output[[2]]
+#' output <-  prod_mod(data = trawl_fishery_Java)
 #'
-#' @details MSY
+#' # plot output
+#' plot(output)
+#'
 #'
 #' @references
 #' Fox, W. W. Jr., 1970. An exponential surplus-yield model for optimizing exploited fish
@@ -34,12 +32,23 @@
 #' @export
 
 plot.prod_mod <- function(x,...){
-  res <- x
+  pes <- x
+  f <- pes$effort
+  Y <- pes$yield
+  fMSY.S <- pes$Schaefer_fMSY
+  MSY.S <- pes$Schaefer_MSY
+  fMSY.F <- pes$Fox_fMSY
+  MSY.F <- pes$Fox_MSY
+  a.F <- pes$Fox_lm[1]
+  b.F <- pes$Fox_lm[2]
+  a.S <- pes$Schaefer_lm[1]
+  b.S <- pes$Schaefer_lm[2]
+  CPUE.S <- pes$Schaefer_CPUE
 
   #Plot
+  op <- par(mfrow=c(2,1),new=F, mar=c(5, 4, 4, 2) + 0.1)
   x = seq(min(f),max(f),1)
   y = exp(a.F + b.F*x)
-  par(new=F, mar=c(5, 4, 4, 2) + 0.1)
   plot(CPUE.S ~ f, xlab='Fishing effort', ylab='CPUE')
   abline(a = a.S, b=b.S)
   lines(x, y = y, col = 'blue', lty = 5)
@@ -65,5 +74,7 @@ plot.prod_mod <- function(x,...){
   legend("bottomleft", col=c('black','blue'), bty ='n',
          legend = c('Schaefer','Fox'), lty=c(1,5))
 
+  par(op)
 }
+
 
