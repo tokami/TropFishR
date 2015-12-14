@@ -8,8 +8,8 @@
 #'  (\code{\link{SchaeferFox}}).
 #'
 #' @docType data
-#' @format A dataframe consisting of: 1. a vector with years, 2. yield, and
-#'  3. fishing effort.
+#' @format A dataframe consisting of: 1. \strong{year} a vector with years, 2. \strong{Y}
+#'  yield, and 3. \strong{f} fishing effort.
 #'
 #' @source Dwiponggo, A., 1979. Review of the demersal resources and fisheries in the
 #'  Java Sea. IPFC:RRD/II/79/Inf.12. Paper presented at the SCORRAD Meeting, 1979,

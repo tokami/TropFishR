@@ -2,43 +2,41 @@
 % Please edit documentation in R/prod_mod_dyn.R
 \name{prod_mod_dyn}
 \alias{prod_mod_dyn}
-\title{Non-equilibrium dynamic biomass models}
+\title{Non-equilibrium dynamic production models}
 \usage{
-prod_mod_dyn(param)
+prod_mod_dyn(data)
 }
 \arguments{
-\item{param}{a list of parameters}
+\item{data}{a dataframe of parameters
+\itemize{
+  \item \strong{year} years,
+  \item \strong{yield} catch in weight of fishery per year, and
+  \item \strong{effort} fishing effort per year, or
+  \item \strong{CPUE} catch per unit of effort per year.
+}}
 }
 \description{
 Non-equilibrium dynamic biomass models
 }
 \details{
-MSY
+Either the Catch per unit of effort (CPUE) is inserted
+   into the model directly (by a column \strong{CPUE}) or the CPUE is calculated from
+   the catch and effort, then these two vectors should have required units.
 }
 \examples{
-\donttest{
-  # Y= Yield(catch) in tons I= abundance index (cpue)kg
-  #SAYA Catch and Effort data 1989-2004 DYNAMIC BIOMASS MODEL
-  yrs <- 1989:2004
-  Y <- c( 2177, 1410, 1782, 2825, 3173, 3142, 2957, 2283, 1798, 2054, 2107,
-     2099, 1283, 2090, 2354, 1689)
-  I <- c( 74.3, 73.0, 88.0, 67.7, 69.1, 66.6, 67.0, 57.8, 71.8, 75.9, 70.1,
-     77.8, 124.1, 83.3, 80.1, 71.2)
+# load data
+data(emperor)
 
-  #NAZARETH catch and effort data DYNAMIC BIOMASS MODEL 1989-2004
-  yrs <- 1989:2004
-  Y <- c( 837,914,793,952,1358,1494,1533,1253,1720,1086,1121,1080,1366,918,468,855)
-  I <- c( 75.7,78.5,81.3,78.2,66.1,66.5,64.3,52.5,66.1,81.4,76.2,90.5,99.2,93.3,
-     72.8,84.2)
-}
+# run model
+prod_mod_dyn(data = emperor)
 
 }
 \references{
-Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
-Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
+Dharmendra, D., Sólmundsson, J., 2005. Stock assessment of the offshore Mauritian banks
+using dynamic biomass models and analysis of length frequency of the Sky Emperor
+(\emph{Lethrinus mahsena}). Fisheries Training Program The United Nations University, 61
 
-
-
-#@export
+Hilborn, R. and Walters, C., 1992. Quantitative Fisheries Stock Assessment: Choice,
+Dynamics and Uncertainty. Chapman and Hall, New York
 }
 

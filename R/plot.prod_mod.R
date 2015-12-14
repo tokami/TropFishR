@@ -33,8 +33,8 @@
 
 plot.prod_mod <- function(x,...){
   pes <- x
-  f <- pes$effort
-  Y <- pes$yield
+  f <- pes$f
+  Y <- pes$Y
   fMSY.S <- pes$Schaefer_fMSY
   MSY.S <- pes$Schaefer_MSY
   fMSY.F <- pes$Fox_fMSY

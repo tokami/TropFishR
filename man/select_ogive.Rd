@@ -8,16 +8,21 @@ select_ogive(s_list, Lt, Lc = NA)
 }
 \arguments{
 \item{s_list}{A list with a range of selectivity parameters dependent of the type of
-selection curve: \code{$selecType} the type of
-selection curves to use for the calculation (options: "knife_edge",
-"trawl_ogive", "lognormal", "normal_fixed"), \code{Lc} length-at-first-capture,
-\code{meshSizes} a vector with mesh sizes in increasing order, \code{select_ps}
-selectivity parameters, \code{L75} length at which individuals are caught with a
-probability of 75%;}
+   selection curve:
+\itemize{
+  \item \strong{$selecType} the type of
+   selection curves to use for the calculation (options: "knife_edge",
+   "trawl_ogive", "lognormal", "normal_fixed"),
+  \item \strong{Lc} length-at-first-capture,
+  \item \strong{meshSizes} a vector with mesh sizes in increasing order,
+  \item \strong{select_ps} selectivity parameters,
+  \item \strong{L75} length at which individuals are caught with a
+   probability of 75%;
+}}
 
 \item{Lt}{A vector with lengths corresponding to age classes}
 
-\item{Lc}{length-at-first-capture (Default: \code{Lc = NA})}
+\item{Lc}{length-at-first-capture (Default: NA)}
 }
 \description{
 This function estimates the fraction retained in the net for corresponding

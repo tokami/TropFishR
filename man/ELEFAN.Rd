@@ -9,10 +9,12 @@ ELEFAN(param, range.Linf, step.Linf, range.K, step.K, t0 = 0, tmax,
 }
 \arguments{
 \item{param}{A list consisting of following parameters:
-\code{$age} or \code{$midLengths} midpoints of the length class as vector (length frequency
-data) or ages as vector (age composition data),
-\code{catch} Catch as vector, or a matrix with catches of subsequent years if
-the catch curve with constat time intervals should be applied;}
+\itemize{
+  \item \strong{age} or \strong{midLengths} midpoints of the length class as vector (length frequency
+  data) or ages as vector (age composition data),
+  \item \strong{catch} Catch as vector, or a matrix with catches of subsequent years if
+  the catch curve with constat time intervals should be applied;
+}}
 
 \item{range.Linf}{lower and upper limit of range of Linf values}
 

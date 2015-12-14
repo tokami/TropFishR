@@ -5,10 +5,12 @@
 #'    certain population. This function applies two models simultaneously: the Schaefer
 #'    and the Fox model.
 #'
-#' @param data a dataframe with at least two columns:
+#' @param data a dataframe consisting of:
 #' \itemize{
-#'   \item \strong{yield} catch in weight of fishery per year,
-#'   \item \strong{effort} fishing effort per year,
+#'   \item \strong{year} years,
+#'   \item \strong{Y} catch in weight per year, and
+#'   \item \strong{f} fishing effort per year, or
+#'   \item \strong{CPUE} catch per unit of effort per year.
 #' }
 #'
 #' @examples
@@ -21,7 +23,9 @@
 #' @details Production models can be applied if sufficient data are available: effort
 #'    and yield parameters have to be expended over a certain number of years. Furthermore,
 #'    the fishing effort must have undergone substantial changes over the period covered
-#'    (Sparre and Venema, 1998).
+#'    (Sparre and Venema, 1998). Either the Catch per unit of effort (CPUE) is inserted
+#'    into the model directly (by a column \strong{CPUE}) or the CPUE is calculated from
+#'    the catch and effort, then these two vectors should have required units.
 #'
 #' @references
 #' Fox, W. W. Jr., 1970. An exponential surplus-yield model for optimizing exploited fish
@@ -43,14 +47,21 @@
 
 prod_mod <- function(data){
   res <- data
-  Y <- res$yield
-  f <- res$effort
+  year <- res$year
+  Y <- res$Y
+  if("f" %in% names(res)){
+    f <- res$f
+  }else f <- res$CPUE / Y
+  if("CPUE"  %in% names(res)){
+    CPUE <- res$CPUE
+  }else CPUE <- Y/f
+
 
   mean.f <- mean(f,na.rm=T)
   sd.f <- sd(f,na.rm=T)
 
   #Schaefer
-  CPUE.S <- Y/f
+  CPUE.S <- CPUE
   mean.CPUE.S <- mean(CPUE.S,na.rm=T)
   sd.CPUE.S <- sd(CPUE.S,na.rm=T)
   a.S <- summary(lm(CPUE.S ~ f))$coefficients[1]
@@ -66,7 +77,7 @@ prod_mod <- function(data){
   fMSY.S <- -0.5 * a.S/b.S
 
   #Fox
-  CPUE.F <- log(Y/f)
+  CPUE.F <- log(CPUE)
   mean.CPUE.F <- mean(CPUE.F,na.rm=T)
   sd.CPUE.F <- sd(CPUE.F,na.rm=T)
   a.F <- summary(lm(CPUE.F ~ f))$coefficients[1]
@@ -80,15 +91,18 @@ prod_mod <- function(data){
   MSY.F <- -(1/b.F) * exp(a.F-1)
   fMSY.F <- -1/b.F
 
-  ret <- c(res,list(
+  ret <- list(
+    year = year,
+    Y = Y,
+    f = f,
+    CPUE = CPUE,
     Schaefer_lm = c(a.S,b.S),
     Fox_lm = c(a.F,b.F),
     Schaefer_CPUE = CPUE.S,
     Schaefer_MSY = MSY.S,
     Schaefer_fMSY = fMSY.S,
     Fox_MSY = MSY.F,
-    Fox_fMSY = fMSY.F
-  ))
+    Fox_fMSY = fMSY.F)
   class(ret) <- "prod_mod"
 
   #Plot
