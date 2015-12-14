@@ -330,6 +330,7 @@ ELEFAN <- function(param, range.Linf, step.Linf,
 
 #-------------
   #problem of arrangement of t, in literature: samples sequentially arranged in time
+  #display months on the x axis
 
   #for t
   #retrieve dates from headers of columns
