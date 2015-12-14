@@ -3,10 +3,12 @@
 #' @description Electronic length frequency analysis for estimating growth parameter of exploited fish populations.
 #'
 #' @param param A list consisting of following parameters:
-#'   \code{$age} or \code{$midLengths} midpoints of the length class as vector (length frequency
+#' \itemize{
+#'   \item \strong{age} or \strong{midLengths} midpoints of the length class as vector (length frequency
 #'   data) or ages as vector (age composition data),
-#'   \code{catch} Catch as vector, or a matrix with catches of subsequent years if
+#'   \item \strong{catch} Catch as vector, or a matrix with catches of subsequent years if
 #'   the catch curve with constat time intervals should be applied;
+#' }
 #' @param range.Linf lower and upper limit of range of Linf values
 #' @param step.Linf step size between Linf values
 #' @param range.K lower and upper limit of range of K values
@@ -30,6 +32,7 @@
 #' t0 = 0
 #' tmax = 5
 #' }
+#'
 #' @details ELEFAN
 #'
 #' @references
@@ -50,10 +53,9 @@
 #' Tukey, J., 1958. Bias and confidence in not quite large samples.
 #' \emph{Annals of Mathematical Statistics}, 29: 614
 #'
-#' Tukey, J., 1986. The future of processes of data analysis.
-#' In L. V. Jones (Eds.), The Collected Works of John W. Tukey- philosophy and principles
-#' of data analysis: 1965-1986 (Vol. 4, pp. 517-549). Monterey, CA, USA: Wadsworth &
-#' Brooks/Cole.
+#' Tukey, J., 1986. The future of processes of data analysis. In L. V. Jones (Eds.),
+#' The Collected Works of John W. Tukey- philosophy and principles of data analysis:
+#' 1965-1986 (Vol. 4, pp. 517-549). Monterey, CA, USA: Wadsworth & Brooks/Cole
 #'
 #' @export
 #'

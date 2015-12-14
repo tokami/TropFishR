@@ -4,14 +4,19 @@
 #'    lengths of fish. Different selection curves can be used.
 #'
 #' @param s_list A list with a range of selectivity parameters dependent of the type of
-#'    selection curve: \code{$selecType} the type of
+#'    selection curve:
+#' \itemize{
+#'   \item \strong{$selecType} the type of
 #'    selection curves to use for the calculation (options: "knife_edge",
-#'    "trawl_ogive", "lognormal", "normal_fixed"), \code{Lc} length-at-first-capture,
-#'    \code{meshSizes} a vector with mesh sizes in increasing order, \code{select_ps}
-#'    selectivity parameters, \code{L75} length at which individuals are caught with a
+#'    "trawl_ogive", "lognormal", "normal_fixed"),
+#'   \item \strong{Lc} length-at-first-capture,
+#'   \item \strong{meshSizes} a vector with mesh sizes in increasing order,
+#'   \item \strong{select_ps} selectivity parameters,
+#'   \item \strong{L75} length at which individuals are caught with a
 #'    probability of 75%;
+#' }
 #' @param Lt A vector with lengths corresponding to age classes
-#' @param Lc length-at-first-capture (Default: \code{Lc = NA})
+#' @param Lc length-at-first-capture (Default: NA)
 #'
 #' @examples
 #' # create list with selectivity information
@@ -30,7 +35,6 @@
 #' @references
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 #' Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
-#'
 #'
 #' @export
 

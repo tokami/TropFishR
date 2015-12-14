@@ -51,6 +51,7 @@ step.K = 0.1
 t0 = 0
 tmax = 5
 }
+
 }
 \references{
 Pauly, D. and N. David, 1981. ELEFAN I, a BASIC program for the objective extraction of
@@ -70,9 +71,8 @@ Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2): 407 p.
 Tukey, J., 1958. Bias and confidence in not quite large samples.
 \emph{Annals of Mathematical Statistics}, 29: 614
 
-Tukey, J., 1986. The future of processes of data analysis.
-In L. V. Jones (Eds.), The Collected Works of John W. Tukey- philosophy and principles
-of data analysis: 1965-1986 (Vol. 4, pp. 517-549). Monterey, CA, USA: Wadsworth &
-Brooks/Cole.
+Tukey, J., 1986. The future of processes of data analysis. In L. V. Jones (Eds.),
+The Collected Works of John W. Tukey- philosophy and principles of data analysis:
+1965-1986 (Vol. 4, pp. 517-549). Monterey, CA, USA: Wadsworth & Brooks/Cole
 }
 
