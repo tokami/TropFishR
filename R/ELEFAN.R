@@ -74,7 +74,7 @@
 
 ELEFAN <- function(param, range.Linf, step.Linf,
                    range.K, step.K, t0 = 0,
-                   tmax, growth.curve = "VBGF", C = 0, WP = 0,
+                   tmax, growth.curve = "VBGF", seed.C = 0, seed.WP = 0, #default of WP? as long as C is 0 it doesnt matter
                    conf.int = FALSE){
 
   res <- param
@@ -401,7 +401,7 @@ ELEFAN <- function(param, range.Linf, step.Linf,
       # VBGF
       switch(growth.curve,
 
-             "VBGF" ={
+             "VBGF.old" ={
                Lt <- Linfs[li] * (1 - exp(-Ks[ki] * (t - t0)))
              },
 
@@ -414,18 +414,26 @@ ELEFAN <- function(param, range.Linf, step.Linf,
                # D = 3 * (1 - (0.6742 + 0.03574 * log10(Wmax)))
              },
 
-             "Gompertz" ={
-               Lt <- kk
+             "VBGF" ={   # K & C & WP
+               Lt <- Linfs[li] * (1 - exp(-Ks[ki] * (t - t0) +
+                                            ((C * Ks[ki])/(2*pi)) *
+                                            sin(2*pi) * (t - (WP-0.5))))
              },
 
-             "Krüger" ={
-               Lt <- kk
+             "Gompertz" ={  # Winsor (1932)   # B & C
+               Lt <- Linfs[li] * exp(-B * exp(-C * t))
+             },
+
+             "logistic" ={  # Verhulst (1838)   # b & K
+               Lt <- Linfs[li] / (1 + b * exp(-K * t))
+             },
+
+             "Krueger" ={   # N & r
+               Lt <- Linfs[li] / (N^((t + r)^-1))
              })
 
-
-
-
       Lt.cohis <- tmax + repro.add
+
 
       # get lengths which fall into sampling times
       # improve these loops by defining when smaller than smallest length group or larger than largest length group it turns into NA and not the extreme groups
