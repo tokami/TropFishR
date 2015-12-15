@@ -15,6 +15,8 @@
 #' @param step.K step size between K values
 #' @param t0 theoretical age of fish at length zero
 #' @param tmax maximal age of fish from literature only estimate needed
+#' @param C growth oscillation amplitude
+#' @param WP winter point
 #' @param conf.int logical; if \code{TRUE} calculates the 95% confidence intervals for
 #'   calculated Linf and K parameters by means of the jackknife method (Quenouille, 1956; Tukey, 1958, 1986),
 #'
@@ -33,9 +35,16 @@
 #' tmax = 5
 #' }
 #'
-#' @details ELEFAN
+#' @details Winter point (WP) designates the period of the year when growth is slowest, which
+#'    in the northern hemisphere is often found around 0.2 (February) and in the southern
+#'    hemisphere aorund 0.7 (October). C express the amplitude of growth oscillations and
+#'    should be between 0 (no oscillation) and 1 (no growth), values above 1 suggest
+#'    a reduction of length and thus are unlikely (Pauly and Morgan, 1987).
 #'
 #' @references
+#' Pauly, D. 1981. The relationship between gill surface area and growth performance in fish:
+#' a generalization of von Bertalanffy's theory of growth. \emph{Meeresforsch}. 28:205-211
+#'
 #' Pauly, D. and N. David, 1981. ELEFAN I, a BASIC program for the objective extraction of
 #' growth parameters from length-frequency data. \emph{Meeresforschung}, 28(4):205-211
 #'
@@ -44,6 +53,9 @@
 #'
 #' Pauly, D., 1987. A review of the ELEFAN system for analysis of length-frequency data in
 #' fish and aquatic invertebrates. \emph{ICLARM Conf. Proc.}, (13):7-34
+#'
+#' Pauly, D. and G.R.Morgan (Eds.), 1987. Length-based methods in fisheries research.
+#' (No. 13). WorldFish
 #'
 #' Quenouille, M. H., 1956. Notes on bias in estimation. \emph{Biometrika}, 43:353-360
 #'
@@ -62,7 +74,8 @@
 
 ELEFAN <- function(param, range.Linf, step.Linf,
                    range.K, step.K, t0 = 0,
-                   tmax, conf.int = FALSE){
+                   tmax, growth.curve = "VBGF", C = 0, WP = 0,
+                   conf.int = FALSE){
 
   res <- param
   classes <- res$midLengths
@@ -386,7 +399,32 @@ ELEFAN <- function(param, range.Linf, step.Linf,
     for(ki in 1:length(Ks)){
 
       # VBGF
-      Lt <-  Linfs[li] * ( 1 - exp( - Ks[ki] * (t - t0)))
+      switch(growth.curve,
+
+             "VBGF" ={
+               Lt <- Linfs[li] * (1 - exp(-Ks[ki] * (t - t0)))
+             },
+
+             "VBGF.seasonalized" ={
+               Lt <- Linfs[li] * (1 - exp(-Ks[ki] * D * (t - t0) +
+                                            ((C*Ks[ki]*D)/(2*pi)) *
+                                            sin(2*pi) * (t - (WP-0.5))) ^ (1/D))
+               # D not calculatable with length-frequency data
+               # empirical formula for coarse estimate:
+               # D = 3 * (1 - (0.6742 + 0.03574 * log10(Wmax)))
+             },
+
+             "Gompertz" ={
+               Lt <- kk
+             },
+
+             "Krüger" ={
+               Lt <- kk
+             })
+
+
+
+
       Lt.cohis <- tmax + repro.add
 
       # get lengths which fall into sampling times

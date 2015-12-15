@@ -34,9 +34,8 @@
 #'
 #' @export
 
-plot.ELEFAN <- function(x,...
-                        ){
-  res <- x
+plot.ELEFAN <- function(x,...){
+  pes <- x
 
   # Plot with rearranged histogramms
   # axes
