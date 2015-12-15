@@ -32,7 +32,11 @@
 #' range.K = c(0.2,1)
 #' step.K = 0.1
 #' t0 = 0
+#' C = 0
+#' WP = 0
+#' growth.curve = "VBGF"
 #' tmax = 5
+#' conf.int = FALSE
 #' }
 #'
 #' @details Winter point (WP) designates the period of the year when growth is slowest, which
@@ -515,6 +519,16 @@ ELEFAN <- function(param, range.Linf, step.Linf,
   ESP.time <- do.call(rbind,ESP.tshift.L)
   time_mat <- tapply(ESP.time[,3],list(ESP.time[,1],ESP.time[,2]),round,digits = 2)
 #-------------
+
+  # calculation of confidence interval by use of jackknife method
+  if(conf.int == TRUE){
+    for(CIs in 1:dim(catch.aAF)[2]){
+      catch.aAF.CI <- catch.aAF[,-CIs]
+      ### HOW TO GET BEST FIT OUT OF SURFACE RESPONSE MATRIX?? IT WAS SUBJECTIVE
+    }
+
+
+  }
 
   #for CHECKING run time of big loop
   sys_timeAW <- Sys.time()
