@@ -61,6 +61,8 @@
 #' # load data
 #' data(synLFQ3)
 #'
+#' CatchCurve(synLFQ3, calc_ogive = TRUE)
+#'
 #'  }
 #'
 #' @details For variable parameter system vectors are reuqired for constant parameter
@@ -81,7 +83,7 @@
 #' assessment, Copenhagen, 2-6 March 1981. ICES C.M. 1981/G:5 (mimeo)
 #'
 #' @export
-param = synLFQ3
+
 CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive = FALSE){
 
   res <- param
@@ -246,9 +248,6 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
         ))
         class(ret) <- "CatchCurve"
 
-        # plot results
-        plot(ret)
-
         # Calculate selection ogive from catch curve and add to ret
         if(calc_ogive){
 
@@ -281,6 +280,7 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
           }
 
           ret2 <- c(ret,list(
+            intercept = intercept_lm1,
             Sobs = Sobs,
             ln_1_S_1 = ln_1_S_1,
             Sest = Sest,
@@ -292,8 +292,9 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
           names(ret2)[which(ret2 %in% L75)] <- "L75"
 
           class(ret2) <- "CatchCurve"
+          plot(ret2,plot.selec=TRUE)
           return(ret2)
-        }else return(ret)
+        }else plot(ret) ; return(ret)
       }
 
       #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#

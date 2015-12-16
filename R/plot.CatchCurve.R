@@ -2,7 +2,10 @@
 #
 #' @description  This function plots the results from the \link{CatchCurve} model.
 #'
-#' @param x A list of the class \code{"CatchCurve"} containing the results of the CatchCurve model.
+#' @param x A list of the class \code{"CatchCurve"} containing the results of the
+#'      CatchCurve model.
+#' @param plot.selec logical; if TRUE the regression line is plotted for not fully
+#'      exploited length groups
 #' @param ... normal parameters from plot function
 #'
 #' @examples
@@ -10,6 +13,8 @@
 #' data(whiting)
 #' output <- CatchCurve(whiting, catch_column = 1)
 #' plot(output)
+#'
+#'
 #' }
 #'
 #' @details A function to plot the results of the CatchCurve model.
@@ -19,8 +24,8 @@
 #' Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 #'
 #' @export
-x <- output
-plot.CatchCurve <- function(x,...){
+
+plot.CatchCurve <- function(x,plot.selec = FALSE,...){
   pes <- x
 
   xlabel <- "Age [yrs]"
@@ -56,19 +61,52 @@ plot.CatchCurve <- function(x,...){
   minyplot <- ifelse(min(yplot,na.rm=TRUE) < 0, min(yplot,na.rm=TRUE),0)
   maxyplot <- max(yplot,na.rm=TRUE) + 1
 
-  #final plot
-  plot(x = xplot, y = yplot, ylim = c(minyplot,maxyplot),
-       xlab = xlabel, ylab = ylabel,
-       cex = 1.5)
-  par(new=T)
-  points(x = xplot[reg_int[1]:reg_int[2]], y = yplot[reg_int[1]:reg_int[2]],
-         pch = 19, col = 'blue', cex = 1.5)
-  segments(x0=xplot[reg_int[1]],
-           y0=yplot[reg_int[1]],
-           x1=xplot[reg_int[2]],
-           y1=yplot[reg_int[2]],
-           col="blue",lwd = 1.7)
-  mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"+/-",
-                               round(SE_Z_lm1,2)), col = 'blue')
+  if(plot.selec){
+    maxyplot <- ceiling(pes$intercept)
 
+    op <- par(mfrow=c(2,1))
+    #final plot
+    plot(x = xplot, y = yplot, ylim = c(minyplot,maxyplot),
+         xlab = xlabel, ylab = ylabel,
+         cex = 1.5)
+    par(new=T)
+    points(x = xplot[reg_int[1]:reg_int[2]], y = yplot[reg_int[1]:reg_int[2]],
+           pch = 19, col = 'blue', cex = 1.5)
+    segments(x0=xplot[reg_int[1]],
+             y0=yplot[reg_int[1]],
+             x1=xplot[reg_int[2]],
+             y1=yplot[reg_int[2]],
+             col="blue",lwd = 1.7)
+    segments(x0=0,
+             y0=pes$intercept,
+             x1=xplot[reg_int[1]],
+             y1=yplot[reg_int[1]],
+             col="blue",lwd = 1.7, lty = 2)
+    mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"+/-",
+                                 round(SE_Z_lm1,2)), col = 'blue')
+    par(xpd=TRUE)
+    plot(pes$Sest ~ pes$t_midL, type ='o', xlab = xlabel,
+         ylab = "Probability of capture")
+    points(y = 0.5, x=pes$t50,col='red',pch=16)
+    segments(x0 = pes$t50, y0 = 0.5, x1 = pes$t50, y1 = 0, col='red',lty=2)
+    text(y=-0.05,x=pes$t50,labels = "t50%",col = 'red')
+    par(op)
+
+
+  }else {
+    #final plot
+    plot(x = xplot, y = yplot, ylim = c(minyplot,maxyplot),
+         xlab = xlabel, ylab = ylabel,
+         cex = 1.5)
+    par(new=T)
+    points(x = xplot[reg_int[1]:reg_int[2]], y = yplot[reg_int[1]:reg_int[2]],
+           pch = 19, col = 'blue', cex = 1.5)
+    segments(x0=xplot[reg_int[1]],
+             y0=yplot[reg_int[1]],
+             x1=xplot[reg_int[2]],
+             y1=yplot[reg_int[2]],
+             col="blue",lwd = 1.7)
+    mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"+/-",
+                                 round(SE_Z_lm1,2)), col = 'blue')
+  }
 }
