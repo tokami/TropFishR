@@ -5,7 +5,7 @@
 \title{ELEFAN}
 \usage{
 ELEFAN(param, range.Linf, step.Linf, range.K, step.K, t0 = 0, tmax,
-  conf.int = FALSE)
+  growth.curve = "VBGF", seed.C = 0, seed.WP = 0, conf.int = FALSE)
 }
 \arguments{
 \item{param}{A list consisting of following parameters:
@@ -30,12 +30,20 @@ ELEFAN(param, range.Linf, step.Linf, range.K, step.K, t0 = 0, tmax,
 
 \item{conf.int}{logical; if \code{TRUE} calculates the 95% confidence intervals for
 calculated Linf and K parameters by means of the jackknife method (Quenouille, 1956; Tukey, 1958, 1986),}
+
+\item{C}{growth oscillation amplitude}
+
+\item{WP}{winter point}
 }
 \description{
 Electronic length frequency analysis for estimating growth parameter of exploited fish populations.
 }
 \details{
-ELEFAN
+Winter point (WP) designates the period of the year when growth is slowest, which
+   in the northern hemisphere is often found around 0.2 (February) and in the southern
+   hemisphere aorund 0.7 (October). C express the amplitude of growth oscillations and
+   should be between 0 (no oscillation) and 1 (no growth), values above 1 suggest
+   a reduction of length and thus are unlikely (Pauly and Morgan, 1987).
 }
 \examples{
 \donttest{
@@ -49,11 +57,18 @@ step.Linf = 1
 range.K = c(0.2,1)
 step.K = 0.1
 t0 = 0
+C = 0
+WP = 0
+growth.curve = "VBGF"
 tmax = 5
+conf.int = FALSE
 }
 
 }
 \references{
+Pauly, D. 1981. The relationship between gill surface area and growth performance in fish:
+a generalization of von Bertalanffy's theory of growth. \emph{Meeresforsch}. 28:205-211
+
 Pauly, D. and N. David, 1981. ELEFAN I, a BASIC program for the objective extraction of
 growth parameters from length-frequency data. \emph{Meeresforschung}, 28(4):205-211
 
@@ -62,6 +77,9 @@ Pauly, D., 1985. On improving operation and use of ELEFAN programs. Part I: Avoi
 
 Pauly, D., 1987. A review of the ELEFAN system for analysis of length-frequency data in
 fish and aquatic invertebrates. \emph{ICLARM Conf. Proc.}, (13):7-34
+
+Pauly, D. and G.R.Morgan (Eds.), 1987. Length-based methods in fisheries research.
+(No. 13). WorldFish
 
 Quenouille, M. H., 1956. Notes on bias in estimation. \emph{Biometrika}, 43:353-360
 

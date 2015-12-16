@@ -5,13 +5,15 @@
 #'   with catch curve. It has the option to estimate gear selectivity based on the catch curve.
 #'
 #' @param param a list consisting of following parameters:
-#'   \code{$age} or \code{$midLengths} midpoints of the length class as vector (length frequency
+#' \itemize{
+#'   \item \strong{age} or \strong{midLengths} midpoints of the length class as vector (length frequency
 #'   data) or ages as vector (age composition data),
-#'   \code{$Linf} Infinite length for investigated species in cm [cm],
-#'   \code{$K} Growth coefficent for investigated species per year [1/year],
-#'   \code{t0} Theoretical time zero, at which individuals of this species hatch,
-#'   \code{catch} Catch as vector, or a matrix with catches of subsequent years if
+#'   \item \strong{Linf} Infinite length for investigated species in cm [cm],
+#'   \item \strong{K} Growth coefficent for investigated species per year [1/year],
+#'   \item \strong{t0} Theoretical time zero, at which individuals of this species hatch,
+#'   \item \strong{catch} Catch as vector, or a matrix with catches of subsequent years if
 #'   the catch curve with constat time intervals should be applied;
+#' }
 #' @param catch_column numerical; indicating the column of the catch matrix which should be
 #'   used for the analysis.
 #' @param cumulative logical; if \code{TRUE} instead of normal catch curve the cumulative
@@ -19,49 +21,53 @@
 #' @param calc_ogive logical; if \code{TRUE} the selection ogive is additionally
 #'   calculated from the catch curve
 #'
-#'
 #' @examples
 #' \donttest{
+#' #_______________________________________________
 #' # Variable paramter system (with catch vector)
 #' # based on length frequency data
 #' # load data
 #' data(goatfish)
 #'
 #' # run model
-#' CatchCurve(goatfish,calc_ogive=TRUE)
+#' catchCurve(goatfish)
 #'
 #' # based on age composition data
 #' # load data
 #' data(whiting)
 #'
 #' # run model
-#' CatchCurve(whiting, catch_column = 1)
+#' catchCurve(param=whiting, catch_column = 1)
 #'
+#' #_______________________________________________
 #' # Constant parameter system based on age composition data (with catch matrix)
-#' CatchCurve(whiting)
+#' catchCurve(whiting)
 #'
 #'
+#' #_______________________________________________
 #' # Cumulative Catch Curve
 #' # based on length frequency data
 #' # load data
 #' data(goatfish)
 #'
 #' # run model
-#' CatchCurve(goatfish, cumulative = TRUE)
+#' catchCurve(goatfish, cumulative = TRUE)
 #'
 #'
 #' # based on age composition data
 #' data(synCAA2)
 #'
 #' # run model
-#' CatchCurve(synCAA2, cumulative = TRUE)
+#' catchCurve(synCAA2, cumulative = TRUE)
 #'
 #'
+#' #_______________________________________________
 #' # Catch Curve with estimation of selection ogive
 #' # load data
 #' data(synLFQ3)
 #'
-#' CatchCurve(synLFQ3, calc_ogive = TRUE)
+#' # run model
+#' catchCurve(synLFQ3, calc_ogive = TRUE)
 #'
 #'  }
 #'
@@ -73,7 +79,9 @@
 #'   is calculated by means of the catch curve the assumption is made, that Z is constant
 #'   for all year classes or length groups respectively. Accoring to Sparre and Venema
 #'   (1998) this assumption might be true, because F is smaller for young fish
-#'   (Selectivity) while M is higher for young fish (high natural mortality).
+#'   (Selectivity) while M is higher for young fish (high natural mortality). The selectivity
+#'   for not fully exploited old fish (e.g. due to gillnet fishery) can not be calculated yet
+#'   by use of the catch curve.
 #'
 #' @references
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
@@ -84,7 +92,7 @@
 #'
 #' @export
 
-CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive = FALSE){
+catchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive = FALSE){
 
   res <- param
 
@@ -134,11 +142,13 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
         maxlnC <- max(lnC,na.rm=TRUE) + 1
 
         #identify plot
+        op <- par(mfrow=c(1,1))
         plot(x = classes.num,y = lnC, ylim = c(minlnC,maxlnC),
              xlab = "Age [yrs]", ylab = "ln(C)")
         print("Please choose the minimum and maximum point in the graph to include for the regression line!")
         cutter <- identify(x = classes.num, y = lnC,
                            labels = order(classes.num), n=2)
+        par(op)
 
         #calculations + model
         df.CC <- as.data.frame(cbind(classes.num,lnC))
@@ -165,7 +175,7 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
           Z =  Z_lm1,
           se = SE_Z_lm1
         ))
-        class(ret) <- "CatchCurve"
+        class(ret) <- "catchCurve"
 
         # plot catch curve
         plot(ret)
@@ -216,11 +226,13 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
         maxlnC_dt <- max(lnC_dt,na.rm=TRUE) + 1
 
         #identify plot
+        op <- par(mfrow=c(1,1))
         plot(x = t_midL,y = lnC_dt, ylim = c(minlnC_dt,maxlnC_dt),
              xlab = "Relative age [yrs]", ylab = "ln(C/dt)")
         print("Please choose the minimum and maximum point in the graph to include for the regression line!")
         cutter <- identify(x = t_midL, y = lnC_dt,
                            labels = order(t_midL), n=2)
+        par(op)
 
         #calculations + model
         df.CC <- as.data.frame(cbind(t_midL,lnC_dt))
@@ -246,7 +258,7 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
           Z =  Z_lm1,
           se = SE_Z_lm1
         ))
-        class(ret) <- "CatchCurve"
+        class(ret) <- "catchCurve"
 
         # Calculate selection ogive from catch curve and add to ret
         if(calc_ogive){
@@ -291,8 +303,8 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
           names(ret2)[which(ret2 %in% L50)] <- "L50"
           names(ret2)[which(ret2 %in% L75)] <- "L75"
 
-          class(ret2) <- "CatchCurve"
-          plot(ret2,plot.selec=TRUE)
+          class(ret2) <- "catchCurve"
+          #plot(ret2,plot.selec=TRUE)
           return(ret2)
         }else plot(ret) ; return(ret)
       }
@@ -320,11 +332,13 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
         maxlnC_dt <- max(lnC_dt,na.rm=TRUE) + 1
 
         #identify plot
+        op <- par(mfrow=c(1,1))
         plot(x = tplusdt_2,y = lnC_dt, ylim = c(minlnC_dt,maxlnC_dt),
              xlab = "Age [yrs]", ylab = "ln(C/dt)")
         print("Please choose the minimum and maximum point in the graph to include for the regression line!")
         cutter <- identify(x = tplusdt_2, y = lnC_dt,
                            labels = order(tplusdt_2), n=2)
+        par(op)
 
         #calculations + model
         df.CC <- as.data.frame(cbind(tplusdt_2,lnC_dt))
@@ -350,7 +364,55 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
           Z =  Z_lm1,
           se = SE_Z_lm1
         ))
-        class(ret) <- "CatchCurve"
+        class(ret) <- "catchCurve"
+
+        # Calculate selection ogive from catch curve and add to ret
+        if(calc_ogive){
+
+          # only use part of catch and t which is not fully exploited by the gear
+          t_ogive <- t_midL[1:(cutter[1]-1)]   # replace t_midL by universal object
+          dt_ogive <- dt[1:(cutter[1]-1)]
+          catch_ogive <- catch[1:(cutter[1]-1)]
+
+          # calculate observed selection ogive
+          Sobs <- catch_ogive/(dt_ogive * exp(intercept_lm1 - Z_lm1*t_ogive))
+
+          # dependent vairable in following regression analysis
+          ln_1_S_1 <- log((1/Sobs) - 1)
+
+          #regression analysis to caluclate T1 and T2
+          sum_lm_ogive <- summary(lm(ln_1_S_1 ~ t_ogive))
+          T1 <- sum_lm_ogive$coefficients[1]
+          T2 <- abs(sum_lm_ogive$coefficients[2])
+
+          # calculate estimated selection ogive
+          Sest <- 1/(1+exp(T1 - T2*tplusdt_2))
+
+          # selection parameters
+          t50 <- T1/T2
+          t75 <- (T1 + log(3))/T2
+          if(!is.null(res$Linf) & !is.null(res$K)){
+            if(is.null(res$t0)) t0 = 0
+            L50 <- Linf*(1-exp(-K*(t50-t0)))
+            L75 <- Linf*(1-exp(-K*(t75-t0)))
+          }
+
+          ret2 <- c(ret,list(
+            intercept = intercept_lm1,
+            Sobs = Sobs,
+            ln_1_S_1 = ln_1_S_1,
+            Sest = Sest,
+            t50 = t50,
+            t75 = t75,
+            if(!is.null(L50)) L50 = L50,
+            if(!is.null(L75)) L75 = L75))
+          names(ret2)[which(ret2 %in% L50)] <- "L50"
+          names(ret2)[which(ret2 %in% L75)] <- "L75"
+
+          class(ret2) <- "catchCurve"
+          plot(ret2,plot.selec=TRUE)
+          return(ret2)
+        }else plot(ret) ; return(ret)
 
         # plot results
         plot(ret)
@@ -418,11 +480,13 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
         maxlnC <- max(ln_C,na.rm=TRUE) + 1
 
         #identify plot
+        op <- par(mfrow=c(1,1))
         plot(x = ln_Linf_L,y = ln_C, ylim = c(minlnC,maxlnC),
              xlab = "ln (Linf - L)", ylab = "ln C(L, Linf)")
         print(cat("Please choose the minimum and maximum point in the graph to include for the regression line!\nThen press 'Finish'!"))
         cutter <- identify(x = ln_Linf_L, y = ln_C,
                            labels = order(ln_Linf_L),n=2)
+        par(op)
 
         #calculations + model
         df.CCC <- as.data.frame(cbind(ln_Linf_L,ln_C))
@@ -453,7 +517,7 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
           se = SE_Z_lm1
         ))
 
-        class(ret) <- "CatchCurve"
+        class(ret) <- "catchCurve"
 
         # plot results
         plot(ret)
@@ -486,11 +550,13 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
         maxlnC <- max(ln_C,na.rm=TRUE) + 1
 
         #identify plot
+        op <- par(mfrow=c(1,1))
         plot(x = tplusdt_2,y = ln_C, ylim = c(minlnC,maxlnC),
              xlab = "Age [yrs]", ylab = "ln C(t, inf)")
         print(cat("Please choose the minimum and maximum point in the graph to include for the regression line!\nThen press 'Finish'!"))
         cutter <- identify(x = tplusdt_2, y = ln_C,
                            labels = order(tplusdt_2),n=2)
+        par(op)
 
         #calculations + model
         df.CCC <- as.data.frame(cbind(tplusdt_2,ln_C))
@@ -516,7 +582,7 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
           Z =  Z_lm1,
           se = SE_Z_lm1
         ))
-        class(ret) <- "CatchCurve"
+        class(ret) <- "catchCurve"
 
         # plot results
         plot(ret)

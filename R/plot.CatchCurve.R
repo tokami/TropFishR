@@ -1,23 +1,44 @@
-#' @title Catchcurve plot
+#' @title Plotting catch curve
 #
-#' @description  This function plots the results from the \link{CatchCurve} model.
+#' @description  This function plots the results from the \link{catchCurve} model.
 #'
-#' @param x A list of the class \code{"CatchCurve"} containing the results of the
-#'      CatchCurve model.
+#' @param x A list of the class \code{"catchCurve"} containing the results of the
+#'      catchCurve model.
 #' @param plot.selec logical; if TRUE the regression line is plotted for not fully
-#'      exploited length groups
+#'      exploited length groups and the probability of capture is plotted
 #' @param ... normal parameters from plot function
 #'
 #' @examples
 #' \donttest{
+#' #_______________________________________________
+#' # Variable paramter system (with catch vector)
+#' # based on length frequency data
+#' # load data
+#' data(goatfish)
+#'
+#' # run model
+#' catchCurve(goatfish,calc_ogive=TRUE)
+#'
+#' # based on age composition data
+#' # load data
 #' data(whiting)
-#' output <- CatchCurve(whiting, catch_column = 1)
+#'
+#' # run model
+#' catchCurve(whiting, catch_column = 1)
+#'
+#' #_______________________________________________
+#' # Catch Curve with estimation of selection ogive
+#' # load data
+#' data(synLFQ3)
+#'
+#' # run model
+#' output <- catchCurve(synLFQ3, calc_ogive = TRUE)
+#'
+#' # plot results
 #' plot(output)
-#'
-#'
 #' }
 #'
-#' @details A function to plot the results of the CatchCurve model.
+#' @details A function to plot the results of the catchCurve model.
 #'
 #' @references
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
@@ -25,7 +46,7 @@
 #'
 #' @export
 
-plot.CatchCurve <- function(x,plot.selec = FALSE,...){
+plot.catchCurve <- function(x,plot.selec = FALSE,...){
   pes <- x
 
   xlabel <- "Age [yrs]"
@@ -64,12 +85,12 @@ plot.CatchCurve <- function(x,plot.selec = FALSE,...){
   if(plot.selec){
     maxyplot <- ceiling(pes$intercept)
 
-    op <- par(mfrow=c(2,1))
+    op <- par(mfrow=c(2,1), xpd = FALSE)
     #final plot
     plot(x = xplot, y = yplot, ylim = c(minyplot,maxyplot),
          xlab = xlabel, ylab = ylabel,
          cex = 1.5)
-    par(new=T)
+    #par(new=T)
     points(x = xplot[reg_int[1]:reg_int[2]], y = yplot[reg_int[1]:reg_int[2]],
            pch = 19, col = 'blue', cex = 1.5)
     segments(x0=xplot[reg_int[1]],
@@ -84,12 +105,15 @@ plot.CatchCurve <- function(x,plot.selec = FALSE,...){
              col="blue",lwd = 1.7, lty = 2)
     mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"+/-",
                                  round(SE_Z_lm1,2)), col = 'blue')
-    par(xpd=TRUE)
-    plot(pes$Sest ~ pes$t_midL, type ='o', xlab = xlabel,
+
+    print(pes$Sest)
+    print(xplot)
+    plot(pes$Sest ~ xplot, type ='o', xlab = xlabel,
          ylab = "Probability of capture")
     points(y = 0.5, x=pes$t50,col='red',pch=16)
     segments(x0 = pes$t50, y0 = 0.5, x1 = pes$t50, y1 = 0, col='red',lty=2)
-    text(y=-0.05,x=pes$t50,labels = "t50%",col = 'red')
+    op <- par(xpd=TRUE)
+    text(y=-0.1,x=pes$t50,labels = "t50%",col = 'red')
     par(op)
 
 
@@ -110,3 +134,4 @@ plot.CatchCurve <- function(x,plot.selec = FALSE,...){
                                  round(SE_Z_lm1,2)), col = 'blue')
   }
 }
+
