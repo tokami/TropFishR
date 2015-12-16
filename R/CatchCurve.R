@@ -2,7 +2,7 @@
 #'
 #' @description  This is a function to calculate the total mortality (Z) from length
 #'   composition data via the length converted catch curve or from age at length data
-#'   with catch curve.
+#'   with catch curve. It has the option to estimate gear selectivity based on the catch curve.
 #'
 #' @param param a list consisting of following parameters:
 #'   \code{$age} or \code{$midLengths} midpoints of the length class as vector (length frequency
@@ -28,7 +28,7 @@
 #' data(goatfish)
 #'
 #' # run model
-#' CatchCurve(goatfish)
+#' CatchCurve(goatfish,calc_ogive=TRUE)
 #'
 #' # based on age composition data
 #' # load data
@@ -49,11 +49,17 @@
 #' # run model
 #' CatchCurve(goatfish, cumulative = TRUE)
 #'
+#'
 #' # based on age composition data
 #' data(synCAA2)
 #'
 #' # run model
 #' CatchCurve(synCAA2, cumulative = TRUE)
+#'
+#'
+#' # Catch Curve with estimation of selection ogive
+#' # load data
+#' data(synLFQ3)
 #'
 #'  }
 #'
@@ -61,7 +67,11 @@
 #'   systems matrices or data.frames have to be inserted. or vectors The length converted
 #'   linearised catch curve is used to calculate the total mortality (Z). This function
 #'   includes a so called locator function, which asks you to choose points from a graph
-#'   manually. Based on these points the regression line is calculated.
+#'   manually. Based on these points the regression line is calculated. When selection ogive
+#'   is calculated by means of the catch curve the assumption is made, that Z is constant
+#'   for all year classes or length groups respectively. Accoring to Sparre and Venema
+#'   (1998) this assumption might be true, because F is smaller for young fish
+#'   (Selectivity) while M is higher for young fish (high natural mortality).
 #'
 #' @references
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
@@ -71,7 +81,7 @@
 #' assessment, Copenhagen, 2-6 March 1981. ICES C.M. 1981/G:5 (mimeo)
 #'
 #' @export
-
+param = synLFQ3
 CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive = FALSE){
 
   res <- param
@@ -144,20 +154,6 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
         Z_lm1 <- abs(slope_lm1)
         SE_Z_lm1 <- abs(se_slope_lm1) * qt(0.975,sum_lm1$df[2])
 
-        #final plot
-        plot(x = classes.num, y = lnC, ylim = c(minlnC,maxlnC),
-             xlab = "Age [yrs]", ylab = "ln(C)",
-             cex = 1.5)
-        par(new=T)
-        points(x = df.CC.cut$classes.num, y = df.CC.cut$lnC,
-               pch = 19, col = 'blue', cex = 1.5)
-        segments(x0=classes.num[cutter[1]],
-                 y0=lnC[cutter[1]],
-                 x1=classes.num[cutter[2]],
-                 y1=lnC[cutter[2]],
-                 col="blue",lwd = 1.7)
-        mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"+/-",
-                                     round(SE_Z_lm1,2)), col = 'blue')
 
         #save all in list
         ret <- c(res,list(
@@ -168,6 +164,10 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
           se = SE_Z_lm1
         ))
         class(ret) <- "CatchCurve"
+
+        # plot catch curve
+        plot(ret)
+
         return(ret)
       }
     }
@@ -236,22 +236,6 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
         Z_lm1 <- abs(slope_lm1)
         SE_Z_lm1 <- abs(se_slope_lm1) * qt(0.975,sum_lm1$df[2])
 
-
-        #final plot
-        plot(x = t_midL, y = lnC_dt, ylim = c(minlnC_dt,maxlnC_dt),
-             xlab = "Relative age [yrs]", ylab = "ln(C / dt)",
-             cex = 1.5)
-        par(new=T)
-        points(x = df.CC.cut$t_midL, y = df.CC.cut$lnC_dt,
-               pch = 19, col = 'blue', cex = 1.5)
-        segments(x0=t_midL[cutter[1]],
-                 y0=lnC_dt[cutter[1]],
-                 x1=t_midL[cutter[2]],
-                 y1=lnC_dt[cutter[2]],
-                 col="blue",lwd = 1.7)
-        mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"+/-",
-                                     round(SE_Z_lm1,2)), col = 'blue')
-
         #save all in list
         ret <- c(res,list(
           t_midL = t_midL,
@@ -261,7 +245,55 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
           se = SE_Z_lm1
         ))
         class(ret) <- "CatchCurve"
-        return(ret)
+
+        # plot results
+        plot(ret)
+
+        # Calculate selection ogive from catch curve and add to ret
+        if(calc_ogive){
+
+          # only use part of catch and t which is not fully exploited by the gear
+          t_ogive <- t_midL[1:(cutter[1]-1)]   # replace t_midL by universal object
+          dt_ogive <- dt[1:(cutter[1]-1)]
+          catch_ogive <- catch[1:(cutter[1]-1)]
+
+          # calculate observed selection ogive
+          Sobs <- catch_ogive/(dt_ogive * exp(intercept_lm1 - Z_lm1*t_ogive))
+
+          # dependent vairable in following regression analysis
+          ln_1_S_1 <- log((1/Sobs) - 1)
+
+          #regression analysis to caluclate T1 and T2
+          sum_lm_ogive <- summary(lm(ln_1_S_1 ~ t_ogive))
+          T1 <- sum_lm_ogive$coefficients[1]
+          T2 <- abs(sum_lm_ogive$coefficients[2])
+
+          # calculate estimated selection ogive
+          Sest <- 1/(1+exp(T1 - T2*t_midL))
+
+          # selection parameters
+          t50 <- T1/T2
+          t75 <- (T1 + log(3))/T2
+          if(!is.null(res$Linf) & !is.null(res$K)){
+            if(is.null(res$t0)) t0 = 0
+            L50 <- Linf*(1-exp(-K*(t50-t0)))
+            L75 <- Linf*(1-exp(-K*(t75-t0)))
+          }
+
+          ret2 <- c(ret,list(
+            Sobs = Sobs,
+            ln_1_S_1 = ln_1_S_1,
+            Sest = Sest,
+            t50 = t50,
+            t75 = t75,
+            if(!is.null(L50)) L50 = L50,
+            if(!is.null(L75)) L75 = L75))
+          names(ret2)[which(ret2 %in% L50)] <- "L50"
+          names(ret2)[which(ret2 %in% L75)] <- "L75"
+
+          class(ret2) <- "CatchCurve"
+          return(ret2)
+        }else return(ret)
       }
 
       #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
@@ -309,23 +341,6 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
         Z_lm1 <- abs(slope_lm1)
         SE_Z_lm1 <- abs(se_slope_lm1) * qt(0.975,sum_lm1$df[2])
 
-
-        #final plot
-        plot(x = tplusdt_2, y = lnC_dt, ylim = c(minlnC_dt,maxlnC_dt),
-             xlab = "Age [yrs]", ylab = "ln(C / dt)",
-             cex = 1.5)
-        par(new=T)
-        points(x = df.CC.cut$tplusdt_2, y = df.CC.cut$lnC_dt,
-               pch = 19, col = 'blue', cex = 1.5)
-        segments(x0=tplusdt_2[cutter[1]],
-                 y0=lnC_dt[cutter[1]],
-                 x1=tplusdt_2[cutter[2]],
-                 y1=lnC_dt[cutter[2]],
-                 col="blue",lwd = 1.7)
-        mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"+/-",
-                                     round(SE_Z_lm1,2)), col = 'blue')
-
-
         #save all in list
         ret <- c(res,list(
           tplusdt_2 = tplusdt_2,
@@ -335,6 +350,10 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
           se = SE_Z_lm1
         ))
         class(ret) <- "CatchCurve"
+
+        # plot results
+        plot(ret)
+
         return(ret)
       }
     }
@@ -423,28 +442,21 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
         Z_lm1 <- ZK_lm1 * K
         SE_Z_lm1 <- SE_ZK_lm1 * K
 
-        #final plot
-        plot(x = ln_Linf_L, y = ln_C, ylim = c(minlnC,maxlnC),
-             xlab = "ln (Linf - L)", ylab = "ln C(L, Linf)",cex = 1.5)
-        par(new=T)
-        points(x = df.CCC.cut$ln_Linf_L, y = df.CCC.cut$ln_C,
-               pch = 19, col = 'blue', cex = 1.5)
-        segments(x0=ln_Linf_L[cutter[1]],
-                 y0=ln_C[cutter[1]],
-                 x1=ln_Linf_L[cutter[2]],
-                 y1=ln_C[cutter[2]],
-                 col="blue",lwd = 1.7)
-        mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"+/-",
-                                     round(SE_Z_lm1,2)), col = 'blue')
-
         #save all in list
         ret <- c(res,list(
           classes.num = classes.num,
           ln_Linf_L = ln_Linf_L,
           ln_C = ln_C,
+          reg_int = cutter,
           Z =  Z_lm1,
           se = SE_Z_lm1
         ))
+
+        class(ret) <- "CatchCurve"
+
+        # plot results
+        plot(ret)
+
         return(ret)
       }
 
@@ -495,34 +507,21 @@ CatchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
         Z_lm1 <- abs(slope_lm1)
         SE_Z_lm1 <- abs(se_slope_lm1) * qt(0.975,sum_lm1$df[2])
 
-        #final plot
-        plot(x = tplusdt_2, y = ln_C, ylim = c(minlnC,maxlnC),
-             xlab = "Age [yrs]", ylab = "ln C(t, inf)",cex = 1.5)
-        par(new=T)
-        points(x = df.CCC.cut$tplusdt_2, y = df.CCC.cut$ln_C,
-               pch = 19, col = 'blue', cex = 1.5)
-        segments(x0=tplusdt_2[cutter[1]],
-                 y0=ln_C[cutter[1]],
-                 x1=tplusdt_2[cutter[2]],
-                 y1=ln_C[cutter[2]],
-                 col="blue",lwd = 1.7)
-        mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"+/-",
-                                     round(SE_Z_lm1,2)), col = 'blue')
-
         #save all in list
         ret <- c(res,list(
           tplusdt_2 = tplusdt_2,
           ln_C = ln_C,
+          reg_int = cutter,
           Z =  Z_lm1,
           se = SE_Z_lm1
         ))
+        class(ret) <- "CatchCurve"
+
+        # plot results
+        plot(ret)
+
         return(ret)
       }
     }
-  }
-
-  # Calculate selection ogive from catch curve and add to ret
-  if(calc_ogive){
-
   }
 }

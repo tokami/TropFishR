@@ -524,7 +524,7 @@ ELEFAN <- function(param, range.Linf, step.Linf,
   if(conf.int == TRUE){
     for(CIs in 1:dim(catch.aAF)[2]){
       catch.aAF.CI <- catch.aAF[,-CIs]
-      ### HOW TO GET BEST FIT OUT OF SURFACE RESPONSE MATRIX?? IT WAS SUBJECTIVE
+      ### HOW TO GET BEST FIT OUT OF SURFACE RESPONSE MATRIX?? IT WAS SUBJECTIVE CHOICE
     }
 
 

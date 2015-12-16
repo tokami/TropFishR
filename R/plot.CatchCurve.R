@@ -19,28 +19,37 @@
 #' Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 #'
 #' @export
-
+x <- output
 plot.CatchCurve <- function(x,...){
-  res <- x
+  pes <- x
 
-  if("t_midL" %in% names(res)){
-    xplot <- res$t_midL
-    }else if("tplusdt_2" %in% names(res)){
-      xplot <- res$tplusdt_2
-      }else if("classes.num" %in% names(res)) xplot <- res$classes.num
+  xlabel <- "Age [yrs]"
+  if("t_midL" %in% names(pes)){
+    xplot <- pes$t_midL
+    xlabel <- "Relative age [yrs]"
+    }else if("tplusdt_2" %in% names(pes)){
+      xplot <- pes$tplusdt_2
+    }else if("ln_Linf_L" %in% names(pes)){
+        xplot <- pes$ln_Linf_L
+        xlabel <- "ln(Linf - L)"
+      }else if("classes.num" %in% names(pes)) xplot <- pes$classes.num
 
-  if("lnC_dt" %in% names(res)){
-    yplot <- res$lnC_dt
+  if("lnC_dt" %in% names(pes)){
+    yplot <- pes$lnC_dt
     ylabel <- "ln(C / dt)"
-    }else if("lnC" %in% names(res)){
-      yplot <- res$lnC
+    }else if("lnC" %in% names(pes)){
+      yplot <- pes$lnC
       ylabel <- "ln(C)"
-      }
+    }else if("ln_C" %in% names(pes)){
+        yplot <- pes$ln_C
+        ylabel <- "ln C(L,Linf)"
+    }
+  if("ln_C" %in% names(pes) & "tplusdt_2" %in% names(pes)) ylabel <- "ln C(t, inf)"
 
-  Z_lm1 <- res$Z
-  SE_Z_lm1 <- res$se
+  Z_lm1 <- pes$Z
+  SE_Z_lm1 <- pes$se
 
-  reg_int <- res$reg_int
+  reg_int <- pes$reg_int
 
 
   #for plot
@@ -49,7 +58,7 @@ plot.CatchCurve <- function(x,...){
 
   #final plot
   plot(x = xplot, y = yplot, ylim = c(minyplot,maxyplot),
-       xlab = "Relative age [yrs]", ylab = ylabel,
+       xlab = xlabel, ylab = ylabel,
        cex = 1.5)
   par(new=T)
   points(x = xplot[reg_int[1]:reg_int[2]], y = yplot[reg_int[1]:reg_int[2]],
