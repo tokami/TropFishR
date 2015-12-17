@@ -7,14 +7,22 @@
 #' @param Temp Average annual temperature at the surface in degrees centigrade.
 #' @param schooling Logical parameter accounting for schooling behaviour, according to Pauly (1983). Default is FALSE.
 #'
+#' @keywords function mortality M
+#'
 #' @examples
 #' M_Pauly(Linf = 80, K = 0.5, temp = 25)
 #'
-#' @details Pauly's empirical formula to calculate natural mortality (M). If accounting for schooling behaviour M is multiplied by 0.8 according to Pauly (1983).
+#' @details Pauly's empirical formula to calculate natural mortality (M).
+#'    If accounting for schooling behaviour M is multiplied by 0.8 according to Pauly (1983).
+#'
+#' @return A numeric value representing the natural mortality (M).
 #'
 #' @references
 #' Pauly, D., 1980. On the interrelationships between natural mortality, growth parameters,
 #' and mean environmental temperature in 175 fish stocks. \emph{J.Cons.CIEM}, 39(2):175-192
+#'
+#' Pauly, D., 1983. Some simple methods for the assessment of tropical fish stocks.
+#' \emph{FAO Fish.Tech.Pap.}, (234): 52p. Issued also in French and Spanish
 #'
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 #' Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.

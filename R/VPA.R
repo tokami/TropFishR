@@ -1,49 +1,81 @@
-#' @title Virtual Population Analysis (VPA) model
+#' @title Virtual Population Analysis (VPA)
 #'
 #' @description This function applies the Virtual Population Analysis or Cohort analysis,
 #'    respectively. A method used to estimate fishing mortality per age/length group and
-#'    to get a first estimate of stock biomass.
+#'    stock biomass.
 #'
-#' @param param A list consisting of following parameters:
-#'   \code{$age} or \code{$midLengths} midpoints of the length class as vector (length frequency
+#' @param param a list consisting of following parameters:
+#' \itemize{
+#'   \item \strong{age} or \strong{midLengths}: midpoints of the length class as vector (length-frequency
 #'   data) or ages as vector (age composition data),
-#'   \code{$Linf} Infinite length for investigated species in cm [cm],
-#'   \code{$K} Growth coefficent for investigated species per year [1/year],
-#'   \code{t0} Theoretical time zero, at which individuals of this species hatch,
-#'   \code{M} Natural mortality [1/year],
-#'   \code{a} length-weight relationship coefficent (W = a * L^b),
-#'   \code{b} length-weight relationship coefficent (W = a * L^b),
-#'   \code{catch} Catch as vector, or a matrix with catches of subsequent years if
-#'   the catch curve with constat time intervals should be applied;
-#' @param terminalF A fishing mortality value which is used as the terminal FM for the last age/length group.
-#' @param analysis.type Determines which type of assessment should be done,
+#'   \item \strong{Linf}: infinite length for investigated species in cm [cm],
+#'   \item \strong{K}: growth coefficent for investigated species per year [1/year],
+#'   \item \strong{t0}: theoretical time zero, at which individuals of this species hatch,
+#'   \item \strong{M}: natural mortality [1/year],
+#'   \item \strong{a}: length-weight relationship coefficent (W = a * L^b),
+#'   \item \strong{b}: length-weight relationship coefficent (W = a * L^b),
+#'   \item \strong{catch}: catch as vector, or a matrix with catches of subsequent years;
+#' }
+#' @param terminalF a fishing mortality value which is used as the terminal FM for the last age/length group.
+#' @param analysis.type determines which type of assessment should be done,
 #'   options: "VPA" for classical age-based VPA, "CA" for age- or length-based
 #'   Cohort analysis
-#' @param catch_corFac optional: Correction factor for catch, in case provided
+#' @param catch_corFac optional; correction factor for catch, in case provided
 #'   catch does spatially or temporarily not reflect catch for fishing ground of
 #'   a whole year.
-#' @param algorithm An Algorithm to use to solve for fishing mortality. The default
+#' @param algorithm an Algorithm to use to solve for fishing mortality. The default
 #'   setting \code{algorithm="new"} uses \code{\link[stats]{optimize}},
-#'   while \code{algorithm="old"} uses the algorithm described by
-#'   Sparre and Venema (1998).
+#'   while \code{algorithm="old"} uses the algorithm described by Sparre and Venema (1998).
 #'
 #' @details VPA and Cohort analyses
 #'
+#' @keywords function mortality F stock biomass cohort
+#'
 #' @examples
+#' #_______________________________________________
 #' # Virtual Popuation Analysis with age-composition data
 #' data(whiting)
-#' output <- VPA(whiting, terminalF = 0.5, analysis.type = "VPA")
+#' VPA(whiting, terminalF = 0.5, analysis.type = "VPA")
 #'
+#'#_______________________________________________
 #' # Pope's Cohort Analysis with age-composition data
 #' data(whiting)
-#' output <- VPA(whiting, terminalF = 0.5, analysis.type = "CA")
+#' VPA(whiting, terminalF = 0.5, analysis.type = "CA")
 #'
+#'#_______________________________________________
 #' # Jones's Cohort Analysis with length-composition data
 #' data(hake)
-#' output <- VPA(hake, terminalF = 0.5, analysis.type = "CA")
+#' VPA(hake, terminalF = 0.5, analysis.type = "CA")
+#'
+#' @return A list with the input parameters and following list objects:
+#' \itemize{
+#'   \item \strong{classes.num}: numeric age classes or length groupes (without plus sign),
+#'   \item \strong{catch.cohort}: a vector with the catch values which were used for the analysis (exists only if catch was a matrix),
+#'   \item \strong{FM_calc}: a vector with the ifshing mortality (M),
+#'   \item \strong{Z}: a vector with the total mortality (Z),
+#'   \item \strong{survivors}: a vector with the number of fish surviving to the next age class or length group,
+#'   \item \strong{annualMeanNr}: ta vector with the mean number of fish per year,
+#'   \item \strong{meanBodyWeight}: a vector with the mean body weight in kg,
+#'   \item \strong{meanBiomassTon}: a vector with the mean biomass in tons,
+#'   \item \strong{YieldTon}: a vector with the yield in tons,
+#'   \item \strong{natLoss}: a vector with the number of fish died due to natural mortality,
+#'   \item \strong{plot_mat}: matrix with rearranged survivors, nat losses and catches for plotting;
+#' }
+#'
 #'
 #' @references
-#' Jones?
+#' Jones, R., 1984. Assessing the effects of changes in exploitation pattern using length
+#' composition data (with notes on VPA and cohort analysis). \emph{FAO Fish.Tech.Pap.},
+#' (256): 118p.
+#'
+#' Jones, R., 1990. Length-cohort analysis: the importance of choosing the correct growth
+#' parameters. \emph{Journal du Conseil: ICES Journal of Marine Science}, 46(2), 133-139
+#'
+#' Pope, J.G., 1972. An investigation of the accuracy of virtual population analysis using
+#' cohort analysis. \emph{Res.Bull.ICNAF}, (9):65-74
+#'
+#' Pope, J.G., 1979. A modified cohort analysis in which constant natural mortality is
+#' replaced by estimates of predation levels. \emph{ICES C.M.} 1979/H:16:7p. (mimeo)
 #'
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 #' Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
@@ -114,10 +146,10 @@ VPA <- function(param, terminalF, analysis.type, catch_corFac = NA, algorithm="n
       }
 
       #F
-      FM <- rep(NA,length(classes.num))
-      FM[lastLengthClass] <- terminalF
+      FM_calc <- rep(NA,length(classes.num))
+      FM_calc[lastLengthClass] <- terminalF
       for(x5 in 1:(lastLengthClass-1)){
-        FM[x5] <- log(survivors[x5]/survivors[x5+1]) - M
+        FM_calc[x5] <- log(survivors[x5]/survivors[x5+1]) - M
       }
     }
 
@@ -125,8 +157,8 @@ VPA <- function(param, terminalF, analysis.type, catch_corFac = NA, algorithm="n
     if(analysis.type == "VPA"){
       #other survivors and fishing mortality
       ###IMPROVABLE BY MAKING THE STEP CHOOSABLE, MEANING THE USER CAN CHOOSE THE RESOLUTION
-      FM <- rep(NA,length(classes.num))
-      FM[lastLengthClass] <- terminalF
+      FM_calc <- rep(NA,length(classes.num))
+      FM_calc[lastLengthClass] <- terminalF
 
       for(num_class in (lastLengthClass-1):1){
 
@@ -162,7 +194,7 @@ VPA <- function(param, terminalF, analysis.type, catch_corFac = NA, algorithm="n
         }
 
         #fill F
-        FM[num_class] <- sur.F
+        FM_calc[num_class] <- sur.F
 
         #fill survivors
         survivors[num_class] <- survivors[(num_class+1)] *
@@ -173,7 +205,7 @@ VPA <- function(param, terminalF, analysis.type, catch_corFac = NA, algorithm="n
     # Z
     Z <- rep(NA,length(classes.num))
     for(x6 in 1:(length(Z))){
-      Z[x6] <- M  +  FM[x6]
+      Z[x6] <- M  +  FM_calc[x6]
     }
 
     #Annual mean Nr
@@ -219,41 +251,11 @@ VPA <- function(param, terminalF, analysis.type, catch_corFac = NA, algorithm="n
     df.VPAnew <- t(as.matrix(df.VPAnew))
     colnames(df.VPAnew) <- classes.num
 
-    #save x axis positions
-    max_sur <- round(max(survivors,na.rm=TRUE),digits=0)
-    dim_sur <- 10 ^ (nchar(max_sur)-1)
-    max_FM <- ceiling(max(FM,na.rm=TRUE))
-    max_clas <- max(classes.num,na.rm=TRUE)
-    par(new = FALSE)
-    mids <- barplot(df.VPAnew, xlab="", ann=TRUE, plot = FALSE,
-                    ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur))
-
-    #create VPA plot
-    par(mar = c(5, 4, 4, 4) + 0.3)
-    barplot(df.VPAnew,col=c('darkgreen','purple','yellow'),
-            xlab = "Age", ylab = "Population",xlim=c(0,ceiling(max(mids))),
-            ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur))
-    legend(x=mids[(which(classes.num == max_clas)-2)],
-           y = ceiling(max_sur/dim_sur)*dim_sur,
-           legend = c(rownames(df.VPAnew),"Fishing mortality"),
-           col = c('darkgreen','purple','yellow','red'),xpd = TRUE,
-           pch=c(rep(15,3),NA), lty = c(NA,NA,NA,1), lwd=2,seg.len = 0.3,
-           pt.cex = 2, x.intersp = c(0.3,0.3,0.3,0.3),merge=TRUE,
-           y.intersp = 0.6, box.lty=0,cex=0.8,xjust = 0,yjust = 0.8)
-    par(new = TRUE,mar = c(5, 4, 4, 4) + 0.3)
-    plot(mids, FM, col='red',xlim=c(0,ceiling(max(mids))),
-         type = "n",axes = FALSE, bty = "n", xlab = "", ylab = "",ann=TRUE)
-    lines(x=mids,y=FM,col='red',lwd=2)
-    usr <- par("usr")
-    par(usr=c(usr[1:2], 0, max_FM))
-    axis(4,at=pretty(c(0,max_FM)))
-    mtext("fishing mortatlity", side=4, line=3)
-
     #save all in list
     ret <- c(res,list(
       classes.num = classes.num,
       catch.cohort = catch.cohort,
-      FM = FM,
+      FM_calc = FM_calc,
       Z = Z,
       survivors = survivors,
       annualMeanNr = annualMeanNr,
@@ -264,6 +266,10 @@ VPA <- function(param, terminalF, analysis.type, catch_corFac = NA, algorithm="n
       plot_mat = df.VPAnew))
 
     class(ret) <- "VPA"
+
+    # plot results
+    plot(ret)
+
     return(ret)
   }
 
@@ -351,15 +357,15 @@ VPA <- function(param, terminalF, analysis.type, catch_corFac = NA, algorithm="n
     F_Z[length(F_Z)] <- terminalF / (terminalF + M)
 
     #F  # F = M * (F_Z / 1-F_Z)
-    FM <- rep(NA,length(classes.num))
-    for(x5 in 1:(length(FM))){
-      FM[x5] <- M  *  (F_Z[x5] / (1 - F_Z[x5]))
+    FM_calc <- rep(NA,length(classes.num))
+    for(x5 in 1:(length(FM_calc))){
+      FM_calc[x5] <- M  *  (F_Z[x5] / (1 - F_Z[x5]))
     }
 
     # Z
     Z <- rep(NA,length(classes.num))
     for(x6 in 1:(length(Z))){
-      Z[x6] <- M  +  FM[x6]
+      Z[x6] <- M  +  FM_calc[x6]
     }
 
     #Annual mean Nr
@@ -404,41 +410,10 @@ VPA <- function(param, terminalF, analysis.type, catch_corFac = NA, algorithm="n
     df.VPAnew <- t(as.matrix(df.VPAnew))
     colnames(df.VPAnew) <- classes.num
 
-    #save x axis positions
-    max_sur <- round(max(survivors,na.rm=TRUE),digits=0)
-    dim_sur <- 10 ^ (nchar(max_sur)-1)
-    max_FM <- ceiling(max(FM,na.rm=TRUE))
-    max_clas <- max(classes.num,na.rm=TRUE)
-    par(new = FALSE)
-    mids <- barplot(df.VPAnew, xlab="", plot = FALSE,
-                    ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur))
-
-    #create VPA plot
-    par(mar = c(5, 4, 4, 4) + 0.3)
-    barplot(df.VPAnew,col=c('darkgreen','purple','yellow'),
-            xlab = "Midlength [cm]", ylab = "Population",xlim=c(0,ceiling(max(mids))),
-            ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur))
-    legend(x=mids[(which(classes.num == max_clas)-3)],
-           y = (ceiling(max_sur/dim_sur)*dim_sur),
-           legend = c(rownames(df.VPAnew),"Fishing mortality"),
-           col = c('darkgreen','purple','yellow','red'),xpd = TRUE,
-           pch=c(rep(15,3),NA), lty = c(NA,NA,NA,1), lwd=2,seg.len = 0.3,
-           pt.cex = 2, x.intersp = c(0.3,0.3,0.3,0.3),merge=TRUE,
-           y.intersp = 0.6, box.lty=0,cex=0.8,xjust = 0,yjust = 0.8)
-    par(new = TRUE,mar = c(5, 4, 4, 4) + 0.3)
-    plot(mids, FM, col='red',xlim=c(0,ceiling(max(mids))),
-         type = "n",axes = FALSE, bty = "n", xlab = "", ylab = "",ann=TRUE)
-    lines(x=mids,y=FM,col='red',lwd=2)
-    usr <- par("usr")
-    par(usr=c(usr[1:2], 0, max_FM))
-    axis(4,at=pretty(c(0,max_FM)))
-    mtext("fishing mortatlity", side=4, line=3)
-    plot1 <- recordPlot()
-
     #save all in list
     ret <- c(res,list(
       classes.num = classes.num,
-      FM = FM,
+      FM_calc = FM_calc,
       Z = Z,
       survivors = survivors,
       annualMeanNr = annualMeanNr,
@@ -449,6 +424,10 @@ VPA <- function(param, terminalF, analysis.type, catch_corFac = NA, algorithm="n
       plot_mat = df.VPAnew))
 
     class(ret) <- "VPA"
+
+    # plot results
+    plot(ret)
+
     return(ret)
   }
 }

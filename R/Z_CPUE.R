@@ -13,7 +13,7 @@
 #'    \code{"standard"}, \code{"Heincke"}, or \code{"RobsonChapman"}.
 #' @param omit_age1 logical; if \code{TRUE} the first age group is omitted (Default \code{FALSE}).
 #'
-#' @keywords function mortality CPUE
+#' @keywords function mortality Z CPUE
 #'
 #' @examples
 #' # load data
