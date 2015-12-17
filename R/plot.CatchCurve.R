@@ -1,6 +1,6 @@
 #' @title Plotting catch curve
 #
-#' @description  This function plots the results from the \link{catchCurve} model.
+#' @description  This function plots the results from the \code{\link{catchCurve}} model.
 #'
 #' @param x A list of the class \code{"catchCurve"} containing the results of the
 #'      catchCurve model.
@@ -17,7 +17,10 @@
 #' data(goatfish)
 #'
 #' # run model
-#' catchCurve(goatfish,calc_ogive=TRUE)
+#' output <- catchCurve(goatfish)
+#'
+#' # plot results
+#' plot(output)
 #'
 #' # based on age composition data
 #' # load data
@@ -35,7 +38,7 @@
 #' output <- catchCurve(synLFQ3, calc_ogive = TRUE)
 #'
 #' # plot results
-#' plot(output)
+#' plot(output,plot.selec = TRUE)
 #' }
 #'
 #' @details A function to plot the results of the catchCurve model.
@@ -106,15 +109,14 @@ plot.catchCurve <- function(x,plot.selec = FALSE,...){
     mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"+/-",
                                  round(SE_Z_lm1,2)), col = 'blue')
 
-    print(pes$Sest)
-    print(xplot)
     plot(pes$Sest ~ xplot, type ='o', xlab = xlabel,
          ylab = "Probability of capture")
     points(y = 0.5, x=pes$t50,col='red',pch=16)
     segments(x0 = pes$t50, y0 = 0.5, x1 = pes$t50, y1 = 0, col='red',lty=2)
-    op <- par(xpd=TRUE)
+    op1 <- par(xpd=TRUE)
     text(y=-0.1,x=pes$t50,labels = "t50%",col = 'red')
     par(op)
+    par(op1)
 
 
   }else {

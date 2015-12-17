@@ -16,7 +16,7 @@ exploited length groups and the probability of capture is plotted}
 \item{...}{normal parameters from plot function}
 }
 \description{
-This function plots the results from the \link{catchCurve} model.
+This function plots the results from the \code{\link{catchCurve}} model.
 }
 \details{
 A function to plot the results of the catchCurve model.
@@ -30,7 +30,10 @@ A function to plot the results of the catchCurve model.
 data(goatfish)
 
 # run model
-catchCurve(goatfish,calc_ogive=TRUE)
+output <- catchCurve(goatfish)
+
+# plot results
+plot(output)
 
 # based on age composition data
 # load data
@@ -48,7 +51,7 @@ data(synLFQ3)
 output <- catchCurve(synLFQ3, calc_ogive = TRUE)
 
 # plot results
-plot(output)
+plot(output,plot.selec = TRUE)
 }
 
 }

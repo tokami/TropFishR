@@ -62,7 +62,7 @@ catchCurve(goatfish)
 data(whiting)
 
 # run model
-catchCurve(whiting, catch_column = 1)
+catchCurve(param=whiting, catch_column = 1)
 
 #_______________________________________________
 # Constant parameter system based on age composition data (with catch matrix)
