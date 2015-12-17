@@ -69,7 +69,7 @@ The package TropFishR is a compilation of fish stock assessment methods and mode
 
 
 
-## 1. Growth parameters
+## 1. Growth parameters (Chapter 3)
 
 ### Bhattacharya method
 
@@ -80,7 +80,7 @@ Bhattacharya method to distinguish and seperate cohorts from a length-frequency 
 Electronic LEngth Frequency ANalysis to estimate growth parameters from length-frequency data. Refers to chapter 3.5.1. 
 
 
-## 2. Mortality parameters
+## 2. Mortality parameters (Chapter 4)
 
 
 ### Total mortality
@@ -92,6 +92,8 @@ Chapter 4.3
 #### Catch curve
 
 Chapter 4.4
+
+plus Chapter 6.5 catch curve and selectivity
 
 #### Beverton & Holt's Z-Equations
 
@@ -112,13 +114,40 @@ Chapter 4.7.3
 
 ### Fishing mortaltiy
 
-```
- F = Z - M
-```
+` F = Z - M `
 
-## 6. Surplus production models
+## 3. Virtual population dynamics (Chapter 5)
+
+Chapter 5.
+
+plus 6.6 (VPA and selectivity?)
+
+## 4. Gear selectivity (Chapter 6)
+
+### Standard selectivity functions
+
+Chapters 6.1 to 6.4
+
+### Millar's selectivity functions
+
+Not included in the manual by Sparre and Venema (1998).
+
+
+## 5. Prediction models  (Chapter 8)
+
+### Beverton and Holt
+
+Chapter 8.2 to 8.5
+
+### Thompson and Bell
+
+Chapter 8.6 to 8.8
+
+## 6. Surplus production models (Chapter 9)
 
 ### Equilibrium production model
+
+Chapter 9.1
 
 Schaefer model assuming Bmsy  = K/2 
 
@@ -136,6 +165,11 @@ Not included in the manual by Sparre and Venema (1998).
 Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment. Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2): 407 
 
 Sparre, P., Venema, S.C., 1999. Introduction to tropical fish stock assessment. Part 2. Excercises. \emph{FAO Fisheries Technical Paper}, (306.2, Rev. 2). 94 p.
+
+
+
+
+
 
 
 

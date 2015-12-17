@@ -18,7 +18,7 @@
 #' @param PowellWetherall logical; if \code{TRUE} the Powell Wetherall method is
 #'   applied (Default: \code{FALSE}).
 #'
-#' @keywords function mortality
+#' @keywords function mortality Z
 #'
 #' @examples
 #' #_______________________________________________

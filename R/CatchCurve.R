@@ -22,7 +22,7 @@
 #' @param calc_ogive logical; if \code{TRUE} the selection ogive is additionally
 #'   calculated from the catch curve
 #'
-#' @keywords function mortality
+#' @keywords function mortality Z
 #'
 #' @examples
 #' \donttest{
@@ -93,7 +93,7 @@
 #'   assumed to represent the catches during the entire life span of a so called
 #'   pseudo-cohort.
 #'
-#' @return A list with the input parameters and following objects:
+#' @return A list with the input parameters and following list objects:
 #' \itemize{
 #'   \item \strong{tplusdt_2} or \strong{t_midL}: relative ages,
 #'   \item \strong{lnC_dt}: rearranged catches,
@@ -104,11 +104,14 @@
 #' \itemize{
 #'   \item \strong{intercept}: intercept of regression analysis,
 #'   \item \strong{Sobs}: observed selection curve,
-#'   \item \strong{ln_1_S_1}: dependent variable of regression analysis for selectivity parameters,
+#'   \item \strong{ln_1_S_1}: dependent variable of regression analysis for
+#'   selectivity parameters,
 #'   \item \strong{Sest}: estimated selection curve,
-#'   \item \strong{t50}: age at first capture (age at which fish have a 50% probability to be caught),
+#'   \item \strong{t50}: age at first capture (age at which fish have a 50%
+#'   probability to be caught),
 #'   \item \strong{t75}: age at which fish have a 75% probability to be caught,
-#'   \item \strong{L50}: length at first capture (length at which fish have a 50% probability to be caught),
+#'   \item \strong{L50}: length at first capture (length at which fish have a 50%
+#'   probability to be caught),
 #'   \item \strong{L75}: length at which fish have a 75% probability to be caught;
 #' }
 #'
