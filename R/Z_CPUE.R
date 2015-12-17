@@ -1,25 +1,32 @@
-#' @title Model to calculate Z from CPUE data
+#' @title Estimate Z from Catch per unit of effort (CPUE)
 #'
-#' @description Model to estimate the instantaneous total mortality rate (Z) from
+#' @description Method to estimate the instantaneous total mortality rate (Z) from
 #'    CPUE data according to standard, Heincke's, or Robson & Chapman's method.
 #'
-#' @param param A list consisting of following parameters:
-#'    \code{$cohort} a vector with with a cohort label,
-#'    \code{$age} a vector with ages,
-#'    \code{$CPUE} a vector with Catch per unit of effort (CPUE) values;
-#' @param method A character string indicating which assessment method should be used:
+#' @param param a list consisting of following parameters:
+#' \itemize{
+#'   \item \strong{cohort}: a vector with with a cohort label,
+#'   \item \strong{age}: a vector with ages,
+#'   \item \strong{CPUE}: a vector with Catch per unit of effort (CPUE) values;
+#' }
+#' @param method a character string indicating which assessment method should be used:
 #'    \code{"standard"}, \code{"Heincke"}, or \code{"RobsonChapman"}.
-#' @param omit_age1 A logical parameter indicating if the first age group should omitted.
+#' @param omit_age1 logical; if \code{TRUE} the first age group is omitted (Default \code{FALSE}).
+#'
+#' @keywords function mortality CPUE
 #'
 #' @examples
 #' # load data
-#' data("synCPUE")
+#' data(synCPUE)
 #'
-#' # run model
+#' # run model with standard method
 #' Z_CPUE(synCPUE, method = "standard")
 #'
-#' # alternative method:
-#' Z_CPUE(synCPUE, method = "RobsonChapman", omit_age1  = TRUE)
+#' # run model with Heincke's method
+#' Z_CPUE(synCPUE, method = "Heincke")
+#'
+#' # run model with Robson and Chapman's method
+#' Z_CPUE(synCPUE, method = "RobsonChapman", omit_age1 = TRUE)
 #'
 #' @details In Heincke's and RobsonChapman's method age groups older than 4 are lumped,
 #'   because age groups older than 3 or 4 are said to be hard to seperate (Ricker, 1975).

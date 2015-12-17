@@ -39,4 +39,8 @@ using dynamic biomass models and analysis of length frequency of the Sky Emperor
 Hilborn, R. and Walters, C., 1992. Quantitative Fisheries Stock Assessment: Choice,
 Dynamics and Uncertainty. Chapman and Hall, New York
 }
+\keyword{MSY}
+\keyword{biomass}
+\keyword{function}
+\keyword{stock}
 

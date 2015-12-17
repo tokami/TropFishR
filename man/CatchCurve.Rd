@@ -28,11 +28,30 @@ catch curve is applied (Jones and van Zalinge method)}
 \item{calc_ogive}{logical; if \code{TRUE} the selection ogive is additionally
 calculated from the catch curve}
 }
+\value{
+A list with the input parameters and following objects:
+\itemize{
+  \item \strong{tplusdt_2} or \strong{t_midL}: relative ages,
+  \item \strong{lnC_dt}: rearranged catches,
+  \item \strong{reg_int}: the interval used for the regression analysis,
+  \item \strong{Z}: the total mortality,
+  \item \strong{se}: the standard error of the total mortality,
+in case of calc_ogive, additionally:
+  \item \strong{intercept}: intercept of regression analysis,
+  \item \strong{Sobs}: observed selection curve,
+  \item \strong{ln_1_S_1}: dependent variable of regression analysis for selectivity parameters,
+  \item \strong{Sest}: estimated selection curve,
+  \item \strong{t50}: age at first capture (age at which fish have a 50% probability to be caught),
+  \item \strong{t75}: age at which fish have a 75% probability to be caught,
+  \item \strong{L50}: length at first capture (length at which fish have a 50% probability to be caught),
+  \item \strong{L75}: length at which fish have a 75% probability to be caught;
+}
+}
 \description{
 This is a function to calculate the total mortality (Z) from length-frequency
   data via the linearized length converted catch curve or from age composition data
   with the linearized catch curve. It has the option to use a cumulative approach for
-  estimating Z and further it allows to estimate gear selectivity.
+  estimating Z and further it allows to estimate gear selectivity. Refers to Chapter 4.4 in Sparre & Venema (1998).
 }
 \details{
 This function includes a so called 'locator' function, which asks you to
@@ -74,7 +93,7 @@ catchCurve(param=whiting, catch_column = 1)
 
 #_______________________________________________
 # Constant parameter system based on age composition data (with catch matrix)
-catchCurve(whiting)
+catchCurve(param = whiting)
 
 
 #_______________________________________________
@@ -149,4 +168,6 @@ Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 Van Sickle, J. 1977. Mortality rates from size distributions: the application of a
 conservation law. \emph{Oecologia, Berl.}, 27(4):311-318
 }
+\keyword{function}
+\keyword{mortality}
 

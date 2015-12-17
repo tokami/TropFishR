@@ -2,26 +2,28 @@
 % Please edit documentation in R/Z_CPUE.R
 \name{Z_CPUE}
 \alias{Z_CPUE}
-\title{Model to calculate Z from CPUE data}
+\title{Estimate Z from Catch per unit of effort (CPUE)}
 \usage{
 Z_CPUE(param, method = "standard", omit_age1 = FALSE)
 }
 \arguments{
-\item{param}{A list consisting of following parameters:
-\code{$cohort} a vector with with a cohort label,
-\code{$age} a vector with ages,
-\code{$CPUE} a vector with Catch per unit of effort (CPUE) values;}
+\item{param}{a list consisting of following parameters:
+\itemize{
+  \item \strong{cohort}: a vector with with a cohort label,
+  \item \strong{age}: a vector with ages,
+  \item \strong{CPUE}: a vector with Catch per unit of effort (CPUE) values;
+}}
 
-\item{method}{A character string indicating which assessment method should be used:
+\item{method}{a character string indicating which assessment method should be used:
 \code{"standard"}, \code{"Heincke"}, or \code{"RobsonChapman"}.}
 
-\item{omit_age1}{A logical parameter indicating if the first age group should omitted.}
+\item{omit_age1}{logical; if \code{TRUE} the first age group is omitted (Default \code{FALSE}).}
 }
 \value{
 A list with input parameters and a Z value or matrix.
 }
 \description{
-Model to estimate the instantaneous total mortality rate (Z) from
+Method to estimate the instantaneous total mortality rate (Z) from
    CPUE data according to standard, Heincke's, or Robson & Chapman's method.
 }
 \details{
@@ -32,13 +34,16 @@ In Heincke's and RobsonChapman's method age groups older than 4 are lumped,
 }
 \examples{
 # load data
-data("synCPUE")
+data(synCPUE)
 
-# run model
+# run model with standard method
 Z_CPUE(synCPUE, method = "standard")
 
-# alternative method:
-Z_CPUE(synCPUE, method = "RobsonChapman", omit_age1  = TRUE)
+# run model with Heincke's method
+Z_CPUE(synCPUE, method = "Heincke")
+
+# run model with Robson and Chapman's method
+Z_CPUE(synCPUE, method = "RobsonChapman", omit_age1 = TRUE)
 
 }
 \references{
@@ -51,4 +56,7 @@ Part 2. Excercises. FAO Fisheries Technical Paper, (306.2, Rev. 2). 94 p.
 Ricker, W.E., 1975. Computation and interpretation of biological statistics of fish
 populations. \emph{Bull.Fish.Res.Board Can.}, (191):382 p.
 }
+\keyword{CPUE}
+\keyword{function}
+\keyword{mortality}
 

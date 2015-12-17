@@ -53,4 +53,8 @@ eastern tropical Pacific Ocean [in English and Spanish]. \emph{Ibid.}, 2(6): 245
 Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 }
+\keyword{MSY}
+\keyword{biomass}
+\keyword{function}
+\keyword{stock}
 

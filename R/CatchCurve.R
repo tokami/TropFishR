@@ -3,7 +3,7 @@
 #' @description  This is a function to calculate the total mortality (Z) from length-frequency
 #'   data via the linearized length converted catch curve or from age composition data
 #'   with the linearized catch curve. It has the option to use a cumulative approach for
-#'   estimating Z and further it allows to estimate gear selectivity.
+#'   estimating Z and further it allows to estimate gear selectivity. Refers to Chapter 4.4 in Sparre & Venema (1998).
 #'
 #' @param param a list consisting of following parameters:
 #' \itemize{
@@ -21,6 +21,8 @@
 #'   catch curve is applied (Jones and van Zalinge method)
 #' @param calc_ogive logical; if \code{TRUE} the selection ogive is additionally
 #'   calculated from the catch curve
+#'
+#' @keywords function mortality
 #'
 #' @examples
 #' \donttest{
@@ -42,7 +44,7 @@
 #'
 #' #_______________________________________________
 #' # Constant parameter system based on age composition data (with catch matrix)
-#' catchCurve(whiting)
+#' catchCurve(param = whiting)
 #'
 #'
 #' #_______________________________________________
@@ -91,6 +93,23 @@
 #'   assumed to represent the catches during the entire life span of a so called
 #'   pseudo-cohort.
 #'
+#' @return A list with the input parameters and following objects:
+#' \itemize{
+#'   \item \strong{tplusdt_2} or \strong{t_midL}: relative ages,
+#'   \item \strong{lnC_dt}: rearranged catches,
+#'   \item \strong{reg_int}: the interval used for the regression analysis,
+#'   \item \strong{Z}: the total mortality,
+#'   \item \strong{se}: the standard error of the total mortality,
+#' in case of calc_ogive, additionally:
+#'   \item \strong{intercept}: intercept of regression analysis,
+#'   \item \strong{Sobs}: observed selection curve,
+#'   \item \strong{ln_1_S_1}: dependent variable of regression analysis for selectivity parameters,
+#'   \item \strong{Sest}: estimated selection curve,
+#'   \item \strong{t50}: age at first capture (age at which fish have a 50% probability to be caught),
+#'   \item \strong{t75}: age at which fish have a 75% probability to be caught,
+#'   \item \strong{L50}: length at first capture (length at which fish have a 50% probability to be caught),
+#'   \item \strong{L75}: length at which fish have a 75% probability to be caught;
+#' }
 #'
 #' @references
 #' Baranov, F.I., 1926. On the question of the dynamics of the fishing industry.
@@ -224,10 +243,55 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
         ))
         class(ret) <- "catchCurve"
 
-        # plot catch curve
-        plot(ret)
+        # Calculate selection ogive from catch curve and add to ret
+        if(calc_ogive){
 
-        return(ret)
+          dt <- rep(classes.num[2]-classes.num[1],length(classes.num))
+
+          # only use part of catch and t which is not fully exploited by the gear
+          t_ogive <- classes.num[1:(cutter[1]-1)]   # replace t_midL by universal object
+          dt_ogive <- dt[1:(cutter[1]-1)]
+          catch_ogive <- catch.cohort[1:(cutter[1]-1)]
+
+          # calculate observed selection ogive
+          Sobs <- catch_ogive/(dt_ogive * exp(intercept_lm1 - Z_lm1*t_ogive))
+
+          # dependent vairable in following regression analysis
+          ln_1_S_1 <- log((1/Sobs) - 1)
+
+          #regression analysis to caluclate T1 and T2
+          sum_lm_ogive <- summary(lm(ln_1_S_1 ~ t_ogive, na.action = na.omit))
+          T1 <- sum_lm_ogive$coefficients[1]
+          T2 <- abs(sum_lm_ogive$coefficients[2])
+
+          # calculate estimated selection ogive
+          Sest <- 1/(1+exp(T1 - T2*classes.num))
+
+          # selection parameters
+          t50 <- T1/T2
+          t75 <- (T1 + log(3))/T2
+          if(!is.null(res$Linf) & !is.null(res$K)){
+            if(is.null(res$t0)) t0 = 0
+            L50 <- Linf*(1-exp(-K*(t50-t0)))
+            L75 <- Linf*(1-exp(-K*(t75-t0)))
+          }
+
+          ret2 <- c(ret,list(
+            intercept = intercept_lm1,
+            Sobs = Sobs,
+            ln_1_S_1 = ln_1_S_1,
+            Sest = Sest,
+            t50 = t50,
+            t75 = t75))
+            if(exists("L50")) ret2$L50 = L50
+            if(exists("L75")) ret2$L75 = L75
+          if(exists("L50")) names(ret2)[which(ret2 %in% L50)] <- "L50"
+          if(exists("L75")) names(ret2)[which(ret2 %in% L75)] <- "L75"
+
+          class(ret2) <- "catchCurve"
+          #plot(ret2,plot.selec=TRUE)
+          return(ret2)
+        }else plot(ret) ; return(ret)
       }
     }
 
@@ -344,14 +408,18 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
             ln_1_S_1 = ln_1_S_1,
             Sest = Sest,
             t50 = t50,
-            t75 = t75,
-            if(!is.null(L50)) L50 = L50,
-            if(!is.null(L75)) L75 = L75))
-          names(ret2)[which(ret2 %in% L50)] <- "L50"
-          names(ret2)[which(ret2 %in% L75)] <- "L75"
+            t75 = t75))
+          if(exists("L50")){
+            ret2$L50 = L50
+            names(ret2)[which(ret2 %in% L50)] <- "L50"
+          }
+          if(exists("L75")){
+            ret2$L75 = L75
+            names(ret2)[which(ret2 %in% L75)] <- "L75"
+          }
 
           class(ret2) <- "catchCurve"
-          #plot(ret2,plot.selec=TRUE)
+          plot(ret2, plot.selec=TRUE)
           return(ret2)
         }else plot(ret) ; return(ret)
       }
@@ -450,11 +518,15 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
             ln_1_S_1 = ln_1_S_1,
             Sest = Sest,
             t50 = t50,
-            t75 = t75,
-            if(!is.null(L50)) L50 = L50,
-            if(!is.null(L75)) L75 = L75))
-          names(ret2)[which(ret2 %in% L50)] <- "L50"
-          names(ret2)[which(ret2 %in% L75)] <- "L75"
+            t75 = t75))
+          if(exists("L50")){
+            ret2$L50 = L50
+            names(ret2)[which(ret2 %in% L50)] <- "L50"
+          }
+          if(exists("L75")){
+            ret2$L75 = L75
+            names(ret2)[which(ret2 %in% L75)] <- "L75"
+          }
 
           class(ret2) <- "catchCurve"
           plot(ret2,plot.selec=TRUE)

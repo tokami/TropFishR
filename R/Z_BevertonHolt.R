@@ -1,53 +1,61 @@
-#' @title Beverton and Holt's Z-Equations
+#' @title Beverton and Holt's Z-Equations & Powell and Wetherall method
 #
 #' @description A method to calculate Z from a range of equations derived by Beverton and
 #'    Holt (1956) with the option to perform the Powell and Wetherall method (Powell, 1979;
 #'    Wetherall et al., 1987). Refers to Chapter 4.5 in Sparre & Venema (1998).
 #'
 #' @param param a list consisting of following parameters:
-#'   \code{$midAge} or \code{$midLengths} ages as vector (age composition data) or
-#'   midpoints of the length class as vector (length frequency data),
-#'   \code{$Linf} infinite length for investigated species in cm [cm],
-#'   \code{$K} growth coefficent for investigated species per year [1/year],
-#'   \code{t0} theoretical time zero, at which individuals of this species hatch,
-#'   \code{catch} or \code{catch_mat} catch as vector, or a matrix with catches of subsequent years if
-#'   the catch curve with constat time intervals should be applied;
-#' @param catch_column optional; a number indicating which column of \code{catch_mat} should be
-#'    analysed (Default: \code{NA}).
+#' \itemize{
+#'   \item \strong{age} or \strong{midLengths}: midpoints of the length class as vector (length-frequency
+#'   data) or ages as vector (age composition data),
+#'   \item \strong{Linf}: infinite length for investigated species in cm [cm],
+#'   \item \strong{K}: growth coefficent for investigated species per year [1/year],
+#'   \item \strong{t0}: theoretical time zero, at which individuals of this species hatch,
+#'   \item \strong{catch}: catch as vector, or a matrix with catches of subsequent years;
+#' }
+#' @param catch_column optional; in case catch is a matrix or data.frame, a number
+#'    indicating which column of the matrix should be analysed (Default: \code{NA}).
 #' @param PowellWetherall logical; if \code{TRUE} the Powell Wetherall method is
 #'   applied (Default: \code{FALSE}).
 #'
+#' @keywords function mortality
+#'
 #' @examples
-#' # Length based model
+#' #_______________________________________________
+#' # Beverton and Holt's Z method
+#' # based on length data
 #' # load data
 #' data(synLFQ2)
 #'
 #' # run model
-#' BevertonHoltsZ(synLFQ2, catch_column = 2)
+#' Z_BevertonHolt(synLFQ2, catch_column = 2)
 #'
-#' # Age based model
+#' # based on age data
 #' # load data
 #' data(synCAA1)
 #'
 #' #run model
-#' BevertonHoltsZ(synCAA1, catch_column = 3)
+#' Z_BevertonHolt(synCAA1, catch_column = 3)
 #'
 #' \donttest{
-#'
+#' #_______________________________________________
+#' # Powell and Wetherall method
 #' # load data
 #' data(synLFQ3)
 #'
 #' # run model
-#' BevertonHoltsZ(synLFQ3,PowellWetherall = T)
+#' Z_BevertonHolt(synLFQ3, PowellWetherall = T)
 #' }
 #'
-#' @details PowellWetherall only works with length frequency data.
-#'    Lprime or tprime will be identified via the first length (or age) class inserted.
-#'    For variable parameter system vectors are reuqired for constant parameter systems
-#'    matrices or data.frames have to be inserted. or vectors The length converted
-#'    linearised catch curve is used to calculate the total mortality (Z). This function
-#'    includes a so called locator function, which asks you to choose points from a graph
-#'    manually. Based on these points the regression line is calculated.
+#' @details  The first length group or age class within the list object \strong{midLengths} or
+#'    \strong{age} will be used as the Lprim or tprime (length of recruitment to fishery).
+#'    In the case of the Powell and Wetherall method, this function includes a so called
+#'    'locator' function, which asks you to choose two points from a graph manually. The
+#'    two points which you choose by clicking on the plot in the graphical device represent
+#'    the start and end of the data points, which should be used for the analysis. Based
+#'    on these points the regression line is calculated. The Powell and Wetherall method
+#'    only works with length-frequency data.
+#'
 #'
 #' @references
 #' Beverton R.J.H and S.J. Holt, 1956. A review of methods of estimating mortality rates
@@ -66,11 +74,10 @@
 #'
 #' @export
 
-BevertonHoltsZ <- function(param, catch_column = NA, PowellWetherall = FALSE){
+Z_BevertonHolt <- function(param, catch_column = NA, PowellWetherall = FALSE){
 
   res <- param
-  if("catch_mat" %in% names(res)) catch <- res$catch_mat
-  if("catch" %in% names(res)) catch <- res$catch
+  catch <- res$catch
 
   if(class(catch) == "data.frame" | class(catch) == "matrix"){
     if(is.na(catch_column)) stop("Please provide a number indicating which column of the catch matrix should be analysed!")
@@ -177,14 +184,11 @@ BevertonHoltsZ <- function(param, catch_column = NA, PowellWetherall = FALSE){
       #final plot
       plot(x = Lprime,y = Lmean_Lprime,
            xlab = "Lprime", ylab = "Lmean- Lprime",
-           cex = 1.5)
+           cex = 1.5, main = "Powell-Wetherall plot")
       par(new=T)
       points(x = df.BH.cut$Lprime,y = df.BH.cut$Lmean_Lprime,
              pch = 19, col = 'blue', cex = 1.5)
       abline(a=intercept_lm1,b=slope_lm1,col="blue",lwd = 1.7)
-      #mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"±",
-      #                             round(SE_Z_lm1,2)), col = 'blue')
-
 
       #save all in list
       ret <- c(res,list(

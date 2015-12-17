@@ -13,6 +13,8 @@
 #'   \item \strong{CPUE} catch per unit of effort per year.
 #' }
 #'
+#' @keywords function biomass MSY stock
+#'
 #' @examples
 #' # load data
 #' data(trawl_fishery_Java)
