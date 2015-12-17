@@ -9,9 +9,9 @@
 #'
 #' @format A dataframe consisting of following columns:
 #' \itemize{
-#'   \item cohort Name of cohort, e.g. 1982 S, meaning summer cohort of 1982,
-#'   \item age Age of cohorts,
-#'   \item CPUE Catch per unit of effort of cohorts.
+#'   \item \strong{cohort}: name of cohort, e.g. 1982 S, meaning summer cohort of 1982,
+#'   \item \strong{age}: age of cohorts,
+#'   \item \strong{CPUE}: catch per unit of effort of cohorts.
 #' }
 #'
 #' @source Sparre, P., Venema, S.C., 1999. Introduction to tropical fish stock
@@ -19,7 +19,7 @@
 #'    94 p.
 #'
 #' @usage data(synCPUE)
-#' @keywords data dataset CPUE
+#' @keywords data CPUE
 #' @examples
 #' data(synCPUE)
 #' head(synCPUE)
