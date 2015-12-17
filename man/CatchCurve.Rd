@@ -10,12 +10,12 @@ catchCurve(param, catch_column = NA, cumulative = FALSE,
 \arguments{
 \item{param}{a list consisting of following parameters:
 \itemize{
-  \item \strong{age} or \strong{midLengths} midpoints of the length class as vector (length frequency
+  \item \strong{age} or \strong{midLengths}: midpoints of the length class as vector (length-frequency
   data) or ages as vector (age composition data),
-  \item \strong{Linf} Infinite length for investigated species in cm [cm],
-  \item \strong{K} Growth coefficent for investigated species per year [1/year],
-  \item \strong{t0} Theoretical time zero, at which individuals of this species hatch,
-  \item \strong{catch} Catch as vector, or a matrix with catches of subsequent years if
+  \item \strong{Linf}: infinite length for investigated species in cm [cm],
+  \item \strong{K}: growth coefficent for investigated species per year [1/year],
+  \item \strong{t0}: theoretical time zero, at which individuals of this species hatch,
+  \item \strong{catch}: catch as vector, or a matrix with catches of subsequent years if
   the catch curve with constat time intervals should be applied;
 }}
 
@@ -29,22 +29,30 @@ catch curve is applied (Jones and van Zalinge method)}
 calculated from the catch curve}
 }
 \description{
-This is a function to calculate the total mortality (Z) from length
-  composition data via the length converted catch curve or from age at length data
-  with catch curve. It has the option to estimate gear selectivity based on the catch curve.
+This is a function to calculate the total mortality (Z) from length-frequency
+  data via the linearized length converted catch curve or from age composition data
+  with the linearized catch curve. It has the option to use a cumulative approach for
+  estimating Z and further it allows to estimate gear selectivity.
 }
 \details{
-For variable parameter system vectors are reuqired for constant parameter
-  systems matrices or data.frames have to be inserted. or vectors The length converted
-  linearised catch curve is used to calculate the total mortality (Z). This function
-  includes a so called locator function, which asks you to choose points from a graph
-  manually. Based on these points the regression line is calculated. When selection ogive
+This function includes a so called 'locator' function, which asks you to
+  choose two points from a graph manually. The two points which you choose by clicking
+  on the plot in the graphical device represent the start and end of the data points,
+  which should be used for the analysis. Based on these points the regression line
+  is calculated.
+  When the selection ogive
   is calculated by means of the catch curve the assumption is made, that Z is constant
   for all year classes or length groups respectively. Accoring to Sparre and Venema
   (1998) this assumption might be true, because F is smaller for young fish
   (Selectivity) while M is higher for young fish (high natural mortality). The selectivity
   for not fully exploited old fish (e.g. due to gillnet fishery) can not be calculated yet
   by use of the catch curve.
+  Based on the format of the list argument "catch" the function automatically
+  distinguishes between the catch curve with variable parameter system (if catch is a
+  vector) and the one with constant parameter system (if catch is a matrix or a
+  data.frame). In the case of the variable parameter system the catches of one year are
+  assumed to represent the catches during the entire life span of a so called
+  pseudo-cohort.
 }
 \examples{
 \donttest{
@@ -98,10 +106,47 @@ catchCurve(synLFQ3, calc_ogive = TRUE)
 
 }
 \references{
+Baranov, F.I., 1926. On the question of the dynamics of the fishing industry.
+\emph{Nauchn. Byull. Rybn. Khoz}, 8(1925), 7-11
+
+Beverton, R.J.H. and S.J. Holt, 1956. A review of methods for estimating mortality
+rates in exploited fish populations, with special reference to sources of bias in
+catch sampling. \emph{Rapports et Proces verbaux des Réunions}, Conseil Table3
+
+Chapman, D., and D.S Robson, 1960. The analysis of a catch curve. \emph{Biometrics}, 354-368
+
+Edser, T., 1908. Note on the number of plaice at each length, in certain samples
+from the southern part of the North Sea, 1906. \emph{Journal of the Royal Statistical
+Society}, 686-690
+
+Heincke, F., 1913. Investigations on the plaice. General report. 1. The plaice fishery
+and protective regulations. Part I. \emph{Rapp.P.-v.Réun.CIEM}, 17A:1-153 + Annexes
+
+ICES, 1981. Report of the \emph{Ad hoc} working group on the use of effort data in
+assessment, Copenhagen, 2-6 March 1981. \emph{ICES C.M.} 1981/G:5 (mimeo)
+
+Jones, R., and N.P. Van Zalinge, 1981. Estimates of mortality rate and population size
+for shrimp in Kuwait waters. \emph{Kuwait Bull. Mar. Sci}, 2, 273-288
+
+Pauly, D., 1983. Length-converted catch curves: a powerful tool for fisheries research
+in the tropics (part I). \emph{ICLARM Fishbyte}, 1(2), 9-13
+
+Pauly, D., 1984. Length-converted catch curves: a powerful tool for fisheries
+research in the tropics (part II). \emph{ICLARM Fishbyte}, 2(1), 17-19
+
+Pauly, D., 1984. Length-converted catch curves: a powerful tool for fisheries
+research in the tropics (III: Conclusion). \emph{ICLARM Fishbyte}, 2(3), 9-10
+
+Ricker, W.E., 1987. Computation and interpretation of biological statistics of fish
+populations. \emph{Bull.Fish.Res.Board Can.}, (191):382 p.
+
+Robson, D.S., and D.G. Chapman, 1961. Catch curves and mortality rates.
+\emph{Trans.Am.Fish.Soc.}, 90(2):181-189
+
 Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 
-ICES, 1981. Report of the \emph{Ad hoc} working group on the use of effort data in
-assessment, Copenhagen, 2-6 March 1981. ICES C.M. 1981/G:5 (mimeo)
+Van Sickle, J. 1977. Mortality rates from size distributions: the application of a
+conservation law. \emph{Oecologia, Berl.}, 27(4):311-318
 }
 

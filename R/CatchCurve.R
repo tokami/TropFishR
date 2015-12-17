@@ -72,17 +72,25 @@
 #'
 #'  }
 #'
-#' @details For variable parameter system vectors are reuqired for constant parameter
-#'   systems matrices or data.frames have to be inserted. or vectors The length converted
-#'   linearised catch curve is used to calculate the total mortality (Z). This function
-#'   includes a so called locator function, which asks you to choose points from a graph
-#'   manually. Based on these points the regression line is calculated. When selection ogive
+#' @details This function includes a so called 'locator' function, which asks you to
+#'   choose two points from a graph manually. The two points which you choose by clicking
+#'   on the plot in the graphical device represent the start and end of the data points,
+#'   which should be used for the analysis. Based on these points the regression line
+#'   is calculated.
+#'   When the selection ogive
 #'   is calculated by means of the catch curve the assumption is made, that Z is constant
 #'   for all year classes or length groups respectively. Accoring to Sparre and Venema
 #'   (1998) this assumption might be true, because F is smaller for young fish
 #'   (Selectivity) while M is higher for young fish (high natural mortality). The selectivity
 #'   for not fully exploited old fish (e.g. due to gillnet fishery) can not be calculated yet
 #'   by use of the catch curve.
+#'   Based on the format of the list argument "catch" the function automatically
+#'   distinguishes between the catch curve with variable parameter system (if catch is a
+#'   vector) and the one with constant parameter system (if catch is a matrix or a
+#'   data.frame). In the case of the variable parameter system the catches of one year are
+#'   assumed to represent the catches during the entire life span of a so called
+#'   pseudo-cohort.
+#'
 #'
 #' @references
 #' Baranov, F.I., 1926. On the question of the dynamics of the fishing industry.
@@ -498,8 +506,7 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
         K <- res$K
         t0 <- ifelse("t0" %in% names(res),res$t0,0)
 
-        if(is.null(Linf) | is.null(K)) stop("You need to assign values to Linf and K for the Catch curve based on length frequency data!")
-
+        if(is.null(Linf) | is.null(K)) stop("You need to assign values to Linf and K for the cumulated catch curve based on length frequency data!")
 
         #calculate size class interval
         midLengths <- classes.num
@@ -568,16 +575,6 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE, calc_ogive 
       #    Aged based Catch curve    #
       #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
       if("age" %in% names(res) == TRUE){
-
-        #NECESSARY???
-        #       # delta t
-        #       dt <- NA
-        #       for(x1 in 1:(length(dt)-1)){
-        #         dt[x1] <- classes.num[x1+1] - classes.num[x1]
-        #       }
-        #
-        #       # (t + dt) / 2   ==   x
-        #       tplusdt_2 <- (classes.num + dt ) / 2
 
         tplusdt_2 <- classes.num
 

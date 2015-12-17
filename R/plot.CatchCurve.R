@@ -106,7 +106,7 @@ plot.catchCurve <- function(x,plot.selec = FALSE,...){
              x1=xplot[reg_int[1]],
              y1=yplot[reg_int[1]],
              col="blue",lwd = 1.7, lty = 2)
-    mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"+/-",
+    mtext(side = 3, line = 0.3,  text = paste("Z =",round(Z_lm1,2),"+/-",
                                  round(SE_Z_lm1,2)), col = 'blue')
 
     plot(pes$Sest ~ xplot, type ='o', xlab = xlabel,
