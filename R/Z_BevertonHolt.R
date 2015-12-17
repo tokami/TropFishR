@@ -56,6 +56,18 @@
 #'    on these points the regression line is calculated. The Powell and Wetherall method
 #'    only works with length-frequency data.
 #'
+#' @return A list with the input parameters and follwing objects:
+#' \itemize{
+#'   \item \strong{tmean} or \strong{Lmean}: mean age or length of fish,
+#'   \item \strong{tprime} or \strong{Lprime}: some age or length for which all fish of that length and
+#'      longer are under full exploitation,
+#'   \item \strong{Z}: total mortality;}
+#' and/or following objects when applying the Powell and Wetherall method:
+#' \itemize{
+#'   \item \strong{Lmean_Lprime}: dependent variable for regression analysis,
+#'   \item \strong{Linf_calc}: infinite length in [cm],
+#'   \item \strong{Z_K}: total mortality divided by K;
+#' }
 #'
 #' @references
 #' Beverton R.J.H and S.J. Holt, 1956. A review of methods of estimating mortality rates

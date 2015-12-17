@@ -99,8 +99,9 @@
 #'   \item \strong{lnC_dt}: rearranged catches,
 #'   \item \strong{reg_int}: the interval used for the regression analysis,
 #'   \item \strong{Z}: the total mortality,
-#'   \item \strong{se}: the standard error of the total mortality,
+#'   \item \strong{se}: the standard error of the total mortality;}
 #' in case of calc_ogive, additionally:
+#' \itemize{
 #'   \item \strong{intercept}: intercept of regression analysis,
 #'   \item \strong{Sobs}: observed selection curve,
 #'   \item \strong{ln_1_S_1}: dependent variable of regression analysis for selectivity parameters,
