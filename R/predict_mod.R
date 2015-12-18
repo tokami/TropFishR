@@ -1,4 +1,4 @@
-#' @title Prediction models: Thompson and Bell model
+#' @title Prediction models: YPR and Thompson and Bell model
 #
 #' @description  This is a function ...
 #'
@@ -12,26 +12,16 @@
 #'   \item \strong{catch}: catch as vector, or a matrix with catches of subsequent years if
 #'   the catch curve with constat time intervals should be applied;
 #' }
-#' @param FM_change Vector with ascending Fishing mortalities
+#' @param FM_change vector with ascending Fishing mortalities
+#' @param Lc_tc_change vector with ascending Lc values
+#' @param type indicating which model should applied: \code{"ypr"} for Beverton and Holt's
+#'   yield per recruit model and \code{"ThompBell"} for the Thompson and Bell model
 #'
 #' @keywords function prediction
 #'
-#' @examples
-#' # yield per recruit with age structured data
-#' # load data
-#' data(shrimps)
+#' @examples ...
 #'
-#' # run model
-#' predict_mod(shrimps,seq(0.1,3,0.1))
-#'
-#' # yield per recruit with length structured data
-#' # load data
-#' data(hake)
-#'
-#' # run model
-#' predict_mod(hake,seq(0.1,3,0.1))
-#'
-#' @details better to treat last group always as a plus group..... For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
+#' @details better to treat last group always as a plus group.....
 #'
 #' @return A list with the input parameters and following list objects:
 #' \itemize{
@@ -40,25 +30,173 @@
 #'   \item \strong{reg_int}: the,
 #'   \item \strong{Z}: the,
 #'   \item \strong{se}: the;}
-#' in case of calc_ogive, additionally:
-#' \itemize{
-#'   \item \strong{intercept}: intercep,
-#'   \item \strong{Sobs}: observed,
-#'   \item \strong{ln_1_S_1}: dependent,
-#'   \item \strong{Sest}: estimated,
-#'   \item \strong{t50}: age,
-#'   \item \strong{t75}: age,
-#'   \item \strong{L50}: length,
-#'   \item \strong{L75}: length;
 #' }
 #'
-#' @references example 1 : Kuwait (Garcia and van zalinge 1982)
-#'   Millar, R. B., & Holst, R. (1997). Estimation of gillnet and hook selectivity using log-linear models. ICES Journal of Marine Science: Journal du Conseil, 54(3), 471-477.
+#' @references
+#' example 1 : Kuwait (Garcia and van Zalinge 1982)
 #'
-#' @export
+#' Millar, R. B., & Holst, R. (1997). Estimation of gillnet and hook selectivity using
+#' log-linear models. ICES Journal of Marine Science: Journal du Conseil, 54(3):471-477
+#'
+#' #@export
 
-predict_mod <- function(param, FM_change){
+predict_mod <- function(param, FM_change, Lc_tc_change, type){
 
+
+  # Beverton and Holt's ypr
+#------------
+
+  res <- param
+  M <- res$M
+  K <- res$K
+  t0 <- ifelse(!is.null(res$t0),res$t0,0)
+  a <- ifelse(!is.null(res$a),res$a,NA)
+  b <- ifelse(!is.null(res$b),res$b,NA)
+
+  if(length(FM) == 1 & is.na(FM[1])){
+    FM <- seq(0,10,0.1)
+    print(noquote("No fishing mortality (FM) was provided, a default range of 0 to 10 is used."))
+  }
+
+  #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
+  #                        Age data                          #
+  #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
+  if("Winf" %in% names(res)){
+    Winf <- res$Winf
+    tr <- res$tr
+    tc <- tc_Lc
+    list_tc_runs <- list()
+    for(i in 1:length(tc)){
+      tci <- tc[i]
+
+      #Biomass per Recruit
+      S <- exp(-K * (tci - t0))
+      B_R <- exp(-M*(tci-tr)) * Winf *
+        ((1/(FM+M)) - ((3*S)/((M+FM)+K)) +
+           ((3*(S^2))/((M+FM)+(2*K))) - ((S^3)/((M+FM) + (3*K))))
+
+      #virgin biomass
+      Bv_R <- B_R[which(FM == 0)]
+      #biomass of exploited part of the cohort (biomass of fish older than tc)
+
+      #biomass in percetage of virgin biomass
+      B_R.percent <- round((B_R / Bv_R ) * 100, digits = 1)
+
+      #Yield per Recruit
+      Y_R <- B_R * FM
+
+      #relative yield per recruit - mostly done with length frequency data (exclusively?)
+      Y_R.rel <- Y_R * (exp(-M *(tr - t0))) / Winf
+
+
+      #mean age in annual yield
+      Ty <- (1 / (M+FM)) + tci
+
+      #mean length in the annual yield
+      #Ly <- Linf * (1 - (((M+FM)*S)/((M+FM)+K)))
+
+      #mean weight in annual yield
+      Wy <- (M+FM) * Winf *
+        ((1/(FM+M)) - ((3*S)/((M+FM)+K)) +
+           ((3*(S^2))/((M+FM)+(2*K))) - ((S^3)/((M+FM) + (3*K))))
+
+
+      results.PBH <- data.frame(FM = FM,
+                                Y_R = Y_R,
+                                Y_R.rel = Y_R.rel,
+                                B_R = B_R,
+                                B_R.percent = B_R.percent,
+                                Ty = Ty,
+                                Wy = Wy)
+
+
+      list_tc_runs[[i]] <- results.PBH
+
+    }
+    names(list_tc_runs) <- tc
+    ret <- list(res,
+                FM = FM,
+                tc = tc,
+                list_tc_runs = list_tc_runs)
+    class(ret) <- "ypr_mod"
+    # plot results
+    plot(ret)
+  }
+
+  #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
+  #                       Length data                        #
+  #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
+  if("Linf" %in% names(res)){
+    Linf <- res$Linf
+    Lr <- res$Lr
+    Lc <- tc_Lc
+    list_Lc_runs <- list()
+    for(i in 1:length(Lc)){
+      Lci <- Lc[i]
+
+      E <- FM/(FM + M)
+      # transform Linf in Winf #### CHECK!!
+      Winf <- a * (Linf ^ b)
+
+      #yiel per recurit for length data   # also possbile inputing option: F/K
+      S <- 1 - (Lci/Linf)  # == U  ##(U <- 1 - (Lci/Linf))
+      A <- ((Linf - Lci)/(Linf-Lr))^(M/K)
+      Y_R <- FM * A * Winf * ((1/(M+FM)) - (3*S)/((M+FM)+K) +
+                                (3*S^2)/((M+FM)+2*K) -
+                                (S^3)/((M+FM)+3*K))
+
+      #biomass per recruit for length data?
+      B_R <- Y_R / FM
+
+      #virgin biomass
+      Bv_R <- B_R[which(FM == 0)]
+      #biomass of exploited part of the cohort (biomass of fish older than tc)
+
+      #biomass in percetage of virgin biomass
+      B_R.percent <- round((B_R / Bv_R ) * 100, digits = 1)
+
+      #relative yield per recruit - mostly done with length frequency data (exclusively?)
+      m <- K/(M+FM)
+      Y_R.rel <- E * S^(M/K) * (1 - ((3*S)/(1+m)) +
+                                  ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
+
+      #mean length in the annual yield
+      Ly <- Linf * (1 - (((M+FM)*S)/((M+FM)+K)))
+
+      #mean weight in annual yield
+      # Wy <- (M+FM) * Winf *
+      #    ((1/(FM+M)) - ((3*S)/((M+FM)+K)) +
+      #       ((3*(S^2))/((M+FM)+(2*K))) - ((S^3)/((M+FM) + (3*K))))
+
+
+      results.PBH <- data.frame(FM = FM,
+                                Ly = Ly,
+                                E = E,
+                                Y_R = Y_R,
+                                Y_R.rel = Y_R.rel,
+                                B_R = B_R,
+                                B_R.pecent = B_R.percent)
+
+
+      list_Lc_runs[[i]] <- results.PBH
+
+    }
+    names(list_Lc_runs) <- Lc
+    ret <- list(res,
+                FM = FM,
+                Lc = Lc,
+                list_Lc_runs = list_Lc_runs
+    )
+    class(ret) <- "ypr_mod"
+
+    # plot results
+    plot(ret)
+  }
+#------------
+
+
+  # Thompson and Bell model
+#------------
   res <- param
   meanWeight <- res$meanWeight
   meanValue <- res$meanValue
@@ -73,10 +211,10 @@ predict_mod <- function(param, FM_change){
     nM <- mean(Z - FM,na.rm=T)
   }
 
-#   FM <- res$FM
-#   Z <- res$Z
-#   #natural Mortality
-#   nM <- mean(Z - FM,na.rm=T)
+  #   FM <- res$FM
+  #   Z <- res$Z
+  #   #natural Mortality
+  #   nM <- mean(Z - FM,na.rm=T)
 
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   #                        Age data                          #
@@ -113,8 +251,8 @@ predict_mod <- function(param, FM_change){
   max_bio <- round(max(pred_res_df$meanB,na.rm=TRUE),digits=0)
   dim_bio <- 10 ^ (nchar(max_bio)-1)
 
-#   max_val <- round(max(pred_res_df$tot.V,na.rm=TRUE),digits=0)
-#   dim_val <- 10 ^ (nchar(max_val)-1)
+  #   max_val <- round(max(pred_res_df$tot.V,na.rm=TRUE),digits=0)
+  #   dim_val <- 10 ^ (nchar(max_val)-1)
 
   op <- par(oma = c(1, 1, 1.5, 1),new=FALSE,mar = c(5, 4, 4, 6) + 0.3)
   plot(pred_res_df$Xfact,pred_res_df$tot.V, type ='o',ylab='Value',xlab='F-factor X',
@@ -143,5 +281,14 @@ predict_mod <- function(param, FM_change){
   res2 <- pred_res_df
   ret <- c(res,res2)
   return(ret)
-} ## problem of two cases: Tc and Co are given or Lc and Co. case dependent or different functions?
+#------------
+
+
+}
+
+
+
+
+
+## problem of two cases: Tc and Co are given or Lc and Co. case dependent or different functions?
 

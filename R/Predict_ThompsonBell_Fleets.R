@@ -44,7 +44,7 @@
 #' @references example 1 : Kuwait (Garcia and van zalinge 1982)
 #'   Millar, R. B., & Holst, R. (1997). Estimation of gillnet and hook selectivity using log-linear models. ICES Journal of Marine Science: Journal du Conseil, 54(3), 471-477.
 #'
-#' @export
+#' #@export
 
 Predict_ThompsonBell_Fleets <- function(param, FM_change,fleet_mat, fleet_unit,
                                         fleet_FM_change,fleet_plot_name = NA,

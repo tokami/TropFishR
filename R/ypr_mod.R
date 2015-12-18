@@ -39,12 +39,10 @@
 #' swordfish <- list(Linf = 309, K = 0.0949, M = 0.18, a=0.0003, b=3, Lr = 90)  ## T_Lr , a, b ??? assumed
 #'
 #' # run model
-#' ypr_mod(tc_Lc = c(100,118,150,180))
+#' ypr_mod(swordfish, tc_Lc = c(100,118,150,180))
 #'
 #'
-#'
-#'
-#' ####test: E <- seq(0,0.9,0.1) FM <- E * M / (1 -E)
+#' ####test: E <- seq(0,0.9,0.1) FM <- E * M / (1 - E)
 #'
 #' @details ...
 #'
@@ -68,19 +66,18 @@
 #'
 #' @export
 
-param = threadfin
-
-
 ypr_mod <- function(param, tc_Lc, FM = NA){
 
   res <- param
   M <- res$M
   K <- res$K
   t0 <- ifelse(!is.null(res$t0),res$t0,0)
+  a <- ifelse(!is.null(res$a),res$a,NA)
+  b <- ifelse(!is.null(res$b),res$b,NA)
 
   if(length(FM) == 1 & is.na(FM[1])){
     FM <- seq(0,10,0.1)
-    warning("No fishing mortality (FM) was provided, a default range of 0 to 10 is used.")
+    print(noquote("No fishing mortality (FM) was provided, a default range of 0 to 10 is used."))
   }
 
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
@@ -139,7 +136,10 @@ ypr_mod <- function(param, tc_Lc, FM = NA){
 
     }
     names(list_tc_runs) <- tc
-    ret <- list_tc_runs
+    ret <- list(res,
+                FM = FM,
+                tc = tc,
+                list_tc_runs = list_tc_runs)
     class(ret) <- "ypr_mod"
     # plot results
     plot(ret)
@@ -154,7 +154,6 @@ ypr_mod <- function(param, tc_Lc, FM = NA){
     Lc <- tc_Lc
     list_Lc_runs <- list()
     for(i in 1:length(Lc)){
-
       Lci <- Lc[i]
 
       E <- FM/(FM + M)
@@ -163,8 +162,8 @@ ypr_mod <- function(param, tc_Lc, FM = NA){
 
       #yiel per recurit for length data   # also possbile inputing option: F/K
       S <- 1 - (Lci/Linf)  # == U  ##(U <- 1 - (Lci/Linf))
-      A.PBH <- ((Linf - Lci)/(Linf-Lr))^(M/K)
-      Y_R <- FM * A.PBH * Winf * ((1/(M+FM)) - (3*S)/((M+FM)+K) +
+      A <- ((Linf - Lci)/(Linf-Lr))^(M/K)
+      Y_R <- FM * A * Winf * ((1/(M+FM)) - (3*S)/((M+FM)+K) +
                                            (3*S^2)/((M+FM)+2*K) -
                                            (S^3)/((M+FM)+3*K))
 
@@ -196,7 +195,7 @@ ypr_mod <- function(param, tc_Lc, FM = NA){
                                 Ly = Ly,
                                 E = E,
                                 Y_R = Y_R,
-                                Y_R.rel = Y_R.PBH.rel,
+                                Y_R.rel = Y_R.rel,
                                 B_R = B_R,
                                 B_R.pecent = B_R.percent)
 
@@ -205,7 +204,11 @@ ypr_mod <- function(param, tc_Lc, FM = NA){
 
     }
     names(list_Lc_runs) <- Lc
-    ret <- list_Lc_runs
+    ret <- list(res,
+                FM = FM,
+                Lc = Lc,
+                list_Lc_runs = list_Lc_runs
+                )
     class(ret) <- "ypr_mod"
 
     # plot results
