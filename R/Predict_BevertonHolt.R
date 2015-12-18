@@ -1,8 +1,6 @@
-#' @title Beverton and Holt's prediction model
+#' @title Prediction models: Beverton and Holt's yield per recruit model
 #
-#' @description  This is a function to calculate the total mortality (Z) from
-#'    length composition data via the length converted catch curve or from age at
-#'    length data with catch curve.
+#' @description  This is a function ..
 #'
 #' @param datatype Type of data which is used for analysis, either 'length' or 'age', for length frequency or age composition data, respectively
 #' @param W_Linf Infinite length (or weight) for investigated species in cm [cm] or gramm [g].
@@ -14,22 +12,24 @@
 #' @param FM  fishing mortlality Default FM = NA
 #' @param a length weight relationship coefficient 1 Default = NA
 #' @param b length weight relationship coefficient 2 Default = NA
-
+#'
+#' @keywords function prediction yield-per-recruit
+#'
 #' @examples
 #' # age structured data
 #' # example 1 - Nemipterus marginatus
-#' Predict_BevertonHolt(K = 0.37,M = 1.1,T_Lc = seq(0.2,1,0.2),
+#' ypr_mod(K = 0.37,M = 1.1,T_Lc = seq(0.2,1,0.2),
 #'    T_Lr = 0.4,t0 = -0.2,W_Linf = 286,FM = seq(0,6,0.1),datatype = 'age')
 #' #where it is maximal  = MSY
 #'
 #'
 #' # example 2 - Leiognathus spendens (Pauly 1980)
-#' Predict_BevertonHolt(W_Linf = 64,K = 1,t0 = -0.2,T_Lr = 0.2,M = 1.8,
+#' ypr_mod(W_Linf = 64,K = 1,t0 = -0.2,T_Lr = 0.2,M = 1.8,
 #'    T_Lc = c(0.2,0.3,1.0),datatype = 'age')
 #'
 #' # length structured data
 #' # Xiphias gladius (Berkeley and Houde 1980)
-#' Predict_BevertonHolt(W_Linf = 309,K = 0.0949,M = 0.18,
+#' ypr_mod(W_Linf = 309,K = 0.0949,M = 0.18,
 #'    T_Lc = c(100,118,150,180),T_Lr = 90 ,datatype = 'length',a=0.0003,b=3)
 #' ## T_Lr , a, b ??? assumed
 #'
@@ -37,12 +37,33 @@
 #'
 #' @details For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 #'
-#' @references xxx
+#' @return A list with the input parameters and following list objects:
+#' \itemize{
+#'   \item \strong{tplusdt_2} or \strong{t_midL}: relative,
+#'   \item \strong{lnC_dt}: rearranged,
+#'   \item \strong{reg_int}: the,
+#'   \item \strong{Z}: the,
+#'   \item \strong{se}: the;}
+#' in case of calc_ogive, additionally:
+#' \itemize{
+#'   \item \strong{intercept}: intercep,
+#'   \item \strong{Sobs}: observed,
+#'   \item \strong{ln_1_S_1}: dependent,
+#'   \item \strong{Sest}: estimated,
+#'   \item \strong{t50}: age,
+#'   \item \strong{t75}: age,
+#'   \item \strong{L50}: length,
+#'   \item \strong{L75}: length;
+#' }
+#'
+#' @references
+#' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+#' Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 #'
 #'
 #' @export
 
-Predict_BevertonHolt <- function(W_Linf, K, M, T_Lr, T_Lc, t0 = NA,
+ypr_mod <- function(W_Linf, K, M, T_Lr, T_Lc, t0 = NA,
                                   FM = NA, datatype, a=NA, b=NA){
 
   F_PBH <- FM

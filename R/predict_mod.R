@@ -1,23 +1,28 @@
 #' @title Prediction models: Thompson and Bell model
 #
-#' @description  This is a function to calculate the total mortality (Z) from
-#'    length composition data via the length converted catch curve or from age at
-#'    length data with catch curve.
+#' @description  This is a function ...
 #'
-#' @param param A list containing all information
+#' @param param a list consisting of following parameters:
+#' \itemize{
+#'   \item \strong{age} or \strong{midLengths}: midpoints of the length class as vector (length-frequency
+#'   data) or ages as vector (age composition data),
+#'   \item \strong{Linf}: infinite length for investigated species in cm [cm],
+#'   \item \strong{K}: growth coefficent for investigated species per year [1/year],
+#'   \item \strong{t0}: theoretical time zero, at which individuals of this species hatch,
+#'   \item \strong{catch}: catch as vector, or a matrix with catches of subsequent years if
+#'   the catch curve with constat time intervals should be applied;
+#' }
 #' @param FM_change Vector with ascending Fishing mortalities
 #'
-#' @examples
+#' @keywords function prediction
 #'
+#' @examples
 #' # yield per recruit with age structured data
 #' # load data
 #' data(shrimps)
 #'
 #' # run model
-#' output <- predict_mod(shrimps,seq(0.1,3,0.1))
-#'
-#' # investigate results
-#' output
+#' predict_mod(shrimps,seq(0.1,3,0.1))
 #'
 #' # yield per recruit with length structured data
 #' # load data
@@ -27,6 +32,25 @@
 #' predict_mod(hake,seq(0.1,3,0.1))
 #'
 #' @details better to treat last group always as a plus group..... For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
+#'
+#' @return A list with the input parameters and following list objects:
+#' \itemize{
+#'   \item \strong{tplusdt_2} or \strong{t_midL}: relative,
+#'   \item \strong{lnC_dt}: rearranged,
+#'   \item \strong{reg_int}: the,
+#'   \item \strong{Z}: the,
+#'   \item \strong{se}: the;}
+#' in case of calc_ogive, additionally:
+#' \itemize{
+#'   \item \strong{intercept}: intercep,
+#'   \item \strong{Sobs}: observed,
+#'   \item \strong{ln_1_S_1}: dependent,
+#'   \item \strong{Sest}: estimated,
+#'   \item \strong{t50}: age,
+#'   \item \strong{t75}: age,
+#'   \item \strong{L50}: length,
+#'   \item \strong{L75}: length;
+#' }
 #'
 #' @references example 1 : Kuwait (Garcia and van zalinge 1982)
 #'   Millar, R. B., & Holst, R. (1997). Estimation of gillnet and hook selectivity using log-linear models. ICES Journal of Marine Science: Journal du Conseil, 54(3), 471-477.

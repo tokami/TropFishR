@@ -1,17 +1,28 @@
-#' @title Prediction models: Thompson and Bell
+#' @title Simulating stock
 #
-#' @description  This is a function...
+#' @description  This function estimates stock size, biomass and the yield of a stock from
+#'    the fishing mortality per age class or length group. It is function is embedded in the
+#'    Thompson and Bell model (prediction model: \code{\link{predict_mod}}).
 #'
-#' @param param A list containing all information
-#' @param unit.time Indicates if the age groups are per month (\code{"month"}) or per year (\code{"year"}). Default: \code{"year"}
+#' @param param a list consisting of following parameters:
+#' \itemize{
+#'   \item \strong{age} or \strong{midLengths}: midpoints of the length class as vector (length-frequency
+#'   data) or ages as vector (age composition data),
+#'   \item \strong{meanWeight}: mean weight in kg per age class or length group,
+#'   \item \strong{meanValue}: mean value per kg fish per age class or length group,
+#'   \item \strong{FM}: fishing mortality rates per age class or length group,
+#'   \item \strong{M} or \strong{Z}: the natural or total mortality rate;
+#' }
+#' @param unit.time indicates if the age groups are per month (\code{"month"}) or
+#'    per year (\code{"year"}). Default: \code{"year"}
 #' @param stock_size_1 Stock size of smallest age/length group
-#' @param plus.group Indicates age/length group, which should be turned into a plus group (i.e. all groups above are comprised in one group)
+#' @param plus.group indicates age/length group, which should be turned into a plus
+#'    group (i.e. all groups above are comprised in one group)
 #'
-#' @keywords function prediction yield-per-recruit
+#' @keywords function prediction
 #'
 #' @examples
-#'
-#' # age-based yield per recruit model
+#' # age-based stock simulation
 #' # load data
 #' data(shrimps)
 #'
@@ -20,34 +31,33 @@
 #' stock_sim(shrimps)
 #'
 #' # option 2: with plus group
-#' stock_sim(shrimps,plus.group=11)
+#' stock_sim(shrimps, plus.group = 11)
 #'
-#' # length-based yield per recruit model
+#' # length-based stock simulation
 #' # load data
 #' data(hake)
 #'
 #' # run model
 #' stock_sim(param = hake, stock_size_1 = 98919.3)
 #'
-#' @details better to treat last group always as a plus group..... For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
+#' @details better to treat last group always as a plus group...
 #'
 #' @return A list with the input parameters and following list objects:
 #' \itemize{
-#'   \item \strong{tplusdt_2} or \strong{t_midL}: relative,
-#'   \item \strong{lnC_dt}: rearranged,
-#'   \item \strong{reg_int}: the,
-#'   \item \strong{Z}: the,
-#'   \item \strong{se}: the;}
-#' in case of calc_ogive, additionally:
-#' \itemize{
-#'   \item \strong{intercept}: intercep,
-#'   \item \strong{Sobs}: observed,
-#'   \item \strong{ln_1_S_1}: dependent,
-#'   \item \strong{Sest}: estimated,
-#'   \item \strong{t50}: age,
-#'   \item \strong{t75}: age,
-#'   \item \strong{L50}: length,
-#'   \item \strong{L75}: length;
+#'   \item \strong{dt}: delta t,
+#'   \item \strong{N}: population numbers,
+#'   \item \strong{dead}: number of deaths due to natural mortality,
+#'   \item \strong{C}: catch,
+#'   \item \strong{Y}: yield,
+#'   \item \strong{B}: biomass,
+#'   \item \strong{V}: value,
+#'   \item \strong{totals}: total values:
+#'   \itemize{
+#'   \item \strong{tot.C} total catch,
+#'   \item \strong{tot.Y} total yield,
+#'   \item \strong{tot.V} total value,
+#'   \item \strong{meanB} mean biomass;
+#'   },
 #' }
 #'
 #' @references
@@ -64,7 +74,6 @@
 stock_sim <- function(param, unit.time = "year",
                                  stock_size_1 = NA, plus.group = NA){
 
-
   res <- param
   meanWeight <- res$meanWeight
   meanValue <- res$meanValue
@@ -78,9 +87,6 @@ stock_sim <- function(param, unit.time = "year",
     Z <- res$Z
     nM <- mean(Z - FM,na.rm=T)
   }
-  #ifelse(is.null(res$M),nM <- mean(Z - FM,na.rm=T),nM <- res$M)
-  #ifelse(is.null(res$Z),Z <- FM + nM,Z <- res$Z)
-
 
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   #                        Age data                          #
@@ -291,5 +297,6 @@ stock_sim <- function(param, unit.time = "year",
     return(ret)
 
   }
-} ## problem of two cases: Tc and Co are given or Lc and Co. case dependent or different functions?
+
+}
 
