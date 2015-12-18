@@ -22,9 +22,9 @@
 #'
 #' @export
 
-M_RikhterEfanov <- function(Tm50){
+M_RikhterEfanov <- function(tm50){
 
-  M <- 1.521 / ( Tm50 ^ 0.720) - 0.155
+  M <- 1.521 / ( tm50 ^ 0.720) - 0.155
 
   return(M)
 }
