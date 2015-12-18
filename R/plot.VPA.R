@@ -42,7 +42,7 @@ plot.VPA <- function(x,...){
   par(mar = c(5, 4, 4, 4) + 0.3)
   barplot(df.VPAnew,col=c('darkgreen','purple','yellow'),
           xlab = xlabel, ylab = "Population",xlim=c(0,ceiling(max(mids))),
-          ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur))#, ...)
+          ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur), ...)
   legend(x = mids[(which(classes.num == max_clas)-(length(classes.num)/4))],
          y = ceiling(max_sur/dim_sur)*dim_sur,
          legend = c(rownames(df.VPAnew),"Fishing mortality"),

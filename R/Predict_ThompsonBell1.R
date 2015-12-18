@@ -1,8 +1,6 @@
 #' @title Thompson and Bell prediction model
 #
-#' @description  This is a function to calculate the total mortality (Z) from
-#'    length composition data via the length converted catch curve or from age at
-#'    length data with catch curve.
+#' @description  This is a function...
 #'
 #' @param param A list containing all information
 #' @param unit.time Indicates if the age groups are per month (\code{"month"}) or per year (\code{"year"}). Default: \code{"year"}
@@ -27,10 +25,7 @@
 #' data(hake)
 #'
 #' # run model
-#' output <- Predict_ThompsonBell1(param = hake, stock_size_1 = 98919.3)
-#'
-#' # investigate results
-#' output
+#' Predict_ThompsonBell1(param = hake, stock_size_1 = 98919.3)
 #'
 #' @details better to treat last group always as a plus group..... For variable parameter system vectors are reuqired for constant parameter systems matrices or data.frames have to be inserted. or vectors The length converted linearised catch curve is used to calculate the total mortality (Z). This function includes a so called locator function, which asks you to choose points from a graph manually. Based on these points the regression line is calculated.
 #'

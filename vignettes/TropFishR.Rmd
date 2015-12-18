@@ -9,20 +9,20 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-This vignette describes the functions of the package "TropFishR" in detail, puts them into context and explains strenghts and shortcomings. 
-The package TropFishR is a compilation of fish stock assessment methods and models listed in the FAO Technical Manual "Introduction into tropical fish stock assessment" by Sparre and Venema (1998) and its exercise book (Sparre & Venema 1999).
+This vignette describes the background and application of the functions of the package "TropFishR".
+The package TropFishR is a compilation of fish stock assessment methods and models listed in the FAO Technical Manual "Introduction into tropical fish stock assessment" by Sparre and Venema (1998) and exercise book (Sparre & Venema 1999).
 
 
 
 ## Contents
 
-1. Growth parameters
+1. Estimation of growth parameters
 
     * `Bhattacharya.R`
     
     * `ELEFAN.R`
 
-1. Mortality parameters
+1. Estimation of mortality rates
 
     * `Z_CPUE.R`
    
@@ -34,7 +34,7 @@ The package TropFishR is a compilation of fish stock assessment methods and mode
    
     * `M_RikhterEfanov.R`
    
-1. Virtual population dynamics
+1. Virtual population methods
 
     * `VPA.R`
 
@@ -60,7 +60,7 @@ The package TropFishR is a compilation of fish stock assessment methods and mode
     
     * `Predict_ThompsonBell_FM_Lc.R`
 
-1. Surplus production models
+1. Estimation of maximum sustainable yield using surplus production models
 
     * `prod_mod.R`
     
@@ -69,18 +69,18 @@ The package TropFishR is a compilation of fish stock assessment methods and mode
 
 
 
-## 1. Growth parameters (Chapter 3)
+## 1. Estimation of growth parameters (Chapter 3)
 
 ### Bhattacharya method
 
-Bhattacharya method to distinguish and seperate cohorts from a length-frequency distribution.
+Bhattacharya method to distinguish and seperate cohorts from a length-frequency distribution. Refers to Chapter 3.4
 
 ### ELEFAN
 
 Electronic LEngth Frequency ANalysis to estimate growth parameters from length-frequency data. Refers to chapter 3.5.1. 
 
 
-## 2. Mortality parameters (Chapter 4)
+## 2. Estimation of mortality rates (Chapter 4)
 
 
 ### Total mortality
@@ -116,7 +116,7 @@ Chapter 4.7.3
 
 ` F = Z - M `
 
-## 3. Virtual population dynamics (Chapter 5)
+## 3. Virtual population methods (Chapter 5)
 
 Chapter 5.
 
@@ -131,6 +131,7 @@ Chapters 6.1 to 6.4
 ### Millar's selectivity functions
 
 Not included in the manual by Sparre and Venema (1998).
+code adopted from Millar and Holst (1997)
 
 
 ## 5. Prediction models  (Chapter 8)
@@ -143,9 +144,9 @@ Chapter 8.2 to 8.5
 
 Chapter 8.6 to 8.8
 
-## 6. Surplus production models (Chapter 9)
+## 6. Estimation of maximum sustainable yield using surplus production models (Chapter 9)
 
-### Equilibrium production model
+### Equilibrium production models
 
 Chapter 9.1
 
@@ -153,18 +154,30 @@ Schaefer model assuming Bmsy  = K/2
 
 Fox model assuming Bmsy = 0.37*K
 
-### Non-equilibrium production model
+### Non-equilibrium production models
 
 Not included in the manual by Sparre and Venema (1998).
-
+code adopted from Dharmendra and Sólmundsson (2005), more theory in Hilborn and Walters (1992).
 
 
 
 ## References
 
+Dharmendra, D., Sólmundsson, J., 2005. Stock assessment of the offshore Mauritian banks
+using dynamic biomass models and analysis of length frequency of the Sky Emperor
+(\emph{Lethrinus mahsena}). Fisheries Training Program The United Nations University, 61
+
+Hilborn, R. and Walters, C., 1992. Quantitative Fisheries Stock Assessment: Choice,
+Dynamics and Uncertainty. Chapman and Hall, New York
+
+Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
+using log-linear models. ICES Journal of Marine Science: Journal du Conseil,
+54(3):471-477
+
 Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment. Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2): 407 
 
 Sparre, P., Venema, S.C., 1999. Introduction to tropical fish stock assessment. Part 2. Excercises. \emph{FAO Fisheries Technical Paper}, (306.2, Rev. 2). 94 p.
+
 
 
 

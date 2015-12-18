@@ -74,7 +74,8 @@
 #'
 #' @references
 #'  Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
-#'  using log-linear models. ICES Journal of Marine Science: Journal du Conseil, 54(3), 471-477.
+#'  using log-linear models. ICES Journal of Marine Science: Journal du Conseil,
+#'  54(3):471-477
 #'
 #'  Holt, S. J. 1963. A method for determining gear selectivity and its application.
 #'  ICNAF Special Publication, 5: 106-115.
