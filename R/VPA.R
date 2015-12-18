@@ -14,9 +14,11 @@
 #'   \item \strong{M}: natural mortality [1/year],
 #'   \item \strong{a}: length-weight relationship coefficent (W = a * L^b),
 #'   \item \strong{b}: length-weight relationship coefficent (W = a * L^b),
-#'   \item \strong{catch}: catch as vector, or a matrix with catches of subsequent years;
+#'   \item \strong{catch}: catch as vector for pseudo cohort analysis,
+#'      or a matrix with catches of subsequent years to follow a real cohort;
 #' }
-#' @param terminalF a fishing mortality value which is used as the terminal FM for the last age/length group.
+#' @param terminalF a fishing mortality value which is used as the terminal FM for the
+#'   last age/length group.
 #' @param analysis.type determines which type of assessment should be done,
 #'   options: "VPA" for classical age-based VPA, "CA" for age- or length-based
 #'   Cohort analysis
@@ -24,10 +26,26 @@
 #'   catch does spatially or temporarily not reflect catch for fishing ground of
 #'   a whole year.
 #' @param algorithm an Algorithm to use to solve for fishing mortality. The default
-#'   setting \code{algorithm="new"} uses \code{\link[stats]{optimize}},
-#'   while \code{algorithm="old"} uses the algorithm described by Sparre and Venema (1998).
+#'   setting \code{"new"} uses \code{\link[stats]{optimize}},
+#'   while \code{"old"} uses the algorithm described by Sparre and Venema (1998).
 #'
-#' @details VPA and Cohort analyses
+#' @details The main difference between virtual population analysis (VPA) and cohort
+#'    analysis (CA) is the step of calculating the fishing mortality per age class or
+#'    length group. While CA works with an approximation by assuming that all fish are
+#'    caught during a single day, which makes the calcualtion easier, VPA assumes that
+#'    the fish are caught continuously, which has to be solved by the trial and error
+#'    method (Sparre adn Venema, 1998).
+#'    The catch has to be representative for fished species, that means there should not be
+#'    other fisheries fishing the same stock. If this is the case \code{catch_corFac} can
+#'    be used as a raising factor to account for the proportion of fish caught by otehr
+#'    fisheries.
+#'    When the model should follow a real cohort instead of a pseudo cohort, \code{catch}
+#'    has to be provided as matrix. The model then starts to follow the first age class
+#'    in the first column.
+#'    If \code{catch} matrix is shorter than the number of age classes, the catch
+#'    information for the last age classes is missing, which bias the calculation. Choose
+#'    to follow a real cohort just if you have enough information for all age classes
+#'    (\code{dim(catch)[1] <= dim(catch)[2]}).
 #'
 #' @keywords function mortality F stock biomass cohort
 #'
@@ -116,7 +134,7 @@ VPA <- function(param, terminalF, analysis.type, catch_corFac = NA, algorithm="n
 
     if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
       #find cohort to analyse
-      real.cohort <- diag(as.matrix(catch))      ##CHECK!!! TAKES ALWAYS THE FIRST OBSERVATION IN FIRST COLUMN TO START FINDING REAL COHORT
+      real.cohort <- diag(as.matrix(catch))
       catch.cohort <- c(real.cohort,
                         rep(NA,length(classes.num) - length(real.cohort)))
     }
@@ -132,7 +150,7 @@ VPA <- function(param, terminalF, analysis.type, catch_corFac = NA, algorithm="n
     survivors <- rep(NA,length(classes.num))
 
     # survivors last size class
-    lastLengthClass <- max(which(!is.na(catch_cor)),na.rm=TRUE)  ### CHECK!!!!: EXCLUDES THE LAST CLASSES WHICH ARE NA IN CATCH DUE TO TOO LESS YEARS SAMPLED!
+    lastLengthClass <- max(which(!is.na(catch_cor)),na.rm=TRUE)  ###
     survivors[lastLengthClass] <-
       catch_cor[lastLengthClass] / ((terminalF/(terminalF + M)) * (1 - exp(-(terminalF + M))))
 
@@ -156,7 +174,6 @@ VPA <- function(param, terminalF, analysis.type, catch_corFac = NA, algorithm="n
     # Traditional VPA
     if(analysis.type == "VPA"){
       #other survivors and fishing mortality
-      ###IMPROVABLE BY MAKING THE STEP CHOOSABLE, MEANING THE USER CAN CHOOSE THE RESOLUTION
       FM_calc <- rep(NA,length(classes.num))
       FM_calc[lastLengthClass] <- terminalF
 
