@@ -15,7 +15,7 @@
 #'
 #' @export
 
-plot.predict_mod <- function(x,...){
+plot.predict_mod <- function(x, xaxis1 = "FM", yaxis1 = "Y_R", yaxis2 = "B_R",...){
   pes <- x
 
   #THOMPBELL
@@ -92,41 +92,118 @@ plot.predict_mod <- function(x,...){
     if("list_tc_runs" %in% names(pes)) list_tc_Lc_runs <- pes$list_tc_runs
     if("list_Lc_runs" %in% names(pes)) list_tc_Lc_runs <- pes$list_Lc_runs
 
+    p.yield <- yaxis1
+    p.FE <- xaxis1
+    p.B <- yaxis2
+    xlabel1 <- ifelse(xaxis1 == "FM", "Fishing mortality", "Exploitation rate")
+    ylabel1 <- ifelse(yaxis1 == "Y_R", "Y/R", "rel. Y/R")
+    ylabel2 <- ifelse(yaxis2 == "B_R", "B/R", "B/R [%]")
+
+    df_Es <- pes$df_Es
+    if(xaxis1 == "FM"){
+      N01 <- df_Es$F01
+      N05 <- df_Es$F05
+      Nmax <- df_Es$Fmax
+      legend.lab <- c("F0.1","F0.5","Fmax")
+    }else{
+      N01 <- df_Es$E01
+      N05 <- df_Es$E05
+      Nmax <- df_Es$Emax
+      legend.lab <- c("E0.1","E0.5","Emax")
+    }
+
     #Plot
     op <- par(mfrow=c(1,1),new=F, mar = c(5, 4, 4, 4) + 0.3)
 
     #plot Y/R & B/R
     label <- ifelse("tc" %in% names(pes), "tc", "Lc")
     tc_Lc_start <- which(tc_Lc == max(tc_Lc,na.rm=T))
-    offset_text <- list_tc_Lc_runs[[tc_Lc_start]]$Y_R[length(list_tc_Lc_runs[[tc_Lc_start]]$Y_R)] *
+    p.dat <- list_tc_Lc_runs[[tc_Lc_start]]
+    py <- p.dat[,which(names(p.dat) == p.yield)]
+    px <- p.dat[,which(names(p.dat) == p.FE)]
+    offset_text <- py[length(py)] *
       0.02
-    plot(list_tc_Lc_runs[[tc_Lc_start]]$FM, list_tc_Lc_runs[[tc_Lc_start]]$Y_R, type = 'l',
-         ylab = "Y/R", xlab = "F",lty=tc_Lc_start,...)
-    text(x = list_tc_Lc_runs[[tc_Lc_start]]$FM[length(list_tc_Lc_runs[[tc_Lc_start]]$FM)],
-         y = (list_tc_Lc_runs[[tc_Lc_start]]$Y_R[length(list_tc_Lc_runs[[tc_Lc_start]]$Y_R)] +
+
+    plot(px, py, type = 'l',
+         ylab = ylabel1, xlab = xlabel1, lty=tc_Lc_start)  #,...
+    text(x = px[length(px)],
+         y = (py[length(py)] +
                 offset_text),
          labels = bquote(.(label)[.(names(list_tc_Lc_runs)[tc_Lc_start])]))
     seq_tc_Lc <- 1:length(list_tc_Lc_runs)
     seq_tc_Lc <- seq_tc_Lc[-tc_Lc_start]
     for(j in seq_tc_Lc){
-      lines(list_tc_Lc_runs[[j]]$FM, list_tc_Lc_runs[[j]]$Y_R, type = 'l',
-            ylab = "Y/R", xlab = "F",lty = j)
-      text(x = list_tc_Lc_runs[[j]]$FM[length(list_tc_Lc_runs[[j]]$FM)],
-           y = (list_tc_Lc_runs[[j]]$Y_R[length(list_tc_Lc_runs[[j]]$Y_R)] +
+      p.dat <- list_tc_Lc_runs[[j]]
+      py <- p.dat[,which(names(p.dat) == p.yield)]
+      px <- p.dat[,which(names(p.dat) == p.FE)]
+
+      lines(px, py, type = 'l',
+            ylab = ylabel1, xlab = xlabel1,lty = j)
+      text(x = px[length(px)],
+           y = (py[length(py)] +
                   offset_text),
            labels = bquote(.(label)[.(names(list_tc_Lc_runs)[j])]))
     } # only works with plotting whole graph if values are not getting bigger right? because otherwise graphs is not insed plotting area
+    # reference points
+    if(length(N01) == 1){
+      p.dat <- list_tc_Lc_runs[[tc_Lc_start]]
+      py <- p.dat[,which(names(p.dat) == p.yield)]
+      px <- p.dat[,which(names(p.dat) == p.FE)]
+      # F or  E 0.1
+      segments(x0 = -1, x1 = N01, y0 = py[which(px == N01)], y1 = py[which(px == N01)],
+               col= 'darkgreen',lty = 2, lwd=1.5)
+      segments(x0 = N01, x1 = N01, y0 = -1, y1 = py[which(px == N01)],
+               col= 'darkgreen',lty = 2, lwd=1.5)
+      # F or E max
+      segments(x0 = -1, x1 = Nmax, y0 = py[which(px == Nmax)], y1 = py[which(px == Nmax)],
+               col= 'goldenrod1',lty = 2, lwd=1.5)
+      segments(x0 = Nmax, x1 = Nmax, y0 = -1, y1 = py[which(px == Nmax)],
+               col= 'goldenrod1',lty = 2, lwd=1.5)
+    }
+    # current Exploitation rate or fishing mortality
+    currents <- pes$currents
+    if(!is.na(currents$curr.E)){
+      px <- ifelse(p.FE == "FM",currents$curr.F, currents$curr.E)
+      py <- ifelse(p.yield == "Y_R",currents$curr.YPR,currents$curr.YPR.rel)
+      points(px,py, pch = 16)
+    }
+    # Legend
+    legend("top", legend = legend.lab, xpd = TRUE, horiz = TRUE,
+           inset = c(0,0), bty = "n", lty = 2, col = c("darkgreen","red","goldenrod1"),
+           seg.len = 1,pt.cex = 2, x.intersp = c(0.7,0.7,0.7),merge=TRUE,
+           y.intersp = -2, box.lty=0,cex=0.8, lwd =2)
+    # Biomass per recruit
     par(new=T)
-    plot(list_tc_Lc_runs[[1]]$FM, list_tc_Lc_runs[[1]]$B_R, type = 'l',
+    px <- list_tc_Lc_runs[[1]][,which(names(list_tc_Lc_runs[[1]]) == p.FE)]
+    py <- list_tc_Lc_runs[[1]][,which(names(list_tc_Lc_runs[[1]]) == p.B)]
+    plot(px, py, type = 'l',
          axes = F, ylab = '', xlab ='', lty = tc_Lc_start,
          col = 'blue')
-    axis(side = 4, at = pretty(range(list_tc_Lc_runs[[1]]$B_R)), col = 'blue',
+    axis(side = 4, at = pretty(range(py, na.rm= TRUE)), col = 'blue',
          col.axis = 'blue')
-    mtext(side = 4, text = "B/R", line = 3, col = 'blue')
+    mtext(side = 4, text = ylabel2, line = 3, col = 'blue')
     for(j in seq_tc_Lc){
-      lines(list_tc_Lc_runs[[j]]$FM, list_tc_Lc_runs[[j]]$B_R, type = 'l',
-            ylab = "Y/R", xlab = "F", col='blue', lty = j)
-    } # only works with plotting whole graph if values are not getting bigger right? because otherwise graphs is not insed plotting area
+      p.dat <- list_tc_Lc_runs[[j]]
+      py <- p.dat[,which(names(p.dat) == p.B)]
+      px <- p.dat[,which(names(p.dat) == p.FE)]
+
+      lines(px, py, type = 'l',
+            ylab = ylabel1, xlab = xlabel1, col='blue', lty = j)
+    }
+    if(length(N01) == 1){
+      p.dat <- list_tc_Lc_runs[[tc_Lc_start]]
+      px <- p.dat[,which(names(p.dat) == p.FE)]
+      py2 <- p.dat[,which(names(p.dat) == p.B)]
+      # F or E 0.5
+      segments(x0 = -1, x1 = N05, y0 = py2[which(px == N05)], y1 = py2[which(px == N05)],
+               col= 'red',lty = 2, lwd=1.5)
+      segments(x0 = N05, x1 = N05, y0 = -1, y1 = py2[which(px == N05)],
+               col= 'red',lty = 2, lwd=1.5)
+    }
+
+
+
+
     par(op)
   }
 }

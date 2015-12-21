@@ -27,11 +27,68 @@ predict_mod(param, FM_change = NA, Lc_tc_change = NULL, type,
 \item{type}{indicating which model should applied: \code{"ypr"} for Beverton and Holt's
 yield per recruit model and \code{"ThompBell"} for the Thompson and Bell model}
 }
+\value{
+A list with the input parameters and dependent on the model type following
+   list objects:
+\itemize{
+  \item \code{type = 'ypr'}
+  \itemize{
+     \item \strong{FM}: fishing mortalities,
+     \item \strong{Lc} or \strong{tc}: lengths or ages at first capture,
+     \item \strong{list_Lc_runs} or \strong{list_tc_runs}: a list with the dataframes for each Lc or tc value:
+     \itemize{
+     \item FM_change
+     \item Y_R
+     \item Y_R.rel
+     \item B_R
+     \item B_R.percent
+     \item Ty
+     \item Wy
+     }
+  }
+  \item \code{type = 'ThomBell'}
+  \itemize{
+     \item \strong{dt}: delta t,
+     \item \strong{N}: population number,
+     \item \strong{dead}: deaths due to natural reasons,
+     \item \strong{C}: catch,
+     \item \strong{Y}: yield,
+     \item \strong{B}: biomass,
+     \item \strong{V}: value,
+     \item \strong{totals}: summed up values (total catch, total yield, total value, average biomass),
+     \item \strong{tot.C}: total catches for different x factors,
+     \item \strong{tot.Y}: total yield values for different x factors,
+     \item \strong{tot.V}: total values for different x factors,
+     \item \strong{meanB}: average biomasses for different x factors,
+     \item \strong{Xfact}: fishing mortality changes;
+  }
+  \item \code{type = 'ThomBell'} and \code{Lc_tc_change} provided
+  \itemize{
+     \item \strong{FM_change}: fishing mortality changes,
+     \item \strong{Lc_tc_change}: changes in length or age at first capture,
+     \item \strong{Lt}: lengths at age,
+     \item \strong{sel}: probability of capture,
+     \item \strong{mat_FM_Lc_com.C}: catch matrix for all fishing mortality and Lc/tc combinations,
+     \item \strong{mat_FM_Lc_com.Y}: yield matrix for all fishing mortality and Lc/tc combinations,
+     \item \strong{mat_FM_Lc_com.V}: value matrix for all fishing mortality and Lc/tc combinations,
+     \item \strong{mat_FM_Lc_com.B}: biomass matrix for all fishing mortality and Lc/tc combinations;
+  }
+
+}
+}
 \description{
-This is a function ...
+This is a function predicting catches, yield, biomass and value for different
+   fishing mortality scenarions (in combination with gear changes). It allows to choose if the
+   calculations should be based upon Beverton and Holt's yield per recruit model or the
+   more sophisticated Thompson and Bell model.
 }
 \details{
 better to treat last group always as a plus group.....
+   The Thompson and Bell model incorporates an iteration step simulating the stock by means
+   of the function \code{\link{stock_sim}}. In the case changes in gear characteristics -
+   here measured in terms of Lc or tc, the length or age at first capture, respectively -
+   should be explored a list with selectivity information about the gear has provided and
+   the prediction models make use of the selectivity function \code{\link{select_ogive}}.
 }
 \examples{
 #______________________________________
@@ -78,7 +135,7 @@ select.list <- list(selecType = 'knife_edge',  #or 'gillnet' or 'trawl_ogive'
    mesh_size = 8.1, mesh_size1 = 9.1, select_p1 = 21.1, select_p2 = 23.8)
 
 # run model
-out <- predict_mod(shrimps,FM_change = seq(0,3,0.2), Lc_tc_change = seq(24,44,2),
+predict_mod(shrimps,FM_change = seq(0,3,0.2), Lc_tc_change = seq(24,44,2),
    type = 'ThompBell', unit.time = 'month', Linf = 50, K = 0.3, t0 = 0.01,
    s_list = select.list)
 

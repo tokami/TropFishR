@@ -1,21 +1,36 @@
 #' @title Prediction models: YPR and Thompson & Bell model
 #
-#' @description  This is a function ...
+#' @description  This is a function predicting catch, yield, biomass and economic values for different
+#'    fishing mortality scenarions (in combination with gear changes). It allows to choose if the
+#'    calculation should be based upon Beverton and Holt's yield per recruit model or the
+#'    more sophisticated Thompson and Bell model.
 #'
-#' @param param a list consisting of following parameters:
+#' @param param a list consisting of following parameters (not all are required):
 #' \itemize{
-#'   \item \strong{age} or \strong{midLengths}: midpoints of the length class as vector (length-frequency
-#'   data) or ages as vector (age composition data),
-#'   \item \strong{Linf}: infinite length for investigated species in cm [cm],
+#'   \item \strong{Linf} or \strong{Winf}: infinite length for investigated species in cm [cm],
 #'   \item \strong{K}: growth coefficent for investigated species per year [1/year],
 #'   \item \strong{t0}: theoretical time zero, at which individuals of this species hatch,
-#'   \item \strong{catch}: catch as vector, or a matrix with catches of subsequent years if
-#'   the catch curve with constat time intervals should be applied;
+#'   \item \strong{M}: natural mortality,
+#'   \item \strong{Z}: total mortality,
+#'   \item \strong{FM}: fishing mortality,
+#'   \item \strong{a}: ,
+#'   \item \strong{b}: ,
+#'   \item \strong{Lr} or \strong{tr}: length or age of recuritment;}
+#' additional list objects in for the Thompson and Bell model:
+#'  \itemize{
+#'   \item \strong{age} or \strong{midLengths}: midpoints of the length class as vector (length-frequency
+#'   data) or ages as vector (age composition data),
+#'   \item \strong{meanWeight}: vector with mean weight per length group or age class,
+#'   \item \strong{meanValue}: vector with mean value per length group or age class,
 #' }
-#' @param FM_change vector with ascending Fishing mortalities
-#' @param Lc_tc_change vector with ascending Lc values
-#' @param type indicating which model should applied: \code{"ypr"} for Beverton and Holt's
+#' @param FM_change vector with ascending fishing mortalities
+#' @param Lc_tc_change vector with ascending lengths or ages at first capture (Lc/tc)
+#' @param type indicating which model should be applied: \code{"ypr"} for Beverton and Holt's
 #'   yield per recruit model and \code{"ThompBell"} for the Thompson and Bell model
+#' @param s_list
+#' @param stock_size_1
+#' @param unit.time
+#' @param plus.group
 #'
 #' @keywords function prediction
 #'
@@ -63,10 +78,12 @@
 #'    Lc = 34, tc = 5, selecDist = 'lognormal',    #or 'normal_fixed'
 #'    mesh_size = 8.1, mesh_size1 = 9.1, select_p1 = 21.1, select_p2 = 23.8)
 #'
+#' # add additional parameters to data list
+#' shrimps <- c(shrimps,  list(Linf = 50, K = 0.3, t0 = 0.01))
+#'
 #' # run model
-#' out <- predict_mod(shrimps,FM_change = seq(0,3,0.2), Lc_tc_change = seq(24,44,2),
-#'    type = 'ThompBell', unit.time = 'month', Linf = 50, K = 0.3, t0 = 0.01,
-#'    s_list = select.list)
+#' predict_mod(shrimps,FM_change = seq(0,3,0.2), Lc_tc_change = seq(24,44,2),
+#'    type = 'ThompBell', s_list = select.list, unit.time = 'month')
 #'
 #' #______________________________________
 #' # with length structured data
@@ -78,32 +95,80 @@
 #'
 #'
 #' @details better to treat last group always as a plus group.....
+#'    The Thompson and Bell model incorporates an iteration step simulating the stock by means
+#'    of the \code{\link{stock_sim}} function. In case changes in gear characteristics -
+#'    here measured in terms of Lc or tc, the length or age at first capture, respectively -
+#'    should be explored, a list with selectivity information about the gear has to be provided and
+#'    the prediction models make use of the selectivity \code{\link{select_ogive}} function.
 #'
-#' @return A list with the input parameters and following list objects:
+#' @return A list with the input parameters and dependent on the model type following
+#'    list objects:
 #' \itemize{
-#'   \item \strong{tplusdt_2} or \strong{t_midL}: relative,
-#'   \item \strong{lnC_dt}: rearranged,
-#'   \item \strong{reg_int}: the,
-#'   \item \strong{Z}: the,
-#'   \item \strong{se}: the;}
+#'   \item \code{type = 'ypr'}
+#'   \itemize{
+#'      \item \strong{FM}: fishing mortalities,
+#'      \item \strong{Lc} or \strong{tc}: lengths or ages at first capture,
+#'      \item \strong{list_Lc_runs} or \strong{list_tc_runs}: a list with the dataframes for each Lc or tc value:
+#'      \itemize{
+#'      \item FM_change
+#'      \item Y_R
+#'      \item Y_R.rel
+#'      \item B_R
+#'      \item B_R.percent
+#'      \item Ty
+#'      \item Wy
+#'      }
+#'   }
+#'   \item \code{type = 'ThomBell'}
+#'   \itemize{
+#'      \item \strong{dt}: delta t,
+#'      \item \strong{N}: population number,
+#'      \item \strong{dead}: deaths due to natural reasons,
+#'      \item \strong{C}: catch,
+#'      \item \strong{Y}: yield,
+#'      \item \strong{B}: biomass,
+#'      \item \strong{V}: value,
+#'      \item \strong{totals}: summed up values (total catch, total yield, total value, average biomass),
+#'      \item \strong{tot.C}: total catches for different x factors,
+#'      \item \strong{tot.Y}: total yield values for different x factors,
+#'      \item \strong{tot.V}: total values for different x factors,
+#'      \item \strong{meanB}: average biomasses for different x factors,
+#'      \item \strong{Xfact}: fishing mortality changes;
+#'   }
+#'   \item \code{type = 'ThomBell'} and \code{Lc_tc_change} provided
+#'   \itemize{
+#'      \item \strong{FM_change}: fishing mortality changes,
+#'      \item \strong{Lc_tc_change}: changes in length or age at first capture,
+#'      \item \strong{Lt}: lengths at age,
+#'      \item \strong{sel}: probability of capture,
+#'      \item \strong{mat_FM_Lc_com.C}: catch matrix for all fishing mortality and Lc/tc combinations,
+#'      \item \strong{mat_FM_Lc_com.Y}: yield matrix for all fishing mortality and Lc/tc combinations,
+#'      \item \strong{mat_FM_Lc_com.V}: value matrix for all fishing mortality and Lc/tc combinations,
+#'      \item \strong{mat_FM_Lc_com.B}: biomass matrix for all fishing mortality and Lc/tc combinations;
+#'   }
+#'
 #' }
 #'
 #' @references
 #' example 1 : Kuwait (Garcia and van Zalinge 1982)
 #'
-#' Millar, R. B., & Holst, R. (1997). Estimation of gillnet and hook selectivity using
+#' Beverton and Holt 1966
+#'
+#' Boerema, L.K., and J.A. Gulland, 1973. Stock assessment of the Peruvian anchovy
+#' (Engraulis ringens) and management of the fishery. Journal of the Fisheries Board of
+#' Canada, 30(12):2226-2235
+#'
+#' Millar, R.B., and R. Holst, 1997. Estimation of gillnet and hook selectivity using
 #' log-linear models. ICES Journal of Marine Science: Journal du Conseil, 54(3):471-477
+#'
+#' Sparre, P., and Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+#' Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 #'
 #' @export
 
-
-
-
-
-
-predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,
-                        stock_size_1 = NA, unit.time = 'year',
-                        plus.group = NA, Linf, K, t0 = 0, s_list){
+predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_list,
+                        stock_size_1 = NA, unit.time = 'year', curr.E = NA,
+                        plus.group = NA){
   res <- param
 
   # Beverton and Holt's ypr
@@ -194,44 +259,71 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,
       Linf <- res$Linf
       Lr <- res$Lr
       Lc <- Lc_tc_change
+
+      # yield functions
+      # ___________________________________________________
+      S <- 1 - (Lci/Linf)  # == U  ##(U <- 1 - (Lci/Linf))
+
+      ypr <- function(x){
+        A <- ((Linf - Lci)/(Linf - Lr)) ^ (M/K)
+        G <- x + M   # G == Z
+        y <- x * A * Winf * ((1/G) - (3*S)/(G + K) + (3*S^2)/(G + 2*K) - (S^3)/(G + 3*K))
+        return(y)
+      }
+
+      #according to Sparre & Venema and Gayanilo 2006:
+      ypr.rel <- function(x){
+        m <- (1-x)/(M/K)    ## == K/Z
+        y <- x * S^(M/K) * (1 - ((3*S)/(1+m)) + ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
+        return(y)
+      }
+
+      derivative <- function(x){
+        C <- ((K*(1-x))/M)
+        B <- (S^(M/K)) * (1 - ((3*S)/(1+C)) + ((3*S^2)/(1+2*C)) - ((S^3)/(1+3*C)))
+        D <- (-((3*K*S^3)/(M*((3*K*(1-x)/M)+1)^2)) + ((6*K*S^2)/(M*((2*K*(1-x)/M)+1)^2)) -
+                ((3*K*S)/(M*((K*(1-x)/M)+1)^2)))
+        des <- x * (S^(M/K)) * D  + B
+        return(des)
+      }
+      # ___________________________________________________
+
       list_Lc_runs <- list()
+      list_Es <- list()
       for(i in 1:length(Lc)){
         Lci <- Lc[i]
 
-        E <- FM_change/(FM_change + M)
-        # transform Linf in Winf #### CHECK!!
+        Z <- (M + FM_change)
+        E <- FM_change/Z
+        # transform Linf in Winf
         Winf <- a * (Linf ^ b)
 
         #yiel per recurit for length data   # also possbile inputing option: F/K
-        S <- 1 - (Lci/Linf)  # == U  ##(U <- 1 - (Lci/Linf))
-        A <- ((Linf - Lci)/(Linf-Lr))^(M/K)
-        Y_R <- FM_change * A * Winf * ((1/(M+FM_change)) - (3*S)/((M+FM_change)+K) +
-                                  (3*S^2)/((M+FM_change)+2*K) -
-                                  (S^3)/((M+FM_change)+3*K))
+        Y_R <- ypr(FM_change)
 
         #biomass per recruit for length data?
         B_R <- Y_R / FM_change
 
         #virgin biomass
-        Bv_R <- B_R[which(FM_change == 0)]
+        Bv_R <- B_R[(which(FM_change == 0)+1)]  ### CHECK: if == 0 than 0 NaN because yield and FM_change is 0
         #biomass of exploited part of the cohort (biomass of fish older than tc)
 
         #biomass in percetage of virgin biomass
         B_R.percent <- round((B_R / Bv_R ) * 100, digits = 1)
 
         #relative yield per recruit - mostly done with length frequency data (exclusively?)
-        m <- K/(M+FM_change)
-        Y_R.rel <- E * S^(M/K) * (1 - ((3*S)/(1+m)) +
-                                    ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
+        Y_R.rel <- ypr.rel(E)
+        #according to Gayanilo 1997 Fisat description (wrong???):
+#         Y_R.rel <- E * S^m * (1 - ((3*S)/(1+m)) +
+#                                     ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
 
         #mean length in the annual yield
-        Ly <- Linf * (1 - (((M+FM_change)*S)/((M+FM_change)+K)))
+        Ly <- Linf * (1 - ((Z*S)/(Z+K)))
 
         #mean weight in annual yield
         # Wy <- (M+FM_change) * Winf *
         #    ((1/(FM_change+M)) - ((3*S)/((M+FM_change)+K)) +
         #       ((3*(S^2))/((M+FM_change)+(2*K))) - ((S^3)/((M+FM_change) + (3*K))))
-
 
         results.PBH <- data.frame(FM = FM_change,
                                   Ly = Ly,
@@ -240,16 +332,44 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,
                                   Y_R.rel = Y_R.rel,
                                   B_R = B_R,
                                   B_R.percent = B_R.percent)
-
-
         list_Lc_runs[[i]] <- results.PBH
 
+
+        # First derivative of relative yield per recruit model
+        deri <- derivative(E)
+
+        # reference points
+        N01 <- which.min(abs(deri - (deri[1] * 0.1)))
+        N05 <- which.min(abs(B_R.percent - 50))    ##which.min(abs(deri - (deri[1] * 0.5)))
+        Nmax <- which.min(abs(deri))
+
+        df_loop_Es <- data.frame(Lc = Lci,
+          F01 = FM_change[N01],
+          F05 = FM_change[N05],
+          Fmax = FM_change[Nmax],
+          E01 = E[N01],
+          E05 = E[N05],
+          Emax = E[Nmax]
+          )
+        list_Es[[i]] <- df_loop_Es
       }
+
+      df_Es <- do.call(rbind,list_Es)
+
+      # current exploitation rate
+      curr.F = (M * curr.E)/(1-curr.E)
+      df_currents <- data.frame(curr.E = curr.E,
+                                curr.F = curr.F,
+                                curr.YPR = ypr((curr.F)),
+                                curr.YPR.rel = ypr.rel(curr.E))
+
       names(list_Lc_runs) <- Lc
       ret <- list(res,
                   FM = FM_change,
                   Lc = Lc,
-                  list_Lc_runs = list_Lc_runs)
+                  list_Lc_runs = list_Lc_runs,
+                  df_Es = df_Es,
+                  currents = df_currents)
       class(ret) <- "predict_mod"
 
       # plot results
@@ -277,6 +397,10 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,
       Z <- res$Z
       nM <- mean(Z - FM,na.rm=T)
     }
+
+    Linf <- res$Linf
+    K <- res$K
+    t0 <- ifelse("t0" %in% names(res),res$t0,0)
 
     #   FM <- res$FM
     #   Z <- res$Z
