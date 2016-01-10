@@ -31,6 +31,8 @@
 #' @param stock_size_1
 #' @param unit.time
 #' @param plus.group
+#' @param curr.Lc
+#' @param curr.E
 #'
 #' @keywords function prediction
 #'
@@ -167,7 +169,7 @@
 #' @export
 
 predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_list,
-                        stock_size_1 = NA, unit.time = 'year', curr.E = NA,
+                        stock_size_1 = NA, unit.time = 'year', curr.E = NA, curr.Lc = NA,
                         plus.group = NA){
   res <- param
 
@@ -262,9 +264,8 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
 
       # yield functions
       # ___________________________________________________
-      S <- 1 - (Lci/Linf)  # == U  ##(U <- 1 - (Lci/Linf))
-
-      ypr <- function(x){
+      ypr <- function(x,z){
+        S <- 1 - (z/Linf)  # == U  ##(U <- 1 - (Lci/Linf))
         A <- ((Linf - Lci)/(Linf - Lr)) ^ (M/K)
         G <- x + M   # G == Z
         y <- x * A * Winf * ((1/G) - (3*S)/(G + K) + (3*S^2)/(G + 2*K) - (S^3)/(G + 3*K))
@@ -272,13 +273,15 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
       }
 
       #according to Sparre & Venema and Gayanilo 2006:
-      ypr.rel <- function(x){
+      ypr.rel <- function(x,z){
+        S <- 1 - (z/Linf)
         m <- (1-x)/(M/K)    ## == K/Z
         y <- x * S^(M/K) * (1 - ((3*S)/(1+m)) + ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
         return(y)
       }
 
-      derivative <- function(x){
+      derivative <- function(x,z){
+        S <- 1 - (z/Linf)
         C <- ((K*(1-x))/M)
         B <- (S^(M/K)) * (1 - ((3*S)/(1+C)) + ((3*S^2)/(1+2*C)) - ((S^3)/(1+3*C)))
         D <- (-((3*K*S^3)/(M*((3*K*(1-x)/M)+1)^2)) + ((6*K*S^2)/(M*((2*K*(1-x)/M)+1)^2)) -
@@ -299,7 +302,7 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         Winf <- a * (Linf ^ b)
 
         #yiel per recurit for length data   # also possbile inputing option: F/K
-        Y_R <- ypr(FM_change)
+        Y_R <- ypr(FM_change,Lci)
 
         #biomass per recruit for length data?
         B_R <- Y_R / FM_change
@@ -312,12 +315,13 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         B_R.percent <- round((B_R / Bv_R ) * 100, digits = 1)
 
         #relative yield per recruit - mostly done with length frequency data (exclusively?)
-        Y_R.rel <- ypr.rel(E)
+        Y_R.rel <- ypr.rel(E, Lci)
         #according to Gayanilo 1997 Fisat description (wrong???):
 #         Y_R.rel <- E * S^m * (1 - ((3*S)/(1+m)) +
 #                                     ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
 
         #mean length in the annual yield
+        S <- 1 - (Lci/Linf)  # == U  ##(U <- 1 - (Lci/Linf))
         Ly <- Linf * (1 - ((Z*S)/(Z+K)))
 
         #mean weight in annual yield
@@ -336,7 +340,7 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
 
 
         # First derivative of relative yield per recruit model
-        deri <- derivative(E)
+        deri <- derivative(E, Lci)
 
         # reference points
         N01 <- which.min(abs(deri - (deri[1] * 0.1)))
@@ -360,8 +364,8 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
       curr.F = (M * curr.E)/(1-curr.E)
       df_currents <- data.frame(curr.E = curr.E,
                                 curr.F = curr.F,
-                                curr.YPR = ypr((curr.F)),
-                                curr.YPR.rel = ypr.rel(curr.E))
+                                curr.YPR = ypr((curr.F), curr.Lc),
+                                curr.YPR.rel = ypr.rel(curr.E, curr.Lc))
 
       names(list_Lc_runs) <- Lc
       ret <- list(res,

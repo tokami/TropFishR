@@ -20,8 +20,6 @@ plot.predict_mod <- function(x, xaxis1 = "FM", yaxis1 = "Y_R", yaxis2 = "B_R",..
 
   #THOMPBELL
   if("totals" %in% names(pes)){
-
-
     #save x axis positions
     max_val <- round(max(pes$tot.V,na.rm=TRUE),digits=0)
     dim_val <- 10 ^ (nchar(max_val)-1)
@@ -57,10 +55,9 @@ plot.predict_mod <- function(x, xaxis1 = "FM", yaxis1 = "Y_R", yaxis2 = "B_R",..
            text.width=0.3,x.intersp=0.3)
     par(op)
 
-
   }
 
-  # THOMP BELL WITH LC change
+  # THOMP BELL WITH LC change - ISOPLETHS
   if("mat_FM_Lc_com.C" %in% names(pes)){
     FM_change <- pes$FM_change
     Lc_change <- pes$Lc_tc_change
@@ -144,6 +141,7 @@ plot.predict_mod <- function(x, xaxis1 = "FM", yaxis1 = "Y_R", yaxis2 = "B_R",..
                   offset_text),
            labels = bquote(.(label)[.(names(list_tc_Lc_runs)[j])]))
     } # only works with plotting whole graph if values are not getting bigger right? because otherwise graphs is not insed plotting area
+
     # reference points
     if(length(N01) == 1){
       p.dat <- list_tc_Lc_runs[[tc_Lc_start]]
@@ -159,19 +157,21 @@ plot.predict_mod <- function(x, xaxis1 = "FM", yaxis1 = "Y_R", yaxis2 = "B_R",..
                col= 'goldenrod1',lty = 2, lwd=1.5)
       segments(x0 = Nmax, x1 = Nmax, y0 = -1, y1 = py[which(px == Nmax)],
                col= 'goldenrod1',lty = 2, lwd=1.5)
+      # Legend
+      legend("top", legend = legend.lab, xpd = TRUE, horiz = TRUE,
+             inset = c(0,0), bty = "n", lty = 2, col = c("darkgreen","red","goldenrod1"),
+             seg.len = 1,pt.cex = 2, x.intersp = c(0.7,0.7,0.7),merge=TRUE,
+             y.intersp = -2, box.lty=0,cex=0.8, lwd =2)
+
+      # current Exploitation rate or fishing mortality
+      currents <- pes$currents
+      if(!is.na(currents$curr.E)){
+        px <- ifelse(p.FE == "FM",currents$curr.F, currents$curr.E)
+        py <- ifelse(p.yield == "Y_R",currents$curr.YPR,currents$curr.YPR.rel)
+        points(px,py, pch = 16)
+      }
     }
-    # current Exploitation rate or fishing mortality
-    currents <- pes$currents
-    if(!is.na(currents$curr.E)){
-      px <- ifelse(p.FE == "FM",currents$curr.F, currents$curr.E)
-      py <- ifelse(p.yield == "Y_R",currents$curr.YPR,currents$curr.YPR.rel)
-      points(px,py, pch = 16)
-    }
-    # Legend
-    legend("top", legend = legend.lab, xpd = TRUE, horiz = TRUE,
-           inset = c(0,0), bty = "n", lty = 2, col = c("darkgreen","red","goldenrod1"),
-           seg.len = 1,pt.cex = 2, x.intersp = c(0.7,0.7,0.7),merge=TRUE,
-           y.intersp = -2, box.lty=0,cex=0.8, lwd =2)
+
     # Biomass per recruit
     par(new=T)
     px <- list_tc_Lc_runs[[1]][,which(names(list_tc_Lc_runs[[1]]) == p.FE)]
@@ -200,11 +200,37 @@ plot.predict_mod <- function(x, xaxis1 = "FM", yaxis1 = "Y_R", yaxis2 = "B_R",..
       segments(x0 = N05, x1 = N05, y0 = -1, y1 = py2[which(px == N05)],
                col= 'red',lty = 2, lwd=1.5)
     }
-
-
-
-
     par(op)
+
+    #Isopleths
+    if(length(N01) > 1){
+      Lc_change <- pes$Lc
+      list_Lc_runs <- pes$list_Lc_runs
+
+      Y_R.vec <- list()
+      for(fx in 1:length(list_Lc_runs)){
+        yr <- list_Lc_runs[[fx]]$Y_R.rel
+        Y_R.vec[[fx]] <- yr
+      }
+      mat_FM_Lc_com.Y <- as.matrix(do.call(cbind,Y_R.vec))
+      rownames(mat_FM_Lc_com.Y) <- FM
+      colnames(mat_FM_Lc_com.Y) <- Lc_change
+
+      # colours for plot
+      pal <- colorRampPalette(c(
+        rgb(1,0.5,0.5), rgb(1,1,0.5), rgb(0.5,1,1), rgb(0.5,0.5,1)
+      ))
+
+      #plot
+      image(x = FM,
+            y = Lc_change,
+            z = mat_FM_Lc_com.Y, col=pal(100),
+            xlab = 'Fishing mortality', ylab = 'Lc')
+      contour(x = FM,
+              y = Lc_change,
+              z = mat_FM_Lc_com.Y, add=TRUE)
+      #mtext("Yield", line=0.5, side=3)
+    }
   }
 }
 
