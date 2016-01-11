@@ -170,11 +170,11 @@
 
 predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_list,
                         stock_size_1 = NA, unit.time = 'year', curr.E = NA, curr.Lc = NA,
-                        plus.group = NA){
+                        curr.tc = NA, plus.group = NA){
   res <- param
 
   # Beverton and Holt's ypr
-#------------
+  #------------
   if(type == "ypr"){
     M <- res$M
     K <- res$K
@@ -194,15 +194,49 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
       Winf <- res$Winf
       tr <- res$tr
       tc <- Lc_tc_change
+
+      # yield functions
+      # ___________________________________________________
+      #Biomass per Recruit
+      bpr <- function(x,z){
+        S <- exp(-K * (z - t0))
+        y <- exp(-M*(z-tr)) * Winf *
+          ((1/(x + M)) - ((3*S)/((M + x) + K)) +
+             ((3*(S^2))/((M + x)+(2*K))) - ((S^3)/((M + x) + (3*K))))
+        return(y)
+      }
+
+      ypr <- function(x,z){
+        y <- x * (bpr(x,z))
+        return(y)
+      }
+
+      ypr.rel <- function(x,z){
+        y <- ypr(x,z) * (exp(-M *(tr - t0))) / Winf
+        return(y)
+      }
+
+      derivative <- function(x,z){
+        S <- exp(-K * (z - t0))
+        C <- ((K*(1-x))/M)
+        B <- (S^(M/K)) * (1 - ((3*S)/(1+C)) + ((3*S^2)/(1+2*C)) - ((S^3)/(1+3*C)))
+        D <- (-((3*K*S^3)/(M*((3*K*(1-x)/M)+1)^2)) + ((6*K*S^2)/(M*((2*K*(1-x)/M)+1)^2)) -
+                ((3*K*S)/(M*((K*(1-x)/M)+1)^2)))
+        des <- x * (S^(M/K)) * D  + B
+        return(des)
+      }
+      # ___________________________________________________
+
       list_tc_runs <- list()
+      list_Es <- list()
       for(i in 1:length(tc)){
         tci <- tc[i]
 
+        Z <- (M + FM_change)
+        E <- FM_change/Z
+
         #Biomass per Recruit
-        S <- exp(-K * (tci - t0))
-        B_R <- exp(-M*(tci-tr)) * Winf *
-          ((1/(FM_change+M)) - ((3*S)/((M+FM_change)+K)) +
-             ((3*(S^2))/((M+FM_change)+(2*K))) - ((S^3)/((M+FM_change) + (3*K))))
+        B_R <- bpr(FM_change, tci)
 
         #virgin biomass
         Bv_R <- B_R[which(FM_change == 0)]
@@ -212,11 +246,12 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         B_R.percent <- round((B_R / Bv_R ) * 100, digits = 1)
 
         #Yield per Recruit
-        Y_R <- B_R * FM_change
+        #Y_R <- B_R * FM_change
+        Y_R <- ypr(FM_change, tci)
 
         #relative yield per recruit - mostly done with length frequency data (exclusively?)
-        Y_R.rel <- Y_R * (exp(-M *(tr - t0))) / Winf
-
+        #Y_R.rel <- Y_R * (exp(-M *(tr - t0))) / Winf
+        Y_R.rel <- ypr.rel(FM_change, tci)
 
         #mean age in annual yield
         Ty <- (1 / (M+FM_change)) + tci
@@ -225,28 +260,58 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         #Ly <- Linf * (1 - (((M+FM_change)*S)/((M+FM_change)+K)))
 
         #mean weight in annual yield
+        S <- exp(-K * (tci - t0))
         Wy <- (M+FM_change) * Winf *
           ((1/(FM_change+M)) - ((3*S)/((M+FM_change)+K)) +
              ((3*(S^2))/((M+FM_change)+(2*K))) - ((S^3)/((M+FM_change) + (3*K))))
 
 
-        results.PBH <- data.frame(FM_change = FM_change,
+        results.PBH <- data.frame(FM = FM_change,
+                                  Ty = Ty,
+                                  Wy = Wy,
                                   Y_R = Y_R,
                                   Y_R.rel = Y_R.rel,
                                   B_R = B_R,
-                                  B_R.percent = B_R.percent,
-                                  Ty = Ty,
-                                  Wy = Wy)
+                                  B_R.percent = B_R.percent)
 
 
         list_tc_runs[[i]] <- results.PBH
 
+        # First derivative of relative yield per recruit model
+        deri <- derivative(E, tci)
+
+        # reference points
+        N01 <- which.min(abs(deri - (deri[1] * 0.1)))
+        N05 <- which.min(abs(B_R.percent - 50))    ##which.min(abs(deri - (deri[1] * 0.5)))
+        Nmax <- which.min(abs(deri))
+
+        df_loop_Es <- data.frame(tc = tci,
+                                 F01 = FM_change[N01],
+                                 F05 = FM_change[N05],
+                                 Fmax = FM_change[Nmax],
+                                 E01 = E[N01],
+                                 E05 = E[N05],
+                                 Emax = E[Nmax])
+        list_Es[[i]] <- df_loop_Es
       }
+
+      df_Es <- do.call(rbind,list_Es)
+
+      # current exploitation rate
+      curr.F = (M * curr.E)/(1-curr.E)
+      df_currents <- data.frame(curr.E = curr.E,
+                                curr.F = curr.F,
+                                curr.YPR = ypr((curr.F), curr.tc),
+                                curr.YPR.rel = ypr.rel(curr.F, curr.tc))
+
       names(list_tc_runs) <- tc
       ret <- list(res,
                   FM = FM_change,
                   tc = tc,
-                  list_tc_runs = list_tc_runs)
+                  list_tc_runs = list_tc_runs,
+                  df_Es = df_Es,
+                  currents = df_currents)
+
       class(ret) <- "predict_mod"
       # plot results
       plot(ret)
@@ -317,8 +382,8 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         #relative yield per recruit - mostly done with length frequency data (exclusively?)
         Y_R.rel <- ypr.rel(E, Lci)
         #according to Gayanilo 1997 Fisat description (wrong???):
-#         Y_R.rel <- E * S^m * (1 - ((3*S)/(1+m)) +
-#                                     ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
+        #         Y_R.rel <- E * S^m * (1 - ((3*S)/(1+m)) +
+        #                                     ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
 
         #mean length in the annual yield
         S <- 1 - (Lci/Linf)  # == U  ##(U <- 1 - (Lci/Linf))
@@ -348,13 +413,13 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         Nmax <- which.min(abs(deri))
 
         df_loop_Es <- data.frame(Lc = Lci,
-          F01 = FM_change[N01],
-          F05 = FM_change[N05],
-          Fmax = FM_change[Nmax],
-          E01 = E[N01],
-          E05 = E[N05],
-          Emax = E[Nmax]
-          )
+                                 F01 = FM_change[N01],
+                                 F05 = FM_change[N05],
+                                 Fmax = FM_change[Nmax],
+                                 E01 = E[N01],
+                                 E05 = E[N05],
+                                 Emax = E[Nmax]
+        )
         list_Es[[i]] <- df_loop_Es
       }
 
@@ -383,11 +448,11 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
     }
   }
 
-#------------
+  #------------
 
 
   # Thompson and Bell model
-#------------
+  #------------
   if(type == "ThompBell"){
     meanWeight <- res$meanWeight
     meanValue <- res$meanValue
@@ -496,7 +561,7 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
           param.loop$FM <- mati[,x22]
           param.loop$Z <- mati[,x22] + nM
           res2 <- stock_sim(param.loop, unit.time,
-                                        stock_size_1,plus.group=plus.group)
+                            stock_size_1,plus.group=plus.group)
           pred.FM_Lc_com_res_loop1_list[[x22]] <- res2$totals
         }
         prev_mat <- do.call(rbind, pred.FM_Lc_com_res_loop1_list)
@@ -540,7 +605,7 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
       ret <- c(res,
                list(FM_change = FM_change,
                     Lc_tc_change = Lc_tc_change,
-                 Lt=Lt,sel=sel,
+                    Lt=Lt,sel=sel,
                     mat_FM_Lc_com.C=mat_FM_Lc_com.C,
                     mat_FM_Lc_com.Y=mat_FM_Lc_com.Y,
                     mat_FM_Lc_com.V=mat_FM_Lc_com.V,
@@ -553,7 +618,7 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
       return(ret)
     }
   }
-#------------
+  #------------
 
 }
 

@@ -51,6 +51,18 @@ data(trout)
 ELEFAN(trout, range.Linf = c(11,15), step.Linf = 1, range.K = c(0.2,1),
    step.K = 0.1, tmax = 5)
 
+ELEFAN(param = trout,
+ range.Linf = c(14,18),
+ step.Linf = 1,
+ range.K = c(0.4,1.2),
+ step.K = 0.1,
+ t0 = 0,
+ growth.curve = "VBGF",
+ tmax = 5,
+ conf.int = FALSE)
+
+
+# FOR CODING:
 param = trout
 range.Linf = c(11,15)
 step.Linf = 1

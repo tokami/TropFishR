@@ -4,28 +4,48 @@
 \alias{predict_mod}
 \title{Prediction models: YPR and Thompson & Bell model}
 \usage{
-predict_mod(param, FM_change = NA, Lc_tc_change = NULL, type,
-  stock_size_1 = NA, unit.time = "year", plus.group = NA, Linf, K,
-  t0 = 0, s_list)
+predict_mod(param, FM_change = NA, Lc_tc_change = NULL, type, s_list,
+  stock_size_1 = NA, unit.time = "year", curr.E = NA, curr.Lc = NA,
+  curr.tc = NA, plus.group = NA)
 }
 \arguments{
-\item{param}{a list consisting of following parameters:
+\item{param}{a list consisting of following parameters (not all are required):
 \itemize{
-  \item \strong{age} or \strong{midLengths}: midpoints of the length class as vector (length-frequency
-  data) or ages as vector (age composition data),
-  \item \strong{Linf}: infinite length for investigated species in cm [cm],
+  \item \strong{Linf} or \strong{Winf}: infinite length for investigated species in cm [cm],
   \item \strong{K}: growth coefficent for investigated species per year [1/year],
   \item \strong{t0}: theoretical time zero, at which individuals of this species hatch,
-  \item \strong{catch}: catch as vector, or a matrix with catches of subsequent years if
-  the catch curve with constat time intervals should be applied;
+  \item \strong{M}: natural mortality,
+  \item \strong{Z}: total mortality,
+  \item \strong{FM}: fishing mortality,
+  \item \strong{a}: ,
+  \item \strong{b}: ,
+  \item \strong{Lr} or \strong{tr}: length or age of recuritment;}
+additional list objects in for the Thompson and Bell model:
+ \itemize{
+  \item \strong{age} or \strong{midLengths}: midpoints of the length class as vector (length-frequency
+  data) or ages as vector (age composition data),
+  \item \strong{meanWeight}: vector with mean weight per length group or age class,
+  \item \strong{meanValue}: vector with mean value per length group or age class,
 }}
 
-\item{FM_change}{vector with ascending Fishing mortalities}
+\item{FM_change}{vector with ascending fishing mortalities}
 
-\item{Lc_tc_change}{vector with ascending Lc values}
+\item{Lc_tc_change}{vector with ascending lengths or ages at first capture (Lc/tc)}
 
-\item{type}{indicating which model should applied: \code{"ypr"} for Beverton and Holt's
+\item{type}{indicating which model should be applied: \code{"ypr"} for Beverton and Holt's
 yield per recruit model and \code{"ThompBell"} for the Thompson and Bell model}
+
+\item{s_list}{list with selectivity parameters}
+
+\item{stock_size_1}{stock size of smallest size class, if NA values are calculated relative to a stock size of 1000 individuals}
+
+\item{unit.time}{in which time unit the data is provided? "month" or "year"}
+
+\item{curr.E}{current exploitation rate}
+
+\item{curr.Lc}{current Lc (length at first capture)}
+
+\item{plus.group}{if a value is provided, a plus group is created comprising this size class and all above}
 }
 \value{
 A list with the input parameters and dependent on the model type following
@@ -77,18 +97,18 @@ A list with the input parameters and dependent on the model type following
 }
 }
 \description{
-This is a function predicting catches, yield, biomass and value for different
+This is a function predicting catch, yield, biomass and economic values for different
    fishing mortality scenarions (in combination with gear changes). It allows to choose if the
-   calculations should be based upon Beverton and Holt's yield per recruit model or the
+   calculation should be based upon Beverton and Holt's yield per recruit model or the
    more sophisticated Thompson and Bell model.
 }
 \details{
 better to treat last group always as a plus group.....
    The Thompson and Bell model incorporates an iteration step simulating the stock by means
-   of the function \code{\link{stock_sim}}. In the case changes in gear characteristics -
+   of the \code{\link{stock_sim}} function. In case changes in gear characteristics -
    here measured in terms of Lc or tc, the length or age at first capture, respectively -
-   should be explored a list with selectivity information about the gear has provided and
-   the prediction models make use of the selectivity function \code{\link{select_ogive}}.
+   should be explored, a list with selectivity information about the gear has to be provided and
+   the prediction models make use of the selectivity \code{\link{select_ogive}} function.
 }
 \examples{
 #______________________________________
@@ -134,10 +154,12 @@ select.list <- list(selecType = 'knife_edge',  #or 'gillnet' or 'trawl_ogive'
    Lc = 34, tc = 5, selecDist = 'lognormal',    #or 'normal_fixed'
    mesh_size = 8.1, mesh_size1 = 9.1, select_p1 = 21.1, select_p2 = 23.8)
 
+# add additional parameters to data list
+shrimps <- c(shrimps,  list(Linf = 50, K = 0.3, t0 = 0.01))
+
 # run model
 predict_mod(shrimps,FM_change = seq(0,3,0.2), Lc_tc_change = seq(24,44,2),
-   type = 'ThompBell', unit.time = 'month', Linf = 50, K = 0.3, t0 = 0.01,
-   s_list = select.list)
+   type = 'ThompBell', s_list = select.list, unit.time = 'month')
 
 #______________________________________
 # with length structured data
@@ -152,8 +174,17 @@ predict_mod(hake,FM_change = seq(0.1,3,0.1), type = 'ThompBell')
 \references{
 example 1 : Kuwait (Garcia and van Zalinge 1982)
 
-Millar, R. B., & Holst, R. (1997). Estimation of gillnet and hook selectivity using
+Beverton and Holt 1966
+
+Boerema, L.K., and J.A. Gulland, 1973. Stock assessment of the Peruvian anchovy
+(Engraulis ringens) and management of the fishery. Journal of the Fisheries Board of
+Canada, 30(12):2226-2235
+
+Millar, R.B., and R. Holst, 1997. Estimation of gillnet and hook selectivity using
 log-linear models. ICES Journal of Marine Science: Journal du Conseil, 54(3):471-477
+
+Sparre, P., and Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 }
 \keyword{function}
 \keyword{prediction}
