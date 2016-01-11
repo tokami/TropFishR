@@ -27,12 +27,12 @@
 #' @param Lc_tc_change vector with ascending lengths or ages at first capture (Lc/tc)
 #' @param type indicating which model should be applied: \code{"ypr"} for Beverton and Holt's
 #'   yield per recruit model and \code{"ThompBell"} for the Thompson and Bell model
-#' @param s_list
-#' @param stock_size_1
-#' @param unit.time
-#' @param plus.group
-#' @param curr.Lc
-#' @param curr.E
+#' @param s_list list with selectivity parameters
+#' @param stock_size_1 stock size of smallest size class, if NA values are calculated relative to a stock size of 1000 individuals
+#' @param unit.time in which time unit the data is provided? "month" or "year"
+#' @param plus.group if a value is provided, a plus group is created comprising this size class and all above
+#' @param curr.Lc current Lc (length at first capture)
+#' @param curr.E current exploitation rate
 #'
 #' @keywords function prediction
 #'
