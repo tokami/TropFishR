@@ -303,7 +303,8 @@ VPA <- function(param, terminalF, analysis.type, catch_corFac = NA, algorithm="n
                                                          analysis.type = 'CA' for
                                                          length composition data!")
 
-  if(class(catch) == 'numeric' & "midLengths" %in% names(res) == TRUE &
+  if((class(catch) == 'numeric' | class(catch) == 'integer') &
+     "midLengths" %in% names(res) == TRUE &
      analysis.type == "CA"){
 
     classes <- as.character(res$midLengths)

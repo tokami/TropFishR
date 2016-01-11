@@ -31,7 +31,7 @@
 #' @param stock_size_1 stock size of smallest size class, if NA values are calculated relative to a stock size of 1000 individuals
 #' @param unit.time in which time unit the data is provided? "month" or "year"
 #' @param plus.group if a value is provided, a plus group is created comprising this size class and all above
-#' @param curr.Lc current Lc (length at first capture)
+#' @param curr.Lc_tc current Lc (length at first capture)
 #' @param curr.E current exploitation rate
 #'
 #' @keywords function prediction
@@ -169,8 +169,8 @@
 #' @export
 
 predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_list,
-                        stock_size_1 = NA, unit.time = 'year', curr.E = NA, curr.Lc = NA,
-                        curr.tc = NA, plus.group = NA){
+                        stock_size_1 = NA, unit.time = 'year', curr.E = NA, curr.Lc_tc = NA,
+                        plus.group = NA){
   res <- param
 
   # Beverton and Holt's ypr
@@ -301,8 +301,8 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
       curr.F = (M * curr.E)/(1-curr.E)
       df_currents <- data.frame(curr.E = curr.E,
                                 curr.F = curr.F,
-                                curr.YPR = ypr((curr.F), curr.tc),
-                                curr.YPR.rel = ypr.rel(curr.F, curr.tc))
+                                curr.YPR = ypr((curr.F), curr.Lc_tc),
+                                curr.YPR.rel = ypr.rel(curr.F, curr.Lc_tc))
 
       names(list_tc_runs) <- tc
       ret <- list(res,
@@ -429,8 +429,8 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
       curr.F = (M * curr.E)/(1-curr.E)
       df_currents <- data.frame(curr.E = curr.E,
                                 curr.F = curr.F,
-                                curr.YPR = ypr((curr.F), curr.Lc),
-                                curr.YPR.rel = ypr.rel(curr.E, curr.Lc))
+                                curr.YPR = ypr((curr.F), curr.Lc_tc),
+                                curr.YPR.rel = ypr.rel(curr.E, curr.Lc_tc))
 
       names(list_Lc_runs) <- Lc
       ret <- list(res,

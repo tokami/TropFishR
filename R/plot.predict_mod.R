@@ -3,7 +3,11 @@
 #' @description This function plots objects of the class "predict_mod", which are results
 #'    of the function \code{\link{predict_mod}}.
 #'
-#' @param x a object of the class 'predict_mod',
+#' @param x a object of the class 'predict_mod'
+#' @param type default = "ypr" or "Isopleth" for isopleth plot
+#' @param xaxis1 default = "FM" which x axis should be plotted? FM or E?
+#' @param yaxis1  default = "Y_R" for ypr plot, which first y axis should be plotted? Y_R or Y_R.rel
+#' @param yaxis2 default = "B_R" for ypr plot, which second y axis should be plotted? B_R or B_R.percent
 #' @param ... optional parameters of plot function
 #'
 #' @examples
