@@ -15,7 +15,8 @@
 #'
 #' @export
 
-plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM", yaxis1 = "Y_R", yaxis2 = "B_R",...){
+plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
+                             yaxis1 = "Y_R", yaxis2 = "B_R",...){
   pes <- x
 
   #THOMPBELL
