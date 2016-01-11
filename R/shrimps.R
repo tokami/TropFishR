@@ -10,7 +10,7 @@
 #' @docType data
 #'
 #' @format A list consisting of: 1. age groups, 2. meanWeight, 3. meanValue, 4.FM,
-#'    and 5. M
+#'    5.M, 6.Linf, 7.K, and 8.t0
 #' @usage data(shrimps)
 #'
 #' @source Garcia, S. and N.P. van Zalinge, 1982. Shrimp fishing in Kuwait: methodology
