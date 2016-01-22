@@ -42,9 +42,9 @@ select_ogive <- function(s_list, Lt, Lc = NA){
   type <- s_list$selecType
   switch(type,
          'knife_edge' = {
-           if(is.na(Lc)) Lc <- s_list$Lc
+           if(is.na(Lc)) Lc <- as.numeric(as.character(s_list$Lc))
            sel <- rep(0, length(Lt))
-           sel[Lt >= Lc] <- 1
+           sel[as.numeric(as.character(Lt)) >= Lc] <- 1
          },
          'trawl_ogive' = {
            if(is.na(Lc)) Lc <- s_list$L50

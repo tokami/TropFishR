@@ -342,10 +342,10 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         return(y)
       }
       # relative yield function, according to Sparre & Venema and Gayanilo 2006:
-      ypr.rel <- function(x,z){
-        S <- 1 - (z/Linf)
-        m <- (1-x)/(M/K)    ## == K/Z
-        y <- x * S^(M/K) * (1 - ((3*S)/(1+m)) + ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
+      ypr.rel <- function(E, Lci){
+        S <- 1 - (Lci/Linf)
+        m <- (1-E)/(M/K)    ## == K/Z
+        y <- E * S^(M/K) * (1 - ((3*S)/(1+m)) + ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
         return(y)
       }
       # derivative of yield function
@@ -357,6 +357,13 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
                 ((3*K*S)/(M*((K*(1-x)/M)+1)^2)))
         des <- x * (S^(M/K)) * D  + B
         return(des)
+      }
+      # selectivity function: i = length classes from Lmin to Lmax
+      sel <- function(){
+        Ui = 1 - (Li/Linf)
+        Ui_1 = 1 - (Li_1/Linf)
+        rj = (Ui ^ ((M/K) * (E/(1-E))*Pi))/(Ui_1 ^ ((M/K) * (E/(1-E))*Pi))
+        Gi = prod(r,na.rm = TRUE)
       }
       # ___________________________________________________
 
@@ -390,6 +397,35 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         #according to Gayanilo 1997 Fisat description (wrong???):
         #         Y_R.rel <- E * S^m * (1 - ((3*S)/(1+m)) +
         #                                     ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
+
+        # Selectivity other than assumed knife edge
+        if(length(s_list) > 1){
+          for(ei in q:(length(Y_R.rel)-1)){
+
+            # If MidLengths are given
+            if("midLengths" %in% names(res)){
+              P <- select_ogive(s_list, Lt =  res$midLengths, Lc = Lci)
+              for(ii in 2:length(res$midLengths)){
+                ii = 2
+                U = 1 - (Lci/Linf)
+                rj = (U ^ ((M/K) * (E[ei]/(1-E[ei]))*P[ii]))/
+                     (U ^ ((M/K) * (E[ei]/(1-E[ei]))*P[ii]))
+                Gi = prod(rj,na.rm = TRUE)
+
+                Y_R.reli = ypr.rel(E,Lci)
+                sum((P*((Y_R.reli*Gi_1) - (Y_R.reliplus1*Gi))))
+              }
+            }
+
+          }
+
+
+        }
+
+
+        1 - (10/11)
+
+
 
         #mean length in the annual yield
         S <- 1 - (Lci/Linf)  # == U  ##(U <- 1 - (Lci/Linf))
