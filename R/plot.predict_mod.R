@@ -50,7 +50,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     par(new=TRUE)
     plot(pes$Xfact,pes$tot.Y,type ='o',ylab='',xlab='',
          col='dodgerblue',lwd=1.6,axes=FALSE,
-         ylim = c(0,ceiling(max_yiel/dim_yiel)*dim_yiel))
+         ylim = c(0,ceiling(max_yiel/dim_yiel) * dim_yiel))
     axis(4,at=pretty(c(0,pes$tot.Y)))
     mtext("Yield", side=4, line=2)
     par(new=TRUE)
@@ -76,9 +76,8 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     mat_FM_Lc_com.Y <- pes$mat_FM_Lc_com.Y
 
     # colours for plot
-    pal <- colorRampPalette(c(
-      rgb(1,0.5,0.5), rgb(1,1,0.5), rgb(0.5,1,1), rgb(0.5,0.5,1)
-    ))
+    pal <- colorRampPalette(rev(c(
+      rgb(1,0.5,0.5), rgb(1,1,0.5), rgb(0.5,1,1), rgb(0.5,0.5,1))))
 
     #plot
     image(x = FM_change,
