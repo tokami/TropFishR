@@ -16,7 +16,7 @@
 #'   \item \strong{a}: ,
 #'   \item \strong{b}: ,
 #'   \item \strong{Lr} or \strong{tr}: length or age of recuritment;}
-#' additional list objects in for the Thompson and Bell model:
+#' additional list objects for the Thompson and Bell model:
 #'  \itemize{
 #'   \item \strong{age} or \strong{midLengths}: midpoints of the length class as vector (length-frequency
 #'   data) or ages as vector (age composition data),
@@ -57,10 +57,14 @@
 #' #______________________________________
 #' # length structured data
 #' # Xiphias gladius (Berkeley and Houde 1980)
-#' swordfish <- list(Linf = 309, K = 0.0949, M = 0.18, a=0.0003, b=3, Lr = 90)  ## T_Lr , a, b ??? assumed
+#' swordfish <- list(Linf = 309, K = 0.0949, M = 0.18,
+#'                   a=0.0003, b=3, Lr = 90, growthFun = "growth_VB")  ## T_Lr , a, b ??? assumed
+#'
+#' select.list <- list(selecType = 'knife_edge', Lc = 100)
 #'
 #' # run model
-#' predict_mod(swordfish, Lc_tc_change = c(100,118,150,180), type = 'ypr')
+#' predict_mod(param = swordfish, Lc_tc_change = c(100,118,150,180),
+#'             s_list = select.list, type = 'ypr')
 #'
 #' ####test: E <- seq(0,0.9,0.1) FM <- E * M / (1 - E)
 #'
@@ -166,7 +170,7 @@
 #' Sparre, P., and Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 #' Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 #'
-#' @export
+#' #@export
 
 predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_list,
                         stock_size_1 = NA, unit.time = 'year', curr.E = NA, curr.Lc_tc = NA,
@@ -329,22 +333,22 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
 
       # yield functions
       # ___________________________________________________
-      ypr <- function(x,z){
-        S <- 1 - (z/Linf)  # == U  ##(U <- 1 - (Lci/Linf))
+      # yield function (FM_change, Lci)
+      ypr <- function(FM_change,Lci){
+        S <- 1 - (Lci/Linf)  # == U  ##(U <- 1 - (Lci/Linf))
         A <- ((Linf - Lci)/(Linf - Lr)) ^ (M/K)
-        G <- x + M   # G == Z
-        y <- x * A * Winf * ((1/G) - (3*S)/(G + K) + (3*S^2)/(G + 2*K) - (S^3)/(G + 3*K))
+        G <- FM_change + M   # G == Z
+        y <- FM_change * A * Winf * ((1/G) - (3*S)/(G + K) + (3*S^2)/(G + 2*K) - (S^3)/(G + 3*K))
         return(y)
       }
-
-      #according to Sparre & Venema and Gayanilo 2006:
+      # relative yield function, according to Sparre & Venema and Gayanilo 2006:
       ypr.rel <- function(x,z){
         S <- 1 - (z/Linf)
         m <- (1-x)/(M/K)    ## == K/Z
         y <- x * S^(M/K) * (1 - ((3*S)/(1+m)) + ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
         return(y)
       }
-
+      # derivative of yield function
       derivative <- function(x,z){
         S <- 1 - (z/Linf)
         C <- ((K*(1-x))/M)
@@ -356,9 +360,11 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
       }
       # ___________________________________________________
 
-      list_Lc_runs <- list()
-      list_Es <- list()
+
+      list_Lc_runs <- vector("list", length(Lc))
+      list_Es <- vector("list", length(Lc))
       for(i in 1:length(Lc)){
+        i  = 1
         Lci <- Lc[i]
 
         Z <- (M + FM_change)
@@ -366,7 +372,7 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         # transform Linf in Winf
         Winf <- a * (Linf ^ b)
 
-        #yiel per recurit for length data   # also possbile inputing option: F/K
+        #yiel per recruit for length data   # also possbile inputing option: F/K
         Y_R <- ypr(FM_change,Lci)
 
         #biomass per recruit for length data?
@@ -536,7 +542,7 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
       Lc_mat <- do.call(cbind,sel.list)
       colnames(Lc_mat) <- Lc_tc_change
 
-      Lc_mat_FM <- Lc_mat * max(FM,na.rm=TRUE)
+      Lc_mat_FM <- Lc_mat * max(FM, na.rm=TRUE)
 
       #list with FM_Lc_matrices per FM_change
       FM_Lc_com_mat.list <- list()
