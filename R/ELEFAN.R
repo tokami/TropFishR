@@ -403,7 +403,7 @@ ELEFAN <- function(param, range.Linf, step.Linf,
 
 
   #for CHECKING run time of big loop
-  sys_timeBF <- Sys.time()
+  ##### sys_timeBF <- Sys.time()
 
 
   ESP.tshift.L <- list()
@@ -543,8 +543,8 @@ ELEFAN <- function(param, range.Linf, step.Linf,
   }
 
   #for CHECKING run time of big loop
-  sys_timeAW <- Sys.time()
-  sys_timeAW - sys_timeBF
+  #### sys_timeAW <- Sys.time()
+  #### sys_timeAW - sys_timeBF
 
   #____________________RESPONSE SURFACE ANALYSIS___________________#
 

@@ -5,8 +5,8 @@
 \title{Prediction models: YPR and Thompson & Bell model}
 \usage{
 predict_mod(param, FM_change = NA, Lc_tc_change = NULL, type, s_list,
-  stock_size_1 = NA, unit.time = "year", curr.E = NA, curr.Lc = NA,
-  curr.tc = NA, plus.group = NA)
+  stock_size_1 = NA, unit.time = "year", curr.E = NA, curr.Lc_tc = NA,
+  plus.group = NA)
 }
 \arguments{
 \item{param}{a list consisting of following parameters (not all are required):
@@ -43,7 +43,7 @@ yield per recruit model and \code{"ThompBell"} for the Thompson and Bell model}
 
 \item{curr.E}{current exploitation rate}
 
-\item{curr.Lc}{current Lc (length at first capture)}
+\item{curr.Lc_tc}{current Lc (length at first capture)}
 
 \item{plus.group}{if a value is provided, a plus group is created comprising this size class and all above}
 }

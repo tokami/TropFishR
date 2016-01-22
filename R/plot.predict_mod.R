@@ -11,7 +11,14 @@
 #' @param ... optional parameters of plot function
 #'
 #' @examples
+#' # YPR
+#' # age structured data
+#' # Nemipterus marginatus
+#' threadfin <- list(Winf = 286,K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4)
 #'
+#' # run model
+#' predict_mod(threadfin, FM_change = seq(0,6,0.1),
+#'    Lc_tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
 #'
 #' @references
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.

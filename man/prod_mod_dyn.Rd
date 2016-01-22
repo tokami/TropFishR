@@ -2,7 +2,7 @@
 % Please edit documentation in R/prod_mod_dyn.R
 \name{prod_mod_dyn}
 \alias{prod_mod_dyn}
-\title{Non-equilibrium dynamic production models}
+\title{Non-equilibrium dynamic biomass models}
 \usage{
 prod_mod_dyn(data)
 }

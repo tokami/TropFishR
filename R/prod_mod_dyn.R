@@ -1,4 +1,4 @@
-#' @title Non-equilibrium dynamic production models
+#' @title Non-equilibrium dynamic biomass models
 #'
 #' @description Non-equilibrium dynamic biomass models
 #'

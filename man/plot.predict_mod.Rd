@@ -8,7 +8,15 @@
   yaxis2 = "B_R", ...)
 }
 \arguments{
-\item{x}{a object of the class 'predict_mod',}
+\item{x}{a object of the class 'predict_mod'}
+
+\item{type}{default = "ypr" or "Isopleth" for isopleth plot}
+
+\item{xaxis1}{default = "FM" which x axis should be plotted? FM or E?}
+
+\item{yaxis1}{default = "Y_R" for ypr plot, which first y axis should be plotted? Y_R or Y_R.rel}
+
+\item{yaxis2}{default = "B_R" for ypr plot, which second y axis should be plotted? B_R or B_R.percent}
 
 \item{...}{optional parameters of plot function}
 }
@@ -17,7 +25,14 @@ This function plots objects of the class "predict_mod", which are results
    of the function \code{\link{predict_mod}}.
 }
 \examples{
+# YPR
+# age structured data
+# Nemipterus marginatus
+threadfin <- list(Winf = 286,K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4)
 
+# run model
+predict_mod(threadfin, FM_change = seq(0,6,0.1),
+   Lc_tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
 
 }
 \references{
