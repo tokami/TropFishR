@@ -16,7 +16,7 @@
 #'   \item \strong{a}: ,
 #'   \item \strong{b}: ,
 #'   \item \strong{Lr} or \strong{tr}: length or age of recuritment;}
-#' additional list objects in for the Thompson and Bell model:
+#' additional list objects for the Thompson and Bell model:
 #'  \itemize{
 #'   \item \strong{age} or \strong{midLengths}: midpoints of the length class as vector (length-frequency
 #'   data) or ages as vector (age composition data),
@@ -61,6 +61,7 @@
 #'                   a=0.0003, b=3, Lr = 90, growthFun = "growth_VB")  ## T_Lr , a, b ??? assumed
 #'
 #' select.list <- list(selecType = 'knife_edge', Lc = 100)
+#' swordfish$midLengths <- seq(60,300,5)
 #'
 #' # run model
 #' predict_mod(param = swordfish, Lc_tc_change = c(100,118,150,180),
@@ -329,87 +330,126 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
     if("Linf" %in% names(res)){
       Linf <- res$Linf
       Lr <- res$Lr
-      res$Lc <- Lc_tc_change
-      Lc <- res$Lc
-      growthFun <- res$growthFun
-      # possible to acquire?
-      N0 <- res$N0
-      N0 = 5000
+      Lc <- Lc_tc_change
 
-      # to include selectivity function in ypr
-      res$tmax <- ceiling(log(-(0.95 * Linf)/Linf + 1)/-K + t0)
-      res$t <- seq(0, tmax, 0.1) #t_incr variable?
+      # yield functions
+      # ___________________________________________________
+      # yield function (FM_change, Lci)
+      ypr <- function(FM_change,Lci){
+        S <- 1 - (Lci/Linf)  # == U  ##(U <- 1 - (Lci/Linf))
+        A <- ((Linf - Lci)/(Linf - Lr)) ^ (M/K)
+        G <- FM_change + M   # G == Z
+        y <- FM_change * A * Winf * ((1/G) - (3*S)/(G + K) + (3*S^2)/(G + 2*K) - (S^3)/(G + 3*K))
+        return(y)
+      }
+      # relative yield function, according to Sparre & Venema and Gayanilo 2006:
+      ypr.rel <- function(E, Lci, Lti = NA){
+        if(is.na(Lti)) S <- 1 - (Lci/Linf)
+        if(!is.na(Lti)) S <- 1 - (Lti/Linf)
+        m <- (1-E)/(M/K)    ## == K/Z
+        y <- E * (S)^(M/K) * (1 - ((3*S)/(1+m)) + ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
+        return(y)
+      }
+      # derivative of yield function
+      derivative <- function(x,z){
+        S <- 1 - (z/Linf)
+        C <- ((K*(1-x))/M)
+        B <- (S^(M/K)) * (1 - ((3*S)/(1+C)) + ((3*S^2)/(1+2*C)) - ((S^3)/(1+3*C)))
+        D <- (-((3*K*S^3)/(M*((3*K*(1-x)/M)+1)^2)) + ((6*K*S^2)/(M*((2*K*(1-x)/M)+1)^2)) -
+                ((3*K*S)/(M*((K*(1-x)/M)+1)^2)))
+        des <- x * (S^(M/K)) * D  + B
+        return(des)
+      }
+      # selectivity function: i = length classes from Lmin to Lmax
+      sel <- function(expl, pcap, lengths){
+        E <- expl
+        P <- pcap
+        Lt <- lengths
+        Y_R.rel.tot.all.classes <- rep(NA,length(E))
+        for(Elevels in 1:length(E)){
+          Elevel <- E[Elevels]
+          # population levels
+          # Calculations per size class
 
-      # length
-      args.incl <- which(names(res) %in% names(formals(get(growthFun)))[1:4])
-      res$Lt <- do.call(get(growthFun), res[args.incl])
+          U = 1 - (Lt/Linf)      ###### BIG ASSUMPTION THAT LC = Lt
 
-      # weight
-      res$Wt <- a * (res$Lt ^ b)
+          # reduction factor per size group
+          r <- rep(NA, length(Lt))
+          for(x1 in 2:length(Lt)){
+            r[x1] <- (U[x1] ^ ((M/K) * (Elevel/(1-Elevel))*P[x1]))  /  (U[x1-1] ^ ((M/K) * (Elevel/(1-Elevel))*P[x1]))
+          }
 
-      # selectivity: probability of capture
-      pcap <- select_ogive(s_list, res$Lt)
+          # G per size group
+          G <- rep(NA,length(Lt))
+          for(x2 in 1:length(Lt)){
+            G[x2] <- prod(r[1:x2], na.rm = TRUE)
+          }
+          G[1] <- r[1]  # because: rLmin-1 = 1
+          G[length(Lt)] <- 0  # because: rLinf = 0
+
+          # Yield per size group
+          Y_R.rel = Elevel * (1 - (Lt/Linf))^(M/K) * (1 - ((3*(1 - (Lt/Linf)))/(1+((1-Elevel)/(M/K)))) +
+                                                         ((3*(1 - (Lt/Linf))^2)/(1+2*((1-Elevel)/(M/K)))) -
+                                                         (((1 - (Lt/Linf))^3)/(1+3*((1-Elevel)/(M/K)))))
+
+
+          Y_R.rel.tot <- rep(NA,length(Lt))
+          for(x3 in 2:(length(Lt)-1)){
+            Y_R.rel.tot[x3] <- (P[x3]*((Y_R.rel[x3]*G[x3-1]) - (Y_R.rel[x3+1]*G[x3])))
+          }
+
+          Y_R.rel.tot.all.classes[Elevels] <- sum(Y_R.rel.tot, na.rm=TRUE)
+        }
+        return(Y_R.rel.tot.all.classes)
+      }
+      # ___________________________________________________
 
       list_Lc_runs <- vector("list", length(Lc))
       list_Es <- vector("list", length(Lc))
       for(i in 1:length(Lc)){
         i  = 1
-        j = 2
         Lci <- Lc[i]
 
-        for(j in 1:length(FM_change)){
-          FM <- FM_change[j]
+        Z <- (M + FM_change)
+        E <- FM_change/Z
+        # transform Linf in Winf
+        Winf <- a * (Linf ^ b)
 
-          FMt <- pcap * FM
-          Z <- FMt + M
-          # transform Linf in Winf
-          Winf <- a * (Linf ^ b)
+        #yiel per recruit for length data   # also possbile inputing option: F/K
+        Y_R <- ypr(FM_change,Lci)
 
-          Nt.noF <- N0 * exp(-M * t)
-          Nt <- 0 * t
-          Nt[1] <- N0
-          Ct <- 0 * t
-          Nt[1] <- N0
-          for (o in 2:length(t)) {
-            Nt[o] <- Nt[o - 1] * exp(-(M + FMt[o]) * (t[o] - t[o - 1]))
-            Ct[o - 1] <- ((FMt[o])/(M + FMt[o])) * (Nt[o -1] * (1 - exp(-(M + FMt[o]) * (t[o] - t[o - 1]))))
-          }
-          Yt <- Ct * Wt
-          Bt <- Nt * Wt
-          Bt.noF <- Nt.noF * Wt
+        #biomass per recruit for length data?
+        B_R <- Y_R / FM_change
 
-          Lopt <- Lt[which.max(Bt.noF)]
-          Lopt.plus_minus_10 <- c(Lopt - Lopt * 0.1, Lopt + Lopt *
-                                    0.1)
-          Lt.in.Lopt <- Lt >= Lopt.plus_minus_10[1] & Lt <= Lopt.plus_minus_10[2]
-          Lt.in.mega <- Lt >= Lopt.plus_minus_10[2]
-          Y <- sum(Yt, na.rm = TRUE)
-          Ftot <- sum(Yt/Bt, na.rm = TRUE)/res$tmax
-          fracC.Lopt <- sum(Ct * Lt.in.Lopt, na.rm = TRUE)/sum(Ct,
-                                                               na.rm = TRUE)
-          fracN.mega <- sum(Nt * Lt.in.mega, na.rm = TRUE)/sum(Nt,
-                                                               na.rm = TRUE)
-          fracC.mega <- sum(Ct * Lt.in.mega, na.rm = TRUE)/sum(Ct,
-                                                               na.rm = TRUE)
+        #virgin biomass
+        Bv_R <- B_R[(which(FM_change == 0)+1)]  ### CHECK: if == 0 than 0 NaN because yield and FM_change is 0
+        #biomass of exploited part of the cohort (biomass of fish older than tc)
 
-          #virgin biomass
-          Bv_R <- B_R[(which(FM_change == 0)+1)]
+        #biomass in percetage of virgin biomass
+        B_R.percent <- round((B_R / Bv_R ) * 100, digits = 1)
 
-          #biomass in percetage of virgin biomass
-          B_R.percent <- round((B_R / Bv_R ) * 100, digits = 1)
+        #relative yield per recruit - mostly done with length frequency data (exclusively?)
+        if(length(s_list) = 1) Y_R.rel <- ypr.rel(E, Lci)
+        #according to Gayanilo 1997 Fisat description (wrong???):
+        #         Y_R.rel <- E * S^m * (1 - ((3*S)/(1+m)) +
+        #                                     ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
 
-          #mean length in the annual yield
-          S <- 1 - (Lci/Linf)  # == U  ##(U <- 1 - (Lci/Linf))
-          Ly <- Linf * (1 - ((Z*S)/(Z+K)))
-
-          results.FM <- list(
-            tot.Y
-          )
-
+        # Other selectivity than assumed knife edge
+        if(length(s_list) > 1){
+          if("midLengths" %in% names(res)) Lt <- res$midLengths
+          if(!"midLengths" %in% names(res)) Lt <- seq(Lmin,Linf,Lincr)
+          P <- select_ogive(s_list, Lt =  res$midLengths, Lc = Lci)
+          Y_R.rel <- sel(E, P, Lt)
         }
 
-        results.Lc
+        #mean length in the annual yield
+        S <- 1 - (Lci/Linf)  # == U  ##(U <- 1 - (Lci/Linf))
+        Ly <- Linf * (1 - ((Z*S)/(Z+K)))
 
+        #mean weight in annual yield
+        # Wy <- (M+FM_change) * Winf *
+        #    ((1/(FM_change+M)) - ((3*S)/((M+FM_change)+K)) +
+        #       ((3*(S^2))/((M+FM_change)+(2*K))) - ((S^3)/((M+FM_change) + (3*K))))
 
         results.PBH <- data.frame(FM = FM_change,
                                   Ly = Ly,
