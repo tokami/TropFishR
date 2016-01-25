@@ -388,9 +388,13 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
           G[length(Lt)] <- 0  # because: rLinf = 0
 
           # Yield per size group
-          Y_R.rel = Elevel * (1 - (Lt/Linf))^(M/K) * (1 - ((3*(1 - (Lt/Linf)))/(1+((1-Elevel)/(M/K)))) +
-                                                         ((3*(1 - (Lt/Linf))^2)/(1+2*((1-Elevel)/(M/K)))) -
-                                                         (((1 - (Lt/Linf))^3)/(1+3*((1-Elevel)/(M/K)))))
+#           Y_R.rel = Elevel * (1 - (Lt/Linf))^(M/K) * (1 - ((3*(1 - (Lt/Linf)))/(1+((1-Elevel)/(M/K)))) +
+#                                                          ((3*(1 - (Lt/Linf))^2)/(1+2*((1-Elevel)/(M/K)))) -
+#                                                          (((1 - (Lt/Linf))^3)/(1+3*((1-Elevel)/(M/K)))))
+
+          Y_R.rel = Elevel * (1 - (Lt/Linf))^((1-Elevel)/(M/K)) * (1 - ((3*(1 - (Lt/Linf)))/(1+((1-Elevel)/((1-Elevel)/(M/K))))) +
+                                                                     ((3*(1 - (Lt/Linf))^2)/(1+2*((1-Elevel)/((1-Elevel)/(M/K))))) -
+                                                                     (((1 - (Lt/Linf))^3)/(1+3*((1-Elevel)/((1-Elevel)/(M/K))))))
 
 
           Y_R.rel.tot <- rep(NA,length(Lt))
@@ -403,7 +407,7 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         return(Y_R.rel.tot.all.classes)
       }
       # derivative of selectivity function
-      derivative.sel <- function(expl,pcap,lengths){
+      derivative.sel <- function(expl, pcap, lengths){
         E <- expl
         P <- pcap
         Lt <- lengths
@@ -418,16 +422,24 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
           # reduction factor per size group
           r <- rep(NA, length(Lt))
           for(x1 in 2:length(Lt)){
-            r[x1] <- (U[x1] ^ ((M/K) * (Elevel/(1-Elevel))*P[x1]))  /  (U[x1-1] ^ ((M/K) * (Elevel/(1-Elevel))*P[x1]))
+            r[x1] <- (U[x1] ^ ((M/K) * (Elevel/(1-Elevel))*P[x1]))  /
+              (U[x1-1] ^ ((M/K) * (Elevel/(1-Elevel))*P[x1]))
           }
 
           # derivative of r
           r.dev <- rep(NA,length(Lt))
           for(x1a in 2:length(Lt)){
-            r.dev[x1a] <- (M * P[x1a] *log(U[x1a])) / (K * U[x1a] *
-                                                         ((M * P[x1a] * Elevel) / (K*Elevel - K)) *
-                                                         (Elevel - 1)^2)
+            num <- U[x1a] ^ ((M/K) * (Elevel/(1-Elevel))*P[x1a])
+            denum <- U[x1a-1] ^ ((M/K) * (Elevel/(1-Elevel))*P[x1a])
+            dev.num <-
+              (M * P[x1a] *log(U[x1a])) / ((K * U[x1a] ^ ((M * P[x1a] * Elevel) /(K*Elevel - K))) *(Elevel - 1)^2)
+            dev.denum <-
+              (M * P[x1a] *log(U[x1a-1])) / ((K * U[x1a-1] ^ ((M * P[x1a] * Elevel) /(K*Elevel - K))) *(Elevel - 1)^2)
+
+            r.dev[x1a] <- (dev.num * denum - num * dev.denum) / denum ^2
           }
+
+
 
           # G per size group
           G <- rep(NA,length(Lt))
@@ -440,42 +452,49 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
           # derivative of G
           G.dev <- rep(NA,length(Lt))
           for(x2a in 1:length(Lt)){
-            re.G <- vector("list",length(x2a))
+            re.G <- rep(NA,length(x2a))
             for(x2b in 1:x2a){
               if(length(r.dev[x2b] * r[1:x2a][-x2b]) == 0){
-                re.G[[x2b]] <- NA
-              }else re.G[[x2b]] <- r.dev[x2b] * r[1:x2a][-x2b]
+                re.G[x2b] <- NA
+              }else re.G[x2b] <- r.dev[x2b] * prod(r[1:x2a][-x2b],na.rm=TRUE)
             }
-            G.dev[x2a] <- sum(unlist(re.G), na.rm=TRUE)
+            G.dev[x2a] <- sum(re.G, na.rm=TRUE)
           }
 
           # Yield per size group
-          Y_R.rel = Elevel * (1 - (Lt/Linf))^(M/K) * (1 - ((3*(1 - (Lt/Linf)))/(1+((1-Elevel)/(M/K)))) +
-                                                        ((3*(1 - (Lt/Linf))^2)/(1+2*((1-Elevel)/(M/K)))) -
-                                                        (((1 - (Lt/Linf))^3)/(1+3*((1-Elevel)/(M/K)))))
+          Y_R.relA = Elevel * (1 - (Lt/Linf))^((1-Elevel)/(M/K)) * (1 - ((3*(1 - (Lt/Linf)))/(1+((1-Elevel)/((1-Elevel)/(M/K))))) +
+                                                        ((3*(1 - (Lt/Linf))^2)/(1+2*((1-Elevel)/((1-Elevel)/(M/K))))) -
+                                                        (((1 - (Lt/Linf))^3)/(1+3*((1-Elevel)/((1-Elevel)/(M/K))))))
+          Y_R.rel.tot <- rep(NA,length(Lt))
+          for(x3 in 2:(length(Lt)-1)){
+            Y_R.rel.tot[x3] <- (P[x3]*((Y_R.relA[x3]*G[x3-1]) - (Y_R.relA[x3+1]*G[x3])))
+          }
+          Y_R.rel = Y_R.rel.tot
 
-          # derivative of Y_R.rel
+          # derivative of Y_R.rel per size group
           dev.Y_R.rel <- rep(NA,length(Lt))
-          for(x3 in 1:length(Lt)){
-            dev.Y_R.rel[x3] <- derivative(Elevel, Lt[x3])
+          for(x4 in 1:length(Lt)){
+            S = 1 - (Lt[x4]/Linf)
+            A = (K*Elevel - K)/M
+            B = M/K
+            C = ((-(3*S)/(B+1)) - ((S^3)/(3*B+1)) + ((3*S^2)/(2*B+1)) + 1)
+            dev.Y_R.rel[x4] <- (C / (S^A)) - ((K*log(S)*Elevel*C) / (M*S^A))
+
+            #dev.Y_R.rel[x4] <- derivative(Elevel, Lt[x4])
           }
 
 
           # total derivative
           dev.tot <- rep(NA,length(Lt))
-          for(x3 in 2:(length(Lt)-1)){
-
-            firstA <- Y_R.rel[x3]*G.dev[x3-1] + dev.Y_R.rel[x3]*G[x3-1]
-            secondA <- Y_R.rel[x3+1]*G.dev[x3] + dev.Y_R.rel[x3+1]*G[x3]
-            dev.tot[x3] <- P[x3]* (firstA - secondA)
-
+          for(x5 in 2:(length(Lt)-1)){
+            firstA <- Y_R.rel[x5]*G.dev[x5-1] + dev.Y_R.rel[x5]*G[x5-1]
+            secondA <- Y_R.rel[x5+1]*G.dev[x5] + dev.Y_R.rel[x5+1]*G[x5]
+            dev.tot[x5] <- P[x5] * (firstA - secondA)
             #dev.tot[x3] <- (P[x3]*((dev.Y_R.rel[x3]*G.dev[x3-1]) - (dev.Y_R.rel[x3+1]*G.dev[x3])))
           }
-
           dev.tot.all.classes[Elevels] <- sum(dev.tot, na.rm=TRUE)
         }
         return(dev.tot.all.classes)
-
       }
       # ___________________________________________________
 
@@ -556,12 +575,14 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
 
 
         # First derivative of relative yield per recruit model
-        deri <- derivative(E, Lci)
+        if(length(s_list) == 1) deri <- derivative(E, Lci)
+        if(length(s_list) > 1) deri <- derivative.sel(E, P, Lt)
 
         # reference points
         N01 <- which.min(abs(deri - (deri[1] * 0.1)))
         N05 <- which.min(abs(deri - (deri[1] * 0.5)))   ##which.min(abs(B_R.percent - 50)) # wrong!!!
         Nmax <- which.min(abs(deri))
+
 
         df_loop_Es <- data.frame(Lc = Lci,
                                  F01 = FM_change[N01],
