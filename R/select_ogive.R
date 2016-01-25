@@ -47,10 +47,17 @@ select_ogive <- function(s_list, Lt, Lc = NA){
            sel[as.numeric(as.character(Lt)) >= Lc] <- 1
          },
          'trawl_ogive' = {
-           if(is.na(Lc)) Lc <- s_list$L50
-           L50 <-  Lc    #correct???
-           #and L75 ???   -> same relationship between L50 and L75 ? then:
-           L75 <-  Lc / (s_list$L50 / s_list$L75)
+           if(is.na(Lc)){
+             L50 <- s_list$L50
+             L75 <- s_list$L75
+           }
+           # if new Lc (L50) value is provided:
+           if(!is.na(Lc)){
+             L50old <- s_list$L50
+             L75old <- s_list$L75
+             L50 <- Lc   #correct that they are synonyms?
+             L75 <- L75old * (L50/L50old)   # before:  # if new Lc value(s) are provided, put L75 in relation to new values, based on relationship of old L50 to L75 relation
+           }
 
            sel <- 1 / (1 + exp(- (Lt - L50)/
                                  ((2*(L75 - L50))/(log(0.75/(1-0.75))-

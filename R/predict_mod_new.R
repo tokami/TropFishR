@@ -1,4 +1,4 @@
-#' @title Prediction models: YPR and Thompson & Bell model
+#' @title Prediction models: Beverton & Holt's yield per recruit model and the Thompson & Bell model
 #
 #' @description  This is a function predicting catch, yield, biomass and economic values for different
 #'    fishing mortality scenarions (in combination with gear changes). It allows to choose if the
@@ -60,12 +60,12 @@
 #' swordfish <- list(Linf = 309, K = 0.0949, M = 0.18,
 #'                   a=0.0003, b=3, Lr = 90, growthFun = "growth_VB")  ## T_Lr , a, b ??? assumed
 #'
-#' select.list <- list(selecType = 'knife_edge', Lc = 100)
-#' swordfish$midLengths <- seq(60,300,5)
+#' select.list <- list(selecType = 'trawl_ogive', L50 = 120, L75 = 132) ###Lc = 100)
+#' #swordfish$midLengths <- seq(60,300,5)
 #'
 #' # run model
 #' predict_mod(param = swordfish, Lc_tc_change = c(100,118,150,180),
-#'             s_list = select.list, type = 'ypr')
+#'             s_list = select.list, type = 'ypr', Lmin = 90, Lincr = 8)
 #'
 #' ####test: E <- seq(0,0.9,0.1) FM <- E * M / (1 - E)
 #'
@@ -175,7 +175,7 @@
 
 predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_list,
                         stock_size_1 = NA, unit.time = 'year', curr.E = NA, curr.Lc_tc = NA,
-                        plus.group = NA){
+                        plus.group = NA, Lmin = NA, Lincr = NA){
   res <- param
 
   # Beverton and Holt's ypr
@@ -357,7 +357,7 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         B <- (S^(M/K)) * (1 - ((3*S)/(1+C)) + ((3*S^2)/(1+2*C)) - ((S^3)/(1+3*C)))
         D <- (-((3*K*S^3)/(M*((3*K*(1-x)/M)+1)^2)) + ((6*K*S^2)/(M*((2*K*(1-x)/M)+1)^2)) -
                 ((3*K*S)/(M*((K*(1-x)/M)+1)^2)))
-        des <- x * (S^(M/K)) * D  + B
+        des <- x * (S^(M/K)) * D + B
         return(des)
       }
       # selectivity function: i = length classes from Lmin to Lmax
@@ -416,9 +416,16 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
 
         # Other selectivity than assumed knife edge
         if(length(s_list) > 1){
-          if("midLengths" %in% names(res)) Lt <- res$midLengths
-          if(!"midLengths" %in% names(res)) Lt <- seq(Lmin,Linf,Lincr)
-          P <- select_ogive(s_list, Lt =  res$midLengths, Lc = Lci)
+          if("midLengths" %in% names(res)){
+            Lincr <- res$midLengths[2] - res$midLengths[1]
+            Lmin <- res$midLengths[1] - (Lincr/2)
+          }  ### before: with midlength:: Lt <- res$midLengths
+          if(!"midLengths" %in% names(res)){
+            Lmin <- Lmin
+            Lincr <- Lincr
+          }
+          Lt <- seq(Lmin,Linf,Lincr)
+          P <- select_ogive(s_list, Lt =  Lt, Lc = Lci)
           Y_R.rel <- ypr.rel.sel(E, P, Lt)
 
           # convert Y_R.rel to Y_R
@@ -427,6 +434,9 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
 
           tr = ((log(1-(Lr/Linf)))/K) + t0
           Y_R = Y_R.rel / (exp(M*(tr - t0)/Winf))
+
+          if(i == length(Lc)) plot(Lt, P, type = 'l', ylab = 'Prob of capture',
+                                   main = 'Selectivity function')
         }
 
         # KNIFE EDGE SELECTION
@@ -475,7 +485,7 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
 
         # reference points
         N01 <- which.min(abs(deri - (deri[1] * 0.1)))
-        N05 <- which.min(abs(B_R.percent - 50))    ##which.min(abs(deri - (deri[1] * 0.5)))
+        N05 <- which.min(abs(deri - (deri[1] * 0.5)))   ##which.min(abs(B_R.percent - 50)) # wrong!!!
         Nmax <- which.min(abs(deri))
 
         df_loop_Es <- data.frame(Lc = Lci,
