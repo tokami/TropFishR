@@ -402,6 +402,81 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         }
         return(Y_R.rel.tot.all.classes)
       }
+      # derivative of selectivity function
+      derivative.sel <- function(expl,pcap,lengths){
+        E <- expl
+        P <- pcap
+        Lt <- lengths
+        dev.tot.all.classes <- rep(NA,length(E))
+        for(Elevels in 1:length(E)){
+          Elevel <- E[Elevels]
+          # population levels
+          # Calculations per size class
+
+          U = 1 - (Lt/Linf)      ###### BIG ASSUMPTION THAT LC = Lt
+
+          # reduction factor per size group
+          r <- rep(NA, length(Lt))
+          for(x1 in 2:length(Lt)){
+            r[x1] <- (U[x1] ^ ((M/K) * (Elevel/(1-Elevel))*P[x1]))  /  (U[x1-1] ^ ((M/K) * (Elevel/(1-Elevel))*P[x1]))
+          }
+
+          # derivative of r
+          r.dev <- rep(NA,length(Lt))
+          for(x1a in 2:length(Lt)){
+            r.dev[x1a] <- (M * P[x1a] *log(U[x1a])) / (K * U[x1a] *
+                                                         ((M * P[x1a] * Elevel) / (K*Elevel - K)) *
+                                                         (Elevel - 1)^2)
+          }
+
+          # G per size group
+          G <- rep(NA,length(Lt))
+          for(x2 in 1:length(Lt)){
+            G[x2] <- prod(r[1:x2], na.rm = TRUE)
+          }
+          G[1] <- r[1]  # because: rLmin-1 = 1
+          G[length(Lt)] <- 0  # because: rLinf = 0
+
+          # derivative of G
+          G.dev <- rep(NA,length(Lt))
+          for(x2a in 1:length(Lt)){
+            re.G <- vector("list",length(x2a))
+            for(x2b in 1:x2a){
+              if(length(r.dev[x2b] * r[1:x2a][-x2b]) == 0){
+                re.G[[x2b]] <- NA
+              }else re.G[[x2b]] <- r.dev[x2b] * r[1:x2a][-x2b]
+            }
+            G.dev[x2a] <- sum(unlist(re.G), na.rm=TRUE)
+          }
+
+          # Yield per size group
+          Y_R.rel = Elevel * (1 - (Lt/Linf))^(M/K) * (1 - ((3*(1 - (Lt/Linf)))/(1+((1-Elevel)/(M/K)))) +
+                                                        ((3*(1 - (Lt/Linf))^2)/(1+2*((1-Elevel)/(M/K)))) -
+                                                        (((1 - (Lt/Linf))^3)/(1+3*((1-Elevel)/(M/K)))))
+
+          # derivative of Y_R.rel
+          dev.Y_R.rel <- rep(NA,length(Lt))
+          for(x3 in 1:length(Lt)){
+            dev.Y_R.rel[x3] <- derivative(Elevel, Lt[x3])
+          }
+
+
+          # total derivative
+          dev.tot <- rep(NA,length(Lt))
+          for(x3 in 2:(length(Lt)-1)){
+
+            firstA <- Y_R.rel[x3]*G.dev[x3-1] + dev.Y_R.rel[x3]*G[x3-1]
+            secondA <- Y_R.rel[x3+1]*G.dev[x3] + dev.Y_R.rel[x3+1]*G[x3]
+            dev.tot[x3] <- P[x3]* (firstA - secondA)
+
+            #dev.tot[x3] <- (P[x3]*((dev.Y_R.rel[x3]*G.dev[x3-1]) - (dev.Y_R.rel[x3+1]*G.dev[x3])))
+          }
+
+          dev.tot.all.classes[Elevels] <- sum(dev.tot, na.rm=TRUE)
+        }
+        return(dev.tot.all.classes)
+
+      }
       # ___________________________________________________
 
       list_Lc_runs <- vector("list", length(Lc))
