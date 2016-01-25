@@ -361,7 +361,7 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         return(des)
       }
       # selectivity function: i = length classes from Lmin to Lmax
-      sel <- function(expl, pcap, lengths){
+      ypr.rel.sel <- function(expl, pcap, lengths){
         E <- expl
         P <- pcap
         Lt <- lengths
@@ -407,7 +407,6 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
       list_Lc_runs <- vector("list", length(Lc))
       list_Es <- vector("list", length(Lc))
       for(i in 1:length(Lc)){
-        i  = 1
         Lci <- Lc[i]
 
         Z <- (M + FM_change)
@@ -415,8 +414,32 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         # transform Linf in Winf
         Winf <- a * (Linf ^ b)
 
-        #yiel per recruit for length data   # also possbile inputing option: F/K
-        Y_R <- ypr(FM_change,Lci)
+        # Other selectivity than assumed knife edge
+        if(length(s_list) > 1){
+          if("midLengths" %in% names(res)) Lt <- res$midLengths
+          if(!"midLengths" %in% names(res)) Lt <- seq(Lmin,Linf,Lincr)
+          P <- select_ogive(s_list, Lt =  res$midLengths, Lc = Lci)
+          Y_R.rel <- ypr.rel.sel(E, P, Lt)
+
+          # convert Y_R.rel to Y_R
+          # Y_R.rel  = Y_R * exp(M*(tr - t0)/Winf)
+          # Lr = Linf * (1 - exp(-K * (tr - t0)))
+
+          tr = ((log(1-(Lr/Linf)))/K) + t0
+          Y_R = Y_R.rel / (exp(M*(tr - t0)/Winf))
+        }
+
+        # KNIFE EDGE SELECTION
+        #relative yield per recruit - mostly done with length frequency data (exclusively?)
+        if(length(s_list) == 1){
+          Y_R.rel <- ypr.rel(E, Lci)
+          #according to Gayanilo 1997 Fisat description (wrong???):
+          #         Y_R.rel <- E * S^m * (1 - ((3*S)/(1+m)) +
+          #                                     ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
+
+          #yiel per recruit for length data   # also possbile inputing option: F/K
+          Y_R <- ypr(FM_change,Lci)
+        }
 
         #biomass per recruit for length data?
         B_R <- Y_R / FM_change
@@ -427,20 +450,6 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
 
         #biomass in percetage of virgin biomass
         B_R.percent <- round((B_R / Bv_R ) * 100, digits = 1)
-
-        #relative yield per recruit - mostly done with length frequency data (exclusively?)
-        if(length(s_list) = 1) Y_R.rel <- ypr.rel(E, Lci)
-        #according to Gayanilo 1997 Fisat description (wrong???):
-        #         Y_R.rel <- E * S^m * (1 - ((3*S)/(1+m)) +
-        #                                     ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
-
-        # Other selectivity than assumed knife edge
-        if(length(s_list) > 1){
-          if("midLengths" %in% names(res)) Lt <- res$midLengths
-          if(!"midLengths" %in% names(res)) Lt <- seq(Lmin,Linf,Lincr)
-          P <- select_ogive(s_list, Lt =  res$midLengths, Lc = Lci)
-          Y_R.rel <- sel(E, P, Lt)
-        }
 
         #mean length in the annual yield
         S <- 1 - (Lci/Linf)  # == U  ##(U <- 1 - (Lci/Linf))

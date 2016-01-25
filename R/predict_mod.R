@@ -61,6 +61,7 @@
 #'                   a=0.0003, b=3, Lr = 90, growthFun = "growth_VB")  ## T_Lr , a, b ??? assumed
 #'
 #' select.list <- list(selecType = 'knife_edge', Lc = 100)
+#' swordfish$midLengths <- seq(60,300,5)
 #'
 #' # run model
 #' predict_mod(param = swordfish, Lc_tc_change = c(100,118,150,180),
@@ -342,10 +343,11 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         return(y)
       }
       # relative yield function, according to Sparre & Venema and Gayanilo 2006:
-      ypr.rel <- function(E, Lci){
-        S <- 1 - (Lci/Linf)
+      ypr.rel <- function(E, Lci, Lti = NA){
+        if(is.na(Lti)) S <- 1 - (Lci/Linf)
+        if(!is.na(Lti)) S <- 1 - (Lti/Linf)
         m <- (1-E)/(M/K)    ## == K/Z
-        y <- E * S^(M/K) * (1 - ((3*S)/(1+m)) + ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
+        y <- E * (S)^(M/K) * (1 - ((3*S)/(1+m)) + ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
         return(y)
       }
       # derivative of yield function
@@ -366,7 +368,6 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         Gi = prod(r,na.rm = TRUE)
       }
       # ___________________________________________________
-
 
       list_Lc_runs <- vector("list", length(Lc))
       list_Es <- vector("list", length(Lc))
@@ -403,19 +404,23 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
           for(ei in q:(length(Y_R.rel)-1)){
 
             # If MidLengths are given
+            res$midLengths <- seq(60,300,5)
+            Lt <- res$midLengths
             if("midLengths" %in% names(res)){
               P <- select_ogive(s_list, Lt =  res$midLengths, Lc = Lci)
               for(ii in 2:length(res$midLengths)){
                 ii = 2
-                U = 1 - (Lci/Linf)
-                rj = (U ^ ((M/K) * (E[ei]/(1-E[ei]))*P[ii]))/
-                     (U ^ ((M/K) * (E[ei]/(1-E[ei]))*P[ii]))
+                Ui = 1 - (Lci/Lt[ii])
+                Ui_1 = 1 - (Lci/Lt[ii-1])
+                rj = (Ui ^ ((M/K) * (E/(1-E))*P[ii]))/
+                     (Ui_1 ^ ((M/K) * (E/(1-E))*P[ii]))
                 Gi = prod(rj,na.rm = TRUE)
+                Gi_1 = prod(rj,na.rm = TRUE)
 
-                Y_R.reli = ypr.rel(E,Lci)
+                Y_R.reli = ypr.rel(E,Lci, Lt[ii])
                 sum((P*((Y_R.reli*Gi_1) - (Y_R.reliplus1*Gi))))
               }
-            }
+            }   # rLmin - 1  = 1 ,   rLinf =  0
 
           }
 
