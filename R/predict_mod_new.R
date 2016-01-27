@@ -210,17 +210,17 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
              ((3*(S^2))/((M + x)+(2*K))) - ((S^3)/((M + x) + (3*K))))
         return(y)
       }
-
+      # yield per recruit
       ypr <- function(x,z){
         y <- x * (bpr(x,z))
         return(y)
       }
-
+      # realtive yield per recruit
       ypr.rel <- function(x,z){
         y <- ypr(x,z) * (exp(-M *(tr - t0))) / Winf
         return(y)
       }
-
+      # derivative
       derivative <- function(x,z){
         S <- exp(-K * (z - t0))
         C <- ((K*(1-x))/M)
@@ -232,8 +232,8 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
       }
       # ___________________________________________________
 
-      list_tc_runs <- list()
-      list_Es <- list()
+      list_tc_runs <- vector("list",length(tc))
+      list_Es <- vector("list",length(tc))
       for(i in 1:length(tc)){
         tci <- tc[i]
 
@@ -310,12 +310,12 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
                                 curr.YPR.rel = ypr.rel(curr.F, curr.Lc_tc))
 
       names(list_tc_runs) <- tc
-      ret <- list(res,
-                  FM = FM_change,
-                  tc = tc,
-                  list_tc_runs = list_tc_runs,
-                  df_Es = df_Es,
-                  currents = df_currents)
+      ret <- c(res,list(
+        FM = FM_change,
+        tc = tc,
+        list_tc_runs = list_tc_runs,
+        df_Es = df_Es,
+        currents = df_currents))
 
       class(ret) <- "predict_mod"
       # plot results
@@ -348,19 +348,21 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         if(!is.na(Lti)) S <- 1 - (Lti/Linf)
         m <- (1-E)/(M/K)    ## == K/Z
         y <- E * (S)^(M/K) * (1 - ((3*S)/(1+m)) + ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
+        # according to Gayanilo 1997 Fisat description (wrong???):
+        # y <- E * (S)^(m) * (1 - ((3*S)/(1+m)) + ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
         return(y)
       }
       # derivative of yield function
-      derivative <- function(x,z){
-        S <- 1 - (z/Linf)
-        C <- ((K*(1-x))/M)
+      derivative <- function(E, Lci){
+        S <- 1 - (Lci/Linf)
+        C <- ((K*(1-E))/M)
         B <- (S^(M/K)) * (1 - ((3*S)/(1+C)) + ((3*S^2)/(1+2*C)) - ((S^3)/(1+3*C)))
-        D <- (-((3*K*S^3)/(M*((3*K*(1-x)/M)+1)^2)) + ((6*K*S^2)/(M*((2*K*(1-x)/M)+1)^2)) -
-                ((3*K*S)/(M*((K*(1-x)/M)+1)^2)))
-        des <- x * (S^(M/K)) * D + B
+        D <- (-((3*K*S^3)/(M*((3*K*(1-E)/M)+1)^2)) + ((6*K*S^2)/(M*((2*K*(1-E)/M)+1)^2)) -
+                ((3*K*S)/(M*((K*(1-E)/M)+1)^2)))
+        des <- E * (S^(M/K)) * D + B
         return(des)
       }
-      # selectivity function: i = length classes from Lmin to Lmax
+      # relative yield function with selection ogive: i = length classes from Lmin to Lmax
       ypr.rel.sel <- function(expl, pcap, lengths){
         E <- expl
         P <- pcap
@@ -406,6 +408,48 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         }
         return(Y_R.rel.tot.all.classes)
       }
+      # relative biomass function with selction ogive
+      bpr.rel.sel <- function(expl, pcap, lengths){
+        E <- expl
+        P <- pcap
+        Lt <- lengths
+        Y_R.rel.tot.all.classes <- rep(NA,length(E))
+        for(Elevels in 1:length(E)){
+          Elevel <- E[Elevels]
+          # population levels
+          # Calculations per size class
+
+          U = 1 - (Lt/Linf)      ###### BIG ASSUMPTION THAT LC = Lt
+
+          # reduction factor per size group
+          r <- rep(NA, length(Lt))
+          for(x1 in 2:length(Lt)){
+            r[x1] <- (U[x1] ^ ((M/K) * (Elevel/(1-Elevel))*P[x1]))  /  (U[x1-1] ^ ((M/K) * (Elevel/(1-Elevel))*P[x1]))
+          }
+
+          # G per size group
+          G <- rep(NA,length(Lt))
+          for(x2 in 1:length(Lt)){
+            G[x2] <- prod(r[1:x2], na.rm = TRUE)
+          }
+          G[1] <- r[1]  # because: rLmin-1 = 1
+          G[length(Lt)] <- 0  # because: rLinf = 0
+
+          m = (1-Elevel)/(M/K)  #  == K/Z
+          mx = m / (1 - Elevel) # == 1/(M/K)
+          A <- (1 - ((3*U)/(1+m)) + ((3*U^2)/(1+2*m)) - ((U^3)/(1+3*m)))
+          B <- (1 - ((3*U)/(1+mx)) + ((3*U^2)/(1+2*mx)) - ((U^3)/(1+3*mx)))
+          B_R.rel <- (1-Elevel) * (A/B)
+
+          B_R.rel.tot <- rep(NA,length(Lt))
+          for(x3 in 2:(length(Lt)-1)){
+            B_R.rel.tot[x3] <- (P[x3]*((B_R.rel[x3]*G[x3-1]) - (B_R.rel[x3+1]*G[x3])))
+          }
+
+          B_R.rel.tot.all.classes[Elevels] <- sum(B_R.rel.tot, na.rm=TRUE)
+        }
+        return(B_R.rel.tot.all.classes)
+      }
       # derivative of selectivity function
       derivative.sel <- function(expl, pcap, lengths){
         E <- expl
@@ -414,7 +458,6 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         dev.tot.all.classes <- rep(NA,length(E))
         for(Elevels in 1:length(E)){
           Elevel <- E[Elevels]
-          # population levels
           # Calculations per size class
 
           U = 1 - (Lt/Linf)      ###### BIG ASSUMPTION THAT LC = Lt
@@ -513,21 +556,19 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
           if("midLengths" %in% names(res)){
             Lincr <- res$midLengths[2] - res$midLengths[1]
             Lmin <- res$midLengths[1] - (Lincr/2)
-          }  ### before: with midlength:: Lt <- res$midLengths
+          }
           if(!"midLengths" %in% names(res)){
             Lmin <- Lmin
             Lincr <- Lincr
-          }
+          } # make Lt fixed except depending on Linf and as detailed as possible, e.g. Lincr = 0.5 (takes a lot time)
           Lt <- seq(Lmin,Linf,Lincr)
           P <- select_ogive(s_list, Lt =  Lt, Lc = Lci)
           Y_R.rel <- ypr.rel.sel(E, P, Lt)
 
           # convert Y_R.rel to Y_R
-          # Y_R.rel  = Y_R * exp(M*(tr - t0)/Winf)
-          # Lr = Linf * (1 - exp(-K * (tr - t0)))
-
-          tr = ((log(1-(Lr/Linf)))/K) + t0
-          Y_R = Y_R.rel / (exp(M*(tr - t0)/Winf))
+          tr = ((log(1-(Lr/Linf)))/K) + t0  # Lr = Linf * (1 - exp(-K * (tr - t0)))
+          Y_R = Y_R.rel / (exp(M*(tr - t0)/Winf))  # Y_R.rel  = Y_R * exp(M*(tr - t0)/Winf)
+          B_R.rel = bpr.rel.sel(E, P, Lt)  ## NEW
 
           if(i == length(Lc)) plot(Lt, P, type = 'l', ylab = 'Prob of capture',
                                    main = 'Selectivity function')
@@ -537,26 +578,22 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         #relative yield per recruit - mostly done with length frequency data (exclusively?)
         if(length(s_list) == 1){
           Y_R.rel <- ypr.rel(E, Lci)
-          #according to Gayanilo 1997 Fisat description (wrong???):
-          #         Y_R.rel <- E * S^m * (1 - ((3*S)/(1+m)) +
-          #                                     ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
-
-          #yiel per recruit for length data   # also possbile inputing option: F/K
+          # yield per recruit for length data   # also possbile inputing option: F/K
           Y_R <- ypr(FM_change,Lci)
+#           #biomass per recruit for length data?
+#           B_R <- Y_R / FM_change
+          # relative biomass per recruit for length data?
+          B_R.rel <- Y_R.rel / FM_change
+          #virgin biomass
+          Bv_R <- B_R[(which(FM_change == 0)+1)]  ### CHECK: if == 0 than 0 NaN because yield and FM_change is 0
+          #biomass of exploited part of the cohort (biomass of fish older than tc)
+
+          #biomass in percetage of virgin biomass
+          B_R.percent <- round((B_R / Bv_R ) * 100, digits = 1)
         }
 
-        #biomass per recruit for length data?
-        B_R <- Y_R / FM_change
-
-        #virgin biomass
-        Bv_R <- B_R[(which(FM_change == 0)+1)]  ### CHECK: if == 0 than 0 NaN because yield and FM_change is 0
-        #biomass of exploited part of the cohort (biomass of fish older than tc)
-
-        #biomass in percetage of virgin biomass
-        B_R.percent <- round((B_R / Bv_R ) * 100, digits = 1)
-
         #mean length in the annual yield
-        S <- 1 - (Lci/Linf)  # == U  ##(U <- 1 - (Lci/Linf))
+        S <- 1 - (Lci/Linf)
         Ly <- Linf * (1 - ((Z*S)/(Z+K)))
 
         #mean weight in annual yield
@@ -605,12 +642,11 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
                                 curr.YPR.rel = ypr.rel(curr.E, curr.Lc_tc))
 
       names(list_Lc_runs) <- Lc
-      ret <- list(res,
-                  FM = FM_change,
-                  Lc = Lc,
-                  list_Lc_runs = list_Lc_runs,
-                  df_Es = df_Es,
-                  currents = df_currents)
+      ret <- c(res,list(FM = FM_change,
+                        Lc = Lc,
+                        list_Lc_runs = list_Lc_runs,
+                        df_Es = df_Es,
+                        currents = df_currents))
       class(ret) <- "predict_mod"
 
       # plot results

@@ -28,7 +28,7 @@
 
 plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
                              yaxis1 = "Y_R", yaxis2 = "B_R",...){
-  pes <- x
+  pes <- x <- output
 
   #THOMPBELL
   if("totals" %in% names(pes)){
@@ -219,6 +219,11 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
 
     #Isopleths
     if(type == 'Isopleth'){
+
+      tc_Lc_start <- which(tc_Lc == max(tc_Lc,na.rm=T))
+      p.dat <- list_tc_Lc_runs[[tc_Lc_start]]
+      px <- p.dat[,which(names(p.dat) == p.FE)]
+
       if(length(N01) > 1){
         Lc_change <- pes$Lc
         list_Lc_runs <- pes$list_Lc_runs
@@ -229,21 +234,21 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
           Y_R.vec[[fx]] <- yr
         }
         mat_FM_Lc_com.Y <- as.matrix(do.call(cbind,Y_R.vec))
-        rownames(mat_FM_Lc_com.Y) <- FM
-        colnames(mat_FM_Lc_com.Y) <- Lc_change
+        rownames(mat_FM_Lc_com.Y) <- px
+        colnames(mat_FM_Lc_com.Y) <- round(Lc_change/pes$Linf,digits = 2)
 
         # colours for plot
-        pal <- colorRampPalette(c(
+        pal <- colorRampPalette(rev(c(
           rgb(1,0.5,0.5), rgb(1,1,0.5), rgb(0.5,1,1), rgb(0.5,0.5,1)
-        ))
+        )))
 
         #plot
-        image(x = FM,
-              y = Lc_change,
+        image(x = px,
+              y = Lc_change/pes$Linf,
               z = mat_FM_Lc_com.Y, col=pal(100),
-              xlab = 'Fishing mortality', ylab = 'Lc')
-        contour(x = FM,
-                y = Lc_change,
+              xlab = xlabel1, ylab = 'Lc / Linf')
+        contour(x = px,
+                y = Lc_change/pes$Linf,
                 z = mat_FM_Lc_com.Y, add=TRUE)
         #mtext("Yield", line=0.5, side=3)
       }
