@@ -173,7 +173,7 @@
 #'
 #' #@export
 
-predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_list,
+predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_list = NA,
                         stock_size_1 = NA, unit.time = 'year', curr.E = NA, curr.Lc_tc = NA,
                         plus.group = NA, Lmin = NA, Lincr = NA){
   res <- param
@@ -413,7 +413,7 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         E <- expl
         P <- pcap
         Lt <- lengths
-        Y_R.rel.tot.all.classes <- rep(NA,length(E))
+        B_R.rel.tot.all.classes <- rep(NA,length(E))
         for(Elevels in 1:length(E)){
           Elevel <- E[Elevels]
           # population levels
@@ -585,6 +585,7 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
           # relative biomass per recruit for length data?
           B_R.rel <- Y_R.rel / FM_change
           #virgin biomass
+          B_R <- Y_R/ FM_change
           Bv_R <- B_R[(which(FM_change == 0)+1)]  ### CHECK: if == 0 than 0 NaN because yield and FM_change is 0
           #biomass of exploited part of the cohort (biomass of fish older than tc)
 
@@ -650,7 +651,7 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
       class(ret) <- "predict_mod"
 
       # plot results
-      plot(ret)
+      #####plot(ret)
 
       return(ret)
     }

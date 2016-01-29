@@ -28,7 +28,7 @@
 
 plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
                              yaxis1 = "Y_R", yaxis2 = "B_R",...){
-  pes <- x <- output
+  pes <- x
 
   #THOMPBELL
   if("totals" %in% names(pes)){
@@ -187,34 +187,34 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
       }
 
       # Biomass per recruit
-      par(new=T)
-      px <- list_tc_Lc_runs[[1]][,which(names(list_tc_Lc_runs[[1]]) == p.FE)]
-      py <- list_tc_Lc_runs[[1]][,which(names(list_tc_Lc_runs[[1]]) == p.B)]
-      plot(px, py, type = 'l',
-           axes = F, ylab = '', xlab ='', lty = tc_Lc_start,
-           col = 'blue')
-      axis(side = 4, at = pretty(range(py, na.rm= TRUE)), col = 'blue',
-           col.axis = 'blue')
-      mtext(side = 4, text = ylabel2, line = 3, col = 'blue')
-      for(j in seq_tc_Lc){
-        p.dat <- list_tc_Lc_runs[[j]]
-        py <- p.dat[,which(names(p.dat) == p.B)]
-        px <- p.dat[,which(names(p.dat) == p.FE)]
-
-        lines(px, py, type = 'l',
-              ylab = ylabel1, xlab = xlabel1, col='blue', lty = j)
-      }
-      if(length(N01) == 1){
-        p.dat <- list_tc_Lc_runs[[tc_Lc_start]]
-        px <- p.dat[,which(names(p.dat) == p.FE)]
-        py2 <- p.dat[,which(names(p.dat) == p.B)]
-        # F or E 0.5
-        segments(x0 = -1, x1 = N05, y0 = py2[which(px == N05)], y1 = py2[which(px == N05)],
-                 col= 'red',lty = 2, lwd=1.5)
-        segments(x0 = N05, x1 = N05, y0 = -1, y1 = py2[which(px == N05)],
-                 col= 'red',lty = 2, lwd=1.5)
-      }
-      par(op)
+#       par(new=T)
+#       px <- list_tc_Lc_runs[[1]][,which(names(list_tc_Lc_runs[[1]]) == p.FE)]
+#       py <- list_tc_Lc_runs[[1]][,which(names(list_tc_Lc_runs[[1]]) == p.B)]
+#       plot(px, py, type = 'l',
+#            axes = F, ylab = '', xlab ='', lty = tc_Lc_start,
+#            col = 'blue')
+#       axis(side = 4, at = pretty(range(py, na.rm= TRUE)), col = 'blue',
+#            col.axis = 'blue')
+#       mtext(side = 4, text = ylabel2, line = 3, col = 'blue')
+#       for(j in seq_tc_Lc){
+#         p.dat <- list_tc_Lc_runs[[j]]
+#         py <- p.dat[,which(names(p.dat) == p.B)]
+#         px <- p.dat[,which(names(p.dat) == p.FE)]
+#
+#         lines(px, py, type = 'l',
+#               ylab = ylabel1, xlab = xlabel1, col='blue', lty = j)
+#       }
+#       if(length(N01) == 1){
+#         p.dat <- list_tc_Lc_runs[[tc_Lc_start]]
+#         px <- p.dat[,which(names(p.dat) == p.FE)]
+#         py2 <- p.dat[,which(names(p.dat) == p.B)]
+#         # F or E 0.5
+#         segments(x0 = -1, x1 = N05, y0 = py2[which(px == N05)], y1 = py2[which(px == N05)],
+#                  col= 'red',lty = 2, lwd=1.5)
+#         segments(x0 = N05, x1 = N05, y0 = -1, y1 = py2[which(px == N05)],
+#                  col= 'red',lty = 2, lwd=1.5)
+#       }
+#       par(op)
     }
 
     #Isopleths
@@ -228,13 +228,13 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
         Lc_change <- pes$Lc
         list_Lc_runs <- pes$list_Lc_runs
 
-        Y_R.vec <- list()
+        Y_R.vec <- vector("list",length(list_Lc_runs))
         for(fx in 1:length(list_Lc_runs)){
-          yr <- list_Lc_runs[[fx]]$Y_R.rel
+          yr <- list_Lc_runs[[fx]][,which(names(list_Lc_runs[[fx]]) == p.yield)]
           Y_R.vec[[fx]] <- yr
         }
         mat_FM_Lc_com.Y <- as.matrix(do.call(cbind,Y_R.vec))
-        rownames(mat_FM_Lc_com.Y) <- px
+        rownames(mat_FM_Lc_com.Y) <- round(px,digits=2)
         colnames(mat_FM_Lc_com.Y) <- round(Lc_change/pes$Linf,digits = 2)
 
         # colours for plot
