@@ -15,7 +15,7 @@
 #' L <- growth_VB(Linf=80, K=0.6, t=t, t0=-0.1)
 #' plot(t, L, t="l")
 #'
-#' with L0
+#' # with L0
 #' t <- seq(0,6,0.1)
 #' L <- growth_VB(Linf=80, K=0.6, t=t, L0=2)
 #' plot(t, L, t="l")

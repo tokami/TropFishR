@@ -14,17 +14,17 @@
 #' # YPR
 #' # age structured data
 #' # Nemipterus marginatus
-#' threadfin <- list(Winf = 286,K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4)
+#' # threadfin <- list(Winf = 286,K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4)
 #'
 #' # run model
-#' predict_mod(threadfin, FM_change = seq(0,6,0.1),
-#'    Lc_tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
+#' # predict_mod(threadfin, FM_change = seq(0,6,0.1),
+#' #    Lc_tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
 #'
 #' @references
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 #' Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 #'
-#' @export
+#'# @export
 
 plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
                              yaxis1 = "Y_R", yaxis2 = "B_R",...){

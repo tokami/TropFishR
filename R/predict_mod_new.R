@@ -37,6 +37,7 @@
 #' @keywords function prediction
 #'
 #' @examples
+#' \donttest{
 #' #______________________________________
 #' #       Yiel Per Recruit (YPR)
 #' #______________________________________
@@ -99,7 +100,7 @@
 #'
 #' # run model
 #' predict_mod(hake,FM_change = seq(0.1,3,0.1), type = 'ThompBell')
-#'
+#' }
 #'
 #' @details better to treat last group always as a plus group.....
 #'    The Thompson and Bell model incorporates an iteration step simulating the stock by means
