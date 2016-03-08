@@ -401,17 +401,63 @@ ELEFAN <- function(param, range.Linf, step.Linf,
   samp.times <- as.numeric(colnames(catch.aAF))   # what about the next cohort one year later or one year ago if totap period is over one year???
 
 
+  ## TRYING A WAY WITH OPTIM
+
+  switch(growth.curve,
+
+         "VBGF.old" ={
+           opti_fn <-  formula(Lt ~ Linf * (1 - exp(-K * (t - t0))))
+           opti_par <- list("Linf", "K", "t0")
+         },
+
+         "VBGF.seasonalized" ={
+           opti_fn <-  formula(Lt ~ Linf * (1 - exp(-K * D * (t - t0) +
+                                        ((C*K*D)/(2*pi)) *
+                                        sin(2*pi) * (t - (WP-0.5))) ^ (1/D)))
+           opti_par <- list("Linf", "K", "t0", "C", "D", "WP")
+           # D not calculatable with length-frequency data
+           # empirical formula for coarse estimate:
+           # D = 3 * (1 - (0.6742 + 0.03574 * log10(Wmax)))
+         },
+
+         "VBGF" ={   # K & C & WP
+           opti_fn <-  formula(Lt ~ Linf * (1 - exp(-K * (t - t0) +
+                                        ((C * K)/(2*pi)) *
+                                        sin(2*pi) * (t - (WP-0.5)))))
+           opti_par <- list("Linf", "K", "C", "WP")
+         },
+
+         "Gompertz" ={  # Winsor (1932)   # B & C
+           opti_fn <-  formula(Lt ~ Linf * exp(-B * exp(-C * t)))
+           opti_par <- list("Linf", "K", "B", "C")
+         },
+
+         "logistic" ={  # Verhulst (1838)   # b & K
+           formula <-  formula(Lt ~ Linf / (1 + b * exp(-K * t)))
+           opti_par <- list("Linf", "K", "b")
+         },
+
+         "Krueger" ={   # N & r
+           opti_fn <-  formula(Lt ~ Linf / (N^((t + r)^-1)))
+           opti_par <- list("Linf", "N", "r")
+         })
+
+  optim(par =  opti_par,fn = opti_fn, )
+
+  formula(tt ~ gh)
+
+
 
   #for CHECKING run time of big loop
   ##### sys_timeBF <- Sys.time()
 
 
-  ESP.tshift.L <- list()
-  ESP.list.L <- list()
+  ESP.tshift.L <- vector("list",length(Linfs))
+  ESP.list.L <- vector("list",length(Linfs))
   for(li in 1:length(Linfs)){
 
-    ESP.tshift.k <- list()
-    ESP.list.k <- list()
+    ESP.tshift.k <- vector("list",length(Ks))
+    ESP.list.k <- vector("list",length(Ks))
     for(ki in 1:length(Ks)){
 
       # VBGF
@@ -454,11 +500,11 @@ ELEFAN <- function(param, range.Linf, step.Linf,
       # get lengths which fall into sampling times
       # improve these loops by defining when smaller than smallest length group or larger than largest length group it turns into NA and not the extreme groups
       options(warn = -1) # turn warning messages off globally
-      lt.classes.list <- list()
+      lt.classes.list <- vector("list",length(t.days)-1)
       for(tshift in 1:(length(t.days)-1)){ # produces warnings because latest cohort will not be represented by data and thereby produce NA
         ttx <- t.years[tshift]
 
-        lt.class.cohi <- list()
+        lt.class.cohi <- vector("list",length(-repro.add:tmax))
         for(cohi in -repro.add:tmax){
           diff <- samp.times - (ttx - cohi)
           diff[which(diff < 0)] <- NA
@@ -481,13 +527,13 @@ ELEFAN <- function(param, range.Linf, step.Linf,
 
 
       # get ESP values from catch.aAF matrix entries which are hit by growth curve
-      ESP.list <- list()
+      ESP.list <- vector("list",length(lt.classes.list))
       for(inds in 1:length(lt.classes.list)){
 
         df <- lt.classes.list[[inds]]
         loop_mat <- catch.aAF
         ESPs <- NA
-        ESP.loop <- list()
+        ESP.loop <- vector("list",length(df))
         for(indi in 2:length(df)){
           res.ind <- df[,indi]
           for(indx in 1:length(res.ind)){

@@ -54,8 +54,8 @@ A list with the input parameters and following list objects:
 }
 \description{
 This function applies the Virtual Population Analysis or Cohort analysis,
-   respectively. A method used to estimate fishing mortality per age/length group and
-   stock biomass.
+   respectively. A method used to estimate stock biomass and the fishing mortality
+   per age/length group.
 }
 \details{
 The main difference between virtual population analysis (VPA) and cohort

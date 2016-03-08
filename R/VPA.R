@@ -1,8 +1,8 @@
 #' @title Virtual Population Analysis (VPA)
 #'
 #' @description This function applies the Virtual Population Analysis or Cohort analysis,
-#'    respectively. A method used to estimate fishing mortality per age/length group and
-#'    stock biomass.
+#'    respectively. A method used to estimate stock biomass and the fishing mortality
+#'    per age/length group.
 #'
 #' @param param a list consisting of following parameters:
 #' \itemize{
@@ -285,7 +285,7 @@ VPA <- function(param, terminalF, analysis.type, catch_corFac = NA, algorithm="n
     class(ret) <- "VPA"
 
     # plot results
-    plot(ret)
+    try(plot(ret))
 
     return(ret)
   }
@@ -444,7 +444,7 @@ VPA <- function(param, terminalF, analysis.type, catch_corFac = NA, algorithm="n
     class(ret) <- "VPA"
 
     # plot results
-    plot(ret)
+    try(plot(ret))
 
     return(ret)
   }
