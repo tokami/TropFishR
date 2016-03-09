@@ -1,23 +1,15 @@
 #' @title Bhattacharya's method
 #'
-<<<<<<< HEAD
 #' @description Find relative frequencies and frequency distribution of distinct cohorts
 #'      in the observed length frequency distribution by resolving the distribution into
 #'      Gaussian components.
-=======
-#' @description Splitting length frequency data according to Bhattacharya's method in
-#'    order to identify distinct cohorts.
->>>>>>> 977037e342a2212a0400a4a85b7fb89a95f00d25
 #'
 #' @param param a list consisting of following parameters:
 #'   \code{$midLengths} midpoints of the length class as vector,
 #'   \code{catch} a vector with the catch per length class or a matrix with
 #'      catches per length class of subsequent years;
-<<<<<<< HEAD
 #'
 #' @keywords Bhattacharya length-frequency
-=======
->>>>>>> 977037e342a2212a0400a4a85b7fb89a95f00d25
 #'
 #' @examples
 #' \donttest{
@@ -25,7 +17,6 @@
 #'  Bhattacharya(synLFQ1)
 #' }
 #'
-<<<<<<< HEAD
 #' @details This method includes the \code{\link{identify}} function, which allows to
 #'      choose points on a graphical device manually. To stop this process please press
 #'      right mouse click on the graph, and in case of windows click on "Stop".
@@ -35,25 +26,6 @@
 #'      \strong{Nx}, where x is the number of the cohort, displaying the number of
 #'      individuals per cohort. For an explanation of the other columns please refer to
 #'      the FAO manual (Sparre & Venema, 1998).
-=======
-#' @details Bhattacharya length-frequency
-#'
-#' @return A list with the input parameters and following list objects:
-#' \itemize{
-#'   \item \strong{classes.num}: numeric age classes or length groupes (without plus sign),
-#'   \item \strong{catch.cohort}: a vector with the catch values which were used for the analysis (exists only if catch was a matrix),
-#'   \item \strong{FM_calc}: a vector with the ifshing mortality (M),
-#'   \item \strong{Z}: a vector with the total mortality (Z),
-#'   \item \strong{survivors}: a vector with the number of fish surviving to the next age class or length group,
-#'   \item \strong{annualMeanNr}: ta vector with the mean number of fish per year,
-#'   \item \strong{meanBodyWeight}: a vector with the mean body weight in kg,
-#'   \item \strong{meanBiomassTon}: a vector with the mean biomass in tons,
-#'   \item \strong{YieldTon}: a vector with the yield in tons,
-#'   \item \strong{natLoss}: a vector with the number of fish died due to natural mortality,
-#'   \item \strong{plot_mat}: matrix with rearranged survivors, nat losses and catches for plotting;
-#' }
-#'
->>>>>>> 977037e342a2212a0400a4a85b7fb89a95f00d25
 #'
 #' @references
 #' Bhattacharya, C.G., 1967. A simple method of resolution of a distribution into Gaussian
@@ -63,11 +35,6 @@
 #' Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.
 #'
 #' @export
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 977037e342a2212a0400a4a85b7fb89a95f00d25
 
 Bhattacharya <- function(param){
 
@@ -92,10 +59,7 @@ Bhattacharya <- function(param){
   }else catch.vec <- catch
   if(length(midLengths) != length(catch.vec)) stop(
     noquote("midLengths and catch do not have the same length!"))
-<<<<<<< HEAD
 
-=======
->>>>>>> 977037e342a2212a0400a4a85b7fb89a95f00d25
   df.Bh <- data.frame(midLengths = midLengths,
                       catch = catch.vec)
 
@@ -119,11 +83,8 @@ Bhattacharya <- function(param){
                  'lightgreen','skyblue','brown','darkblue','darkorange','darkred')
   colour.vec <- rep('black', length(bhat.table$L))
 
-<<<<<<< HEAD
   print(noquote("Starting on the left, please choose from black points which lie on a straight line! Do not include points which might be affected by the next distribution!"))
   print(noquote("To stop the process press right click (and choose 'Stop' if necessary)"))
-=======
->>>>>>> 977037e342a2212a0400a4a85b7fb89a95f00d25
 
   for(xy in 1:30){  #more than 30 cohorts?
 
@@ -138,7 +99,6 @@ Bhattacharya <- function(param){
 
 
     #STEP 4: fills fifth coulmn
-<<<<<<< HEAD
 #     for(i in 1:length(bhat.table$log.N1.plus)){
 #       if(!is.na(bhat.table$delta.log.N1.plus[i]) &
 #          bhat.table$delta.log.N1.plus[i] != 'Inf'){
@@ -152,7 +112,6 @@ Bhattacharya <- function(param){
 
     #STEP 5: plot of fifth against fourth column
     #dev.new()
-=======
     for(i in 1:length(bhat.table$log.N1.plus)){
       if(!is.na(bhat.table$delta.log.N1.plus[i]) & bhat.table$delta.log.N1.plus[i] != 'Inf'){
         min.size <- (bhat.table$mean.length.classes[i] - (interval/2))
@@ -161,8 +120,7 @@ Bhattacharya <- function(param){
     }
 
     #STEP 5: plot of fifth against fourth column
-    dev.new()
->>>>>>> 977037e342a2212a0400a4a85b7fb89a95f00d25
+    #dev.new()
     plot(bhat.table$delta.log.N1.plus ~ bhat.table$L, pch = 16)
     abline(h=0)
     p.bhat1 <- recordPlot()
@@ -221,24 +179,14 @@ Bhattacharya <- function(param){
              (last_choices[2]+1):length(bhat.table$delta.log.N1.plus),]),
            cex= 0.7, pos=3)
     }
-<<<<<<< HEAD
 
    id.co1 <- identify(bhat.table$L,bhat.table$delta.log.N1.plus,
-=======
-    print(noquote("Starting on the left, please choose from black points which lie on a straight line! Do not include points which might be affected by the next distribution!"))
-    print(noquote("To stop the process press right click (and choose 'Stop' if necessary)"))
-    id.co1 <- identify(bhat.table$L,bhat.table$delta.log.N1.plus,
->>>>>>> 977037e342a2212a0400a4a85b7fb89a95f00d25
                        n = 2, pos = TRUE)
     if(length(id.co1$ind) == 0){
       break
     }
     colour.vec[id.co1$ind[1]:id.co1$ind[2]] <- colour.xy[xy]
     dev.off()
-<<<<<<< HEAD
-=======
-
->>>>>>> 977037e342a2212a0400a4a85b7fb89a95f00d25
 
     #STEP 7: calculate mean length and standard deviation of regression line
     x.co1 <- bhat.table$L[id.co1$ind[1]:id.co1$ind[2]]
