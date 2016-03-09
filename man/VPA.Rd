@@ -39,7 +39,7 @@ while \code{"old"} uses the algorithm described by Sparre and Venema (1998).}
 \value{
 A list with the input parameters and following list objects:
 \itemize{
-  \item \strong{classes.num}: numeric age classes or length groupes (without plus sign),
+  \item \strong{classes.num}: numeric age classes or length groups (without plus sign),
   \item \strong{catch.cohort}: a vector with the catch values which were used for the analysis (exists only if catch was a matrix),
   \item \strong{FM_calc}: a vector with the ifshing mortality (M),
   \item \strong{Z}: a vector with the total mortality (Z),
