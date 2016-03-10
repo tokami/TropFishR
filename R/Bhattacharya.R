@@ -86,12 +86,22 @@ Bhattacharya <- function(param){
   print(noquote("Starting on the left, please choose from black points which lie on a straight line! Do not include points which might be affected by the next distribution!"))
   print(noquote("To stop the process press right click (and choose 'Stop' if necessary)"))
 
+
+
+
+  ##### loop
+
+
   for(xy in 1:30){  #more than 30 cohorts?
+
+
+
 
     #STEP 2: fills third column
     bhat.table$log.N1.plus <- round(log(bhat.table$N1.plus),digits=3)
 
     #STEP 3: fills fourth coulmn
+    if(xy > 1) bhat.table$log.N1.plus[last_choices[2]] <- 0
     for(i in 2:length(bhat.table$log.N1.plus)){
       delta.value <- bhat.table$log.N1.plus[i] - bhat.table$log.N1.plus[i-1]
       bhat.table$delta.log.N1.plus[i] <- delta.value
@@ -131,23 +141,23 @@ Bhattacharya <- function(param){
     # do not include in linear regression if number in N1.plus is under 3 or 4 if(bhat.table$N1.plus < 3){}
 
     #find new maximum for start of next cohort
-    if(xy > 1){
-      gradi <- NA
-      for(nm in 3:(length(bhat.table.list[[1]]$delta.log.N1.plus)-1)){
-        if((bhat.table.list[[1]]$delta.log.N1.plus[nm] >
-            bhat.table.list[[1]]$delta.log.N1.plus[nm-1]) == T &
-           (bhat.table.list[[1]]$delta.log.N1.plus[nm] >
-            bhat.table.list[[1]]$delta.log.N1.plus[nm+1]) == T
-        ){gradi[nm] <- T}else gradi[nm] <- F
-      }
-
-      cut.max <- max.rem + min(which(gradi[(max.rem+1):length(gradi)] == T))
-
-      bhat.table.list[[1]]$delta.log.N1.plus[
-        which(as.numeric(rownames(bhat.table.list[[1]])) >= cut.max)] <-
-        bhat.table$delta.log.N1.plus[
-          which(as.numeric(rownames(bhat.table.list[[1]])) >= cut.max)]
-      }
+#     if(xy > 1){
+#       gradi <- NA
+#       for(nm in 3:(length(bhat.table.list[[1]]$delta.log.N1.plus)-1)){
+#         if((bhat.table.list[[1]]$delta.log.N1.plus[nm] >
+#             bhat.table.list[[1]]$delta.log.N1.plus[nm-1]) == T &
+#            (bhat.table.list[[1]]$delta.log.N1.plus[nm] >
+#             bhat.table.list[[1]]$delta.log.N1.plus[nm+1]) == T
+#         ){gradi[nm] <- T}else gradi[nm] <- F
+#       }
+#
+#       cut.max <- max.rem + min(which(gradi[(max.rem+1):length(gradi)] == T))
+#
+#       bhat.table.list[[1]]$delta.log.N1.plus[
+#         which(as.numeric(rownames(bhat.table.list[[1]])) >= cut.max)] <-
+#         bhat.table$delta.log.N1.plus[
+#           which(as.numeric(rownames(bhat.table.list[[1]])) >= cut.max)]
+#       }
 
 
     if(xy == 1){
@@ -155,8 +165,8 @@ Bhattacharya <- function(param){
       plot(bhat.table.list[[1]]$L, bhat.table.list[[1]]$delta.log.N1.plus, pch = 16,
            col = colour.vec)
       abline(h = 0)
-      text(bhat.table.list[[1]]$L,bhat.table.list[[1]]$delta.log.N1.plus,
-           labels=row.names(bhat.table.list[[1]]), cex= 0.7, pos=3)
+      text(bhat.table.list[[1]]$L, bhat.table.list[[1]]$delta.log.N1.plus,
+           labels = row.names(bhat.table.list[[1]]), cex= 0.7, pos=3)
     }
     if(xy > 1){
       dev.new()
@@ -165,7 +175,7 @@ Bhattacharya <- function(param){
       abline(h = 0)
       text(bhat.table.list[[1]]$L[1:last_choices[2]],
            bhat.table.list[[1]]$delta.log.N1.plus[1:last_choices[2]],
-           labels=row.names(bhat.table.list[[1]][(1:last_choices[2]),]),
+           labels = row.names(bhat.table.list[[1]][(1:last_choices[2]),]),
            cex= 0.7, pos=3)
 
       abline(a = a.b.list[[xy-1]][1], b=a.b.list[[xy-1]][2], col=colour.xy[xy-1])
@@ -202,8 +212,8 @@ Bhattacharya <- function(param){
 
     #STEP 8: fill sixth column
     #set.seed ????
-    normal.dis.co1 <- rnorm(n=1000,mean = l.mean.co1,sd=s.co1)
-    max.class.ind.co1 <- which(round(max(normal.dis.co1),digits = 0) >= (
+    normal.dis.co1 <- rnorm(n=1000, mean = l.mean.co1, sd=s.co1)
+    max.class.ind.co1 <- which(round(max(normal.dis.co1), digits = 0) >= (
       bhat.table$mean.length.classes - (interval/2)) &
         round(max(normal.dis.co1),digits = 0) < (
           bhat.table$mean.length.classes + (
@@ -297,6 +307,7 @@ Bhattacharya <- function(param){
     max.rem <- id.co1$ind[2]
     last_choices <- id.co1$ind
     rm(id.co1)
+
   }
 
   # Combine results of regression analyses for output
