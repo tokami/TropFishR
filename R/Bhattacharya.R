@@ -36,6 +36,10 @@
 #'
 #' @export
 
+
+
+param <- synLFQ1
+
 Bhattacharya <- function(param){
 
   res <- param
@@ -86,16 +90,7 @@ Bhattacharya <- function(param){
   print(noquote("Starting on the left, please choose from black points which lie on a straight line! Do not include points which might be affected by the next distribution!"))
   print(noquote("To stop the process press right click (and choose 'Stop' if necessary)"))
 
-
-
-
-  ##### loop
-
-
   for(xy in 1:30){  #more than 30 cohorts?
-
-
-
 
     #STEP 2: fills third column
     bhat.table$log.N1.plus <- round(log(bhat.table$N1.plus),digits=3)
@@ -109,6 +104,9 @@ Bhattacharya <- function(param){
 
 
     #STEP 4: fills fifth coulmn
+    checki <- !is.na(bhat.table$delta.log.N1.plus) &
+      bhat.table$delta.log.N1.plus != 'Inf'
+    bhat.table$L[checki] <- bhat.table$mean.length.classes[checki] - (interval/2)
 #     for(i in 1:length(bhat.table$log.N1.plus)){
 #       if(!is.na(bhat.table$delta.log.N1.plus[i]) &
 #          bhat.table$delta.log.N1.plus[i] != 'Inf'){
@@ -116,24 +114,23 @@ Bhattacharya <- function(param){
 #         bhat.table$L[i] <- min.size
 #       }
 #     }
-    checki <- !is.na(bhat.table$delta.log.N1.plus) & bhat.table$delta.log.N1.plus != 'Inf'
-    bhat.table$L[checki] <- bhat.table$mean.length.classes[checki] - (interval/2)
 
 
     #STEP 5: plot of fifth against fourth column
-    #dev.new()
-    for(i in 1:length(bhat.table$log.N1.plus)){
-      if(!is.na(bhat.table$delta.log.N1.plus[i]) & bhat.table$delta.log.N1.plus[i] != 'Inf'){
-        min.size <- (bhat.table$mean.length.classes[i] - (interval/2))
-        bhat.table$L[i] <- min.size
-      }
-    }
-
+    checki2 <- !is.na(bhat.table$delta.log.N1.plus) &
+      bhat.table$delta.log.N1.plus != 'Inf'
+    bhat.table$L[checki2] <- (bhat.table$mean.length.classes[checki2] - (interval/2))
+#     for(i in 1:length(bhat.table$log.N1.plus)){
+#       if(!is.na(bhat.table$delta.log.N1.plus[i]) & bhat.table$delta.log.N1.plus[i] != 'Inf'){
+#         min.size <- (bhat.table$mean.length.classes[i] - (interval/2))
+#         bhat.table$L[i] <- min.size
+#       }
+#     }
     #STEP 5: plot of fifth against fourth column
-    #dev.new()
-    plot(bhat.table$delta.log.N1.plus ~ bhat.table$L, pch = 16)
-    abline(h=0)
-    p.bhat1 <- recordPlot()
+#     dev.new()
+#     plot(bhat.table$delta.log.N1.plus ~ bhat.table$L, pch = 16)
+#     abline(h=0)
+#     p.bhat1 <- recordPlot()
 
     #STEP 6: select points for regression line
     if(xy == 1){bhat.table.list[[1]] <- bhat.table}
@@ -160,6 +157,7 @@ Bhattacharya <- function(param){
 #       }
 
 
+    par(mfrow=c(2,1))
     if(xy == 1){
       dev.new()
       plot(bhat.table.list[[1]]$L, bhat.table.list[[1]]$delta.log.N1.plus, pch = 16,
@@ -189,8 +187,12 @@ Bhattacharya <- function(param){
              (last_choices[2]+1):length(bhat.table$delta.log.N1.plus),]),
            cex= 0.7, pos=3)
     }
+    # Second plot with the histogramms
+#     hist(bhat.table.list[[1]]$N1.plus)
+#     plot(catch.vec ~ bhat.table.list[[1]]$mean.length.classes, type  = 'h')
 
-   id.co1 <- identify(bhat.table$L,bhat.table$delta.log.N1.plus,
+
+    id.co1 <- identify(bhat.table$L,bhat.table$delta.log.N1.plus,
                        n = 2, pos = TRUE)
     if(length(id.co1$ind) == 0){
       break
@@ -331,6 +333,10 @@ Bhattacharya <- function(param){
 #save tables to a list
 #save other important information to a list, such as total number in cohort (sum of N1 or N2), and  a and b ans stuffs
 #question if satisfied with choosing
+# have a splitted graphic device with plot to choose points and histogram where choosen
+# Gaussian probability function is displayed. Ask user if "redo" choosing.
+# First thing to show shoud be a histogram, then question if fixed number of cohort, if
+# yes how many, or no, then user can choose freely
 
 
 
