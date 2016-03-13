@@ -545,6 +545,7 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
       list_Lc_runs <- vector("list", length(Lc))
       list_Es <- vector("list", length(Lc))
       for(i in 1:length(Lc)){
+        i = 1
         Lci <- Lc[i]
 
         Z <- (M + FM_change)
@@ -607,9 +608,9 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
                                   Ly = Ly,
                                   E = E,
                                   Y_R = Y_R,
-                                  Y_R.rel = Y_R.rel,
-                                  B_R = B_R,
-                                  B_R.percent = B_R.percent)
+                                  Y_R.rel = Y_R.rel)#,
+                                  #B_R = B_R,
+                                  #B_R.percent = B_R.percent)
         list_Lc_runs[[i]] <- results.PBH
 
 
@@ -634,7 +635,10 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         list_Es[[i]] <- df_loop_Es
       }
 
+
+
       df_Es <- do.call(rbind,list_Es)
+
 
       # current exploitation rate
       curr.F = (M * curr.E)/(1-curr.E)
