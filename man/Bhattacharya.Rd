@@ -4,13 +4,15 @@
 \alias{Bhattacharya}
 \title{Bhattacharya's method}
 \usage{
-Bhattacharya(param)
+Bhattacharya(param, n_rnorm = 1000)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
-\code{$midLengths} midpoints of the length class as vector,
+\code{midLengths} midpoints of the length class as vector,
 \code{catch} a vector with the catch per length class or a matrix with
    catches per length class of subsequent years;}
+
+\item{n_rnorm}{number of observations for the function \code{\link{rnorm}}, default = 1000}
 }
 \value{
 A list with the input parameters and a data.frame (\strong{bhat_results})
@@ -21,7 +23,7 @@ A list with the input parameters and a data.frame (\strong{bhat_results})
 }
 \description{
 Find relative frequencies and frequency distribution of distinct cohorts
-     in the observed length frequency distribution by resolving the distribution into
+     in the observed length frequency distribution by resolving it into
      Gaussian components.
 }
 \details{
