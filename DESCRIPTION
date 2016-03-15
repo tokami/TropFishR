@@ -5,8 +5,10 @@ Version: 0.1
 Date: 2015-10-02
 Author: Tobias Mildenberger, Marc Taylor
 Maintainer: Tobias Mildenberger <joslas@web.de>
-Description: Includes fisheries models based on the the FAO Manual "Introduction
-    to tropical fish stock assessment" by P.Sparre and S.C. Venema
+Description: This package includes fisheries models based on the the FAO 
+	Manual "Introduction to tropical fish stock assessment" by P.Sparre and 
+	S.C. Venema. It focuses on the assessment of length-frequency data of 
+	data poor fisheries.
 Imports: 
     msm
 License: MIT + file LICENSE
