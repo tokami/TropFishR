@@ -5,9 +5,11 @@
 #'      Gaussian components.
 #'
 #' @param param a list consisting of following parameters:
-#'   \strong{midLengths} midpoints of the length class as vector,
-#'   \strong{catch} a vector with the catch per length class or a matrix with
+#' \itemize{
+#'   \item \strong{midLengths} midpoints of the length class as vector,
+#'   \item \strong{catch} a vector with the catch per length class or a matrix with
 #'      catches per length class of subsequent years;
+#' }
 #' @param n_rnorm number of observations for the function \code{\link{rnorm}}, default = 1000
 #'
 #'
@@ -21,9 +23,18 @@
 #'
 #' @details This method includes the \code{\link{identify}} function, which allows to
 #'      choose points on a graphical device manually. To stop this process please press
-#'      right mouse click on the graph, and in case of windows click on "Stop".
+#'      right mouse click on the graph, and in case you are working on a windows
+#'      maschine click on "Stop". An error will be caused if the graphical device
+#'      is closed manually. After you have selected the points for regression analysis
+#'      you will be asked if you want to redo the selection or if you want to continue.
+#'      Please enter in the Console "y" for continuation if you are satisfied
+#'      with your selection and the corresponding Gaussian distribution or enter
+#'      "redo" if you want to repeat the selection procedure. This function
+#'      allows a maximum of 12 cohorts or seperate distributions in one sample. Please
+#'      find more details in the Vignette of this package or in the FAO manual by
+#'      Sparre and Venema (1998).
 #'
-#' @return A list with the input parameters and a data.frame (\strong{bhat_results})
+#' @return A list with the input parameters and a dataframe (\strong{bhat_results})
 #'      with the results of the Bhattacharya method. Most important is the column
 #'      \strong{Nx}, where x is the number of the cohort, displaying the number of
 #'      individuals per cohort. For an explanation of the other columns please refer to
@@ -79,20 +90,19 @@ Bhattacharya <- function(param, n_rnorm = 1000){
                            'N1' = NA,
                            'N2.plus' = NA)
 
-  bhat.table.list <- vector("list", 31)
-  a.b.list <- vector("list", 30)
-  l.s.list <- vector("list", 30)
-  temp.list <- vector("list", 30)
+  bhat.table.list <- vector("list", 13)
+  a.b.list <- vector("list", 12)
+  l.s.list <- vector("list", 12)
+  temp.list <- vector("list", 12)
 
-  colour.xy <- c('blue','darkgreen','red','yellow','purple','orange',
+  colour.xy <- c('blue','darkgreen','red','goldenrod2','purple','orange',
                  'lightgreen','skyblue','brown','darkblue','darkorange','darkred')
   colour.vec <- rep('black', length(bhat.table$L))
 
   writeLines("Starting on the left, please choose from black points which \nlie on a straight line! Do not include points which might be \naffected by the next distribution! \nTo stop the process press right click (and choose \n'Stop' if necessary)")
 
 
-  for(xy in 1:30){  #more than 30 cohorts?
-
+  for(xy in 1:12){  #more than 12 cohorts?
 
     #STEP 2: fills third column
     bhat.table$log.N1.plus <- round(log(bhat.table$N1.plus),digits=3)
@@ -145,7 +155,7 @@ Bhattacharya <- function(param, n_rnorm = 1000){
         if(xy > 1){
           for(tempRep in 1:(xy-1)){
             lines(temp.list[[tempRep]]$xfit, temp.list[[tempRep]]$yyfit,
-                  col=colour.xy[tempRep], lwd=1)
+                  col=colour.xy[tempRep], lwd=1.5)
           }
         }
         # bhatta plot
@@ -163,11 +173,8 @@ Bhattacharya <- function(param, n_rnorm = 1000){
                col = colour.vec,
                ylab = expression(paste(delta," log N+")))
           abline(h = 0)
-          text(bhat.table.list[[1]]$L[1:last_choices[2]],
-               bhat.table.list[[1]]$delta.log.N1.plus[1:last_choices[2]],
-               labels = row.names(bhat.table.list[[1]][(1:last_choices[2]),]),
-               cex = 0.7, pos=3)
-          abline(a = a.b.list[[xy-1]][1], b=a.b.list[[xy-1]][2], col=colour.xy[xy-1])
+          abline(a = a.b.list[[xy-1]][1], b=a.b.list[[xy-1]][2],
+                 col=colour.xy[xy-1], lwd = 1.5)
           points(bhat.table$L[(last_choices[2]+1):length(bhat.table$L)],
                  bhat.table$delta.log.N1.plus[(last_choices[2]+1):length(bhat.table$L)],
                  col = 'black', pch = 16)
@@ -225,6 +232,7 @@ Bhattacharya <- function(param, n_rnorm = 1000){
         bhat.table$mean.length.classes - (interval/2)) &
           round(max(normal.dis.co1),digits = 0) < (
             bhat.table$mean.length.classes + (interval/2)))
+      if(length(max.class.ind.co1) == 0) max.class.ind.co1 <- length(bhat.table$mean.length.classes)
       max.class.co1 <- bhat.table$mean.length.classes[max.class.ind.co1]
       for(i in 1:max.class.ind.co1){
         delta.N <- round(a.co1 + b.co1 * bhat.table$L[i],digits=3)
@@ -239,6 +247,7 @@ Bhattacharya <- function(param, n_rnorm = 1000){
           bhat.table$mean.length.classes - (interval/2)) &
             round(min(normal.dis.co1),digits = 0) < (
               bhat.table$mean.length.classes + (interval/2)))
+        if(length(min.class.ind.co1) == 0) min.class.ind.co1 <- 1
       }
       min.class.co1 <- bhat.table$mean.length.classes[min.class.ind.co1]
 
@@ -258,15 +267,15 @@ Bhattacharya <- function(param, n_rnorm = 1000){
       # histogram
       yyfit <-  yfit * ((max(yfit) - max(h$density)) / max(yfit))
       if(xy == 1) maxlim <- ifelse(max(yyfit) > max(h$density), max(yyfit), max(h$density))
-      hist(freqis, breaks = 50, main = "", xlab = "L",
+      hist(freqis, breaks = 50, main = "", xaxt = 'n',
            probability = TRUE, ylim = c(0,maxlim))
       if(xy > 1){
         for(tempRep in 1:(xy-1)){
           lines(temp.list[[tempRep]]$xfit, temp.list[[tempRep]]$yyfit,
-                col=colour.xy[tempRep], lwd=1)
+                col=colour.xy[tempRep], lwd=1.5)
         }
       }
-      lines(xfit, yyfit, col=colour.xy[xy], lwd=1)
+      lines(xfit, yyfit, col=colour.xy[xy], lwd=1.5)
       temp.list[[xy]] <- list(xfit = xfit,
                               yyfit = yyfit)
       # bhatta plot
@@ -274,14 +283,18 @@ Bhattacharya <- function(param, n_rnorm = 1000){
            col = colour.vec,
            ylab = expression(paste(delta," log N+")))
       abline(h = 0)
-      text(bhat.table.list[[1]]$L[1:id.co1$ind[2]],
-           bhat.table.list[[1]]$delta.log.N1.plus[1:id.co1$ind[2]],
-           labels = row.names(bhat.table.list[[1]][(1:id.co1$ind[2]),]),
-           cex= 0.7, pos=3)
-      abline(a = a.co1, b=b.co1, col=colour.xy[xy])
+      abline(a = a.co1, b=b.co1, col=colour.xy[xy], lwd = 1.5)
       points(bhat.table$L[(id.co1$ind[2]+1):length(bhat.table$L)],
              bhat.table$delta.log.N1.plus[(id.co1$ind[2]+1):length(bhat.table$L)],
              col = 'black', pch = 16)
+      text(bhat.table$L[(id.co1$ind[1]):(id.co1$ind[2])],
+           bhat.table$delta.log.N1.plus[(id.co1$ind[1]):(id.co1$ind[2])],
+           labels=row.names(bhat.table.list[[1]][(id.co1$ind[1]):
+             (id.co1$ind[2]),]),
+           cex= 0.7, pos=3)
+      points(bhat.table$L[(id.co1$ind[1]):(id.co1$ind[2])],
+             bhat.table$delta.log.N1.plus[(id.co1$ind[1]):(id.co1$ind[2])],
+             col = colour.xy[xy], pch = 16)
       text(bhat.table$L[(id.co1$ind[2]+1):length(bhat.table$L)],
            bhat.table$delta.log.N1.plus[(id.co1$ind[2]+1):length(bhat.table$L)],
            labels=row.names(bhat.table.list[[1]][
@@ -290,13 +303,13 @@ Bhattacharya <- function(param, n_rnorm = 1000){
       title(xlab = "L", outer = TRUE, line = 2.5)
 
 
-      repSel <- readline(prompt = writeLines("Are you satisfied with your selection and want to continue? \n'yes' or 'repeat':"))
+      repSel <- readline(prompt = writeLines("Are you satisfied with your selection and want to continue? \n'y' or 'redo':"))
 
-      if(repSel == '') repSel <- readline(prompt = writeLines("Please type 'yes' or 'no' into the console! \nAre you satisfied with your selection and want to continue? \n'yes' or 'repeat':"))
+      if(repSel == '') repSel <- readline(prompt = writeLines("Please type 'y' or 'redo' into the console! \nAre you satisfied with your selection and want to continue? \n'y' or 'redo':"))
 
       dev.off()
 
-      if(repSel == 'yes') break
+      if(repSel == 'y') break
     }
 
     #STEP 9: fills one value in seventh column and one in eigth column, get clean starting value
@@ -377,6 +390,9 @@ Bhattacharya <- function(param, n_rnorm = 1000){
     ret_pri <- cbind(bhat.table.list[[1]], bhat.results)
   }else ret_pri <- bhat.table.list[[1]]
 
-  ret <- list(res, bhat_results = ret_pri)
+  ret <- list(res,
+              a_b_list = a.b.list,
+              Lmean_SD_list = l.s.list,
+              bhat_results = ret_pri)
   if(cancel != TRUE) return(ret)
 }

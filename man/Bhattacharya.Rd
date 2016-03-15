@@ -15,7 +15,7 @@ Bhattacharya(param, n_rnorm = 1000)
 \item{n_rnorm}{number of observations for the function \code{\link{rnorm}}, default = 1000}
 }
 \value{
-A list with the input parameters and a data.frame (\strong{bhat_results})
+A list with the input parameters and a dataframe (\strong{bhat_results})
      with the results of the Bhattacharya method. Most important is the column
      \strong{Nx}, where x is the number of the cohort, displaying the number of
      individuals per cohort. For an explanation of the other columns please refer to
@@ -29,7 +29,16 @@ Find relative frequencies and frequency distribution of distinct cohorts
 \details{
 This method includes the \code{\link{identify}} function, which allows to
      choose points on a graphical device manually. To stop this process please press
-     right mouse click on the graph, and in case of windows click on "Stop".
+     right mouse click on the graph, and in case you are working on a windows
+     maschine click on \strong{Stop}. An error will be caused if the graphical device
+     is closed manually. After you have selected the points for regression analysis
+     you will be asked if you want to redo the selection or if you want to continue.
+     Please enter in the Console \strong{y} for continuation if you are satisfied
+     with your selection and the corresponding Gaussian distribution or enter
+     \strong{redo} if you want to repeat the selection procedure. This function
+     allows a maximum of 12 cohorts or seperate distributions in one sample. Please
+     find more details in the Vignette of this package or in the FAO manual by
+     Sparre and Venema (1998).
 }
 \examples{
 \donttest{
