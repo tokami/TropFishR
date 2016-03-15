@@ -8,7 +8,11 @@
 #'   \code{midLengths} midpoints of the length class as vector,
 #'   \code{catch} a vector with the catch per length class or a matrix with
 #'      catches per length class of subsequent years;
+<<<<<<< HEAD
 #' @param n_rnorm number of observations for the function \code{\link{rnorm}}, default = 1000
+=======
+#' @param n_rnorm number of observations for the function \code{\link{rnorm}}
+>>>>>>> 2a42e12389ad921d4f8d2d0834e6d95d1be3798c
 #'
 #'
 #' @keywords Bhattacharya length-frequency
