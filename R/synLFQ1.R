@@ -1,17 +1,17 @@
 #' @name synLFQ1
 #'
-#' @title Synthetic length-frequency data I from Sparre & Venema (1998)
+#' @title Synthetic length-frequency data I
 #'
 #'
-#' @description Synthetic length-frequency data. Can be used to apply the function
-#'    \code{\link{Bhattacharya}}.
+#' @description Synthetic length-frequency data as provided in Sparre & Venema (1998).
+#'    Can be used to apply the function \code{\link{Bhattacharya}}.
 #'
 #' @docType data
 #'
 #' @format A list consisting of:
 #' \itemize{
 #'   \item \strong{midLengths} a vector of the mid lengths of the length groups,
-#'   \item \strong{catch} a matrix with the catches for different years;
+#'   \item \strong{catch} a matrix with the catches for different years.
 #' }
 #'
 #' @source Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.

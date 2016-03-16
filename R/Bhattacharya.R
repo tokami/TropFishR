@@ -11,7 +11,7 @@
 #'      catches per length class of subsequent years;
 #' }
 #' @param n_rnorm number of observations for the function \code{\link{rnorm}}, default = 1000
-#'
+#' @param savePlots logical; should the analyis graphs be saved in the output?
 #'
 #' @keywords Bhattacharya length-frequency
 #'
@@ -34,11 +34,16 @@
 #'      find more details in the Vignette of this package or in the FAO manual by
 #'      Sparre and Venema (1998).
 #'
-#' @return A list with the input parameters and a dataframe (\strong{bhat_results})
-#'      with the results of the Bhattacharya method. Most important is the column
-#'      \strong{Nx}, where x is the number of the cohort, displaying the number of
-#'      individuals per cohort. For an explanation of the other columns please refer to
-#'      the FAO manual (Sparre & Venema, 1998).
+#' @return A list with the input parameters and
+#'    \itemize{
+#'    \item \strong{regressionLines} dataframe with intercept and slope of the regression
+#'      lines,
+#'    \item \strong{Lmean_SD_list} dataframe with the mean length (Lmean), standard deviation (SD),
+#'      and seperation index (SI) for each cohort,
+#'    \item \strong{bhat_results} dataframe with the results of the Bhattacharya method,
+#'    \item \strong{distributions} list with the x and y values of selected distributions,
+#'    \item \strong{cohort_plots} list with analysis plots (when savePlots = TRUE).
+#'    }
 #'
 #' @references
 #' Bhattacharya, C.G., 1967. A simple method of resolution of a distribution into Gaussian
@@ -49,39 +54,36 @@
 #'
 #' @export
 
-Bhattacharya <- function(param, n_rnorm = 1000){
+savePlots = TRUE
+
+Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
 
   res <- param
   if("midLengths" %in% names(res) == TRUE){
     midLengths <- as.character(res$midLengths)
+    # create column without plus group (sign) if present
+    midLengths.num <- do.call(rbind,strsplit(midLengths, split="\\+"))
+    midLengths.num <- as.numeric(midLengths.num[,1])
   }else stop(
     noquote('The parameter list does not contain an object with name "midLengths"'))
-  #if("catch_mat" %in% names(res) == TRUE) catch <- res$catch_mat
   if("catch" %in% names(res) == TRUE){
     catch <- res$catch
   }else stop(
     noquote('The parameter list does not contain an object with name "catch"'))
 
-  #Transform all input variables to correct class
-  midLengths <- as.numeric(midLengths)
-  #catch <- as.numeric(as.character(catch))
-
   #Transform matrix into vector if provided
   if(class(catch) == 'matrix'){
     catch.vec <- rowSums(catch, na.rm = TRUE)
   }else catch.vec <- catch
-  if(length(midLengths) != length(catch.vec)) stop(
+  if(length(midLengths.num) != length(catch.vec)) stop(
     noquote("midLengths and catch do not have the same length!"))
 
-  df.Bh <- data.frame(midLengths = midLengths,
-                      catch = catch.vec)
-
   #calculate size class interval
-  interval <- df.Bh$midLengths[2] - df.Bh$midLengths[1]
+  interval <- midLengths.num[2] - midLengths.num[1]
 
   #STEP 1: fills second column of bhat with counts per size class
-  bhat.table <- data.frame('mean.length.classes' = df.Bh$midLengths,
-                           'N1.plus' = df.Bh$catch,
+  bhat.table <- data.frame('mean.length.classes' = midLengths.num,
+                           'N1.plus' = catch.vec,
                            'log.N1.plus' = NA,
                            'delta.log.N1.plus' = NA,
                            'L' = NA,
@@ -94,6 +96,8 @@ Bhattacharya <- function(param, n_rnorm = 1000){
   a.b.list <- vector("list", 12)
   l.s.list <- vector("list", 12)
   temp.list <- vector("list", 12)
+  coho_plot <- vector("list",12)
+
 
   colour.xy <- c('blue','darkgreen','red','goldenrod2','purple','orange',
                  'lightgreen','skyblue','brown','darkblue','darkorange','darkred')
@@ -101,12 +105,10 @@ Bhattacharya <- function(param, n_rnorm = 1000){
 
   writeLines("Starting on the left, please choose from black points which \nlie on a straight line! Do not include points which might be \naffected by the next distribution! \nTo stop the process press right click (and choose \n'Stop' if necessary)")
 
-
-  for(xy in 1:12){  #more than 12 cohorts?
+  for(xy in 1:12){
 
     #STEP 2: fills third column
     bhat.table$log.N1.plus <- round(log(bhat.table$N1.plus),digits=3)
-
 
     #STEP 3: fills fourth coulmn
     if(xy > 1) bhat.table$log.N1.plus[last_choices[2]] <- 0
@@ -115,23 +117,18 @@ Bhattacharya <- function(param, n_rnorm = 1000){
       bhat.table$delta.log.N1.plus[i] <- delta.value
     }
 
-
     #STEP 4: fills fifth coulmn
     checki <- !is.na(bhat.table$delta.log.N1.plus) &
       bhat.table$delta.log.N1.plus != 'Inf'
     bhat.table$L[checki] <- bhat.table$mean.length.classes[checki] - (interval/2)
-
-
 
     #STEP 5: plot of fifth against fourth column
     checki2 <- !is.na(bhat.table$delta.log.N1.plus) &
       bhat.table$delta.log.N1.plus != 'Inf'
     bhat.table$L[checki2] <- (bhat.table$mean.length.classes[checki2] - (interval/2))
 
-
     #STEP 6: select points for regression line
     if(xy == 1){bhat.table.list[[1]] <- bhat.table}
-
 
     repeat {
 
@@ -265,7 +262,7 @@ Bhattacharya <- function(param, n_rnorm = 1000){
           mar = c(0, 4, 0.5, 0) + 0.1)
       layout(matrix(c(1,2),nrow=2), heights = c(1,2.5))
       # histogram
-      yyfit <-  yfit * ((max(yfit) - max(h$density)) / max(yfit))
+      yyfit <-  yfit * abs((max(yfit) - max(h$density)) / max(yfit))
       if(xy == 1) maxlim <- ifelse(max(yyfit) > max(h$density), max(yyfit), max(h$density))
       hist(freqis, breaks = 50, main = "", xaxt = 'n',
            probability = TRUE, ylim = c(0,maxlim))
@@ -302,6 +299,7 @@ Bhattacharya <- function(param, n_rnorm = 1000){
            cex= 0.7, pos=3)
       title(xlab = "L", outer = TRUE, line = 2.5)
 
+      if(savePlots == TRUE) coho_plot[[xy]] <- recordPlot() ##coho_plot[xy] <- quartz.save(file = paste("Cohort",xy,"plot", sep='_'),type = "jpeg")
 
       repSel <- readline(prompt = writeLines("Are you satisfied with your selection and want to continue? \n'y' or 'redo':"))
 
@@ -313,7 +311,6 @@ Bhattacharya <- function(param, n_rnorm = 1000){
     }
 
     #STEP 9: fills one value in seventh column and one in eigth column, get clean starting value
-    # NEW ASSUMPTION: (FIND OUT!)
     if(length(id.co1$ind) == 0) break
     choosen <- seq(id.co1$ind[1],id.co1$ind[2],interval)
     # if odd, take midpoint:
@@ -328,14 +325,12 @@ Bhattacharya <- function(param, n_rnorm = 1000){
 
 
     #STEP 10: fills rest of seventh column
-    #for(i in (one.left.max+1):length(bhat.table$delta.log.N)){
     for(i in (mid_choice+1):length(bhat.table$delta.log.N)){
       log.N1 <- bhat.table$log.N1[i-1] + bhat.table$delta.log.N[i]
       bhat.table$log.N1[i] <- log.N1
     }
 
     #STEP 11: fills rest of eigth column
-    #for(i in (one.left.max+1):length(bhat.table$delta.log.N)){
     for(i in (mid_choice+1):length(bhat.table$delta.log.N)){
       N1i <- round(exp(bhat.table$log.N1[i]),digits=2)
       bhat.table$N1[i] <- N1i
@@ -377,22 +372,53 @@ Bhattacharya <- function(param, n_rnorm = 1000){
                                paste('N',xy,sep=''),paste('N',xy+1,'.plus',sep=''))
 
     #save data
-    bhat.table.list[[xy+1]] <- bhat.table2 #or bhat.table1?? which one more important
+    bhat.table.list[[xy+1]] <- bhat.table2
     last_choices <- id.co1$ind
   }
 
-  # Combine results of regression analyses for output
+  # Bhatta table
   bhat.table.list <- bhat.table.list[!sapply(bhat.table.list, is.null)]
   bhat.table.list2 <- bhat.table.list[-1]
   bhat.table.list_new <- lapply(bhat.table.list2, function(x)  return(x[,3:9]))
   bhat.results <- do.call(cbind, bhat.table.list_new)
   if(!is.null(bhat.results)){
-    ret_pri <- cbind(bhat.table.list[[1]], bhat.results)
+    ret_pri <- cbind(bhat.table.list[[1]][,1:2], bhat.results)
   }else ret_pri <- bhat.table.list[[1]]
 
+  # Intercept & Slope
+  a.b.list <- a.b.list[!sapply(a.b.list,is.null)]
+  if(length(a.b.list) > 0){
+    a.b.df <- do.call(rbind,a.b.list)
+    a.b.df <- cbind(1:length(a.b.df[,1]),a.b.df)
+    colnames(a.b.df) <- c("Cohort","Intercept","Slope")
+  }else a.b.df = NA
+
+  # Lmean and SD
+  l.s.list <- l.s.list[!sapply(l.s.list,is.null)]
+  if(length(l.s.list) > 0){
+    l.s.df <- do.call(rbind,l.s.list)
+    l.s.df <- cbind(1:length(l.s.df[,1]),l.s.df)
+    # seperation index (SI)
+    SIs <- rep(NA,length(l.s.df[,1]))
+    for(i in 1:(length(l.s.df[,1])-1)){
+      SIs[i] <- abs(l.s.df[i+1,2]-l.s.df[i,2]) / abs(l.s.df[i+1,3]-l.s.df[i,3])
+    }
+    l.s.df <- cbind(l.s.df,SIs)
+    colnames(l.s.df) <- c("Cohort","Lmean","SD","SI")
+  }else l.s.df <- NA
+
+  temp.list <- temp.list[!sapply(temp.list, is.null)]
+  coho_plot <- coho_plot[!sapply(coho_plot,is.null)]
+
   ret <- list(res,
-              a_b_list = a.b.list,
-              Lmean_SD_list = l.s.list,
-              bhat_results = ret_pri)
-  if(cancel != TRUE) return(ret)
+              regression_lines = a.b.df,
+              Lmean_SD_list = l.s.df,
+              bhat_results = ret_pri,
+              distributions = temp.list,
+              cohort_plots = coho_plot)
+  class(ret) <- "Bhattacharya"
+  if(cancel != TRUE){
+    #plot(ret)
+    return(ret)
+  }
 }
