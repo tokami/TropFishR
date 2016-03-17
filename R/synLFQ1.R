@@ -23,6 +23,7 @@
 #' @examples
 #' data(synLFQ1)
 #' str(synLFQ1)
+#' summary(synLFQ1)
 #'
 #'
 NULL

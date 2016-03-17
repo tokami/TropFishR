@@ -23,6 +23,7 @@ Synthetic length-frequency data as provided in Sparre & Venema (1998).
 \examples{
 data(synLFQ1)
 str(synLFQ1)
+summary(synLFQ1)
 
 
 }
