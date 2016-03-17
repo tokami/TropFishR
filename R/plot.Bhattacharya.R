@@ -1,10 +1,13 @@
 #' @title Bhattacharya plot
 #
 #' @description  This function plots the seperated frequency distributions
-#'      and selected regression lines of \link{Bhattacharya} method.
+#'      and selected regression lines of \link[TropFishR]{Bhattacharya} method.
 #'
 #' @param x a list of the class \code{"Bhattacharya"} containing the results of
 #'      Bhattacharya's method.
+#' @param ... additional options of the \code{\link{plot}} function
+#' @param analysisPlot logical; indicating wheter the anaylsis graph with the regression
+#'      lines should be created
 #'
 #' @examples
 #' \donttest{
@@ -13,7 +16,7 @@
 #'  plot(output)
 #' }
 #'
-#' @details A function to plot the results of the Bhattacharya method.
+#' @details This function plots the results of the Bhattacharya method.
 #'
 #' @references
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
@@ -21,7 +24,7 @@
 #'
 #' @export
 
-plot.Bhattacharya <- function(x){
+plot.Bhattacharya <- function(x, analysisPlot = TRUE, ...){
   pes <- x
 
   s.l.df <- pes$Lmean_SD_list
@@ -48,12 +51,50 @@ plot.Bhattacharya <- function(x){
   maxyyfit <- max(maxTemps, na.rm = TRUE)
   maxlim <- ifelse(maxyyfit > max(h$density), maxyyfit, max(h$density))
 
-  par(mfrow = c(1,1))
-  hist(frequis, breaks = 50, main = "", xlab = "L",
-       probability = TRUE, ylim = c(0,maxlim))
+  if(analysisPlot == FALSE){
+    par(mfrow = c(1,1))
 
-  for(cohorti in 1:length(temp.list)){
-    lines(temp.list[[cohorti]]$xfit, temp.list[[cohorti]]$yyfit,
-          col=colour.xy[cohorti], lwd=1.5)
+    hist(frequis, breaks = 50, main = "", xlab = "L",
+         probability = TRUE, ylim = c(0,maxlim))
+
+    for(cohorti in 1:length(temp.list)){
+      lines(temp.list[[cohorti]]$xfit, temp.list[[cohorti]]$yyfit,
+            col=colour.xy[cohorti], lwd=1.5)
+    }
+  }
+
+  if(analysisPlot == TRUE){
+    par(mfrow = c(2,1),
+        oma = c(6.5, 0.5, 2, 1) + 0.1,
+        mar = c(0, 4, 0.5, 0) + 0.1)
+    layout(matrix(c(1,2),nrow=2), heights = c(1,2.5))
+
+    hist(frequis, breaks = 50, main = "", xaxt = 'n',
+         probability = TRUE, ylim = c(0,maxlim))
+
+    for(cohorti in 1:length(temp.list)){
+      lines(temp.list[[cohorti]]$xfit, temp.list[[cohorti]]$yyfit,
+            col=colour.xy[cohorti], lwd=1.5)
+    }
+
+    plot(bhat.results$L, bhat.results$delta.log.N1.plus, pch = 4,
+         col = 'black', xlab = "",...,
+         ylab = expression(paste(delta," log N+")))
+    abline(h = 0)
+    seqi <- seq(4,length(names(bhat.results)),by = 7) # depending on order of bhat.results table
+
+    for(coli in 1:length(seqi)){
+      sta <- a.b.df[coli,4]
+      end <- a.b.df[coli,5]
+      points(bhat.results$L[sta:end],
+             bhat.results[sta:end,seqi[coli]],
+             col = colour.xy[coli], pch = 16)
+    }
+    for(coli in 1:length(seqi)){
+      ai <- a.b.df[coli,2]
+      bi <- a.b.df[coli,3]
+      abline(a = ai, b=bi, col=colour.xy[coli], lwd = 1.5)
+    }
+    title(xlab = "L", outer = TRUE, line = 2.5)
   }
 }

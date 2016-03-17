@@ -4,18 +4,23 @@
 \alias{plot.Bhattacharya}
 \title{Bhattacharya plot}
 \usage{
-\method{plot}{Bhattacharya}(x)
+\method{plot}{Bhattacharya}(x, analysisPlot = TRUE, ...)
 }
 \arguments{
 \item{x}{a list of the class \code{"Bhattacharya"} containing the results of
 Bhattacharya's method.}
+
+\item{analysisPlot}{logical; indicating wheter the anaylsis graph with the regression
+lines should be created}
+
+\item{...}{additional options of the \code{\link{plot}} function}
 }
 \description{
 This function plots the seperated frequency distributions
-     and selected regression lines of \link{Bhattacharya} method.
+     and selected regression lines of \link[TropFishR]{Bhattacharya} method.
 }
 \details{
-A function to plot the results of the Bhattacharya method.
+This function plots the results of the Bhattacharya method.
 }
 \examples{
 \donttest{

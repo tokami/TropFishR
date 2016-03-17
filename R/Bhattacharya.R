@@ -6,12 +6,13 @@
 #'
 #' @param param a list consisting of following parameters:
 #' \itemize{
-#'   \item \strong{midLengths} midpoints of the length class as vector,
-#'   \item \strong{catch} a vector with the catch per length class or a matrix with
+#'   \item \code{midLengths} midpoints of the length class as vector,
+#'   \item \code{catch} a vector with the catch per length class or a matrix with
 #'      catches per length class of subsequent years;
 #' }
-#' @param n_rnorm number of observations for the function \code{\link{rnorm}}, default = 1000
-#' @param savePlots logical; should the analyis graphs be saved in the output?
+#' @param n_rnorm number of observations for the function \code{\link{rnorm}}. The
+#'    default is 1000.
+#' @param savePlots logical; indicating whether the analyis graphs should be recorded
 #'
 #' @keywords Bhattacharya length-frequency
 #'
@@ -36,8 +37,8 @@
 #'
 #' @return A list with the input parameters and
 #'    \itemize{
-#'    \item \strong{regressionLines} dataframe with intercept and slope of the regression
-#'      lines,
+#'    \item \strong{regressionLines} dataframe with intercept, slope, start and end points
+#'       of the regression lines,
 #'    \item \strong{Lmean_SD_list} dataframe with the mean length (Lmean), standard deviation (SD),
 #'      and seperation index (SI) for each cohort,
 #'    \item \strong{bhat_results} dataframe with the results of the Bhattacharya method,
@@ -54,7 +55,6 @@
 #'
 #' @export
 
-savePlots = TRUE
 
 Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
 
@@ -194,7 +194,7 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
         x.co1 <- bhat.table$L[id.co1$ind[1]:id.co1$ind[2]]
 
         # Break loop if selection does not embrace at least 3 points
-        if((id.co1$ind[2]-id.co1$ind[1]) < 3) writeLines("Your selection is not possible. You have to choose two \npoints which include at least one other point. At least \nthree points are required for a regression line. Please choose again!")
+        if(length(x.co1) < 3) writeLines("Your selection is not possible. You have to choose two \npoints which include at least one other point. At least \nthree points are required for a regression line. Please choose again!")
         if(length(x.co1) >= 3){
           break
         }
@@ -374,6 +374,7 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
     #save data
     bhat.table.list[[xy+1]] <- bhat.table2
     last_choices <- id.co1$ind
+    a.b.list[[xy]] <- c(a.b.list[[xy]],id.co1$ind[1],id.co1$ind[2])
   }
 
   # Bhatta table
@@ -390,12 +391,12 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
   if(length(a.b.list) > 0){
     a.b.df <- do.call(rbind,a.b.list)
     a.b.df <- cbind(1:length(a.b.df[,1]),a.b.df)
-    colnames(a.b.df) <- c("Cohort","Intercept","Slope")
+    colnames(a.b.df) <- c("Cohort","Intercept","Slope","Start_point","End_point")
   }else a.b.df = NA
 
   # Lmean and SD
   l.s.list <- l.s.list[!sapply(l.s.list,is.null)]
-  if(length(l.s.list) > 0){
+  if(length(l.s.list) > 1){
     l.s.df <- do.call(rbind,l.s.list)
     l.s.df <- cbind(1:length(l.s.df[,1]),l.s.df)
     # seperation index (SI)
@@ -418,7 +419,7 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
               cohort_plots = coho_plot)
   class(ret) <- "Bhattacharya"
   if(cancel != TRUE){
-    #plot(ret)
+    plot(ret)
     return(ret)
   }
 }

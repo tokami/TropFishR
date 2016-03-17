@@ -4,7 +4,7 @@
 #'
 #'
 #' @description Synthetic length-frequency data as provided in Sparre & Venema (1998).
-#'    Can be used to apply the function \code{\link{Bhattacharya}}.
+#'    Can be used to apply the function \code{\link[TropFishR]{Bhattacharya}}.
 #'
 #' @docType data
 #'
