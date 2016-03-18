@@ -3,9 +3,9 @@
 #' @description Function to calculate the instantaneous natural mortality rate (M)
 #'      according to Pauly's empirical formula.
 #'
-#' @param Linf Infinite length for investigated species in cm [cm].
-#' @param K Growth coefficient for investigated species per year [1/year].
-#' @param Temp Average annual temperature at the surface in degrees centigrade.
+#' @param Linf infinite length for investigated species in cm [cm].
+#' @param K growth coefficient for investigated species per year [1/year].
+#' @param Temp average annual temperature at the surface in degrees centigrade.
 #' @param schooling logical; if TRUE it is accounted for the schooling behaviour of
 #'      the species. Default is FALSE.
 #'

@@ -7,14 +7,14 @@
 M_Pauly(Linf, K, temp, schooling = FALSE)
 }
 \arguments{
-\item{Linf}{Infinite length for investigated species in cm [cm].}
+\item{Linf}{infinite length for investigated species in cm [cm].}
 
-\item{K}{Growth coefficient for investigated species per year [1/year].}
+\item{K}{growth coefficient for investigated species per year [1/year].}
 
 \item{schooling}{logical; if TRUE it is accounted for the schooling behaviour of
 the species. Default is FALSE.}
 
-\item{Temp}{Average annual temperature at the surface in degrees centigrade.}
+\item{Temp}{average annual temperature at the surface in degrees centigrade.}
 }
 \value{
 A numeric value representing M.
