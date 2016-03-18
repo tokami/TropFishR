@@ -20,7 +20,8 @@ data(synCPUE)
 }
 \description{
 Synthetical CPUE dataset from Exercise 4.3 in Sparre & Venema (1999).
-   Can be used to caluclate Z by means of the function \code{\link{Z_CPUE}}.
+   Can be used to estimate the instantaneous total mortality rate (Z) by means of
+   the function \code{\link{Z_CPUE}}.
 }
 \examples{
 data(synCPUE)

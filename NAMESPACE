@@ -2,4 +2,7 @@
 
 S3method(plot,Bhattacharya)
 export(Bhattacharya)
+export(M_Pauly)
+export(M_RikhterEfanov)
+export(Z_BevertonHolt)
 export(Z_CPUE)
