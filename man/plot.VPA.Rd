@@ -11,7 +11,7 @@
 
 \item{display_last_class}{logical; should last age/length class be displayed in graph?}
 
-\item{...}{normal parameters from plot function}
+\item{...}{standard parameters of \code{\link{barplot}}}
 }
 \description{
 This function plots the survivors, catches, natural losses, and fishing

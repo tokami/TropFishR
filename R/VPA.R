@@ -28,24 +28,25 @@
 #' @param algorithm an Algorithm to use to solve for fishing mortality. The default
 #'   setting \code{"new"} uses \code{\link[stats]{optimize}},
 #'   while \code{"old"} uses the algorithm described by Sparre and Venema (1998).
+#' @param plot logical; indicating whether a plot should be printed
 #'
 #' @details The main difference between virtual population analysis (VPA) and cohort
 #'    analysis (CA) is the step of calculating the fishing mortality per age class or
 #'    length group. While CA works with an approximation by assuming that all fish are
 #'    caught during a single day, which makes the calcualtion easier, VPA assumes that
 #'    the fish are caught continuously, which has to be solved by the trial and error
-#'    method (Sparre adn Venema, 1998).
+#'    method (Sparre and Venema, 1998).
 #'    The catch has to be representative for fished species, that means there should not be
 #'    other fisheries fishing the same stock. If this is the case \code{catch_corFac} can
-#'    be used as a raising factor to account for the proportion of fish caught by otehr
+#'    be used as a raising factor to account for the proportion of fish caught by other
 #'    fisheries.
 #'    When the model should follow a real cohort instead of a pseudo cohort, \code{catch}
 #'    has to be provided as matrix. The model then starts to follow the first age class
 #'    in the first column.
-#'    If \code{catch} matrix is shorter than the number of age classes, the catch
-#'    information for the last age classes is missing, which bias the calculation. Choose
-#'    to follow a real cohort just if you have enough information for all age classes
-#'    (\code{dim(catch)[1] <= dim(catch)[2]}).
+#'    If \code{catch} matrix is shorter than the number of age classes, the age or length
+#'    classes without catch information are omitted. It is recommended to only
+#'    follow a real cohort if there is enough information for all age classes
+#'    (test with: \code{dim(catch)[1] <= dim(catch)[2]}).
 #'
 #' @keywords function VPA mortality F stock biomass cohort
 #'
@@ -104,7 +105,8 @@
 #'
 #' @export
 
-VPA <- function(param, terminalF, analysis_type, catch_corFac = NA, algorithm="new"){
+VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
+                algorithm="new", plot = FALSE){
 
   res <- param
   catch <- res$catch
@@ -290,7 +292,7 @@ VPA <- function(param, terminalF, analysis_type, catch_corFac = NA, algorithm="n
     class(ret) <- "VPA"
 
     # plot results
-    try(plot(ret))
+    if(plot==TRUE) try(plot(ret))
 
     return(ret)
   }
@@ -449,7 +451,7 @@ VPA <- function(param, terminalF, analysis_type, catch_corFac = NA, algorithm="n
     class(ret) <- "VPA"
 
     # plot results
-    try(plot(ret))
+    if(plot == TRUE) try(plot(ret))
 
     return(ret)
   }

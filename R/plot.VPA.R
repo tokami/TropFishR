@@ -5,7 +5,7 @@
 #'
 #' @param x list of the class \code{"VPA"} containing the results of the VPA model.
 #' @param display_last_class logical; should last age/length class be displayed in graph?
-#' @param ... normal parameters from plot function
+#' @param ... standard parameters of \code{\link{barplot}}
 #'
 #' @examples
 #' data(whiting)
@@ -42,14 +42,14 @@ plot.VPA <- function(x, display_last_class = TRUE, ...){
   #create VPA plot
   dev.new()
   par(mar = c(7, 5, 4, 5) + 0.3)
-  barplot(df.VPAnew,col=c('darkgreen','purple','yellow'),
+  barplot(df.VPAnew,col=c('darkgreen','darkmagenta','gold2'),
           xlab = xlabel, ylab = "Population",xlim=c(0,ceiling(max(mids))),
           ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur),...)
   legend(x = mids[(which(classes.num == max_clas)-(length(classes.num)/4))],
          y = ceiling(max_sur/dim_sur)*dim_sur,
          legend = c(rownames(df.VPAnew),"fishing mortality"),
-         col = c('darkgreen','purple','yellow','red'),xpd = TRUE,
-         pch=c(rep(15,3),NA), lty = c(NA,NA,NA,1), lwd=2,seg.len = 0.3,
+         col = c('darkgreen','darkmagenta','gold2','red'),xpd = TRUE,
+         pch=c(rep(15,3),NA), lty = c(NA,NA,NA,1), lwd=2, seg.len = 0.9,
          pt.cex = 2, x.intersp = c(0.7,0.7,0.7,0.7), merge=TRUE,
          y.intersp = 1.2, box.lty=0, cex=0.8, xjust = -0.3, yjust = 0.7)
   par(new = TRUE, mar=c(7, 5, 4, 5) + 0.3)
