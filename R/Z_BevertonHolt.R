@@ -65,10 +65,10 @@
 #' @references
 #' Beverton R.J.H and S.J. Holt, 1956. A review of methods of estimating mortality rates
 #' in exploited fish populations, with special reference to sources of bias in catch
-#' sampling. \emph{Rapp.P.-v.Réun.CIEM}, 140:67-83
+#' sampling. \emph{Rapp.P.-v.Reun.CIEM}, 140:67-83
 #'
 #' Powell, D.G., 1979. Estimation of mortality and growth parameters from the length-
-#' frequency of a catch. \emph{Rapp.P.-v.Réun.CIEM}, 175:167-169
+#' frequency of a catch. \emph{Rapp.P.-v.Reun.CIEM}, 175:167-169
 #'
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 #' Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.

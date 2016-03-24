@@ -5,7 +5,7 @@
 #'
 #' @param Linf infinite length for investigated species in cm [cm].
 #' @param K growth coefficient for investigated species per year [1/year].
-#' @param Temp average annual temperature at the surface in degrees centigrade.
+#' @param temp average annual temperature at the surface in degrees centigrade.
 #' @param schooling logical; if TRUE it is accounted for the schooling behaviour of
 #'      the species. Default is FALSE.
 #'

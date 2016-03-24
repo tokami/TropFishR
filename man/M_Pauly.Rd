@@ -11,10 +11,10 @@ M_Pauly(Linf, K, temp, schooling = FALSE)
 
 \item{K}{growth coefficient for investigated species per year [1/year].}
 
+\item{temp}{average annual temperature at the surface in degrees centigrade.}
+
 \item{schooling}{logical; if TRUE it is accounted for the schooling behaviour of
 the species. Default is FALSE.}
-
-\item{Temp}{average annual temperature at the surface in degrees centigrade.}
 }
 \value{
 A numeric value representing M.
