@@ -4,10 +4,12 @@
 \alias{plot.VPA}
 \title{VPA plot}
 \usage{
-\method{plot}{VPA}(x, ...)
+\method{plot}{VPA}(x, display_last_class = TRUE, ...)
 }
 \arguments{
-\item{x}{A list of the class \code{"VPA"} containing the results of the VPA model.}
+\item{x}{list of the class \code{"VPA"} containing the results of the VPA model.}
+
+\item{display_last_class}{logical; should last age/length class be displayed in graph?}
 
 \item{...}{normal parameters from plot function}
 }
@@ -20,8 +22,8 @@ A function to plot the results of the VPA model.
 }
 \examples{
 data(whiting)
-output <- VPA(whiting, terminalF = 0.5, analysis.type = "VPA")
-plot(output)
+output <- VPA(whiting, terminalF = 0.5, analysis_type = "VPA")
+plot(output, display_last_class = FALSE)
 
 }
 \references{

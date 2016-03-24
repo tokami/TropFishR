@@ -3,13 +3,14 @@
 #' @description  This function plots the survivors, catches, natural losses, and fishing
 #'    mortality resulting from the \link{VPA} model.
 #'
-#' @param x A list of the class \code{"VPA"} containing the results of the VPA model.
+#' @param x list of the class \code{"VPA"} containing the results of the VPA model.
+#' @param display_last_class logical; should last age/length class be displayed in graph?
 #' @param ... normal parameters from plot function
 #'
 #' @examples
 #' data(whiting)
-#' output <- VPA(whiting, terminalF = 0.5, analysis.type = "VPA")
-#' plot(output)
+#' output <- VPA(whiting, terminalF = 0.5, analysis_type = "VPA")
+#' plot(output, display_last_class = FALSE)
 #'
 #' @details A function to plot the results of the VPA model.
 #'
@@ -19,7 +20,7 @@
 #'
 #' @export
 
-plot.VPA <- function(x,...){
+plot.VPA <- function(x, display_last_class = TRUE, ...){
   pes <- x
   survivors <- pes$survivors
   FM_calc <- pes$FM_calc
@@ -39,23 +40,25 @@ plot.VPA <- function(x,...){
                   ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur))
 
   #create VPA plot
-  par(mar = c(5, 4, 4, 4) + 0.3)
+  dev.new()
+  par(mar = c(7, 5, 4, 5) + 0.3)
   barplot(df.VPAnew,col=c('darkgreen','purple','yellow'),
           xlab = xlabel, ylab = "Population",xlim=c(0,ceiling(max(mids))),
-          ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur), ...)
+          ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur),...)
   legend(x = mids[(which(classes.num == max_clas)-(length(classes.num)/4))],
          y = ceiling(max_sur/dim_sur)*dim_sur,
-         legend = c(rownames(df.VPAnew),"Fishing mortality"),
+         legend = c(rownames(df.VPAnew),"fishing mortality"),
          col = c('darkgreen','purple','yellow','red'),xpd = TRUE,
          pch=c(rep(15,3),NA), lty = c(NA,NA,NA,1), lwd=2,seg.len = 0.3,
-         pt.cex = 2, x.intersp = c(0.7,0.7,0.7,0.7),merge=TRUE,
-         y.intersp = 0.9, box.lty=0,cex=0.8,xjust = 0.2,yjust = 0.7)
-  par(new = TRUE,mar = c(5, 4, 4, 4) + 0.3)
+         pt.cex = 2, x.intersp = c(0.7,0.7,0.7,0.7), merge=TRUE,
+         y.intersp = 1.2, box.lty=0, cex=0.8, xjust = -0.3, yjust = 0.7)
+  par(new = TRUE, mar=c(7, 5, 4, 5) + 0.3)
   plot(mids, FM_calc, col='red',xlim=c(0,ceiling(max(mids))),
-       type = "n",axes = FALSE, bty = "n", xlab = "", ylab = "",ann=TRUE)
+       type = "n",axes = FALSE, bty = "n", xlab = "", ylab = "", ann=TRUE)
   lines(x=mids,y=FM_calc,col='red',lwd=2)
   usr <- par("usr")
-  par(usr=c(usr[1:2], 0, max_FM))
-  axis(4,at=pretty(c(0,max_FM)))
-  mtext("fishing mortatlity", side=4, line=3)
+  par(usr=c(usr[1:2], 0, max_FM), mar=c(7, 5, 4, 5) + 0.3)
+  axis(4, at = pretty(c(0,max_FM)))
+  mtext("Fishing mortatlity", side=4, line=3)
 }
+

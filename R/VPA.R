@@ -19,7 +19,7 @@
 #' }
 #' @param terminalF a fishing mortality value which is used as the terminal FM for the
 #'   last age/length group.
-#' @param analysis.type determines which type of assessment should be done,
+#' @param analysis_type determines which type of assessment should be done,
 #'   options: "VPA" for classical age-based VPA, "CA" for age- or length-based
 #'   Cohort analysis
 #' @param catch_corFac optional; correction factor for catch, in case provided
@@ -53,17 +53,17 @@
 #' #_______________________________________________
 #' # Virtual Popuation Analysis with age-composition data
 #' data(whiting)
-#' VPA(whiting, terminalF = 0.5, analysis.type = "VPA")
+#' output <- VPA(param = whiting, terminalF = 0.5, analysis_type = "VPA")
 #'
 #'#_______________________________________________
 #' # Pope's Cohort Analysis with age-composition data
 #' data(whiting)
-#' VPA(whiting, terminalF = 0.5, analysis.type = "CA")
+#' VPA(whiting, terminalF = 0.5, analysis_type = "CA")
 #'
 #'#_______________________________________________
 #' # Jones's Cohort Analysis with length-composition data
 #' data(hake)
-#' VPA(hake, terminalF = 0.5, analysis.type = "CA")
+#' VPA(hake, terminalF = 0.5, analysis_type = "CA")
 #'
 #' @return A list with the input parameters and following list objects:
 #' \itemize{
@@ -104,7 +104,7 @@
 #'
 #' @export
 
-VPA <- function(param, terminalF, analysis.type, catch_corFac = NA, algorithm="new"){
+VPA <- function(param, terminalF, analysis_type, catch_corFac = NA, algorithm="new"){
 
   res <- param
   catch <- res$catch
@@ -119,9 +119,10 @@ VPA <- function(param, terminalF, analysis.type, catch_corFac = NA, algorithm="n
 
     # Error message if catch and age do not have same length
     if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
-      if(length(classes) != length(catch[,1])) stop("Ages and catch do not have the same length!")
+      if(length(classes) != length(catch[,1])) stop("Age/length classes and catch do not have the same length!")
+      if(length(classes) != dim(catch)[2]) writeLines("Age/length classes and the real cohort in the catch matrix \ndo not have the same length. The missing age/length \nclasses will be omitted.")
     }else if(class(catch) == 'numeric'){
-      if(length(classes) != length(catch)) stop("Ages and catch do not have the same length!")
+      if(length(classes) != length(catch)) stop("Age/length classes and catch do not have the same length!")
     }
 
     a <- res$a
@@ -135,8 +136,12 @@ VPA <- function(param, terminalF, analysis.type, catch_corFac = NA, algorithm="n
     if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
       #find cohort to analyse
       real.cohort <- diag(as.matrix(catch))
-      catch.cohort <- c(real.cohort,
-                        rep(NA,length(classes.num) - length(real.cohort)))
+       catch.cohort <- c(real.cohort,
+                         rep(NA,length(classes.num) - length(real.cohort)))
+      if(length(classes.num) != length(real.cohort)){
+        catch.cohort <- real.cohort
+        classes.num <- classes.num[1:length(catch.cohort)]
+      }
     }
     if(class(catch) == 'numeric'){
       catch.cohort <- catch
@@ -156,7 +161,7 @@ VPA <- function(param, terminalF, analysis.type, catch_corFac = NA, algorithm="n
 
 
     #   Age-based Cohort Analysis (Pope's cohort analysis)
-    if(analysis.type == "CA"){
+    if(analysis_type == "CA"){
       # other survivors
       for(x3 in (lastLengthClass-1):1){
         survivors[x3] <- (survivors[x3+1] * exp((M/2)) +
@@ -172,7 +177,7 @@ VPA <- function(param, terminalF, analysis.type, catch_corFac = NA, algorithm="n
     }
 
     # Traditional VPA
-    if(analysis.type == "VPA"){
+    if(analysis_type == "VPA"){
       #other survivors and fishing mortality
       FM_calc <- rep(NA,length(classes.num))
       FM_calc[lastLengthClass] <- terminalF
@@ -299,13 +304,13 @@ VPA <- function(param, terminalF, analysis.type, catch_corFac = NA, algorithm="n
                                           is not applicable to length frequency data.
                                           Please provide catch as vector.")
 
-  if("midLengths" %in% names(res) == TRUE & analysis.type == "VPA") stop("Please choose
-                                                         analysis.type = 'CA' for
+  if("midLengths" %in% names(res) == TRUE & analysis_type == "VPA") stop("Please choose
+                                                         analysis_type = 'CA' for
                                                          length composition data!")
 
   if((class(catch) == 'numeric' | class(catch) == 'integer') &
      "midLengths" %in% names(res) == TRUE &
-     analysis.type == "CA"){
+     analysis_type == "CA"){
 
     classes <- as.character(res$midLengths)
 

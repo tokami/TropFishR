@@ -4,7 +4,7 @@
 \alias{VPA}
 \title{Virtual Population Analysis (VPA)}
 \usage{
-VPA(param, terminalF, analysis.type, catch_corFac = NA, algorithm = "new")
+VPA(param, terminalF, analysis_type, catch_corFac = NA, algorithm = "new")
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -24,7 +24,7 @@ VPA(param, terminalF, analysis.type, catch_corFac = NA, algorithm = "new")
 \item{terminalF}{a fishing mortality value which is used as the terminal FM for the
 last age/length group.}
 
-\item{analysis.type}{determines which type of assessment should be done,
+\item{analysis_type}{determines which type of assessment should be done,
 options: "VPA" for classical age-based VPA, "CA" for age- or length-based
 Cohort analysis}
 
@@ -80,17 +80,17 @@ The main difference between virtual population analysis (VPA) and cohort
 #_______________________________________________
 # Virtual Popuation Analysis with age-composition data
 data(whiting)
-VPA(whiting, terminalF = 0.5, analysis.type = "VPA")
+output <- VPA(param = whiting, terminalF = 0.5, analysis_type = "VPA")
 
 #_______________________________________________
 # Pope's Cohort Analysis with age-composition data
 data(whiting)
-VPA(whiting, terminalF = 0.5, analysis.type = "CA")
+VPA(whiting, terminalF = 0.5, analysis_type = "CA")
 
 #_______________________________________________
 # Jones's Cohort Analysis with length-composition data
 data(hake)
-VPA(hake, terminalF = 0.5, analysis.type = "CA")
+VPA(hake, terminalF = 0.5, analysis_type = "CA")
 
 }
 \references{
