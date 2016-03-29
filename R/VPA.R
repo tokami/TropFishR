@@ -64,7 +64,7 @@
 #'#_______________________________________________
 #' # Jones's Cohort Analysis with length-composition data
 #' data(hake)
-#' VPA(hake, terminalF = 0.5, analysis_type = "CA")
+#' VPA(hake, terminalF = 0.5, analysis_type = "CA", plot = TRUE)
 #'
 #' @return A list with the input parameters and following list objects:
 #' \itemize{

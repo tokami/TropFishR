@@ -17,9 +17,6 @@
 This function plots the survivors, catches, natural losses, and fishing
    mortality resulting from the \link{VPA} model.
 }
-\details{
-A function to plot the results of the VPA model.
-}
 \examples{
 data(whiting)
 output <- VPA(whiting, terminalF = 0.5, analysis_type = "VPA")
