@@ -302,13 +302,9 @@ VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   if("midLengths" %in% names(res) == TRUE &
      (class(catch) == 'matrix' |
-      class(catch) == 'data.frame')) stop("The length-based Cohort analysis
-                                          is not applicable to length frequency data.
-                                          Please provide catch as vector.")
+      class(catch) == 'data.frame')) stop("The length-based Cohort analysis is not applicable to length frequency data. Please provide catch as vector.")
 
-  if("midLengths" %in% names(res) == TRUE & analysis_type == "VPA") stop("Please choose
-                                                         analysis_type = 'CA' for
-                                                         length composition data!")
+  if("midLengths" %in% names(res) == TRUE & analysis_type == "VPA") stop("Please choose analysis_type = 'CA' for length composition data!")
 
   if((class(catch) == 'numeric' | class(catch) == 'integer') &
      "midLengths" %in% names(res) == TRUE &
