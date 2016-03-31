@@ -29,18 +29,12 @@
 #' #_______________________________________________
 #' # Variable paramter system (with catch vector)
 #' # based on length frequency data
-#' # load data
 #' data(goatfish)
-#'
-#' # run model
 #' catchCurve(goatfish)
 #'
 #' # based on age composition data
-#' # load data
 #' data(whiting)
-#'
-#' # run model
-#' catchCurve(param=whiting, catch_column = 1)
+#' catchCurve(whiting, catch_column = 1)
 #'
 #' #_______________________________________________
 #' # Constant parameter system based on age composition data (with catch matrix)
@@ -50,26 +44,18 @@
 #' #_______________________________________________
 #' # Cumulative Catch Curve
 #' # based on length frequency data
-#' # load data
 #' data(goatfish)
-#'
-#' # run model
 #' catchCurve(param = goatfish, cumulative = TRUE)
 #'
 #'
 #' # based on age composition data
 #' data(synCAA2)
-#'
-#' # run model
 #' catchCurve(synCAA2, cumulative = TRUE)
 #'
 #'
 #' #_______________________________________________
 #' # Catch Curve with estimation of selection ogive
-#' # load data
 #' data(synLFQ3)
-#'
-#' # run model
 #' catchCurve(synLFQ3, calc_ogive = TRUE)
 #'
 #'  }
@@ -181,9 +167,11 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
 
     # Error message if catch and age do not have same length
     if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
-      if(length(classes) != length(catch[,1])) stop("Ages and catch do not have the same length!")
+      if(length(classes) != length(catch[,1])) stop(noquote(
+        "Age/length classes and catch vector do not have the same length!"))
     }else if(class(catch) == 'numeric'){
-      if(length(classes) != length(catch)) stop("Ages and catch do not have the same length!")
+      if(length(classes) != length(catch)) stop(noquote(
+        "Age/length classes and catch vector do not have the same length!"))
     }
 
     # create column without plus group (sign) if present
@@ -196,7 +184,8 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
     #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
     if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
 
-      if("midLengths" %in% names(res) == TRUE) stop("The catch curve with constant time interval is not applicable to length frequency data.")
+      if("midLengths" %in% names(res) == TRUE) stop(noquote(
+        "The catch curve with constant time interval is not applicable to length-frequency data. Please provide a catch vector."))
 
       #HHHHHHHHHHHHHHHHHHHHHHHHHHHH#
       #   Aged based Catch curve   #
@@ -216,10 +205,13 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
         maxlnC <- max(lnC,na.rm=TRUE) + 1
 
         #identify plot
-        op <- par(mfrow=c(1,1))
+        writeLines("Please choose the minimum and maximum point in the graph \nto include for the regression line!")
+        if(.Platform$OS.type == "unix") quartz()
+        if(.Platform$OS.type == "windows") windows()
+        op <- par(mfrow = c(1,1),
+                  c(5, 4, 4, 2) + 0.1)
         plot(x = classes.num,y = lnC, ylim = c(minlnC,maxlnC),
              xlab = "Age [yrs]", ylab = "ln(C)")
-        print("Please choose the minimum and maximum point in the graph to include for the regression line!")
         cutter <- identify(x = classes.num, y = lnC,
                            labels = order(classes.num), n=2)
         par(op)
@@ -317,7 +309,8 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
         K <- res$K
         t0 <- ifelse("t0" %in% names(res), res$t0, 0)
 
-        if((is.null(Linf) | is.null(K))) stop("You need to assign values to Linf and K for the Catch curve based on length frequency data!")
+        if((is.null(Linf) | is.null(K))) stop(noquote(
+          "You need to assign values to Linf and K for the catch curve based on length-frequency data!"))
 
         #calculate size class interval
         midLengths <- classes.num
@@ -345,10 +338,13 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
         maxlnC_dt <- max(lnC_dt,na.rm=TRUE) + 1
 
         #identify plot
-        op <- par(mfrow=c(1,1))
+        writeLines("Please choose the minimum and maximum point in the graph \nto include for the regression line!")
+        if(.Platform$OS.type == "unix") quartz()
+        if(.Platform$OS.type == "windows") windows()
+        op <- par(mfrow = c(1,1),
+                  c(5, 4, 4, 2) + 0.1)
         plot(x = t_midL,y = lnC_dt, ylim = c(minlnC_dt,maxlnC_dt),
              xlab = "Relative age [yrs]", ylab = "ln(C/dt)")
-        print("Please choose the minimum and maximum point in the graph to include for the regression line!")
         cutter <- identify(x = t_midL, y = lnC_dt,
                            labels = order(t_midL), n=2)
         par(op)
@@ -455,10 +451,13 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
         maxlnC_dt <- max(lnC_dt,na.rm=TRUE) + 1
 
         #identify plot
-        op <- par(mfrow=c(1,1))
+        writeLines("Please choose the minimum and maximum point in the graph \nto include for the regression line!")
+        if(.Platform$OS.type == "unix") quartz()
+        if(.Platform$OS.type == "windows") windows()
+        op <- par(mfrow = c(1,1),
+                  c(5, 4, 4, 2) + 0.1)
         plot(x = tplusdt_2,y = lnC_dt, ylim = c(minlnC_dt,maxlnC_dt),
              xlab = "Age [yrs]", ylab = "ln(C/dt)")
-        print("Please choose the minimum and maximum point in the graph to include for the regression line!")
         cutter <- identify(x = tplusdt_2, y = lnC_dt,
                            labels = order(tplusdt_2), n=2)
         par(op)
@@ -563,9 +562,11 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
 
     # Error message if catch and age do not have same length
     if(class(cumCatch) == 'matrix' | class(cumCatch) == 'data.frame'){
-      if(length(classes) != length(cumCatch[,1])) stop("Ages and catch do not have the same length!")
+      if(length(classes) != length(cumCatch[,1])) stop(noquote(
+        "Age/length classes and catch vector do not have the same length!"))
     }else if(class(cumCatch) == 'numeric'){
-      if(length(classes) != length(cumCatch)) stop("Ages and catch do not have the same length!")
+      if(length(classes) != length(cumCatch)) stop(noquote(
+        "Age/length classes and catch vector do not have the same length!"))
     }
 
     # create column without plus group (sign) if present
@@ -586,7 +587,8 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
         K <- res$K
         t0 <- ifelse("t0" %in% names(res),res$t0,0)
 
-        if(is.null(Linf) | is.null(K)) stop("You need to assign values to Linf and K for the cumulated catch curve based on length frequency data!")
+        if(is.null(Linf) | is.null(K)) stop(noquote(
+          "You need to assign values to Linf and K for the cumulated catch curve based on length-frequency data!"))
 
         #calculate size class interval
         midLengths <- classes.num
@@ -606,7 +608,7 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
         maxlnC <- max(ln_C,na.rm=TRUE) + 1
 
         #identify plot
-        writeLines("Please choose the minimum and maximum point in the graph \nto include for the regression line! Then press 'Finish'!")
+        writeLines("Please choose the maximum and minimum point in the graph \nto include for the regression line!")
         if(.Platform$OS.type == "unix") quartz()
         if(.Platform$OS.type == "windows") windows()
         op <- par(mfrow = c(1,1),
@@ -669,7 +671,7 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
         maxlnC <- max(ln_C,na.rm=TRUE) + 1
 
         #identify plot
-        writeLines("Please choose the minimum and maximum point in the graph \nto include for the regression line! Then press 'Finish'!")
+        writeLines("Please choose the maximum and minimum point in the graph \nto include for the regression line!")
         if(.Platform$OS.type == "unix") quartz()
         if(.Platform$OS.type == "windows") windows()
         op <- par(mfrow = c(1,1),

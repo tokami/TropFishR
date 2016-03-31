@@ -85,18 +85,12 @@ This function includes a so called 'locator' function, which asks you to
 #_______________________________________________
 # Variable paramter system (with catch vector)
 # based on length frequency data
-# load data
 data(goatfish)
-
-# run model
 catchCurve(goatfish)
 
 # based on age composition data
-# load data
 data(whiting)
-
-# run model
-catchCurve(param=whiting, catch_column = 1)
+catchCurve(whiting, catch_column = 1)
 
 #_______________________________________________
 # Constant parameter system based on age composition data (with catch matrix)
@@ -106,26 +100,18 @@ catchCurve(param = whiting)
 #_______________________________________________
 # Cumulative Catch Curve
 # based on length frequency data
-# load data
 data(goatfish)
-
-# run model
 catchCurve(param = goatfish, cumulative = TRUE)
 
 
 # based on age composition data
 data(synCAA2)
-
-# run model
 catchCurve(synCAA2, cumulative = TRUE)
 
 
 #_______________________________________________
 # Catch Curve with estimation of selection ogive
-# load data
 data(synLFQ3)
-
-# run model
 catchCurve(synLFQ3, calc_ogive = TRUE)
 
  }

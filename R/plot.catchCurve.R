@@ -49,7 +49,7 @@
 #'
 #' @export
 
-plot.catchCurve <- function(x,plot.selec = FALSE,...){
+plot.catchCurve <- function(x, plot.selec = FALSE,...){
   pes <- x
 
   xlabel <- "Age [yrs]"
@@ -88,10 +88,12 @@ plot.catchCurve <- function(x,plot.selec = FALSE,...){
   if(plot.selec){
     maxyplot <- ceiling(pes$intercept)
 
-    op <- par(mfrow=c(2,1), xpd = FALSE)
+    op <- par(mfrow=c(2,1), xpd = FALSE,
+              mar = c(1.5, 4, 2, 0) + 0.1,
+              oma = c(5, 0.5, 3, 1) + 0.1)
     #final plot
     plot(x = xplot, y = yplot, ylim = c(minyplot,maxyplot),
-         xlab = xlabel, ylab = ylabel,
+         xlab = '', xaxt = 'n', ylab = ylabel,
          cex = 1.5)
     #par(new=T)
     points(x = xplot[reg_int[1]:reg_int[2]], y = yplot[reg_int[1]:reg_int[2]],
@@ -114,12 +116,14 @@ plot.catchCurve <- function(x,plot.selec = FALSE,...){
     points(y = 0.5, x=pes$t50,col='red',pch=16)
     segments(x0 = pes$t50, y0 = 0.5, x1 = pes$t50, y1 = 0, col='red',lty=2)
     op1 <- par(xpd=TRUE)
-    text(y=-0.1,x=pes$t50,labels = "t50%",col = 'red')
+    text(y=-0.1, x=pes$t50, labels = "t50%", col = 'red')
+    title(xlab = xlabel, outer = TRUE, line = 2.5)
     par(op)
     par(op1)
 
 
   }else {
+    par(mfrow = c(1,1), mar = c(7, 5, 4, 5) + 0.3)
     #final plot
     plot(x = xplot, y = yplot, ylim = c(minyplot,maxyplot),
          xlab = xlabel, ylab = ylabel,
