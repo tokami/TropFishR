@@ -90,11 +90,11 @@ catchCurve(goatfish)
 
 # based on age composition data
 data(whiting)
-catchCurve(whiting, catch_column = 1)
+catchCurve(whiting, catch_column = 1, calc_ogive =T)
 
 #_______________________________________________
 # Constant parameter system based on age composition data (with catch matrix)
-catchCurve(param = whiting)
+catchCurve(param = whiting, calc_ogive =T)
 
 
 #_______________________________________________

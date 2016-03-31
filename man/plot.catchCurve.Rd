@@ -30,7 +30,7 @@ A function to plot the results of the catchCurve model.
 data(goatfish)
 
 # run model
-output <- catchCurve(goatfish)
+output <- catchCurve(goatfish, calc_ogive = TRUE)
 
 # plot results
 plot(output)
