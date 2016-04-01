@@ -4,7 +4,7 @@
 #'
 #' @description Synthetic Catch-at-age data from Sparre & Venema (1998).
 #'    Can be used for the estimation of the instantaneous mortality rate (Z) by
-#'    means of \code{\link{CatchCurveCum}}.
+#'    means of the cumulative catch curve (\code{\link{catchCurve}}).
 #'
 #' @docType data
 #'

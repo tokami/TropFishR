@@ -45,7 +45,7 @@
 #' # Cumulative Catch Curve
 #' # based on length frequency data
 #' data(goatfish)
-#' catchCurve(param = goatfish, cumulative = TRUE)
+#' catchCurve(param = goatfish, cumulative = TRUE, calc_ogive =T)
 #'
 #'
 #' # based on age composition data
@@ -83,19 +83,19 @@
 #'
 #' @return A list with the input parameters and following list objects:
 #' \itemize{
-#'   \item \strong{tplusdt_2} or \strong{t_midL}: relative ages depending on input
-#'      vector (\code{age} or \code{midLengths}),
-#'   \item \strong{lnC_dt}: rearranged catches,
+#'   \item \strong{classes.num}, \strong{tplusdt_2}, \strong{t_midL}, or
+#'      \strong{ln_Linf_L}: age, relative age or subsitute depending on input and method,
+#'   \item \strong{lnC} or \strong{lnC_dt}: logarithm of (rearranged) catches,
 #'   \item \strong{reg_int}: the interval used for the regression analysis,
-#'   \item \strong{Z}: the total mortality,
-#'   \item \strong{se}: the standard error of the total mortality;}
-#' in case of calc_ogive, additionally:
+#'   \item \strong{Z}: instantaneous total mortality rate,
+#'   \item \strong{se}: standard error of the total mortality;}
+#' in case calc_ogive == TRUE, additionally:
 #' \itemize{
 #'   \item \strong{intercept}: intercept of regression analysis,
-#'   \item \strong{Sobs}: observed selection curve,
+#'   \item \strong{Sobs}: observed selection ogive,
 #'   \item \strong{ln_1_S_1}: dependent variable of regression analysis for
 #'   selectivity parameters,
-#'   \item \strong{Sest}: estimated selection curve,
+#'   \item \strong{Sest}: estimated selection ogive,
 #'   \item \strong{t50}: age at first capture (age at which fish have a 50%
 #'   probability to be caught),
 #'   \item \strong{t75}: age at which fish have a 75% probability to be caught,
@@ -162,217 +162,153 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
   classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
   classes.num <- as.numeric(classes.num[,1])
 
-  #IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII#
-  #      NON CUMULATIVE CATCH CURVE   #
-  #IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII#
+  constant_dt <- FALSE
+  if(is.na(catch_column) & (class(res$catch) == 'matrix' |
+     class(res$catch) == 'data.frame')){
+    constant_dt <- TRUE
+    catch <- res$catch
+  }
+
+  # non cumulative catch curve
   if(cumulative == FALSE){
-    if(is.na(catch_column)) catch <- res$catch
+    if(is.na(catch_column) & constant_dt == FALSE) catch <- res$catch
     if(!is.na(catch_column)) catch <- res$catch[,catch_column]
-
-    # Error message if catch and age do not have same length
-    if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
-      if(length(classes) != length(catch[,1])) stop(noquote(
-        "Age/length classes and catch vector do not have the same length!"))
-    }else if(class(catch) == 'numeric'){
-      if(length(classes) != length(catch)) stop(noquote(
-        "Age/length classes and catch vector do not have the same length!"))
-    }
-
-
-    #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-    #   Linearised catch curve with constant time intervals    #
-    #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-    if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
-
-      if("midLengths" %in% names(res) == TRUE) stop(noquote(
-        "The catch curve with constant time interval is not applicable to length-frequency data. Please provide a catch vector."))
-
-      #HHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-      #   Aged based Catch curve   #
-      #HHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-      if("age" %in% names(res) == TRUE){
-
-        dt <- rep(classes.num[2]-classes.num[1],length(classes.num))
-
-        #find cohort to analyse
-        real.cohort <- diag(as.matrix(catch))
-        catch.cohort <- c(real.cohort,
-                          rep(NA,length(classes.num) - length(real.cohort)))
-
-        # ln( Catch )     ==    y
-        lnC <- log(catch.cohort)
-
-        # 1
-        xvar = classes.num
-        yvar = lnC
-        xname = "classes.num"
-        yname = "lnC"
-
-        xlabel = "Age [yrs]"
-        ylabel = "ln(C)"
-
-      }
-    }
-
-    #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-    #    Linearised catch curve with variable time intervals   #
-    #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-    if(class(catch) == 'numeric'){
-
-      #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-      #      Length converted catch curve     #
-      #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-      if("midLengths" %in% names(res) == TRUE){
-        Linf <- res$Linf
-        K <- res$K
-        t0 <- ifelse("t0" %in% names(res), res$t0, 0)
-
-        if((is.null(Linf) | is.null(K))) stop(noquote(
-          "You need to assign values to Linf and K for the catch curve based on length-frequency data!"))
-
-        #calculate size class interval
-        midLengths <- classes.num
-        interval <- midLengths[2] - midLengths[1]
-
-        # t of lower length classes
-        lowerLengths <- midLengths - (interval / 2)
-        t_L1 <- (t0 - (1/K)) * log(1 - (lowerLengths / Linf))
-
-        # delta t
-        dt <- rep(NA,length(midLengths))
-        for(x1 in 1:(length(dt)-1)){
-          dt[x1] <- t_L1[x1+1] - t_L1[x1]
-        }
-
-        # t of midlengths
-        t_midL <- (t0 - (1/K)) * log(1 - (midLengths / Linf))
-        # ln( Catch / delta t)
-        lnC_dt <- log(catch / dt)
-
-        lnC_dt[which(lnC_dt == -Inf)] <- NA   ### OR zero???
-
-        # 2
-        xvar = t_midL
-        yvar = lnC_dt
-        xname = "t_midL"
-        yname = "lnC_dt"
-
-        xlabel = "Relative age [yrs]"
-        ylabel = "ln(C/dt)"
-
-      }
-
-
-      #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-      #    Aged based Catch curve    #
-      #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-      if("age" %in% names(res) == TRUE){
-        # delta t
-        dt <- rep(NA,length(classes.num))
-        for(x1 in 1:(length(dt)-1)){
-          dt[x1] <- classes.num[x1+1] - classes.num[x1]
-        }
-
-        # (t + dt) / 2   ==   x
-        tplusdt_2 <- classes.num + (dt / 2)
-
-        # ln( Catch / delta t)     ==    y
-        lnC_dt <- log(catch / dt)
-
-
-        # 3
-        xvar = tplusdt_2
-        yvar = lnC_dt
-        xname = "tplusdt_2"
-        yname = "lnC_dt"
-
-        xlabel = "Age [yrs]"
-        ylabel = "ln(C/dt)"
-
-      }
-    }
   }
-
-
-  #IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII#
-  #       CUMULATIVE CATCH CURVE      #
-  #IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII#
+  #  cumulative catch curve
   if(cumulative){
-    if(is.na(catch_column)) cumCatch <- rev(cumsum(rev(res$catch)))
-    if(!is.na(catch_column)) cumCatch <- rev(cumsum(rev(res$catch[,catch_column])))
+    if(is.na(catch_column)) catch <- rev(cumsum(rev(res$catch)))
+    if(!is.na(catch_column)) catch <- rev(cumsum(rev(res$catch[,catch_column])))
+  }
 
-    # Error message if catch and age do not have same length
-    if(class(cumCatch) == 'matrix' | class(cumCatch) == 'data.frame'){
-      if(length(classes) != length(cumCatch[,1])) stop(noquote(
-        "Age/length classes and catch vector do not have the same length!"))
-    }else if(class(cumCatch) == 'numeric'){
-      if(length(classes) != length(cumCatch)) stop(noquote(
-        "Age/length classes and catch vector do not have the same length!"))
-    }
+  # Error message if catch and age do not have same length
+  if(constant_dt){
+    if(length(classes) != length(catch[,1])) stop(noquote(
+      "Age/length classes and catch matrix do not have the same length!"))
+  }else if(class(catch) == 'numeric'){
+    if(length(classes) != length(catch)) stop(noquote(
+      "Age/length classes and catch vector do not have the same length!"))
+  }
 
-    #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-    #    Linearised catch curve with variable time intervals   #
-    #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-    if(class(cumCatch) == 'numeric'){
+  #   Linearised catch curve with constant time intervals
+  if(constant_dt){
+    if("midLengths" %in% names(res) == TRUE) stop(noquote(
+      "The catch curve with constant time interval is not applicable to length-frequency data. Please provide a catch vector."))
 
-      #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-      #      Length converted catch curve     #
-      #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-      if("midLengths" %in% names(res) == TRUE){
-
-        Linf <- res$Linf
-        K <- res$K
-        t0 <- ifelse("t0" %in% names(res),res$t0,0)
-
-        if(is.null(Linf) | is.null(K)) stop(noquote(
-          "You need to assign values to Linf and K for the cumulated catch curve based on length-frequency data!"))
-
-        #calculate size class interval
-        midLengths <- classes.num
-        interval <- midLengths[2] - midLengths[1]
-
-        # L of lower length classes
-        lowerLengths <- midLengths - (interval / 2)
-
-        #ln C(L1,Linf)
-        ln_C <- log(cumCatch)
-
-        #ln (Linf - L)
-        ln_Linf_L <- log(Linf - lowerLengths)
-
-        # 2
-        xvar = ln_Linf_L
-        yvar = ln_C
-        xname = "ln_Linf_L"
-        yname = "ln_C"
-
-        xlabel = "ln (Linf - L)"
-        ylabel = "ln C(L, Linf)"
-      }
-
-      #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-      #    Aged based Catch curve    #
-      #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-      if("age" %in% names(res) == TRUE){
-
-        tplusdt_2 <- classes.num
-
-        #ln C(L1,Linf)
-        ln_C <- log(cumCatch)
-
-        # 2
-        xvar = tplusdt_2
-        yvar = ln_C
-        xname = "tplusdt_2"
-        yname = "ln_C"
-
-        xlabel = "Age [yrs]"
-        ylabel = "ln C(t, inf)"
-      }
+    # Aged based Catch curve
+    if("age" %in% names(res) == TRUE){
+      #find cohort to analyse
+      real.cohort <- diag(as.matrix(catch))
+      catch <- c(real.cohort, rep(NA,length(classes.num) - length(real.cohort)))
     }
   }
 
-  ## general part
+  # Length converted catch curve
+  if("midLengths" %in% names(res) == TRUE){
+    Linf <- res$Linf
+    K <- res$K
+    t0 <- ifelse("t0" %in% names(res), res$t0, 0)
+
+    if((is.null(Linf) | is.null(K))) stop(noquote(
+      "You need to assign values to Linf and K for the catch curve based on length-frequency data!"))
+
+    #calculate size class interval
+    midLengths <- classes.num
+    interval <- midLengths[2] - midLengths[1]
+
+    # L and t of lower length classes
+    lowerLengths <- midLengths - (interval / 2)
+    t_L1 <- (t0 - (1/K)) * log(1 - (lowerLengths / Linf))
+
+    # delta t
+    dt <- rep(NA,length(midLengths))
+    for(x1 in 1:(length(dt)-1)){
+      dt[x1] <- t_L1[x1+1] - t_L1[x1]
+    }
+
+    # x varaible
+    #ln (Linf - L)
+    ln_Linf_L <- log(Linf - lowerLengths)
+    # t of midlengths
+    t_midL <- (t0 - (1/K)) * log(1 - (midLengths / Linf))
+
+    # y variable
+    #ln C(L1,Linf)
+    lnC <- log(catch)
+    # ln( Catch / delta t)
+    lnC_dt <- log(catch / dt)
+    lnC_dt[which(lnC_dt == -Inf)] <- NA   ### OR zero???
+
+    if(cumulative == FALSE){
+      xvar = t_midL
+      yvar = lnC_dt
+      xname = "t_midL"
+      yname = "lnC_dt"
+      xlabel = "Relative age [yrs]"
+      ylabel = "ln(C/dt)"
+    }
+
+    if(cumulative){
+      xvar = ln_Linf_L
+      yvar = lnC
+      xname = "ln_Linf_L"
+      yname = "lnC"
+      xlabel = "ln (Linf - L)"
+      ylabel = "ln C(L, Linf)"
+    }
+  }
+
+  # Aged based Catch curve
+  if("age" %in% names(res) == TRUE){
+    # delta t
+    if(constant_dt == FALSE){
+      dt <- rep(NA,length(classes.num))
+      for(x1 in 1:(length(dt)-1)){
+        dt[x1] <- classes.num[x1+1] - classes.num[x1]
+      }
+    }
+    if(constant_dt) dt <- rep(classes.num[2] - classes.num[1], length(classes.num))
+
+    # x variable
+    # (t + dt) / 2   ==   x
+    if(cumulative == FALSE) tplusdt_2 <- classes.num + (dt / 2)
+    if(cumulative) tplusdt_2 <- classes.num
+
+    # y variable
+    #ln C(L1,Linf)
+    lnC <- log(catch)
+    # ln( Catch / delta t)     ==    y
+    lnC_dt <- log(catch / dt)
+
+
+    if(constant_dt){
+      xvar = classes.num
+      xname = "classes.num"
+      xlabel = "Age [yrs]"
+      yvar = lnC
+      yname = "lnC"
+      ylabel = "ln C(t, inf)"
+    }
+
+    if(cumulative == FALSE & constant_dt == FALSE){
+      xvar = tplusdt_2
+      xname = "tplusdt_2"
+      xlabel = "Age [yrs]"
+      yvar = lnC_dt
+      yname = "lnC_dt"
+      ylabel = "ln(C/dt)"
+    }
+
+    if(cumulative){
+      xvar = tplusdt_2
+      xname = "tplusdt_2"
+      xlabel = "Age [yrs]"
+      yvar = lnC
+      yname = "lnC"
+      ylabel = "ln C(t, inf)"
+    }
+  }
+
+
   #for plot
   minY <- ifelse(min(yvar,na.rm=TRUE) < 0, min(yvar,na.rm=TRUE),0)
   maxY <- max(yvar,na.rm=TRUE) + 1
@@ -430,14 +366,14 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
   class(ret) <- "catchCurve"
 
   # Calculate selection ogive from catch curve and add to ret
+  if(calc_ogive & cumulative) stop(noquote("It is not possible to estimate the selection ogive for the cumulative catch curve."))
   if(calc_ogive){
 
     # only use part of catch and t which is not fully exploited by the gear
     t_ogive <- xvar[1:(cutter[1]-1)]   # replace t_midL by universal object
     dt_ogive <- dt[1:(cutter[1]-1)]
     if("age" %in% names(res) == TRUE &
-       class(catch) == 'matrix' | class(catch) == 'data.frame' &
-       cumulative == FALSE){
+       class(catch) == 'matrix' | class(catch) == 'data.frame'){
       catch_ogive <- catch.cohort[1:(cutter[1]-1)]
     }else catch_ogive <- catch[1:(cutter[1]-1)]
 
@@ -477,7 +413,7 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
     if(exists("L75")) names(ret2)[which(ret2 %in% L75)] <- "L75"
 
     class(ret2) <- "catchCurve"
-    plot(ret2,plot.selec=TRUE)
+    plot(ret2, plot_selec=TRUE)
     return(ret2)
   }else plot(ret) ; return(ret)
 }

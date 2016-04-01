@@ -22,7 +22,7 @@ data(goatfish)
 \description{
 Data of Yellowstriped goatfish (\emph{Upeneus vittatus}) from Manila Bay,
    Philippines. Can be used for the estimation of the instantaneous mortality
-   rate (Z) by means of \code{\link{CatchCurve}}.
+   rate (Z) by means of \code{\link{catchCurve}}.
 }
 \examples{
 data(goatfish)

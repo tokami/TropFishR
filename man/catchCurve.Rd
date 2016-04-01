@@ -31,19 +31,19 @@ calculated from the catch curve}
 \value{
 A list with the input parameters and following list objects:
 \itemize{
-  \item \strong{tplusdt_2} or \strong{t_midL}: relative ages depending on input
-     vector (\code{age} or \code{midLengths}),
-  \item \strong{lnC_dt}: rearranged catches,
+  \item \strong{classes.num}, \strong{tplusdt_2}, \strong{t_midL}, or
+     \strong{ln_Linf_L}: age, relative age or subsitute depending on input and method,
+  \item \strong{lnC} or \strong{lnC_dt}: logarithm of (rearranged) catches,
   \item \strong{reg_int}: the interval used for the regression analysis,
-  \item \strong{Z}: the total mortality,
-  \item \strong{se}: the standard error of the total mortality;}
-in case of calc_ogive, additionally:
+  \item \strong{Z}: instantaneous total mortality rate,
+  \item \strong{se}: standard error of the total mortality;}
+in case calc_ogive == TRUE, additionally:
 \itemize{
   \item \strong{intercept}: intercept of regression analysis,
-  \item \strong{Sobs}: observed selection curve,
+  \item \strong{Sobs}: observed selection ogive,
   \item \strong{ln_1_S_1}: dependent variable of regression analysis for
   selectivity parameters,
-  \item \strong{Sest}: estimated selection curve,
+  \item \strong{Sest}: estimated selection ogive,
   \item \strong{t50}: age at first capture (age at which fish have a 50%
   probability to be caught),
   \item \strong{t75}: age at which fish have a 75% probability to be caught,
@@ -101,7 +101,7 @@ catchCurve(param = whiting, calc_ogive =T)
 # Cumulative Catch Curve
 # based on length frequency data
 data(goatfish)
-catchCurve(param = goatfish, cumulative = TRUE)
+catchCurve(param = goatfish, cumulative = TRUE, calc_ogive =T)
 
 
 # based on age composition data

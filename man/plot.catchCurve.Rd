@@ -4,13 +4,13 @@
 \alias{plot.catchCurve}
 \title{Plotting catch curve}
 \usage{
-\method{plot}{catchCurve}(x, plot.selec = FALSE, ...)
+\method{plot}{catchCurve}(x, plot_selec = FALSE, ...)
 }
 \arguments{
 \item{x}{A list of the class \code{"catchCurve"} containing the results of the
 catchCurve model.}
 
-\item{plot.selec}{logical; if TRUE the regression line is plotted for not fully
+\item{plot_selec}{logical; if TRUE the regression line is plotted for not fully
 exploited length groups and the probability of capture is plotted}
 
 \item{...}{normal parameters from plot function}
@@ -23,35 +23,9 @@ A function to plot the results of the catchCurve model.
 }
 \examples{
 \donttest{
-#_______________________________________________
-# Variable paramter system (with catch vector)
-# based on length frequency data
-# load data
-data(goatfish)
-
-# run model
-output <- catchCurve(goatfish, calc_ogive = TRUE)
-
-# plot results
-plot(output)
-
-# based on age composition data
-# load data
-data(whiting)
-
-# run model
-catchCurve(whiting, catch_column = 1)
-
-#_______________________________________________
-# Catch Curve with estimation of selection ogive
-# load data
 data(synLFQ3)
-
-# run model
 output <- catchCurve(synLFQ3, calc_ogive = TRUE)
-
-# plot results
-plot(output,plot.selec = TRUE)
+plot(output, plot_selec = TRUE)
 }
 
 }

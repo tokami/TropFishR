@@ -4,41 +4,15 @@
 #'
 #' @param x A list of the class \code{"catchCurve"} containing the results of the
 #'      catchCurve model.
-#' @param plot.selec logical; if TRUE the regression line is plotted for not fully
+#' @param plot_selec logical; if TRUE the regression line is plotted for not fully
 #'      exploited length groups and the probability of capture is plotted
 #' @param ... normal parameters from plot function
 #'
 #' @examples
 #' \donttest{
-#' #_______________________________________________
-#' # Variable paramter system (with catch vector)
-#' # based on length frequency data
-#' # load data
-#' data(goatfish)
-#'
-#' # run model
-#' output <- catchCurve(goatfish, calc_ogive = TRUE)
-#'
-#' # plot results
-#' plot(output)
-#'
-#' # based on age composition data
-#' # load data
-#' data(whiting)
-#'
-#' # run model
-#' catchCurve(whiting, catch_column = 1)
-#'
-#' #_______________________________________________
-#' # Catch Curve with estimation of selection ogive
-#' # load data
 #' data(synLFQ3)
-#'
-#' # run model
 #' output <- catchCurve(synLFQ3, calc_ogive = TRUE)
-#'
-#' # plot results
-#' plot(output,plot.selec = TRUE)
+#' plot(output, plot_selec = TRUE)
 #' }
 #'
 #' @details A function to plot the results of the catchCurve model.
@@ -49,7 +23,7 @@
 #'
 #' @export
 
-plot.catchCurve <- function(x, plot.selec = FALSE,...){
+plot.catchCurve <- function(x, plot_selec = FALSE,...){
   pes <- x
 
   xlabel <- "Age [yrs]"
@@ -85,7 +59,7 @@ plot.catchCurve <- function(x, plot.selec = FALSE,...){
   minyplot <- ifelse(min(yplot,na.rm=TRUE) < 0, min(yplot,na.rm=TRUE),0)
   maxyplot <- max(yplot,na.rm=TRUE) + 1
 
-  if(plot.selec){
+  if(plot_selec){
     maxyplot <- ceiling(pes$intercept)
 
     op <- par(mfrow=c(2,1), xpd = FALSE,
