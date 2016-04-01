@@ -1,26 +1,27 @@
 #' @title Catch curve
 #'
-#' @description  The funciton estimates the total mortality (Z) from age composition
-#'    or length-frequency data with the linearized catch curve or the linearized
-#'    length converted catch curve, respectively. It allows for applying the
-#'    cumulative catch curve and to estimate gear selectivity.
+#' @description  This function applies the linearized catch curve or the
+#'    length converted catch curve to age composition or length-frequency data,
+#'    respectively, to estimate the instantaneous total mortality rate (Z). The
+#'    estimation of gear selectivity is optional. Further, it allows for applying
+#'    the cumulative catch curve.
 #'
 #' @param param a list consisting of following parameters:
 #' \itemize{
-#'   \item \code{midLengths} or \code{age}: midpoints of the length class as vector (length-frequency
-#'   data) or ages as vector (age composition data),
+#'   \item \code{midLengths} or \code{age}: midpoints of the length classes (length-frequency
+#'   data) or ages (age composition data),
 #'   \item \code{Linf}: infinite length for investigated species in cm [cm],
 #'   \item \code{K}: growth coefficent for investigated species per year [1/year],
 #'   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
-#'   \item \code{catch}: catch as vector, or a matrix with catches of subsequent years if
+#'   \item \code{catch}: catches, vector or matrix with catches of subsequent years if
 #'   the catch curve with constat time intervals should be applied;
 #' }
 #' @param catch_column numerical; indicating the column of the catch matrix which should be
 #'   used for the analysis.
-#' @param cumulative logical; if \code{TRUE} instead of normal catch curve the cumulative
+#' @param cumulative logical; if TRUE the cumulative
 #'   catch curve is applied (Jones and van Zalinge method)
-#' @param calc_ogive logical; if \code{TRUE} the selection ogive is additionally
-#'   calculated from the catch curve
+#' @param calc_ogive logical; if TRUE the selection ogive is additionally
+#'   calculated from the catch curve (only if \code{cumulative = FALSE})
 #'
 #' @keywords function mortality Z catchCurve
 #'
@@ -34,30 +35,26 @@
 #'
 #' # based on age composition data
 #' data(whiting)
-#' catchCurve(whiting, catch_column = 1, calc_ogive =T)
+#' catchCurve(whiting, catch_column = 1)
 #'
 #' #_______________________________________________
 #' # Constant parameter system based on age composition data (with catch matrix)
-#' catchCurve(param = whiting, calc_ogive =T)
-#'
+#' catchCurve(whiting)
 #'
 #' #_______________________________________________
 #' # Cumulative Catch Curve
 #' # based on length frequency data
 #' data(goatfish)
-#' catchCurve(param = goatfish, cumulative = TRUE, calc_ogive =T)
-#'
+#' catchCurve(goatfish, cumulative = TRUE)
 #'
 #' # based on age composition data
 #' data(synCAA2)
 #' catchCurve(synCAA2, cumulative = TRUE)
 #'
-#'
 #' #_______________________________________________
 #' # Catch Curve with estimation of selection ogive
 #' data(synLFQ3)
 #' catchCurve(synLFQ3, calc_ogive = TRUE)
-#'
 #'  }
 #'
 #' @details This function includes a so called 'locator' function, which asks you to
@@ -67,15 +64,16 @@
 #'   is calculated.
 #'   When the selection ogive
 #'   is calculated by means of the catch curve the assumption is made, that Z is constant
-#'   for all year classes or length groups respectively. Accoring to Sparre and Venema
+#'   for all year classes or length groups, respectively. Accoring to Sparre and Venema
 #'   (1998) this assumption might be true, because F is smaller for young fish
 #'   (Selectivity) while M is higher for young fish (high natural mortality). The selectivity
 #'   for not fully exploited old fish (e.g. due to gillnet fishery) can not be calculated yet
 #'   by use of the catch curve.
-#'   Based on the format of the list argument "catch" the function automatically
+#'   Based on the format of the list argument \code{catch} and whether the argument
+#'   \code{catch_column} is defined, the function automatically
 #'   distinguishes between the catch curve with variable parameter system (if catch is a
 #'   vector) and the one with constant parameter system (if catch is a matrix or a
-#'   data.frame). In the case of the variable parameter system the catches of one year are
+#'   data.frame and \code{catch_column = NA}). In the case of the variable parameter system the catches of one year are
 #'   assumed to represent the catches during the entire life span of a so called
 #'   pseudo-cohort.
 #'   The cumulative catch curve does not allow for the estimation of the selectivity
