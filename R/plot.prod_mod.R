@@ -1,8 +1,9 @@
 #' @title Plotting production models
 #'
-#' @description This function plots objects of the class "prod_mod".
+#' @description This function plots CPUE and yield values against fishing effort
+#'      resulting from the production models (\link{prod_mod}).
 #'
-#' @param x a object of the class 'prod_mod',
+#' @param x a object of the class \code{"prod_mod"},
 #' @param ... optional parameters of plot function
 #'
 #' @examples
@@ -26,7 +27,7 @@
 #'
 #' @export
 
-plot.prod_mod <- function(x,...){
+plot.prod_mod <- function(x, ...){
   pes <- x
   f <- pes$f
   Y <- pes$Y
@@ -42,22 +43,24 @@ plot.prod_mod <- function(x,...){
   CPUE.F <- pes$ln_CPUE
 
   #Plot
-  op <- par(mfrow=c(2,1),new=F, mar=c(4, 2, 2, 2) + 0.1)
+  op <- par(mfrow=c(2,1), xpd = FALSE,
+            mar = c(1.2, 4, 1.5, 1) + 0.1,
+            oma = c(5, 0.5, 2, 2) + 0.1)
+  layout(matrix(c(1,2), nrow = 2, byrow=TRUE), heights=c(4,4))
+
+  # CPUE plot
   x = seq(min(f),max(f),1)
   y = exp(a.F + b.F*x)
-  plot(CPUE.S ~ f, xlab='Fishing effort', ylab='CPUE')
+  plot(CPUE.S ~ f, xlab='', ylab='CPUE')
   abline(a = a.S, b=b.S)
-  lines(x, y = y, col = 'blue', lty = 5)
-  legend("topright", col=c('black','blue'), bty ='n',
-         legend = c('Schaefer','Fox'), lty=c(1,5))
+  lines(x = x, y = y, col = 'blue', lty = 5)
 
-
+  # biomass plot
   x = seq(0,abs(a.S / b.S),1)
   y.S = a.S*x + b.S*x^2
   y.F = x * exp(a.F + b.F*x)
-  par(new=F)
   plot(x,rep(max(Y),length(x)),type='n',
-       ylim=c(0,max(Y)), xlab = "Fishing effort", ylab = "Yield")
+       ylim=c(0,max(Y)), xlab = "", ylab = "Yield")
   points(Y ~ f)
   lines(x, y = y.S)
   lines(x, y = y.F,col='blue', lty = 5)
@@ -67,9 +70,11 @@ plot.prod_mod <- function(x,...){
   segments(x0=fMSY.F,x1=fMSY.F,y0=0,y1=MSY.F,lty=2,col='blue')
   segments(x0=0,x1=fMSY.F,y0=MSY.F,y1=MSY.F,lty=2,col='blue')
   points(fMSY.F,MSY.F,col='red',pch=16)
-  legend("bottomleft", col=c('black','blue'), bty ='n',
-         legend = c('Schaefer','Fox'), lty=c(1,5))
-
+  title(xlab = "Fishing effort", outer = TRUE, line = 2)
+  par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE)
+  plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n")
+  legend(x="top", col=c('black','blue'), bty ='n', horiz = TRUE,
+         xpd = TRUE,legend = c('Schaefer','Fox'), lty=c(1,5))
   par(op)
 }
 

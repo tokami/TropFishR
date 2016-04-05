@@ -7,12 +7,13 @@
 \method{plot}{prod_mod}(x, ...)
 }
 \arguments{
-\item{x}{a object of the class 'prod_mod',}
+\item{x}{a object of the class \code{"prod_mod"},}
 
 \item{...}{optional parameters of plot function}
 }
 \description{
-This function plots objects of the class "prod_mod".
+This function plots CPUE and yield values against fishing effort
+     resulting from the production models (\link{prod_mod}).
 }
 \examples{
 data(trawl_fishery_Java)
