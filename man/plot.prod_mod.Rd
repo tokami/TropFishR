@@ -4,10 +4,12 @@
 \alias{plot.prod_mod}
 \title{Plotting production models}
 \usage{
-\method{plot}{prod_mod}(x, ...)
+\method{plot}{prod_mod}(x, display_MSY = TRUE, ...)
 }
 \arguments{
-\item{x}{a object of the class \code{"prod_mod"},}
+\item{x}{a object of the class \code{"prod_mod"}}
+
+\item{display_MSY}{logical; should MSY be displayed in the graph?}
 
 \item{...}{optional parameters of plot function}
 }
@@ -18,7 +20,7 @@ This function plots CPUE and yield values against fishing effort
 \examples{
 data(trawl_fishery_Java)
 output <-  prod_mod(data = trawl_fishery_Java)
-plot(output)
+plot(output, display_years = TRUE)
 
 
 }

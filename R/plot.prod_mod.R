@@ -3,13 +3,14 @@
 #' @description This function plots CPUE and yield values against fishing effort
 #'      resulting from the production models (\link{prod_mod}).
 #'
-#' @param x a object of the class \code{"prod_mod"},
+#' @param x a object of the class \code{"prod_mod"}
+#' @param display_MSY logical; should MSY be displayed in the graph?
 #' @param ... optional parameters of plot function
 #'
 #' @examples
 #' data(trawl_fishery_Java)
 #' output <-  prod_mod(data = trawl_fishery_Java)
-#' plot(output)
+#' plot(output, display_years = TRUE)
 #'
 #'
 #' @references
@@ -27,7 +28,7 @@
 #'
 #' @export
 
-plot.prod_mod <- function(x, ...){
+plot.prod_mod <- function(x, display_MSY = TRUE, ...){
   pes <- x
   f <- pes$f
   Y <- pes$Y
@@ -52,7 +53,8 @@ plot.prod_mod <- function(x, ...){
   x = seq(min(f),max(f),1)
   y = exp(a.F + b.F*x)
   plot(CPUE.S ~ f, xlab='', ylab='CPUE')
-  abline(a = a.S, b=b.S)
+  lines(x = x, y = (a.S + x * b.S))
+  #abline(a = a.S, b=b.S)
   lines(x = x, y = y, col = 'blue', lty = 5)
 
   # biomass plot
@@ -64,12 +66,18 @@ plot.prod_mod <- function(x, ...){
   points(Y ~ f)
   lines(x, y = y.S)
   lines(x, y = y.F,col='blue', lty = 5)
-  segments(x0=fMSY.S,x1=fMSY.S,y0=0,y1=MSY.S,lty=2)
-  segments(x0=0,x1=fMSY.S,y0=MSY.S,y1=MSY.S,lty=2)
-  points(fMSY.S,MSY.S,col='red',pch=16)
-  segments(x0=fMSY.F,x1=fMSY.F,y0=0,y1=MSY.F,lty=2,col='blue')
-  segments(x0=0,x1=fMSY.F,y0=MSY.F,y1=MSY.F,lty=2,col='blue')
-  points(fMSY.F,MSY.F,col='red',pch=16)
+  if(display_MSY){
+    #segments(x0=fMSY.S,x1=fMSY.S,y0=0,y1=MSY.S,lty=2)
+    #segments(x0=-500,x1=fMSY.S,y0=MSY.S,y1=MSY.S,lty=2)
+    points(fMSY.S,MSY.S,col='red', pch=18)
+    text(fMSY.S, MSY.S,col='red',labels = expression(paste("MSY"[Schaefer])),
+         adj = c(-0.05,1.1))
+    #segments(x0=fMSY.F,x1=fMSY.F,y0=0,y1=MSY.F,lty=2,col='blue')
+    #segments(x0=-500,x1=fMSY.F,y0=MSY.F,y1=MSY.F,lty=2,col='blue')
+    points(fMSY.F,MSY.F, col='red', pch=18)
+    text(fMSY.F, MSY.F, col='red',labels = expression(paste("MSY"[Fox])),
+         adj = c(-0.05,1.1))
+  }
   title(xlab = "Fishing effort", outer = TRUE, line = 2)
   par(fig = c(0, 1, 0, 1), oma = c(0, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE)
   plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n")
@@ -77,5 +85,3 @@ plot.prod_mod <- function(x, ...){
          xpd = TRUE,legend = c('Schaefer','Fox'), lty=c(1,5))
   par(op)
 }
-
-

@@ -36,8 +36,9 @@ A list with the input parameters and following list objects:
 }
 \description{
 Production models are holistic models, which
-   can be used to estimate the maximum sustainable yield (MSY) and biomass.
-   This function applies both the Schaefer and the Fox model.
+   can be used to estimate maximum sustainable yield (MSY) and virgin biomass. This
+   function uses the equilibrium approach to estimate parameters (Schaefer model and
+   Fox model).
 }
 \details{
 Production models are also called surplus production models or
@@ -45,13 +46,15 @@ Production models are also called surplus production models or
    and yield parameters have to be expended over a certain number of years. Furthermore,
    the fishing effort must have undergone substantial changes over the period covered
    (Sparre and Venema, 1998). Either the catch per unit of effort (CPUE) is inserted
-   into the model directly (by a column \code{CPUE}) or the CPUE is calculated from
+   into the model directly (objectname: \code{CPUE}) or the CPUE is calculated from
    the catch and effort, then these two vectors should have required units. There
    are three ways of estimating paramaters of production models, (i) assuming
    equlibrium conditions, (ii) transforming equation to linear form, or (iii)
    time-series fitting (Hilborn and Walters, 1992). The first approach corresponds
-   to the Schaefer and Fox model and thus this method. However, the authors recommend
-   to use dynamic fitting methods when possible rather than the equilibrium approach.
+   to the Schaefer and Fox model and thus the methodology of this function.
+   The authors recommend to use dynamic fitting methods when possible rather than
+   the equilibrium approach. For dynamic production models please refer
+   to \link{prod_mod_dyn}.
 }
 \examples{
 data(trawl_fishery_Java)
