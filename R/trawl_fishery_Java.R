@@ -5,7 +5,7 @@
 #' @description Times series of catch and effort data from the trawl fishery off the
 #'  North coast of Java. This dataset can
 #'  be used for the estimation of maximum sustainable yield by means of the
-#'  production models (\code{\link{prod_mod}}).
+#'  production models (\code{\link{prod_mod}} and \code{\link{prod_mod_dyn}}).
 #'
 #' @docType data
 #' @format A dataframe consisting of: 1. \strong{year} a vector with years, 2. \strong{Y}
@@ -16,7 +16,9 @@
 #'  Hong Kong.
 #'
 #' @usage data(trawl_fishery_Java)
+#'
 #' @keywords data dataset trawl Java
+#'
 #' @examples
 #' data(trawl_fishery_Java)
 #' str(trawl_fishery_Java)
