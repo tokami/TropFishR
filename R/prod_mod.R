@@ -29,11 +29,11 @@
 #'   \item \strong{Schaefer_MSY}: MSY according to Schaefer model,
 #'   \item \strong{Schaefer_fMSY}: fishing effort yielding in MSY according to
 #'   Schaefer model,
-#'   \item \strong{Schaefer_vB}: virgin biomass according to Schaefer model,
+#'   \item \strong{Schaefer_Bv}: virgin biomass according to Schaefer model,
 #'   \item \strong{ln_CPUE}: natural logarithm of CPUE values,
 #'   \item \strong{Fox_MSY}: MSY according to Fox model,
 #'   \item \strong{Fox_fMSY}: fishing effort yielding in MSY according to Fox model,
-#'   \item \strong{Fox_vB}: virgin biomass according to Fox model,
+#'   \item \strong{Fox_Bv}: virgin biomass according to Fox model,
 #' }
 #'
 #' @details Production models are also called surplus production models or
@@ -134,11 +134,11 @@ prod_mod <- function(data, plot = FALSE){
     Fox_lm = c(as[2],bs[2]),
     Schaefer_MSY = MSYs[1],
     Schaefer_fMSY = fMSYs[1],
-    Schaefer_vB = as[1],
+    Schaefer_Bv = as[1],
     ln_CPUE = CPUEs[[2]],
     Fox_MSY = MSYs[2],
     Fox_fMSY = fMSYs[2],
-    Fox_vB = as[2])
+    Fox_Bv = as[2])
 
   class(ret) <- "prod_mod"
 
