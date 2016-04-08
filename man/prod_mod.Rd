@@ -27,11 +27,11 @@ A list with the input parameters and following list objects:
   \item \strong{Schaefer_MSY}: MSY according to Schaefer model,
   \item \strong{Schaefer_fMSY}: fishing effort yielding in MSY according to
   Schaefer model,
-  \item \strong{Schaefer_vB}: virgin biomass according to Schaefer model,
+  \item \strong{Schaefer_Bv}: virgin biomass according to Schaefer model,
   \item \strong{ln_CPUE}: natural logarithm of CPUE values,
   \item \strong{Fox_MSY}: MSY according to Fox model,
   \item \strong{Fox_fMSY}: fishing effort yielding in MSY according to Fox model,
-  \item \strong{Fox_vB}: virgin biomass according to Fox model,
+  \item \strong{Fox_Bv}: virgin biomass according to Fox model,
 }
 }
 \description{
