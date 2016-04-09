@@ -1,4 +1,4 @@
-#' @name hake
+#' @name emperor
 #' @title Emperor data
 #'
 #' @description This dataset contains information about sky emperor (\emph{Lethrinus mahsena})

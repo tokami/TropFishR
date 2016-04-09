@@ -4,8 +4,8 @@
 \alias{prod_mod_ts}
 \title{Production models with time series fitting}
 \usage{
-prod_mod_ts(data, method = "Schaefer", B0_init = NA, B0_est = NA,
-  effort_unit = 1, plot = TRUE)
+prod_mod_ts(data, method = "Schaefer", SSE_method = "standard",
+  B0_init = NA, B0_est = NA, effort_unit = 1, plot = TRUE)
 }
 \arguments{
 \item{data}{a dataframe of parameters
@@ -19,6 +19,12 @@ prod_mod_ts(data, method = "Schaefer", B0_init = NA, B0_est = NA,
 \item{method}{indicating if Schaefer or Fox model should be applied. First assumes a
 logistic relationship between growth rate and biomass, whereas second assumes it to
 foolow the Gompertz distribution (Richards 1959). Default is the dynamic Schaefer model.}
+
+\item{SSE_method}{method which is used to calculate the error sum of squares of
+the observed and predicted CPUE values in the non-linear minimalisation approach.
+Options are "standard", for \code{sum((CPUE - predicted CPUE)^2)}, "log" for
+\code{sum((log(CPUE) - log(predicted CPUE))^2)}, and "Thiels_U_statistic" for
+\code{sqrt(sum(CPUE - predicted CPUE)/sum(CPUE(t) - CPUE(t-1)))}.}
 
 \item{B0_init}{numerical; if realistic initial estimate for virgin biomass is available.
 If NA initial estimate for virgin biomass is set to two times average yield of all
@@ -57,16 +63,18 @@ Either catch per unit of effort (CPUE) is inserted
    Whenever a good estimate for the virigin biomass is available, this estimate
    should be inserted for \code{B_init}. The default approach for the initial
    estimate of the virgin biomass is to multiply the average yield by 2 (Dharmendra
-   and Sólmundsson, 2005). Alternatively can just a part of the time series of
-   yield values be choosen to represent the virgin biomass.
+   and Solmundsson, 2005). Alternatively, just a part of the time series of
+   yield values can be choosen to represent the virgin biomass.
+   With the Fox model it is recommeneded to take Thiels_U_statistic as the method
+   to calculate SSE.
 }
 \examples{
 data(emperor)
-#x2 <- prod_mod_ts(data = emperor, method = "Fox")
+#x2 <- prod_mod_ts(data = emperor, method = "Fox", SSE_method = "standard")
 
 }
 \references{
-Dharmendra, D., Sólmundsson, J., 2005. Stock assessment of the offshore Mauritian banks
+Dharmendra, D., Solmundsson, J., 2005. Stock assessment of the offshore Mauritian banks
 using dynamic biomass models and analysis of length frequency of the Sky Emperor
 (\emph{Lethrinus mahsena}). Fisheries Training Program The United Nations University, 61
 

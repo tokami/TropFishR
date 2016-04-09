@@ -14,6 +14,11 @@
 #' @param method indicating if Schaefer or Fox model should be applied. First assumes a
 #'    logistic relationship between growth rate and biomass, whereas second assumes it to
 #'    foolow the Gompertz distribution (Richards 1959). Default is the dynamic Schaefer model.
+#' @param SSE_method method which is used to calculate the error sum of squares of
+#'    the observed and predicted CPUE values in the non-linear minimalisation approach.
+#'    Options are "standard", for \code{sum((CPUE - predicted CPUE)^2)}, "log" for
+#'    \code{sum((log(CPUE) - log(predicted CPUE))^2)}, and "Thiels_U_statistic" for
+#'    \code{sqrt(sum(CPUE - predicted CPUE)/sum(CPUE(t) - CPUE(t-1)))}.
 #' @param B0_init numerical; if realistic initial estimate for virgin biomass is available.
 #'    If NA initial estimate for virgin biomass is set to two times average yield of all
 #'    or part of yield values (see \code{B0_est}).
@@ -26,7 +31,7 @@
 #'
 #' @examples
 #' data(emperor)
-#' #x2 <- prod_mod_ts(data = emperor, method = "Fox")
+#' #x2 <- prod_mod_ts(data = emperor, method = "Fox", SSE_method = "standard")
 #'
 #' @return A list with the input parameters and following list objects:
 #' \itemize{
@@ -47,8 +52,10 @@
 #'    Whenever a good estimate for the virigin biomass is available, this estimate
 #'    should be inserted for \code{B_init}. The default approach for the initial
 #'    estimate of the virgin biomass is to multiply the average yield by 2 (Dharmendra
-#'    and Sólmundsson, 2005). Alternatively can just a part of the time series of
-#'    yield values be choosen to represent the virgin biomass.
+#'    and Solmundsson, 2005). Alternatively, just a part of the time series of
+#'    yield values can be choosen to represent the virgin biomass.
+#'    With the Fox model it is recommeneded to take Thiels_U_statistic as the method
+#'    to calculate SSE.
 #'
 #' @references
 #' Dharmendra, D., Solmundsson, J., 2005. Stock assessment of the offshore Mauritian banks
@@ -64,7 +71,8 @@
 #'
 #' #@export
 
-prod_mod_ts <- function(data, method = "Schaefer", B0_init = NA, B0_est = NA,
+prod_mod_ts <- function(data, method = "Schaefer", SSE_method = "standard",
+                        B0_init = NA, B0_est = NA,
                         effort_unit = 1, plot = TRUE){
 
   res <- data
@@ -110,15 +118,31 @@ prod_mod_ts <- function(data, method = "Schaefer", B0_init = NA, B0_est = NA,
       B <- B + SY - Y[y]
       B <- ifelse(B < 0, 0, B)
     }
+    switch(SSE_method,
+           "standard"={
+             SSE <- sum((CPUE - CPUE_hat)^2, na.rm=TRUE)
+           },
+           "log"={
+             SSE <- sum((log(CPUE) - log(CPUE_hat))^2, na.rm=TRUE)
+           },
+           "Thiels_U_statistic"={
+             CPUE_diff <- rep(NA,length(yrs))
+             for(i in 2:length(yrs)){
+               CPUE_diff[i] <- CPUE[i] - CPUE[i-1]
+             }
+             SSE <- sqrt(sum((CPUE - CPUE_hat)^2, na.rm=TRUE) /
+                               (sum((CPUE_diff)^2, na.rm=TRUE)))
+           }
+    )
     #SSE <- sum((CPUE - CPUE_hat)^2, na.rm=TRUE)  # take log? (with logarithm of parameters no unrealistic negative results are provided)
                                      # take Theil's U-statistic (Wittink 1988) ?? :
 # ALternative SSE according to Theil's U-statistic:
-    CPUE_diff <- rep(NA,length(yrs))
-    for(i in 2:length(yrs)){
-      CPUE_diff[i] <- CPUE[i] - CPUE[i-1]
-    }
-    SSE <- sqrt( sum((CPUE - CPUE_hat)^2, na.rm=TRUE) /
-                  (sum((CPUE_diff)^2, na.rm=TRUE)))
+#     CPUE_diff <- rep(NA,length(yrs))
+#     for(i in 2:length(yrs)){
+#       CPUE_diff[i] <- CPUE[i] - CPUE[i-1]
+#     }
+#     SSE <- sqrt( sum((CPUE - CPUE_hat)^2, na.rm=TRUE) /
+#                   (sum((CPUE_diff)^2, na.rm=TRUE)))
     return(SSE)
   }
 
@@ -150,14 +174,30 @@ prod_mod_ts <- function(data, method = "Schaefer", B0_init = NA, B0_est = NA,
       B <- B + SY - Y[y]
       B <- ifelse(B<0,0,B)
     }
+    switch(SSE_method,
+           "standard"={
+             SSE <- sum((CPUE - CPUE_hat)^2, na.rm=TRUE)
+           },
+           "log"={
+             SSE <- sum((log(CPUE) - log(CPUE_hat))^2, na.rm=TRUE)
+           },
+           "Thiels_U_statistic"={
+             CPUE_diff <- rep(NA,length(yrs))
+             for(i in 2:length(yrs)){
+               CPUE_diff[i] <- CPUE[i] - CPUE[i-1]
+             }
+             SSE <- sqrt(sum((CPUE - CPUE_hat)^2, na.rm=TRUE) /
+                               (sum((CPUE_diff)^2, na.rm=TRUE)))
+           }
+    )
     #SSE <- sum((CPUE - CPUE_hat) ^ 2, na.rm = TRUE)
     # ALternative SSE according to Theil's U-statistic:
-    CPUE_diff <- rep(NA,length(yrs))
-    for(i in 2:length(yrs)){
-      CPUE_diff[i] <- CPUE[i] - CPUE[i-1]
-    }
-    SSE <- sqrt( sum((CPUE - CPUE_hat)^2, na.rm=TRUE) /
-                   (sum((CPUE_diff)^2, na.rm=TRUE)))
+#     CPUE_diff <- rep(NA,length(yrs))
+#     for(i in 2:length(yrs)){
+#       CPUE_diff[i] <- CPUE[i] - CPUE[i-1]
+#     }
+#     SSE <- sqrt( sum((CPUE - CPUE_hat)^2, na.rm=TRUE) /
+#                    (sum((CPUE_diff)^2, na.rm=TRUE)))
     return(SSE)
   }
 

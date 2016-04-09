@@ -27,7 +27,7 @@ data(emperor)
 
 }
 \references{
-Dharmendra, D., Sólmundsson, J., 2005. Stock assessment of the offshore Mauritian banks
+Dharmendra, D., Solmundsson, J., 2005. Stock assessment of the offshore Mauritian banks
 using dynamic biomass models and analysis of length frequency of the Sky Emperor
 (\emph{Lethrinus mahsena}). Fisheries Training Program The United Nations University, 61
 
