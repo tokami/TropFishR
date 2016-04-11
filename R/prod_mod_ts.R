@@ -14,12 +14,7 @@
 #' @param method indicating if Schaefer or Fox model should be applied. First assumes a
 #'    logistic relationship between growth rate and biomass, whereas second assumes it to
 #'    foolow the Gompertz distribution (Richards 1959). Default is the dynamic Schaefer model.
-#' @param SSE_method method which is used to calculate the error sum of squares of
-#'    the observed and predicted CPUE values in the non-linear minimalisation approach.
-#'    Options are "standard", for \code{sum((CPUE - predicted CPUE)^2)}, "log" for
-#'    \code{sum((log(CPUE) - log(predicted CPUE))^2)}, and "Thiels_U_statistic" for
-#'    \code{sqrt(sum(CPUE - predicted CPUE)/sum(CPUE(t) - CPUE(t-1)))}.
-#' @param B0_init numerical; if realistic initial estimate for virgin biomass is available.
+#' @param B0_init numeric; if realistic initial estimate for virgin biomass is available.
 #'    If NA initial estimate for virgin biomass is set to two times average yield of all
 #'    or part of yield values (see \code{B0_est}).
 #' @param B0_est intital value of virgin biomass estimating using all yield values (NA) or
@@ -27,11 +22,12 @@
 #' @param effort_unit multiplication factor for the unit of effort. Default is 1.
 #' @param plot logical; if TRUE (default) a graph is displayed
 #'
-#' @keywords function biomass MSY
+#' @keywords function biomass MSY production
 #'
 #' @examples
 #' data(emperor)
-#' #x2 <- prod_mod_ts(data = emperor, method = "Fox", SSE_method = "standard")
+#' prod_mod_ts(emperor, method = "Schaefer")
+#' prod_mod_ts(emperor, method = "Fox")
 #'
 #' @return A list with the input parameters and following list objects:
 #' \itemize{
@@ -41,9 +37,9 @@
 #'   \item \strong{r}: population growth rate,
 #'   \item \strong{q}: catchability coefficient,
 #'   \item \strong{MSY}: maximum sustainabale yield (MSY),
-#'   \item \strong{Bmsy}: biomass yielding in MSY,
-#'   \item \strong{Emsy}: fishing effort yielding in MSY
-#'   \item \strong{Fmsy}: fishing mortality yielding in MSY,
+#'   \item \strong{Bmsy}: biomass at MSY,
+#'   \item \strong{Emsy}: fishing effort at MSY
+#'   \item \strong{Fmsy}: fishing mortality at MSY,
 #' }
 #'
 #' @details Either catch per unit of effort (CPUE) is inserted
@@ -54,8 +50,12 @@
 #'    estimate of the virgin biomass is to multiply the average yield by 2 (Dharmendra
 #'    and Solmundsson, 2005). Alternatively, just a part of the time series of
 #'    yield values can be choosen to represent the virgin biomass.
-#'    With the Fox model it is recommeneded to take Thiels_U_statistic as the method
-#'    to calculate SSE.
+#'    The minimisation procedure is based on least error sum of squares (SSE). For
+#'    the logistic (Schaefer) method the standard calculation of SSE is applied
+#'    (\code{sum((CPUE - predicted CPUE)^2)}), for
+#'    the method with Gompertz distribution (Fox) SSE is calculated according to
+#'    the Thiel's U statistic \code{sqrt(sum(CPUE - predicted CPUE)/sum(CPUE(t) - CPUE(t-1)))}
+#'    (Wittink, 1988).
 #'
 #' @references
 #' Dharmendra, D., Solmundsson, J., 2005. Stock assessment of the offshore Mauritian banks
@@ -65,13 +65,19 @@
 #' Hilborn, R. and Walters, C., 1992. Quantitative Fisheries Stock Assessment: Choice,
 #' Dynamics and Uncertainty. Chapman and Hall, New York
 #'
+#' Prager, M. H. (1994). A suite of extensions to a non-equilibrium surplus production
+#' model. \emph{Fishery Bulletin} 92: 374-389
+#'
 #' Richards, F. J. (1959). A flexible growth function for empirical use.
 #' \emph{Journal of experimental Botany}, 10(2), 290-301.
 #'
+#' Wittink, D. R. (1988). The application of regression analysis. Allyn and Bacon. Inc.
+#' Boston. MA. 324p.
 #'
-#' #@export
+#'
+#' @export
 
-prod_mod_ts <- function(data, method = "Schaefer", SSE_method = "standard",
+prod_mod_ts <- function(data, method = "Schaefer",
                         B0_init = NA, B0_est = NA,
                         effort_unit = 1, plot = TRUE){
 
@@ -118,14 +124,11 @@ prod_mod_ts <- function(data, method = "Schaefer", SSE_method = "standard",
       B <- B + SY - Y[y]
       B <- ifelse(B < 0, 0, B)
     }
-    switch(SSE_method,
-           "standard"={
+    switch(method,
+           "Schaefer"={
              SSE <- sum((CPUE - CPUE_hat)^2, na.rm=TRUE)
            },
-           "log"={
-             SSE <- sum((log(CPUE) - log(CPUE_hat))^2, na.rm=TRUE)
-           },
-           "Thiels_U_statistic"={
+           "Fox"={
              CPUE_diff <- rep(NA,length(yrs))
              for(i in 2:length(yrs)){
                CPUE_diff[i] <- CPUE[i] - CPUE[i-1]
@@ -134,15 +137,6 @@ prod_mod_ts <- function(data, method = "Schaefer", SSE_method = "standard",
                                (sum((CPUE_diff)^2, na.rm=TRUE)))
            }
     )
-    #SSE <- sum((CPUE - CPUE_hat)^2, na.rm=TRUE)  # take log? (with logarithm of parameters no unrealistic negative results are provided)
-                                     # take Theil's U-statistic (Wittink 1988) ?? :
-# ALternative SSE according to Theil's U-statistic:
-#     CPUE_diff <- rep(NA,length(yrs))
-#     for(i in 2:length(yrs)){
-#       CPUE_diff[i] <- CPUE[i] - CPUE[i-1]
-#     }
-#     SSE <- sqrt( sum((CPUE - CPUE_hat)^2, na.rm=TRUE) /
-#                   (sum((CPUE_diff)^2, na.rm=TRUE)))
     return(SSE)
   }
 
@@ -174,14 +168,11 @@ prod_mod_ts <- function(data, method = "Schaefer", SSE_method = "standard",
       B <- B + SY - Y[y]
       B <- ifelse(B<0,0,B)
     }
-    switch(SSE_method,
-           "standard"={
+    switch(method,
+           "Schaefer"={
              SSE <- sum((CPUE - CPUE_hat)^2, na.rm=TRUE)
            },
-           "log"={
-             SSE <- sum((log(CPUE) - log(CPUE_hat))^2, na.rm=TRUE)
-           },
-           "Thiels_U_statistic"={
+           "Fox"={
              CPUE_diff <- rep(NA,length(yrs))
              for(i in 2:length(yrs)){
                CPUE_diff[i] <- CPUE[i] - CPUE[i-1]
@@ -190,20 +181,11 @@ prod_mod_ts <- function(data, method = "Schaefer", SSE_method = "standard",
                                (sum((CPUE_diff)^2, na.rm=TRUE)))
            }
     )
-    #SSE <- sum((CPUE - CPUE_hat) ^ 2, na.rm = TRUE)
-    # ALternative SSE according to Theil's U-statistic:
-#     CPUE_diff <- rep(NA,length(yrs))
-#     for(i in 2:length(yrs)){
-#       CPUE_diff[i] <- CPUE[i] - CPUE[i-1]
-#     }
-#     SSE <- sqrt( sum((CPUE - CPUE_hat)^2, na.rm=TRUE) /
-#                    (sum((CPUE_diff)^2, na.rm=TRUE)))
     return(SSE)
   }
 
   estB <- nlm(ssefn2, input2, typsize=input2, iterlim=1000)
   estB <- nlm(ssefn2, estB$est, typsize=estB$est, iterlim=1000)
-
 
   # calculate predicted biomass for all age classes
   K <- estA$est[1]
@@ -257,7 +239,7 @@ prod_mod_ts <- function(data, method = "Schaefer", SSE_method = "standard",
   class(ret) <- "prod_mod_ts"
 
   # create plot
-  # if(plot) plot(ret)
+  if(plot) plot(ret)
 
   return(ret)
 }

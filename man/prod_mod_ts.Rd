@@ -4,8 +4,8 @@
 \alias{prod_mod_ts}
 \title{Production models with time series fitting}
 \usage{
-prod_mod_ts(data, method = "Schaefer", SSE_method = "standard",
-  B0_init = NA, B0_est = NA, effort_unit = 1, plot = TRUE)
+prod_mod_ts(data, method = "Schaefer", B0_init = NA, B0_est = NA,
+  effort_unit = 1, plot = TRUE)
 }
 \arguments{
 \item{data}{a dataframe of parameters
@@ -20,13 +20,7 @@ prod_mod_ts(data, method = "Schaefer", SSE_method = "standard",
 logistic relationship between growth rate and biomass, whereas second assumes it to
 foolow the Gompertz distribution (Richards 1959). Default is the dynamic Schaefer model.}
 
-\item{SSE_method}{method which is used to calculate the error sum of squares of
-the observed and predicted CPUE values in the non-linear minimalisation approach.
-Options are "standard", for \code{sum((CPUE - predicted CPUE)^2)}, "log" for
-\code{sum((log(CPUE) - log(predicted CPUE))^2)}, and "Thiels_U_statistic" for
-\code{sqrt(sum(CPUE - predicted CPUE)/sum(CPUE(t) - CPUE(t-1)))}.}
-
-\item{B0_init}{numerical; if realistic initial estimate for virgin biomass is available.
+\item{B0_init}{numeric; if realistic initial estimate for virgin biomass is available.
 If NA initial estimate for virgin biomass is set to two times average yield of all
 or part of yield values (see \code{B0_est}).}
 
@@ -65,12 +59,17 @@ Either catch per unit of effort (CPUE) is inserted
    estimate of the virgin biomass is to multiply the average yield by 2 (Dharmendra
    and Solmundsson, 2005). Alternatively, just a part of the time series of
    yield values can be choosen to represent the virgin biomass.
-   With the Fox model it is recommeneded to take Thiels_U_statistic as the method
-   to calculate SSE.
+   The minimisation procedure is based on least error sum of squares (SSE). For
+   the logistic (Schaefer) method the standard calculation of SSE is applied
+   (\code{sum((CPUE - predicted CPUE)^2)}), for
+   the method with Gompertz distribution (Fox) SSE is calculated according to
+   the Thiel's U statistic \code{sqrt(sum(CPUE - predicted CPUE)/sum(CPUE(t) - CPUE(t-1)))}
+   (Wittink, 1988).
 }
 \examples{
 data(emperor)
-#x2 <- prod_mod_ts(data = emperor, method = "Fox", SSE_method = "standard")
+prod_mod_ts(data = emperor, method = "Schaefer")
+prod_mod_ts(data = emperor, method = "Fox")
 
 }
 \references{
@@ -81,11 +80,14 @@ using dynamic biomass models and analysis of length frequency of the Sky Emperor
 Hilborn, R. and Walters, C., 1992. Quantitative Fisheries Stock Assessment: Choice,
 Dynamics and Uncertainty. Chapman and Hall, New York
 
+Prager, M. H. (1994). A suite of extensions to a non-equilibrium surplus production
+model. \emph{Fishery Bulletin} 92: 374-389
+
 Richards, F. J. (1959). A flexible growth function for empirical use.
 \emph{Journal of experimental Botany}, 10(2), 290-301.
 
-
-#@export
+Wittink, D. R. (1988). The application of regression analysis. Allyn and Bacon. Inc.
+Boston. MA. 324p.
 }
 \keyword{MSY}
 \keyword{biomass}

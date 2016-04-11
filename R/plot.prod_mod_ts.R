@@ -2,18 +2,15 @@
 #'
 #' @description This function plots objects of the class "prod_mod_ts".
 #'
-#' @param x a object of the class 'prod_mod_dyn',
+#' @param x a object of the class "prod_mod_ts",
+#' @param correlation_plots logical; indicating if plots with correlation between
+#'    covariates should be displayed
 #' @param ... optional parameters of plot function
 #'
 #' @examples
-#' # load data
 #' data(emperor)
-#'
-#' # run model
-#' #output <-  prod_mod_ts(data = emperor, method  = "Fox")
-#'
-#' # plot output
-#' #plot(output)
+#' output <-  prod_mod_ts(emperor, method  = "Fox")
+#' plot(output, correlation_plots = TRUE)
 #'
 #'
 #' @references
@@ -21,15 +18,15 @@
 #' using dynamic biomass models and analysis of length frequency of the Sky Emperor
 #' (\emph{Lethrinus mahsena}). Fisheries Training Program The United Nations University, 61
 #'
-#' #@export
+#' @export
 
-plot.prod_mod_ts <- function(x,...){
+plot.prod_mod_ts <- function(x, correlation_plots = FALSE, ...){
   pes <- x
   Y <- pes$Y
   yrs <- pes$year
   Bvec <- pes$Bvec
   CPUE <- pes$CPUE
-  Ihat <- pes$Ihat
+  CPUE_hat <- pes$CPUE_hat
   K <- pes$K
   r <- pes$r
   q <- pes$q
@@ -39,27 +36,29 @@ plot.prod_mod_ts <- function(x,...){
   method <- pes$method
 
   # plotting
-  op <- par(mfrow=c(3,3),
-            mar = c(2, 2, 2, 1) + 0.1)
-  plot(yrs, Y, type="b", xlab="year", ylab="yield",
+  dev.new()
+  op <- par(mfrow=c(2,2), xpd = FALSE,
+            mar = c(4, 4, 3, 1) + 0.1,
+            oma = c(4, 0.5, 1, 2) + 0.1)
+  layout(matrix(c(1,2,3,4), nrow = 2, byrow=TRUE))
+
+  # Yiel trajectory
+  plot(yrs, Y, type="b", xlab="", ylab="Yield",
        main="Yield Trajectory",
        ylim=c(0, max(Y, na.rm = TRUE)*1.05))
-  plot(yrs, Bvec, type="b", xlab="year", ylab="biomass",
+
+  # Biomass trajectory
+  plot(yrs, Bvec, type="b", xlab="", ylab="Biomass",
        main="Biomass Trajectory", ylim=c(0, max(Bvec, na.rm = TRUE)*1.05))
-  plot(Y, Bvec, xlab="yield", ylab="predicted Biomass",
-       main="Corr. between yield and biomass")
-  #cor(Bvec,Y)
-  plot(Bvec, CPUE, xlab="Bvec-biomass", ylab="I-cpue",
-       main="Corr. between biomass and CPUE")
-  #lines(lowess(Bvec, CPUE), col=2)
-  plot(log(Bvec), log(CPUE), xlab="Bvec-biomass", ylab="I-cpue",
-       main="Corr. between biomass and CPUE")
-  plot(yrs,CPUE, type="b",xlab="Year", ylab="CPUE", ylim=c(0, max(CPUE, na.rm = TRUE)*1.05))
-  plot(CPUE, Ihat, xlab="observed CPUE", ylab="Ihat",
-       xlim=c(0, max(c(CPUE,Ihat)), na.rm = TRUE), ylim=c(0, max(c(CPUE,Ihat)), na.rm = TRUE))
-  plot(yrs, CPUE, xlab="years", ylab="CPUE", ylim=c(0, max(CPUE, na.rm = TRUE)*1.05), type="b")
-  lines(yrs, Ihat, col=2, type="b")
-  #cor(Bvec, CPUE)
+
+  # CPUE trajectory
+  plot(yrs, CPUE, xlab="", ylab="CPUE",
+       ylim=c(0, max(CPUE, na.rm = TRUE)*1.05), type="b",
+       main = "CPUE Trajectory")
+  lines(yrs, CPUE_hat, col=2, type="b")
+  legend(x="bottomright",legend = c("observed", "predicted"),lty = 1, pch = 1,xpd = TRUE,
+         col = c(1,2), cex = 0.8, bty = 'n', y.intersp = 0.8, x.intersp = 0.5)
+
 
   ## the equilibrium yield
   Blevels <- seq(0,ceiling(K),10)
@@ -74,20 +73,37 @@ plot.prod_mod_ts <- function(x,...){
   abline(h=MSY,col=2)
   abline(v=Bmsy, col=2)
 
-
-  #   # this plot is not working properly
-  #   Elevels <- Blevels
-  #   #Elevels <- seq(0,10000,1000)
-  #   plot(Elevels, EYlevels, type="l")
-  #   abline(h=MSY,col=2)
-  #   abline(v=Emsy, col=2)
-
   par(op)
 
+  # Validating Fit
+  if(correlation_plots){
+    # plotting
+    dev.new()
+    op <- par(mfrow=c(2,2), xpd = FALSE,
+              mar = c(4, 4, 4, 1) + 0.1,
+              oma = c(4, 0.5, 1, 2) + 0.1)
+    layout(matrix(c(1,2,3,4), nrow = 2, byrow=TRUE))
+
+    # Correlation between yield and biomass
+    plot(Y, Bvec, xlab="Yield", ylab="Biomass",
+         main="Corr. between yield and biomass")
+    lines(lowess(Y, Bvec), col=2)
+
+    # Correlation between biomass and CPUE
+    plot(Bvec, CPUE, xlab="Biomass", ylab="CPUE",
+         main="Corr. between biomass and CPUE")
+    lines(lowess(Bvec, CPUE), col=2)
+
+    # Correlation between biomass and CPUE
+    plot(log(Bvec), log(CPUE), xlab="Biomass", ylab="CPUE",
+         main="Corr. between biomass and CPUE")
+    lines(lowess(log(Bvec), log(CPUE)), col=2)
+
+    # observed vs predicted CPUE
+    plot(CPUE, CPUE_hat, xlab="observed CPUE", ylab="predicted CPUE",
+         main="Corr. observed and predicted CPUE")
+    lines(lowess(CPUE, CPUE_hat), col=2)
+
+    par(op)
+  }
 }
-
-# really necessary?
-#plot(yrs,CPUE, type="b", xlab="year", ylab="CPUE")
-#lines(CPUE_hat, col="red")
-
-

@@ -4,10 +4,13 @@
 \alias{plot.prod_mod_ts}
 \title{Plotting time series production models}
 \usage{
-\method{plot}{prod_mod_ts}(x, ...)
+\method{plot}{prod_mod_ts}(x, correlation_plots = FALSE, ...)
 }
 \arguments{
-\item{x}{a object of the class 'prod_mod_dyn',}
+\item{x}{a object of the class "prod_mod_ts",}
+
+\item{correlation_plots}{logical; indicating if plots with correlation between
+covariates should be displayed}
 
 \item{...}{optional parameters of plot function}
 }
@@ -15,14 +18,9 @@
 This function plots objects of the class "prod_mod_ts".
 }
 \examples{
-# load data
 data(emperor)
-
-# run model
-#output <-  prod_mod_ts(data = emperor, method  = "Fox")
-
-# plot output
-#plot(output)
+output <-  prod_mod_ts(data = emperor, method  = "Fox")
+plot(output, correlation_plots = TRUE)
 
 
 }
@@ -30,7 +28,5 @@ data(emperor)
 Dharmendra, D., Solmundsson, J., 2005. Stock assessment of the offshore Mauritian banks
 using dynamic biomass models and analysis of length frequency of the Sky Emperor
 (\emph{Lethrinus mahsena}). Fisheries Training Program The United Nations University, 61
-
-#@export
 }
 
