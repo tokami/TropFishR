@@ -6,10 +6,10 @@
 #'
 #' @param data a dataframe of parameters
 #' \itemize{
-#'   \item \strong{year} years,
-#'   \item \strong{yield} catch in weight of fishery per year,
-#'   \item \strong{effort} fishing effort per year,
-#'   \item \strong{CPUE} catch per unit of effort per year (optional).
+#'   \item \code{year} years,
+#'   \item \code{yield} catch in weight of fishery per year,
+#'   \item \code{effort} fishing effort per year,
+#'   \item \code{CPUE} catch per unit of effort per year (optional).
 #' }
 #' @param method indicating if Schaefer or Fox model should be applied. First assumes a
 #'    logistic relationship between growth rate and biomass, whereas second assumes it to
@@ -43,7 +43,7 @@
 #' }
 #'
 #' @details Either catch per unit of effort (CPUE) is inserted
-#'    into the model directly (by a column \strong{CPUE}) or CPUE is calculated from
+#'    into the model directly (by a column \code{CPUE}) or CPUE is calculated from
 #'    the catch and effort, then these two vectors should have required units.
 #'    Whenever a good estimate for the virigin biomass is available, this estimate
 #'    should be inserted for \code{B_init}. The default approach for the initial
@@ -65,13 +65,13 @@
 #' Hilborn, R. and Walters, C., 1992. Quantitative Fisheries Stock Assessment: Choice,
 #' Dynamics and Uncertainty. Chapman and Hall, New York
 #'
-#' Prager, M. H. (1994). A suite of extensions to a non-equilibrium surplus production
+#' Prager, M. H., 1994. A suite of extensions to a non-equilibrium surplus production
 #' model. \emph{Fishery Bulletin} 92: 374-389
 #'
-#' Richards, F. J. (1959). A flexible growth function for empirical use.
+#' Richards, F. J., 1959. A flexible growth function for empirical use.
 #' \emph{Journal of experimental Botany}, 10(2), 290-301.
 #'
-#' Wittink, D. R. (1988). The application of regression analysis. Allyn and Bacon. Inc.
+#' Wittink, D. R., 1988. The application of regression analysis. Allyn and Bacon. Inc.
 #' Boston. MA. 324p.
 #'
 #'

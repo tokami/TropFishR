@@ -3,9 +3,8 @@
 #' @description This function plots objects of the class "prod_mod_ts".
 #'
 #' @param x a object of the class "prod_mod_ts",
-#' @param correlation_plots logical; indicating if plots with correlation between
-#'    covariates should be displayed
-#' @param ... optional parameters of plot function
+#' @param correlation_plots logical; indicating if correlation plots should be displayed
+#' @param ... additional parameters of the \link{plot} function
 #'
 #' @examples
 #' data(emperor)
