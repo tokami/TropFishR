@@ -10,10 +10,10 @@ prod_mod_ts(data, method = "Schaefer", B0_init = NA, B0_est = NA,
 \arguments{
 \item{data}{a dataframe of parameters
 \itemize{
-  \item \strong{year} years,
-  \item \strong{yield} catch in weight of fishery per year,
-  \item \strong{effort} fishing effort per year,
-  \item \strong{CPUE} catch per unit of effort per year (optional).
+  \item \code{year} years,
+  \item \code{yield} catch in weight of fishery per year,
+  \item \code{effort} fishing effort per year,
+  \item \code{CPUE} catch per unit of effort per year (optional).
 }}
 
 \item{method}{indicating if Schaefer or Fox model should be applied. First assumes a
@@ -40,9 +40,9 @@ A list with the input parameters and following list objects:
   \item \strong{r}: population growth rate,
   \item \strong{q}: catchability coefficient,
   \item \strong{MSY}: maximum sustainabale yield (MSY),
-  \item \strong{Bmsy}: biomass yielding in MSY,
-  \item \strong{Emsy}: fishing effort yielding in MSY
-  \item \strong{Fmsy}: fishing mortality yielding in MSY,
+  \item \strong{Bmsy}: biomass at MSY,
+  \item \strong{Emsy}: fishing effort at MSY
+  \item \strong{Fmsy}: fishing mortality at MSY,
 }
 }
 \description{
@@ -52,7 +52,7 @@ This function applies the production models under non-equilibrium
 }
 \details{
 Either catch per unit of effort (CPUE) is inserted
-   into the model directly (by a column \strong{CPUE}) or CPUE is calculated from
+   into the model directly (by a column \code{CPUE}) or CPUE is calculated from
    the catch and effort, then these two vectors should have required units.
    Whenever a good estimate for the virigin biomass is available, this estimate
    should be inserted for \code{B_init}. The default approach for the initial
@@ -68,8 +68,8 @@ Either catch per unit of effort (CPUE) is inserted
 }
 \examples{
 data(emperor)
-prod_mod_ts(data = emperor, method = "Schaefer")
-prod_mod_ts(data = emperor, method = "Fox")
+prod_mod_ts(emperor, method = "Schaefer")
+prod_mod_ts(emperor, method = "Fox")
 
 }
 \references{
@@ -80,16 +80,17 @@ using dynamic biomass models and analysis of length frequency of the Sky Emperor
 Hilborn, R. and Walters, C., 1992. Quantitative Fisheries Stock Assessment: Choice,
 Dynamics and Uncertainty. Chapman and Hall, New York
 
-Prager, M. H. (1994). A suite of extensions to a non-equilibrium surplus production
+Prager, M. H., 1994. A suite of extensions to a non-equilibrium surplus production
 model. \emph{Fishery Bulletin} 92: 374-389
 
-Richards, F. J. (1959). A flexible growth function for empirical use.
+Richards, F. J., 1959. A flexible growth function for empirical use.
 \emph{Journal of experimental Botany}, 10(2), 290-301.
 
-Wittink, D. R. (1988). The application of regression analysis. Allyn and Bacon. Inc.
+Wittink, D. R., 1988. The application of regression analysis. Allyn and Bacon. Inc.
 Boston. MA. 324p.
 }
 \keyword{MSY}
 \keyword{biomass}
 \keyword{function}
+\keyword{production}
 

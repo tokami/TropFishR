@@ -31,7 +31,7 @@ A list with the input parameters and following list objects:
   \item \strong{ln_CPUE}: natural logarithm of CPUE values,
   \item \strong{Fox_MSY}: MSY according to Fox model,
   \item \strong{Fox_fMSY}: fishing effort yielding in MSY according to Fox model,
-  \item \strong{Fox_Bv}: virgin biomass according to Fox model,
+  \item \strong{Fox_Bv}: virgin biomass according to Fox model.
 }
 }
 \description{
