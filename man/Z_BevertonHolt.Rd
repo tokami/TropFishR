@@ -2,16 +2,15 @@
 % Please edit documentation in R/Z_BevertonHolt.R
 \name{Z_BevertonHolt}
 \alias{Z_BevertonHolt}
-\title{Beverton & Holt's Z-Equations and Powell-Wetherall method}
+\title{Beverton & Holt's Z-Equations}
 \usage{
-Z_BevertonHolt(param, catch_column = NA, PowellWetherall = FALSE,
-  savePlots = FALSE)
+Z_BevertonHolt(param, catch_column = NA)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
 \itemize{
-  \item  \code{midLengths} or \code{age}: midpoints of the length class as
-  vector (length-frequency data) or ages as vector (age composition data),
+  \item  \code{midLengths} or \code{age}: midpoints of length groups
+  (length-frequency data) or ages (age composition data),
   \item \code{Linf}: infinite length for investigated species in cm [cm],
   \item \code{K}: growth coefficent for investigated species per year [1/year],
   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
@@ -20,59 +19,32 @@ Z_BevertonHolt(param, catch_column = NA, PowellWetherall = FALSE,
 
 \item{catch_column}{optional; in case catch is a matrix or data.frame, a number
 indicating which column of the matrix should be analysed (Default: \code{NA}).}
-
-\item{PowellWetherall}{logical; if \code{TRUE} the Powell Wetherall method is
-applied (Default: \code{FALSE}).}
-
-\item{savePlots}{logical; if TRUE the Powell-Wetherall plot is recorded.
-Default is FALSE.}
 }
 \value{
-A list with the input parameters and follwing objects:
+A list with the input parameters and following objects:
 \itemize{
   \item \strong{tmean} or \strong{Lmean}: mean age or length of fish,
-  \item \strong{tprime} or \strong{Lprime}: some age or length for which all fish of that length and
-     longer are under full exploitation,
-  \item \strong{Z}: total mortality;}
-and/or following objects when applying the Powell and Wetherall method:
-\itemize{
-  \item \strong{Lmean_Lprime}: dependent variable for regression analysis,
-  \item \strong{Linf_calc}: infinite length in [cm],
-  \item \strong{Z_K}: total mortality divided by K;
+  \item \strong{tprime} or \strong{Lprime}: some age or length for which all fish of
+     that length and longer are under full exploitation,
+  \item \strong{Z}: total mortality.
 }
 }
 \description{
 A method to estimate the instantaneous total mortality rate (Z) based
-   on a method derived by Beverton and Holt (1956). It allows to perform the
-   Powell and Wetherall method (Powell, 1979; Wetherall et al., 1987).
+   on a method derived by Beverton and Holt (1956).
 }
 \details{
 The first length group or age class within the list object \code{midLengths} or
    \code{age} will be used as the Lprim or tprime (length of recruitment to fishery).
-   In the case of the Powell and Wetherall method, this function includes the
-   \code{identify} function, which asks you to choose two points from a graph manually. The
-   two points which you choose by clicking on the plot in the graphical device represent
-   the start and end of the data points, which should be used for the analysis. Based
-   on these points the regression line is calculated. The Powell and Wetherall method
-   only works with length-frequency data.
 }
 \examples{
-#_______________________________________________
-# Beverton and Holt's Z method
-# based on length data
+# based on length-frequency data
 data(synLFQ2)
 Z_BevertonHolt(synLFQ2, catch_column = 2)
 
-# based on age data
+# based on age composition data
 data(synCAA1)
 Z_BevertonHolt(synCAA1, catch_column = 3)
-
-\donttest{
-#_______________________________________________
-# Powell and Wetherall method
-data(synLFQ3)
-Z_BevertonHolt(param = synLFQ3, PowellWetherall = T)
-}
 
 }
 \references{
@@ -80,15 +52,8 @@ Beverton R.J.H and S.J. Holt, 1956. A review of methods of estimating mortality 
 in exploited fish populations, with special reference to sources of bias in catch
 sampling. \emph{Rapp.P.-v.Reun.CIEM}, 140:67-83
 
-Powell, D.G., 1979. Estimation of mortality and growth parameters from the length-
-frequency of a catch. \emph{Rapp.P.-v.Reun.CIEM}, 175:167-169
-
 Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.
-
-Wetherall, J.A., J.J. Polovina and S. Ralston, 1987. Estimating growth and mortality
-in steady-state fish stocks from length-frequency data. \emph{ICLARM Conf.Proc.},
-(13):53-74
 }
 \keyword{Z}
 \keyword{function}

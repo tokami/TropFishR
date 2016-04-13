@@ -306,7 +306,6 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
     }
   }
 
-
   #for plot
   minY <- ifelse(min(yvar,na.rm=TRUE) < 0, min(yvar,na.rm=TRUE),0)
   maxY <- max(yvar,na.rm=TRUE) + 1
