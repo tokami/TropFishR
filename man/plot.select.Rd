@@ -7,7 +7,7 @@
 \method{plot}{select}(x, regression_fit = FALSE, ...)
 }
 \arguments{
-\item{x}{A list of the class \code{"select"} containing the results of the
+\item{x}{a list of the class \code{"select"} containing the results of the
 gillnet selectivity function.}
 
 \item{regression_fit}{logical; indicating if a plot with the fit of the regression

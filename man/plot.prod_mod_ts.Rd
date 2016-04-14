@@ -9,17 +9,16 @@
 \arguments{
 \item{x}{a object of the class "prod_mod_ts",}
 
-\item{correlation_plots}{logical; indicating if plots with correlation between
-covariates should be displayed}
+\item{correlation_plots}{logical; indicating if correlation plots should be displayed}
 
-\item{...}{optional parameters of plot function}
+\item{...}{additional parameters of the \link{plot} function}
 }
 \description{
 This function plots objects of the class "prod_mod_ts".
 }
 \examples{
 data(emperor)
-output <-  prod_mod_ts(data = emperor, method  = "Fox")
+output <-  prod_mod_ts(emperor, method  = "Fox")
 plot(output, correlation_plots = TRUE)
 
 

@@ -36,13 +36,13 @@
 #' and following objects for type = "trawl_net":
 #' \itemize{
 #'   \item \strong{classes.num}: numeric vector with length classes,
-#'   \item \strong{SLobs}: ,
-#'   \item \strong{SLest}: ,
-#'   \item \strong{S1}: ,
-#'   \item \strong{S2}: ,
-#'   \item \strong{L25}: ,
-#'   \item \strong{L50}: ,
-#'   \item \strong{L75}: ,
+#'   \item \strong{SLobs}: observed selection ogive,
+#'   \item \strong{SLest}: estimated selection ogive,
+#'   \item \strong{S1}: constant of selection curve,
+#'   \item \strong{S2}: another constant of selection curve,
+#'   \item \strong{L25}: length at which 25% of the fish are retained in the codend,
+#'   \item \strong{L50}: length at which 50% of the fish are retained in the codend,
+#'   \item \strong{L75}: length at which 75% of the fish are retained in the codend,
 #'   \item \strong{SF}: selection factor.
 #' }
 #'

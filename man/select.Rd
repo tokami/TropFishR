@@ -7,7 +7,7 @@
 select(param, plot = TRUE)
 }
 \arguments{
-\item{param}{A list with following parameters:
+\item{param}{a list with following parameters:
 \itemize{
   \item \code{type} a string indicating which type of gear was used (options:
   "gillnet" or "trawl_net"),
@@ -15,8 +15,9 @@ select(param, plot = TRUE)
   \item \code{meshSizes} a vector with mesh sizes in increasing order,
   \item \code{CatchPerNet_mat} a matrix with the catches per net in corresponding
   order of mesh sizes
-}
- @param plot logical; should the results be displayed graphically?}
+}}
+
+\item{plot}{logical; should the results be displayed graphically?}
 }
 \value{
 A list with the input parameters and following list objects for type = "gillnet":
