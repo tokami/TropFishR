@@ -4,7 +4,7 @@
 \alias{plot.select}
 \title{Selectivity plot}
 \usage{
-\method{plot}{select}(x, regression_fit = FALSE, ...)
+\method{plot}{select}(x, regression_fit = TRUE, ...)
 }
 \arguments{
 \item{x}{a list of the class \code{"select"} containing the results of the
@@ -21,12 +21,12 @@ This function plots the selectivity estimates of the
 }
 \examples{
 data(tilapia)
-output <- select(tilapia, plot =FALSE)
-plot(output)
+output <- select(tilapia, plot = FALSE)
+plot(output, regression_fit = TRUE)
 
 data(bream)
-output <- select(bream)
-plot(output)
+output <- select(bream, plot = FALSE)
+plot(output, regression_fit = TRUE)
 
 }
 \references{
