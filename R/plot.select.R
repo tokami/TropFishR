@@ -24,7 +24,7 @@
 #'
 #' @export
 
-plot.select <- function(x, regression_fit = FALSE, ...){
+plot.select <- function(x, regression_fit = TRUE, ...){
   res <- x
   classes.num <- res$classes.num
 
