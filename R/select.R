@@ -99,11 +99,6 @@ select <- function(param, plot = TRUE){
     s2 <- SF * ((msNet2 - msNet1) / b)
     s <- sqrt(s2)
 
-    #   #L25,L50,L75
-    #   L25 <- (S1 - log(3)) / S2
-    #   L50 <- S1 / S2
-    #   L75 <- (S1 + log(3)) / S2
-
     # points on selection curves
     SNet1 <- exp(-((classes.num - LmNet1)^2 / (2 * s2)))
     SNet2 <- exp(-((classes.num - LmNet2)^2 / (2 * s2)))
@@ -124,10 +119,10 @@ select <- function(param, plot = TRUE){
   }
 
   # Trawl
-  if(res$type == "trawl_net"){  #if("msCodend" %in% names(res) == TRUE){
+  if(res$type == "trawl_net"){
     numCodend <- res$CatchPerNet_mat[,2]
     numCover <- res$CatchPerNet_mat[,1]
-    meshsizeCodend <- res$meshSizes[2]   #check, so far works just for two meshsizes
+    meshsizeCodend <- res$meshSizes[2]
 
     # calculate fraction retained (SL obs)
     SLobs <- numCodend/(numCodend + numCover)
