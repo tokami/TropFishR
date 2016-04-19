@@ -2,7 +2,7 @@
 % Please edit documentation in R/rtypes_Millar.R
 \name{rtypes_Millar}
 \alias{rtypes_Millar}
-\title{Millar's selectivity curve types}
+\title{Millar's selectivity types}
 \source{
 https://www.stat.auckland.ac.nz/~millar/selectware/
 }
@@ -10,8 +10,8 @@ https://www.stat.auckland.ac.nz/~millar/selectware/
 rtypes_Millar(rtype)
 }
 \arguments{
-\item{rtype}{A character string indicating which method for estimating selection curves
-should be used:
+\item{rtype}{a character string indicating which method for theestimation of selection
+curves should be used:
 \code{"norm.loc"} for normal with common spread method,
 \code{"norm.sca"} for normal with variable spread method,
 \code{"lognorm"} for lognormal method,

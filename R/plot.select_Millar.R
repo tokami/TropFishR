@@ -9,6 +9,8 @@
 #'    selection curves
 #' @param standardise A parameter indicating if the retention should be realtive
 #'    to the maximum value (Default: TRUE).
+#' @param deviance_plot logical; indicating whether a plot of deviance residuals should
+#'    be displayed
 #' @param ... additional parameter options from plot function
 #'
 #' @examples
@@ -30,6 +32,7 @@
 #'  54(3), 471-477.
 #'
 #' @export
+
 
 plot.select_Millar <- function(x,
                                plotlens = NULL,
@@ -64,13 +67,13 @@ plot.select_Millar <- function(x,
 
   dev.new()
   #create plot
-  if(deviance_plot){
+  if(deviance_plot & (nmeshes > 2 & AreLensUnique) | nmeshes == 2){
     op <- par(mfrow = c(2,1), xpd = FALSE,
               mar = c(4, 4, 3, 1) + 0.1,
-              oma = c(2, 0.5, 1, 2) + 0.1)
+              oma = c(1, 1, 0.5, 2) + 0.1)
 
     if(nmeshes > 2 & AreLensUnique) {
-      plot(1,1,xlim=range(classes),xlab="Length [cm]",ylab="Mesh size [cm]",
+      plot(1,1,xlim=range(classes),xlab="",ylab="Mesh size [cm]",
            ylim=range(meshSizes)+(1/50)*c(-1,1)*(max(meshSizes)-min(meshSizes)), # (cex/50)
            yaxt="n",type="n",main="Deviance residuals")
       axis(2,meshSizes,meshSizes,las=1)
@@ -82,12 +85,13 @@ plot.select_Millar <- function(x,
       if(nmeshes == 2) {
         Dev.resids.len=sign(Dev.resids[,2])*sqrt(apply(Dev.resids^2,1,sum))
         plot(classes,Dev.resids.len,type=ifelse(AreLensUnique,"h","p"),las=1,
-             main="Deviance residuals",xlab="Length [cm]",ylab="Mesh size [cm]",cex=1)   # cex = cex
-        abline(h=0) }
+             main="Deviance residuals",xlab="",ylab="Mesh size [cm]",cex=1)   # cex = cex
+        abline(h=0)
+      }
 
   }else op <- par(mfrow = c(1,1),
-                  mar = c(5, 5, 3, 3),
-                  oma = c(3, 0.5, 1, 2))
+                  mar = c(4, 4, 3, 1),
+                  oma = c(3, 1, 1, 2))
 
   matplot(plotlens, rmatrix, type = "l", las = 1, ylim = c(0,1),
           xlab = "Length [cm]", ylab = "Relative retention",

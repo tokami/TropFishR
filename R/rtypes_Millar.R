@@ -1,10 +1,10 @@
-#' @title Millar's selectivity curve types
+#' @title Millar's selectivity types
 #
 #' @description  This function returns a function corresponding to the type of curve
 #'    which was selected to represent the selectivity of nets or hooks.
 #'
-#' @param rtype A character string indicating which method for estimating selection curves
-#'    should be used:
+#' @param rtype a character string indicating which method for theestimation of selection
+#'    curves should be used:
 #'    \code{"norm.loc"} for normal with common spread method,
 #'    \code{"norm.sca"} for normal with variable spread method,
 #'    \code{"lognorm"} for lognormal method,
