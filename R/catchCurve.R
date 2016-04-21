@@ -412,5 +412,6 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
     class(ret2) <- "catchCurve"
     plot(ret2, plot_selec=TRUE)
     return(ret2)
-  }else plot(ret) ; return(ret)
+  }else {plot(ret)
+    return(ret)}
 }

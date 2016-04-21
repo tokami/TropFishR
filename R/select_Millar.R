@@ -27,10 +27,9 @@
 #' data(haddock)
 #'
 #' output <- select_Millar(haddock, x0 = c(-10,0.3,0),
-#'    rtype = "tt.logistic", rel.power = NULL)
+#'    rtype = "tt.logistic")
 #'
-#' # plot results
-#' plot(output, plotlens=seq(25,35,0.1))
+#' plot(output, plotlens=seq(25,35,0.1), deviance_plot = FALSE)
 #' legend(32,0.5,c("Control","Experimental"),lty=1:2,col=1:2,cex=0.8,bg="white")
 #'
 #'
@@ -39,15 +38,14 @@
 #'
 #' output <- select_Millar(gillnet, x0 = c(60,4), rtype = "norm.loc")
 #'
-#' output
 #' plot(output,plotlens=seq(40,90,0.1))
 #'
 #'
 #' # Stacked trammel net
-#' #Here, the data are from two expts using different mesh sizes
-#' #This analysis assumes common retention curve in both expts.
-#' #Note that summary function does not produce residual plot
-#' #since lengths are not unique
+#' # The data come from two experiments using different mesh sizes
+#' # This analysis assumes common retention curve in both experiments.
+#' # Note that summary function does not produce residual plot
+#' # since lengths are not unique
 #' data(trammelnet)
 #'
 #' output <- select_Millar(trammelnet, x0 = c(25,4),
