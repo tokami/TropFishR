@@ -17,6 +17,9 @@ selection curves}
 \item{standardise}{A parameter indicating if the retention should be realtive
 to the maximum value (Default: TRUE).}
 
+\item{deviance_plot}{logical; indicating whether a plot of deviance residuals should
+be displayed}
+
 \item{...}{additional parameter options from plot function}
 }
 \description{
@@ -29,13 +32,12 @@ This function draws a selectivity plot for the object class
    \code{\link{select_Millar}}.
 }
 \examples{
-# Gillnet
 data(gillnet)
 
 output <- select_Millar(gillnet, x0 = c(60,4), rel.power = rep(1,8),
-   rtype = "norm.loc")
+   rtype = "norm.loc", plot = FALSE)
 
-plot(output, plotlens = seq(40,90,0.1))
+plot(output, plotlens = seq(40,90,0.1), deviance_plot = FALSE)
 
 }
 \references{
