@@ -22,9 +22,9 @@
 #'
 #' @references
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
-#' Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
+#' Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.
 #'
-#'# @export
+#' @export
 
 plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
                              yaxis1 = "Y_R", yaxis2 = "B_R",...){
@@ -33,25 +33,25 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
   #THOMPBELL
   if("totals" %in% names(pes)){
     #save x axis positions
-    max_val <- round(max(pes$tot.V,na.rm=TRUE),digits=0)
+    max_val <- round(max(pes$totV,na.rm=TRUE),digits=0)
     dim_val <- 10 ^ (nchar(max_val)-1)
-    max_yiel <- round(max(pes$tot.Y,na.rm=TRUE),digits=0)
+    max_yiel <- round(max(pes$totY,na.rm=TRUE),digits=0)
     dim_yiel <- 10 ^ (nchar(max_yiel)-1)
     max_bio <- round(max(pes$meanB,na.rm=TRUE),digits=0)
     dim_bio <- 10 ^ (nchar(max_bio)-1)
 
-    #   max_val <- round(max(pes$tot.V,na.rm=TRUE),digits=0)
+    #   max_val <- round(max(pes$totV,na.rm=TRUE),digits=0)
     #   dim_val <- 10 ^ (nchar(max_val)-1)
 
     op <- par(oma = c(1, 1, 1.5, 1),new=FALSE,mar = c(5, 4, 4, 6) + 0.3)
-    plot(pes$Xfact,pes$tot.V, type ='o',ylab='Value',xlab='F-factor X',
+    plot(pes$Xfact,pes$totV, type ='o',ylab='Value',xlab='F-factor X',
          col ='darkorange', ylim = c(0,ceiling(max_val/dim_val)*dim_val),
          lwd=1.6)
     par(new=TRUE)
-    plot(pes$Xfact,pes$tot.Y,type ='o',ylab='',xlab='',
+    plot(pes$Xfact,pes$totY,type ='o',ylab='',xlab='',
          col='dodgerblue',lwd=1.6,axes=FALSE,
          ylim = c(0,ceiling(max_yiel/dim_yiel) * dim_yiel))
-    axis(4,at=pretty(c(0,pes$tot.Y)))
+    axis(4,at=pretty(c(0,pes$totY)))
     mtext("Yield", side=4, line=2)
     par(new=TRUE)
     plot(pes$Xfact,pes$meanB,type='o',axes=FALSE,ylab='',xlab='',
@@ -135,7 +135,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
       px <- p.dat[,which(names(p.dat) == p.FE)]
       offset_text <- py[length(py)] * 0.02
 
-      plot(px, py, type = 'l',
+      plot(px, py, type = 'l', ylim =c(0,max(py, na.rm = TRUE)*1.2),
            ylab = ylabel1, xlab = xlabel1, lty=tc_Lc_start)  #,...
       text(x = px[length(px)],
            y = (py[length(py)] +
@@ -186,35 +186,35 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
         }
       }
 
-      # Biomass per recruit
-#       par(new=T)
-#       px <- list_tc_Lc_runs[[1]][,which(names(list_tc_Lc_runs[[1]]) == p.FE)]
-#       py <- list_tc_Lc_runs[[1]][,which(names(list_tc_Lc_runs[[1]]) == p.B)]
-#       plot(px, py, type = 'l',
-#            axes = F, ylab = '', xlab ='', lty = tc_Lc_start,
-#            col = 'blue')
-#       axis(side = 4, at = pretty(range(py, na.rm= TRUE)), col = 'blue',
-#            col.axis = 'blue')
-#       mtext(side = 4, text = ylabel2, line = 3, col = 'blue')
-#       for(j in seq_tc_Lc){
-#         p.dat <- list_tc_Lc_runs[[j]]
-#         py <- p.dat[,which(names(p.dat) == p.B)]
-#         px <- p.dat[,which(names(p.dat) == p.FE)]
-#
-#         lines(px, py, type = 'l',
-#               ylab = ylabel1, xlab = xlabel1, col='blue', lty = j)
-#       }
-#       if(length(N01) == 1){
-#         p.dat <- list_tc_Lc_runs[[tc_Lc_start]]
-#         px <- p.dat[,which(names(p.dat) == p.FE)]
-#         py2 <- p.dat[,which(names(p.dat) == p.B)]
-#         # F or E 0.5
-#         segments(x0 = -1, x1 = N05, y0 = py2[which(px == N05)], y1 = py2[which(px == N05)],
-#                  col= 'red',lty = 2, lwd=1.5)
-#         segments(x0 = N05, x1 = N05, y0 = -1, y1 = py2[which(px == N05)],
-#                  col= 'red',lty = 2, lwd=1.5)
-#       }
-#       par(op)
+      #Biomass per recruit
+      par(new=T)
+      px <- list_tc_Lc_runs[[1]][,which(names(list_tc_Lc_runs[[1]]) == p.FE)]
+      py <- list_tc_Lc_runs[[1]][,which(names(list_tc_Lc_runs[[1]]) == p.B)]
+      plot(px, py, type = 'l',
+           axes = F, ylab = '', xlab ='', lty = tc_Lc_start,
+           col = 'blue')
+      axis(side = 4, at = pretty(range(py, na.rm= TRUE)), col = 'blue',
+           col.axis = 'blue')
+      mtext(side = 4, text = ylabel2, line = 3, col = 'blue')
+      for(j in seq_tc_Lc){
+        p.dat <- list_tc_Lc_runs[[j]]
+        py <- p.dat[,which(names(p.dat) == p.B)]
+        px <- p.dat[,which(names(p.dat) == p.FE)]
+
+        lines(px, py, type = 'l',
+              ylab = ylabel1, xlab = xlabel1, col='blue', lty = j)
+      }
+      if(length(N01) == 1){
+        p.dat <- list_tc_Lc_runs[[tc_Lc_start]]
+        px <- p.dat[,which(names(p.dat) == p.FE)]
+        py2 <- p.dat[,which(names(p.dat) == p.B)]
+        # F or E 0.5
+        segments(x0 = -1, x1 = N05, y0 = py2[which(px == N05)], y1 = py2[which(px == N05)],
+                 col= 'red',lty = 2, lwd=1.5)
+        segments(x0 = N05, x1 = N05, y0 = -1, y1 = py2[which(px == N05)],
+                 col= 'red',lty = 2, lwd=1.5)
+      }
+      par(op)
     }
 
     #Isopleths

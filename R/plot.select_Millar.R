@@ -14,13 +14,12 @@
 #' @param ... additional parameter options from plot function
 #'
 #' @examples
-#' # Gillnet
 #' data(gillnet)
 #'
 #' output <- select_Millar(gillnet, x0 = c(60,4), rel.power = rep(1,8),
-#'    rtype = "norm.loc")
+#'    rtype = "norm.loc", plot = FALSE)
 #'
-#' plot(output, plotlens = seq(40,90,0.1))
+#' plot(output, plotlens = seq(40,90,0.1), deviance_plot = FALSE)
 #'
 #' @details This function draws a selectivity plot for the object class
 #'    \code{"select_Millar"}, which is created by applying Millar's selectivity model
@@ -67,7 +66,7 @@ plot.select_Millar <- function(x,
 
   dev.new()
   #create plot
-  if(deviance_plot & (nmeshes > 2 & AreLensUnique) | nmeshes == 2){
+  if(deviance_plot & ((nmeshes > 2 & AreLensUnique) | nmeshes == 2)){
     op <- par(mfrow = c(2,1), xpd = FALSE,
               mar = c(4, 4, 3, 1) + 0.1,
               oma = c(1, 1, 0.5, 2) + 0.1)
