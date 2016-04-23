@@ -4,10 +4,12 @@
 \alias{M_Pauly}
 \title{Pauly's empirical formula for the estimation of M}
 \usage{
-M_Pauly(Linf, K, temp, schooling = FALSE)
+M_Pauly(Linf = NA, Winf = NA, K, temp, schooling = FALSE)
 }
 \arguments{
-\item{Linf}{infinite length for investigated species in cm [cm].}
+\item{Linf}{infinite total length (TL) for investigated species in cm [cm].}
+
+\item{Winf}{infinite weight for investigated species in g [g].}
 
 \item{K}{growth coefficient for investigated species per year [1/year].}
 
@@ -17,14 +19,15 @@ M_Pauly(Linf, K, temp, schooling = FALSE)
 the species. Default is FALSE.}
 }
 \value{
-A numeric value representing M.
+A numeric value representing M per year [1/year].
 }
 \description{
 Function to calculate the instantaneous natural mortality rate (M)
      according to Pauly's empirical formula.
 }
 \details{
-If accounting for schooling behaviour M is multiplied by 0.8 according to
+This function can either be applied to the infinite length or to the
+   infinite weight. If accounting for schooling behaviour M is multiplied by 0.8 according to
    Pauly (1983).
 }
 \examples{

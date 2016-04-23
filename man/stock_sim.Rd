@@ -52,6 +52,8 @@ This function estimates stock size, biomass and yield of a stock from
 \details{
 better to treat last group always as a plus group...
      if stock size 1 not provided assumes 1000 as intital population size
+     make sure that FM is also in same unit as the classes, e.g. when classes in
+     months than also FM has to be provided in 1/months
 }
 \examples{
 # age-based stock simulation

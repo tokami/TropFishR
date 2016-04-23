@@ -5,25 +5,27 @@
 \title{Prediction models}
 \usage{
 predict_mod(param, FM_change = NA, Lc_tc_change = NULL, type, s_list = NA,
-  stock_size_1 = NA, unit.time = "year", curr.E = NA, curr.Lc_tc = NA,
-  plus.group = NA, Lmin = NA, Lincr = NA)
+  stock_size_1 = NA, age_unit = "year", curr.E = NA, curr.Lc_tc = NA,
+  plus_group = NA, Lmin = NA, Lincr = NA, plot = TRUE)
 }
 \arguments{
 \item{param}{a list consisting of following parameters (not all are required):
 \itemize{
-  \item \strong{Linf} or \strong{Winf}: infinite length for investigated species in cm [cm],
+  \item \strong{Linf} or \strong{Winf}: infinite length or weight, respectively,
+     for investigated species in cm [cm],
   \item \strong{K}: growth coefficent for investigated species per year [1/year],
-  \item \strong{t0}: theoretical time zero, at which individuals of this species hatch,
-  \item \strong{M}: natural mortality,
+  \item \strong{t0}: theoretical time zero, at which individuals of this species
+       hatch,
+  \item \strong{M}: natural mortality or
   \item \strong{Z}: total mortality,
   \item \strong{FM}: fishing mortality,
-  \item \strong{a}: ,
-  \item \strong{b}: ,
-  \item \strong{Lr} or \strong{tr}: length or age of recuritment;}
+  \item \strong{a}: length-weight relationship coefficent (W = a * L^b),
+  \item \strong{b}: length-weight relationship coefficent (W = a * L^b),
+  \item \strong{Lr} or \strong{tr}: length or age of recruitment;}
 additional list objects for the Thompson and Bell model:
  \itemize{
-  \item \strong{age} or \strong{midLengths}: midpoints of the length class as vector (length-frequency
-  data) or ages as vector (age composition data),
+  \item \strong{midLengths} or \strong{age}: midpoints of the length classes
+     (length-frequency data) or ages (age composition data),
   \item \strong{meanWeight}: vector with mean weight per length group or age class,
   \item \strong{meanValue}: vector with mean value per length group or age class,
 }}
@@ -32,24 +34,31 @@ additional list objects for the Thompson and Bell model:
 
 \item{Lc_tc_change}{vector with ascending lengths or ages at first capture (Lc/tc)}
 
-\item{type}{indicating which model should be applied: \code{"ypr"} for Beverton and Holt's
-yield per recruit model and \code{"ThompBell"} for the Thompson and Bell model}
+\item{type}{indicating which model should be applied: \code{"ypr"} for Beverton
+and Holt's yield per recruit model and \code{"ThompBell"} for the Thompson and Bell model}
 
 \item{s_list}{list with selectivity parameters}
 
-\item{stock_size_1}{stock size of smallest size class, if NA values are calculated relative to a stock size of 1000 individuals}
+\item{stock_size_1}{stock size of smallest size class, if NA values are calculated
+relative to a stock size of 1000 individuals}
 
-\item{unit.time}{in which time unit the data is provided? "month" or "year"}
+\item{age_unit}{in which time unit the data is provided? "month" or "year"}
 
-\item{curr.E}{current exploitation rate}
+\item{curr.E}{current exploitation rate if available}
 
-\item{curr.Lc_tc}{current Lc (length at first capture)}
+\item{curr.Lc_tc}{current Lc (length at first capture) if available}
 
-\item{plus.group}{if a value is provided, a plus group is created comprising this size class and all above}
+\item{plus_group}{if a value is provided, a plus group is created comprising this
+size class and all above}
 
-\item{Lmin}{llll}
+\item{Lmin}{smallest length group where to start with selection ogive. Not required
+for "knife_edge" selection type}
 
-\item{Lincr}{llll}
+\item{Lincr}{arbitrary length increment between length groups for estimation of
+selection ogive. The smaller the higher the resolution but the slower the model
+run. Not required for "knife_edge" selection type}
+
+\item{plot}{logical; if TRUE results are displayed graphically}
 }
 \value{
 A list with the input parameters and dependent on the model type following
@@ -61,13 +70,15 @@ A list with the input parameters and dependent on the model type following
      \item \strong{Lc} or \strong{tc}: lengths or ages at first capture,
      \item \strong{list_Lc_runs} or \strong{list_tc_runs}: a list with the dataframes for each Lc or tc value:
      \itemize{
-     \item FM_change
-     \item Y_R
-     \item Y_R.rel
-     \item B_R
-     \item B_R.percent
-     \item Ty
-     \item Wy
+       \item \strong{FM_change}: fishing mortality
+       \item \strong{Y_R}: yield per recurit (catch in weight per recruit)
+       \item \strong{Y_R.rel}: relative yield per recruit (change in catch in
+           weigth per recruit relative to initial Y/R value)
+       \item \strong{B_R}: biomass per recruit
+       \item \strong{B_R.percent}: percentage biomass per recurit in relation to virgin
+           biomass per recruit
+       \item \strong{Ty} or \strong{LY}: mean age or mean length in annual yield
+       \item \strong{Wy}: mean weight in annual yield
      }
   }
   \item \code{type = 'ThomBell'}
@@ -97,54 +108,63 @@ A list with the input parameters and dependent on the model type following
      \item \strong{mat_FM_Lc_com.V}: value matrix for all fishing mortality and Lc/tc combinations,
      \item \strong{mat_FM_Lc_com.B}: biomass matrix for all fishing mortality and Lc/tc combinations;
   }
-
 }
 }
 \description{
 This function applies the Beverton & Holt's yield per recruit model
-   and the Thompson & Bell model. This is a function predicting catch, yield, biomass and economic values for different
-   fishing mortality scenarions (in combination with gear changes). It allows to choose if the
-   calculation should be based upon Beverton and Holt's yield per recruit model or the
-   more sophisticated Thompson and Bell model.
+   as well as the Thompson & Bell model. These model predict catch, yield, biomass
+   and economic values for different
+   fishing mortality scenarions (in combination with gear changes).
 }
 \details{
 better to treat last group always as a plus group.....
-   The Thompson and Bell model incorporates an iteration step simulating the stock by means
-   of the \code{\link{stock_sim}} function. In case changes in gear characteristics -
-   here measured in terms of Lc or tc, the length or age at first capture, respectively -
-   should be explored, a list with selectivity information about the gear has to be provided and
-   the prediction models make use of the selectivity \code{\link{select_ogive}} function.
+   The Thompson and Bell model incorporates an iteration step simulating the
+   stock by means
+   of the \code{\link{stock_sim}} function. In case changes in gear
+   characteristics -
+   here measured in terms of Lc or tc, the length or age at first capture,
+   respectively -
+   should be explored, a list with selectivity information about the gear has
+   to be provided and
+   the prediction models make use of the selectivity \code{\link{select_ogive}}
+   function.
+   F0.1 according to Gulland and Boerema 1973
+
+   Caution:
+   Equations of this function assume isometric growth (to power of 3).
+   Often not met!
+   Physical yield obtained by multiplying yield per recruit times number of
+   recruits produced in the stock.
+   Assumes that there is no relationship between parental stock size and progeny
+   over a wide range of F or E values, respectively (which is not true).
+   assumption of knife edge recruitment and selection implicit in equations
 }
 \examples{
-\donttest{
 #______________________________________
-#       Yiel Per Recruit (YPR)
+# Yiel Per Recruit (YPR) / Beverton and Holt's model
 #______________________________________
 # age structured data
 # Nemipterus marginatus
-threadfin <- list(Winf = 286,K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4)
+threadfin <- list(Winf = 286, K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4)
 
-# run model
 predict_mod(threadfin, FM_change = seq(0,6,0.1),
    Lc_tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
 
-# Leiognathus spendens (Pauly 1980)
+# Leiognathus spendens (Pauly, 1980)
 ponyfish <- list(Winf = 64, K = 1, t0 = -0.2, M = 1.8, tr = 0.2)
 
-# run model
 predict_mod(ponyfish, Lc_tc_change = c(0.2,0.3,1.0), type = 'ypr')
 
 #______________________________________
 # length structured data
-# Xiphias gladius (Berkeley and Houde 1980)
+# Xiphias gladius (Berkeley and Houde, 1980)
 swordfish <- list(Linf = 309, K = 0.0949, M = 0.18,
                   a=0.0003, b=3, Lr = 90, growthFun = "growth_VB")  ## T_Lr , a, b ??? assumed
 
 select.list <- list(selecType = 'trawl_ogive', L50 = 120, L75 = 132) ###Lc = 100)
 #swordfish$midLengths <- seq(60,300,5)
 
-# run model
-predict_mod(param = swordfish, Lc_tc_change = c(100,118,150,180),
+output <- predict_mod(param = swordfish, Lc_tc_change = c(100,118,150,180),
             s_list = select.list, type = 'ypr', Lmin = 90, Lincr = 8)
 
 ####test: E <- seq(0,0.9,0.1) FM <- E * M / (1 - E)
@@ -154,11 +174,10 @@ predict_mod(param = swordfish, Lc_tc_change = c(100,118,150,180),
 #      Thompson and Bell model
 #______________________________________
 # with age structured data
-# load data
 data(shrimps)
 
-# run model
-predict_mod(shrimps, FM_change = seq(0.1,3,0.1), type = 'ThompBell')
+output <- predict_mod(param = shrimps, FM_change = seq(0.1,3,0.1),
+     type = "ThompBell", age_unit = "month")
 
 # create list with selectivity information
 select.list <- list(selecType = 'knife_edge',  #or 'gillnet' or 'trawl_ogive'
@@ -168,36 +187,61 @@ select.list <- list(selecType = 'knife_edge',  #or 'gillnet' or 'trawl_ogive'
 # add additional parameters to data list
 shrimps <- c(shrimps,  list(Linf = 50, K = 0.3, t0 = 0.01))
 
-# run model
-predict_mod(shrimps,FM_change = seq(0,3,0.2), Lc_tc_change = seq(24,44,2),
-   type = 'ThompBell', s_list = select.list, unit.time = 'month')
-
+output <- predict_mod(shrimps, FM_change = seq(0,3,0.2),
+   Lc_tc_change = seq(24,44,2),
+   type = 'ThompBell', s_list = select.list, age_unit = 'month')
 #______________________________________
 # with length structured data
-# load data
 data(hake)
-
-# run model
 predict_mod(hake,FM_change = seq(0.1,3,0.1), type = 'ThompBell')
-}
 
 }
 \references{
-example 1 : Kuwait (Garcia and van Zalinge 1982)
+Berkeley, S.A., and Houde, E.D., 1980. Swordfish, Xiphias gladius, dynamics in
+the Straits of Florida. \emph{ICES C.M.}, 11.
 
-Beverton and Holt 1966
+Beverton, R.J.H., and Holt, S.J., 1964. Table of yield functions for fishery
+management. \emph{FAO Fish. Tech. Pap.} 38, 49 p.
+
+Beverton, R.J.H., and Holt, S.J., 1966. Manual of methods for fish stock
+assessment. Pt. 2: Tables of yield functions. \emph{FAO Fisheries Technical Paper},
+(38)Rev.1:67 p.
 
 Boerema, L.K., and J.A. Gulland, 1973. Stock assessment of the Peruvian anchovy
-(Engraulis ringens) and management of the fishery. Journal of the Fisheries Board of
-Canada, 30(12):2226-2235
+(Engraulis ringens) and management of the fishery. \emph{Journal of the Fisheries
+Board of Canada}, 30(12):2226-2235
 
-Millar, R.B., and R. Holst, 1997. Estimation of gillnet and hook selectivity using
-log-linear models. ICES Journal of Marine Science: Journal du Conseil, 54(3):471-477
+Garcia, S. and N.P. van Zalinge, 1982. Shrimp fishing in Kuwait: methodology
+for a joint analysis of the artisanal and industrial fisheries. pp. 119-142 In:
+Report on the Workshop on assessment of the shrimp stocks of the west coast of
+the Gulf between Iran and the Arabian Peninsula. Fisheries development in the
+Gulf. Rome, FAO, FI:DP/RAB/80/015/1, 163 p.
+
+Gulland, J.A., 1983. Fish stock assessment: a manual of basic methods.
+FAO/Wiley, New York.
+
+Gulland, J.A. and Boerema, L., 1973. Scientific advice on catch levels.
+Fish. Bull. (US) 71:325-335.
+
+Millar, R.B., and Holst, R., 1997. Estimation of gillnet and hook selectivity using
+log-linear models. \emph{ICES Journal of Marine Science: Journal du Conseil},
+54(3):471-477
+
+Pauly, D., 1980. A selection of simple methods for the assessment of tropical fish
+stocks. \emph{FAO Fisheries Circulars (FAO)}. no. 729.
+
+Pauly, D., 1984. Fish population dynamics in tropical waters: a manual for use
+with programmable calculators. ICLARM Stud. Rev. 8, 325 p.
+
+Schaefer, M.B., 1954. Some aspects of the dynamics of populations important to the
+management of the commercial marine fisheries. Inter-Am. Trop. Tuna Comm.,
+Bull. 1(2):27-56.
+
+Schaefer, M.B., 1957. A study of the dynamics of the fishery for yellowfin tuna
+in the eastern tropical Pacific Ocean. Inter-Am. Trop. Tuna Comm., Bull. 2:247-268.
 
 Sparre, P., and Venema, S.C., 1998. Introduction to tropical fish stock assessment.
-Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
-
-#@export
+Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.
 }
 \keyword{function}
 \keyword{prediction}

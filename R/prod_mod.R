@@ -12,7 +12,7 @@
 #'   \item \code{f} fishing effort per year, or
 #'   \item \code{CPUE} catch per unit of effort per year (optional).
 #' }
-#' @param plot logical; if TRUE a graph is displayed
+#' @param plot logical; if TRUE, a graph is displayed
 #'
 #' @keywords function biomass MSY production surplus
 #'

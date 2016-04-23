@@ -8,7 +8,7 @@
  2. a matrix with catch in numbers.}
 \source{
 Goeden, G.B., 1978. A monograph of the coral trout \emph{Plectropomus leopardus}
-(Lacépède). \emph{Res.Bull.Fish.Serv.Queensl.}, (1):42 p.
+(Lacepede). \emph{Res.Bull.Fish.Serv.Queensl.}, (1):42 p.
 
 Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.
