@@ -179,18 +179,15 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
   }
 
   # Error message if catch and age do not have same length
-  if(constant_dt){
-    if(length(classes) != length(catch[,1])) stop(noquote(
-      "Age/length classes and catch matrix do not have the same length!"))
-  }else if(class(catch) == 'numeric'){
-    if(length(classes) != length(catch)) stop(noquote(
-      "Age/length classes and catch vector do not have the same length!"))
-  }
-
   #   Linearised catch curve with constant time intervals
   if(constant_dt){
     if("midLengths" %in% names(res) == TRUE) stop(noquote(
       "The catch curve with constant time interval is not applicable to length-frequency data. Please provide a catch vector."))
+
+    #if(length(classes) != length(catch[,1])) stop(noquote(
+    #  "Age/length classes and catch matrix do not have the same length!"))
+
+    if(length(classes) != length(diag(as.matrix(catch)))) writeLines("Age/length classes and the real cohort in the catch matrix \ndo not have the same length. The missing age/length \nclasses will be omitted.")
 
     # Aged based Catch curve
     if("age" %in% names(res) == TRUE){
@@ -198,6 +195,10 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
       real.cohort <- diag(as.matrix(catch))
       catch <- c(real.cohort, rep(NA,length(classes.num) - length(real.cohort)))
     }
+
+  }else if(class(catch) == 'numeric'){
+    if(length(classes) != length(catch)) stop(noquote(
+      "Age/length classes and catch vector do not have the same length!"))
   }
 
   # Length converted catch curve
