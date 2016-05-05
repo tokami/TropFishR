@@ -1,5 +1,5 @@
 #' @title VPA plot
-#
+#'
 #' @description  This function plots the survivors, catches, natural losses, and fishing
 #'    mortality resulting from the \link{VPA} model.
 #'
