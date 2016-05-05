@@ -84,7 +84,7 @@
 #' @references
 #' Brey, T., Soriano, M., Pauly, D., 1988. Electronic length frequency analysis. A
 #' revised and expanded user's guide to ELEFAN 0, 1 and 2. (Second edition).
-#' Berichte aus dem Institut für Meereskunde Kiel, No 177, 31p.
+#' Berichte aus dem Institut f??r Meereskunde Kiel, No 177, 31p.
 #'
 #' Moreau, J., & Cuende, F. X., 1991. On improving the resolution of the recruitment
 #' patterns of fishes. \emph{Fishbyte}, 9(1), 45-46.

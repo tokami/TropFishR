@@ -3,7 +3,7 @@
 #' @description  This function returns a function corresponding to the type of curve
 #'    which was selected to represent the selectivity of nets or hooks.
 #'
-#' @param rtype a character string indicating which method for theestimation of selection
+#' @param rtype a character string indicating which method for the estimation of selection
 #'    curves should be used:
 #'    \code{"norm.loc"} for normal with common spread method,
 #'    \code{"norm.sca"} for normal with variable spread method,
@@ -103,7 +103,7 @@ rtypes_Millar <- function(rtype) {
          "gamma" = {
            r <- function(classes, meshSizes, th){
              seln <- (classes / ((th[1] - 1) * th[2] * meshSizes)) ^ (th[1] - 1) *
-               exp(th[1] - 1 - classes / (the[2] * meshSizes))
+               exp(th[1] - 1 - classes / (th[2] * meshSizes))
              return(seln)
            }
          },

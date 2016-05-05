@@ -136,8 +136,14 @@ better to treat last group always as a plus group.....
    Physical yield obtained by multiplying yield per recruit times number of
    recruits produced in the stock.
    Assumes that there is no relationship between parental stock size and progeny
-   over a wide range of F or E values, respectively (which is not true).
+   over a wide range of F or E values, respectively (which is not true). In
+   other words: no density dependency assumed: the weight at age is constant
+   irrespective of stock size, the natural mortality is constant irresepctive of
+   stock size
    assumption of knife edge recruitment and selection implicit in equations
+   conclusions drawn are highly dependent on the assumption of natural mortality
+   does not consider potential population collapse at high fishing mortalities
+   single species model
 }
 \examples{
 #______________________________________
@@ -218,10 +224,15 @@ the Gulf between Iran and the Arabian Peninsula. Fisheries development in the
 Gulf. Rome, FAO, FI:DP/RAB/80/015/1, 163 p.
 
 Gulland, J.A., 1983. Fish stock assessment: a manual of basic methods.
-FAO/Wiley, New York.
+\emph{FAO/Wiley}, New York.
 
 Gulland, J.A. and Boerema, L., 1973. Scientific advice on catch levels.
-Fish. Bull. (US) 71:325-335.
+\emph{Fish. Bull. (US)} 71:325-335.
+
+Jones, R.E. 1957. A much simplified version of the fish yield equation. Doc. No.
+P. 21. Paper presented at the Lisbon joint meeting of International Commission
+Northwest Atlantic-Fisheries, International Council for the Exploration of the
+Sea, and Food and Agriculture Organization of the United Nations. 8 p. [Mimeo].
 
 Millar, R.B., and Holst, R., 1997. Estimation of gillnet and hook selectivity using
 log-linear models. \emph{ICES Journal of Marine Science: Journal du Conseil},
@@ -231,14 +242,20 @@ Pauly, D., 1980. A selection of simple methods for the assessment of tropical fi
 stocks. \emph{FAO Fisheries Circulars (FAO)}. no. 729.
 
 Pauly, D., 1984. Fish population dynamics in tropical waters: a manual for use
-with programmable calculators. ICLARM Stud. Rev. 8, 325 p.
+with programmable calculators. \emph{ICLARM} Stud. Rev. 8, 325 p.
+
+Pauly, D. and M. Soriano. 1986. Some practical extensions to Beverton and
+Holt's relative yield-per-recruit model, p. 491-495. In J.L. Maclean, L.B. Dizon
+and L.V. Hosillos (eds.) The First Asian Fisheries Forum. Asian Fisheries Society,
+Manila.
 
 Schaefer, M.B., 1954. Some aspects of the dynamics of populations important to the
-management of the commercial marine fisheries. Inter-Am. Trop. Tuna Comm.,
-Bull. 1(2):27-56.
+management of the commercial marine fisheries. \emph{Inter-Am. Trop. Tuna Comm.,
+Bull.} 1(2):27-56.
 
 Schaefer, M.B., 1957. A study of the dynamics of the fishery for yellowfin tuna
-in the eastern tropical Pacific Ocean. Inter-Am. Trop. Tuna Comm., Bull. 2:247-268.
+in the eastern tropical Pacific Ocean. \emph{Inter-Am. Trop. Tuna Comm., Bull.}
+2:247-268.
 
 Sparre, P., and Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.

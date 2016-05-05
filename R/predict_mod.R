@@ -675,8 +675,9 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
           Y_R.rel <- ypr.rel.sel(FM_change, P, Lt)
           B_R.rel <- bpr.rel.sel(FM_change, P, Lt)  # new approach? maybe B_R = Y_R / F is not valid anymore with size classes
 
-          Y_R_test <- Y_R.rel * Winf * exp(M *(tr - t0))
-          B_R_test <- B_R.rel * (Winf * exp(M*(tr-t0)))
+          #test
+          Y_R <- Y_R.rel * Winf * exp(M *(tr - t0))
+          B_R <- B_R.rel * (Winf * exp(M*(tr-t0)))
 
           deri <- derivative.sel(FM_change, P, Lt)
 

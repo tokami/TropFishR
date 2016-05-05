@@ -368,11 +368,11 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
   if(calc_ogive){
 
     # only use part of catch and t which is not fully exploited by the gear
-    t_ogive <- xvar[1:(cutter[1]-1)]   # replace t_midL by universal object
+    t_ogive <- xvar[1:(cutter[1]-1)]
     dt_ogive <- dt[1:(cutter[1]-1)]
     if("age" %in% names(res) == TRUE &
        class(catch) == 'matrix' | class(catch) == 'data.frame'){
-      catch_ogive <- catch.cohort[1:(cutter[1]-1)]
+      catch_ogive <- catch[1:(cutter[1]-1)] ## catch.cohort
     }else catch_ogive <- catch[1:(cutter[1]-1)]
 
     # calculate observed selection ogive

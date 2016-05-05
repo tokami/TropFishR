@@ -15,7 +15,7 @@ prod_mod(data, plot = FALSE)
   \item \code{CPUE} catch per unit of effort per year (optional).
 }}
 
-\item{plot}{logical; if TRUE a graph is displayed}
+\item{plot}{logical; if TRUE, a graph is displayed}
 }
 \value{
 A list with the input parameters and following list objects:

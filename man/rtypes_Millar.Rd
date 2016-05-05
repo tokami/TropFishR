@@ -10,7 +10,7 @@ https://www.stat.auckland.ac.nz/~millar/selectware/
 rtypes_Millar(rtype)
 }
 \arguments{
-\item{rtype}{a character string indicating which method for theestimation of selection
+\item{rtype}{a character string indicating which method for the estimation of selection
 curves should be used:
 \code{"norm.loc"} for normal with common spread method,
 \code{"norm.sca"} for normal with variable spread method,
