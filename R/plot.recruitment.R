@@ -33,14 +33,14 @@ plot.recruitment <- function(x, percent = TRUE, col = "darkgreen",
     xtitle <- ""
   }else xtitle <- "rel. months"
   if(percent){
-    xvari <- pes$N_months_per
+    xvari <- pes$per_recruits
     ytitle <- "Recruits [%]"
   }else{
-    xvari <- pes$N_months_per
+    xvari <- pes$mean_recruits
     ytitle <- "# Recruits"
   }
   if("t0" %in% names(pes)){
-    months_num <- pes$N_months_all$month
+    months_num <- pes$months
     months_abb <- month.abb[months_num]
   }
   if(xtitle != "default") xtitle = xtitle

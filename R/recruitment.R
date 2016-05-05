@@ -47,7 +47,7 @@
 #' s_dates <- unlist(lapply(s_dates, function(x) return(x[2])))
 #' s_dates <- as.POSIXlt(s_dates, format="%d.%m.%Y")
 #'
-#' recruitment(trout, tsample = s_dates$yday/365)
+#' recruitment(trout, tsample = s_dates$yday/365, plot = TRUE)
 #'
 #' @details
 #' This function allows to extract information about the recruitment patterns of a
@@ -70,12 +70,15 @@
 #' @return A list with the input parameters and following list objects:
 #' \itemize{
 #'   \item \strong{ti}: actual age,
-#'   \item \strong{tS_frac}: age at which the lenght was zero expressed as fraction
+#'   \item \strong{tS_frac}: age at which the length was zero expressed as fraction
 #'   of the year,
-#'   \item \strong{correspond_month}: corresponding month,
-#'   \item \strong{N_months_all}: dataframe with months and the number of recruits
-#'   per month,
-#'   \item \strong{N_months_per}: precentage of number of recruits per month.
+#'   \item \strong{cor_months}: corresponding months,
+#'   \item \strong{months}: numeric months (relative if no t0 is not given),
+#'   \item \strong{months_abb}: months (only presented if t0 is given),
+#'   \item \strong{all_recruits}: number of recruits per month as matrix if several
+#'   length-frequency data sets are provided,
+#'   \item \strong{mean_recruits}: (mean) number of recruits per month,
+#'   \item \strong{per_recruits}: precentage number of recruits per month.
 #' }
 #'
 #' @references
@@ -112,38 +115,74 @@ recruitment <- function(param, tsample, catch_column = NA, plot = FALSE){
   if(is.na(catch_column)) catch <- res$catch
   if(!is.na(catch_column)) catch <- res$catch[,catch_column]
 
-  # special vBGF (D = 1)
-  ti <- log(1 - classes.num/Linf)/-K + t0 - tsample
-  # generalised vBGF
-  if(!is.na(D)) ti <- log(1 - (classes.num/Linf)^D)/(-K*D) + t0 - tsample
-  # seasonalized vBGF
-  if(!is.na(C) & !is.na(ts)) ti <- (log(1 - (classes.num/Linf)^D) +
-                                      C * ((K*D)/2*pi)*sin(2*pi)*((t0-tsample)-ts))/(-K*D) + t0 - tsample
+  if(class(catch) == "matrix" | class(catch) == "data.frame"){
+    len_catch <- dim(catch)[1]
+    catch_sets <- dim(catch)[2]
+    }else{
+      len_catch <- length(catch)
+      catch_sets <- 1
+    }
 
-  # t at S = 0 as fraction of year
-  tS_frac <- ti - floor(ti)
-  # corresponding months
-  correspond_month <- floor(tS_frac * 12 + 1)
-
-
-  # results
   res_months <- data.frame(month = 1:12)
   # number of recruits per month
-  N_months <- aggregate(list(numbers=catch), by = list(month = correspond_month),
-                        sum, na.rm =TRUE)
+  N_months_loop <- matrix(NA, nrow = 12, ncol = catch_sets)
+  ti <- matrix(NA, nrow = len_catch, ncol = catch_sets)
+  tS_frac <- matrix(NA, nrow = len_catch, ncol = catch_sets)
+  correspond_month <- matrix(NA, nrow = len_catch, ncol = catch_sets)
+  for(i in 1:catch_sets){
+    if(catch_sets > 1){
+      catchi <- catch[,i]
+      tsampli <- tsample[i]
+    }else{
+      catchi <- catch
+      tsampli <- tsample
+    }
 
-  N_months_all <- merge(res_months, N_months, by.x = "month", all.x=TRUE)
-  N_months_all$numbers[is.na(N_months_all$numbers)] <- 0
+    # special vBGF (D = 1)
+    ti[,i] <- log(1 - classes.num/Linf)/-K + t0 - tsampli
+    # generalised vBGF
+    if(!is.na(D)) ti[,i] <- log(1 - (classes.num/Linf)^D)/(-K*D) + t0 - tsampli
+    # seasonalized vBGF
+    if(!is.na(C) & !is.na(ts)) ti[,i] <- (log(1 - (classes.num/Linf)^D) +
+                                        C * ((K*D)/2*pi)*sin(2*pi)*((t0-tsampli)-ts))/(-K*D) + t0 - tsampli
+
+    # t at S = 0 as fraction of year
+    tS_frac[,i] <- ti[,i] - floor(ti[,i])
+    # corresponding months
+    correspond_month[,i] <- floor(tS_frac[,i] * 12 + 1)
+
+    N_months_pre <- aggregate(list(numbers=catchi), by = list(month = correspond_month[,i]),
+                              sum, na.rm =TRUE)
+    N_months_all <- merge(res_months, N_months_pre, by.x = "month", all.x=TRUE)
+    N_months_all$numbers[is.na(N_months_all$numbers)] <- 0
+    N_months_loop[,i] <- N_months_all$numbers
+  }
+
+  N_months_final <- apply(N_months_loop, 1, FUN = mean, na.rm = TRUE)
 
   # percentage of recruits per month
-  N_months_per <- (N_months_all$numbers/sum(N_months_all$numbers, na.rm = TRUE)) * 100
+  N_months_per <- (N_months_final/sum(N_months_final, na.rm = TRUE)) * 100
 
+  if("t0" %in% names(res)){
+    months_abb <- month.abb[res_months$month]
+  }
 
-  ret <- c(res,list(ti = ti,
+  if(catch_sets == 1){
+    ti <- ti[,1]
+    tS_frac <- tS_frac[,1]
+    correspond_month <- correspond_month[,1]
+    N_months_loop <- N_months_loop[,1]
+  }
+
+  res2 <- c(res,list(ti = ti,
                     tS_frac = tS_frac,
-                    correspond_month = correspond_month,
-                    N_months_all = N_months_all,
-                    N_months_per = N_months_per))
+                    cor_months = correspond_month,
+                    months = res_months$month))
+  if("t0" %in% names(res)) res2$months_abb <- months_abb
+  ret <- c(res2,list(all_recruits = N_months_loop,
+                    mean_recruits = N_months_final,
+                    per_recruits = N_months_per))
+
   class(ret) <- "recruitment"
   if(plot) plot(ret)
   return(ret)
