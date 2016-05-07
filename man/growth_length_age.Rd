@@ -4,7 +4,8 @@
 \alias{growth_length_age}
 \title{Estimation from growth parameter using length-at-age data}
 \usage{
-growth_length_age(param, method, Linf = NA)
+growth_length_age(param, method, Linf = NA, Linf_init = 10, K_init = 0.1,
+  t0_init = 0)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -14,12 +15,30 @@ growth_length_age(param, method, Linf = NA)
 }}
 
 \item{method}{indicating which of following methods should be applied: "GullandHolt",
-"FordWalford", "Chapman", or "BertalanffyPlot".}
+"FordWalford", "Chapman", "BertalanffyPlot", or "LSM"}
+
+\item{Linf_init}{initital parameter of Linf for non-linear sqaures fitting (default 10)}
+
+\item{K_init}{initital parameter of K for non-linear sqaures fitting (default 0.1)}
+
+\item{t0_init}{initital parameter of t0 for non-linear sqaures fitting (default 0)}
+}
+\value{
+A list with the input parameters and following parameters:
+\itemize{
+ \item \strong{x}: independent variable used for regression analysis,
+ \item \strong{y}: dependent variable used for regression analysis,
+ \item \strong{reg_coeffs}: regression coefficients,
+ \item \strong{Linf}: infinite length for investigated species in cm [cm],
+ \item \strong{K}: growth coefficent for investigated species per year [1/year],
+ \item \strong{t0}: theoretical time zero, at which individuals of this species hatch
+     (only if Bertalanffy plot was applied).
+}
 }
 \description{
 This function estimates growth parameters from length-at-age data. It
-   allows to perform different methods: Gulland and Holt, Ford Walford plot, or
-   Chapman's method.
+   allows to perform different methods: Gulland and Holt, Ford Walford plot,
+   Chapman's method, Bertalanffy plot, or non linear least squares method (LSM).
 }
 \details{
 Gulland and Holt plot assumes
@@ -29,7 +48,10 @@ is small). Ford Walford plot and Chapman assume constant time intervals between 
 long as this estimate is reasonable the resulting estimate of K is reasonable. For
 a first estimate of Linf the Powell Wetherall method \link{powell_wetherall} can
 be used. Otherwise, the largest fish or the average of the ten largest fish can be
-used for a small or large sample, respectively.
+used for a small or large sample, respectively. All lengths have to be smaller than
+Linf as otherwise the logarithm is not defined. Oldest fish (if larger than Linf) have
+to be omitted. Non-linear least squares fitting is the preferred method to estimate
+growth parameters according to Sparre and Venema (1998).
 }
 \examples{
 # synthetical length at age data
@@ -40,6 +62,8 @@ growth_length_age(dat, method = "GullandHolt")
 dat <- list(age = c(0.64,1.16,1.65,2.1,2.64,3.21),
    length = c(17.3,27.9,35.3,40.2,43.3,45.5))
 growth_length_age(dat, method = "BertalanffyPlot", Linf = 50)
+
+growth_length_age(dat, method = "LSM")
 
 }
 \references{
