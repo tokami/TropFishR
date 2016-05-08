@@ -1,8 +1,8 @@
 #' @title Von Bertalanffy Growth function (VBGF)
 #
-#' @description  This function applies the von Bertalanffy growth function. It
-#'    allows to calculate ages from lengths based on the special, generalised
-#'    or seasonalised VBGF.
+#' @description  This function applies the von Bertalanffy growth function (VBGF).
+#'    It allows to calculate ages from lengths based on the special,
+#'    generalised or seasonalised VBGF.
 #'
 #' @param Linf infinite length for investigated species in cm, or
 #' @param Winf infinite weight for investigated species in gramm

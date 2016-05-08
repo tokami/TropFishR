@@ -32,9 +32,9 @@ VBGF(t, Linf = NA, Winf = NA, K, t0 = 0, b = 3, D = 1, L0 = NA,
 A vector with estimated lengths corresponding to provided ages.
 }
 \description{
-This function applies the von Bertalanffy growth function. It
-   allows to calculate ages from lengths based on the special, generalised
-   or seasonalised VBGF.
+This function applies the von Bertalanffy growth function (VBGF).
+   It allows to calculate ages from lengths based on the special,
+   generalised or seasonalised VBGF.
 }
 \details{
 Based upon which input parameters are given one of the following
