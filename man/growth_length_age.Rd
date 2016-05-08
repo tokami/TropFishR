@@ -4,8 +4,8 @@
 \alias{growth_length_age}
 \title{Estimation from growth parameter using length-at-age data}
 \usage{
-growth_length_age(param, method, Linf = NA, Linf_init = 10, K_init = 0.1,
-  t0_init = 0)
+growth_length_age(param, method, Linf_est = NA, Linf_init = 10,
+  K_init = 0.1, t0_init = 0)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -16,6 +16,9 @@ growth_length_age(param, method, Linf = NA, Linf_init = 10, K_init = 0.1,
 
 \item{method}{indicating which of following methods should be applied: "GullandHolt",
 "FordWalford", "Chapman", "BertalanffyPlot", or "LSM"}
+
+\item{Linf_est}{BertalanffyPlot requires an estimate for Linf to derive K and t0
+(for more information see Details).}
 
 \item{Linf_init}{initital parameter of Linf for non-linear sqaures fitting (default 10)}
 
@@ -61,7 +64,7 @@ growth_length_age(dat, method = "GullandHolt")
 # Bertalaffy plot
 dat <- list(age = c(0.64,1.16,1.65,2.1,2.64,3.21),
    length = c(17.3,27.9,35.3,40.2,43.3,45.5))
-growth_length_age(dat, method = "BertalanffyPlot", Linf = 50)
+growth_length_age(dat, method = "BertalanffyPlot", Linf_est = 50)
 
 growth_length_age(dat, method = "LSM")
 
