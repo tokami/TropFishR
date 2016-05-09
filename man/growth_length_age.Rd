@@ -63,12 +63,13 @@ growth parameters according to Sparre and Venema (1998).
 dat <- list(age = 1:7, length = c(25.7,36,42.9,47.5,50.7,52.8,54.2))
 growth_length_age(dat, method = "GullandHolt")
 
+growth_length_age(dat, method = "LSM", Linf_init = 30)
+
 # Bertalaffy plot
 dat <- list(age = c(0.64,1.16,1.65,2.1,2.64,3.21),
    length = c(17.3,27.9,35.3,40.2,43.3,45.5))
 growth_length_age(dat, method = "BertalanffyPlot", Linf_est = 50)
 
-growth_length_age(dat, method = "LSM")
 
 }
 \references{

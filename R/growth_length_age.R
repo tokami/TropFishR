@@ -24,12 +24,13 @@
 #' dat <- list(age = 1:7, length = c(25.7,36,42.9,47.5,50.7,52.8,54.2))
 #' growth_length_age(dat, method = "GullandHolt")
 #'
+#' growth_length_age(dat, method = "LSM", Linf_init = 30)
+#'
 #' # Bertalaffy plot
 #' dat <- list(age = c(0.64,1.16,1.65,2.1,2.64,3.21),
 #'    length = c(17.3,27.9,35.3,40.2,43.3,45.5))
 #' growth_length_age(dat, method = "BertalanffyPlot", Linf_est = 50)
 #'
-#' growth_length_age(dat, method = "LSM")
 #'
 #' @details
 #' Gulland and Holt plot assumes
@@ -87,6 +88,7 @@ growth_length_age <- function(param, method, Linf_est = NA,
            sum_mod <- summary(lm(y ~ x))
            a <- sum_mod$coefficients[1]
            b <- sum_mod$coefficients[2]
+           R2 <- sum_mod$r.squared
            K <- -b
            Linf <- -a/b
 
@@ -97,7 +99,7 @@ growth_length_age <- function(param, method, Linf_est = NA,
                 main = "Gulland and Holt")
            abline(a,b)
 
-           tmp <- list(x=x,y=y)
+           tmp <- list(x=x,y=y,R2=R2)
 
          },
          "FordWalford"={
@@ -111,6 +113,7 @@ growth_length_age <- function(param, method, Linf_est = NA,
            sum_mod <- summary(lm(y ~ x))
            a <- sum_mod$coefficients[1]
            b <- sum_mod$coefficients[2]
+           R2 <- sum_mod$r.squared
            K <- -1/delta_t * log(b)
            Linf <- a/(1-b)
 
@@ -124,7 +127,7 @@ growth_length_age <- function(param, method, Linf_est = NA,
            segments(x0 = 0, y0 = Linf, x1 = Linf, y1 = Linf, lty=2)
            segments(x0 = Linf, y0 = 0, x1 = Linf, y1 = Linf, lty=2)
 
-           tmp <- list(x=x,y=y)
+           tmp <- list(x=x,y=y,R2=R2)
          },
          "Chapman"={
            if(!all(delta_t == 1)) stop("The Chapman method assumes constant time intervals!")
@@ -139,6 +142,7 @@ growth_length_age <- function(param, method, Linf_est = NA,
            sum_mod <- summary(lm(y ~ x))
            a <- sum_mod$coefficients[1]
            b <- sum_mod$coefficients[2]
+           R2 <- sum_mod$r.squared
            c <- -b
            K <- -(1/delta_t) * log(1+b)
            Linf <- -a/b
@@ -150,7 +154,7 @@ growth_length_age <- function(param, method, Linf_est = NA,
                 main = "Chapman")
            abline(a,b)
 
-           tmp <- list(x=x,y=y)
+           tmp <- list(x=x,y=y,R2=R2)
          },
          "BertalanffyPlot"={
 
@@ -162,6 +166,7 @@ growth_length_age <- function(param, method, Linf_est = NA,
            sum_mod <- summary(lm(y ~ x))
            a <- sum_mod$coefficients[1]
            b <- sum_mod$coefficients[2]
+           R2 <- sum_mod$r.squared
            K <- b
            t0 <- a/-K
            Linf <- Linf_est
@@ -173,7 +178,7 @@ growth_length_age <- function(param, method, Linf_est = NA,
                 main = "Bertalanffy plot")
            abline(a,b)
 
-           tmp <- list(x=x,y=y)
+           tmp <- list(x=x,y=y,R2=R2)
 
 
            if(max(Lt, na.rm=TRUE) > Linf_est) writeLines("Some lengths were larger as the Linf value which was \nprovided. These lengths are omitted.")
@@ -199,6 +204,7 @@ growth_length_age <- function(param, method, Linf_est = NA,
   res2 <- c(res,list(delta_t = delta_t))
   if(exists("x", where = tmp)) res2$x <- x
   if(exists("y", where = tmp)) res2$y <- y
+  if(exists("R2", where = tmp)) res2$r2 <- R2
 
   ret <- c(res2,list(reg_coeffs = sum_mod$coefficients,
                     Linf = Linf,
