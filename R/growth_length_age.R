@@ -6,11 +6,13 @@
 #'
 #' @param param a list consisting of following parameters:
 #' \itemize{
-#'   \item \strong{age}: age groups,
-#'   \item \strong{length}: corresponding length groups.
+#'   \item \strong{age}: age measurements,
+#'   \item \strong{length}: corresponding lengths.
 #' }
-#' @param method indicating which of following methods should be applied: "GullandHolt",
-#'    "FordWalford", "Chapman", "BertalanffyPlot", or "LSM"
+#' @param method indicating which of following methods should be applied:
+#'    \code{"GullandHolt"},
+#'    \code{"FordWalford"}, \code{"Chapman"}, \code{"BertalanffyPlot"},
+#'    or \code{"LSM"}
 #' @param Linf_est BertalanffyPlot requires an estimate for Linf to derive K and t0
 #'    (for more information see Details).
 #' @param Linf_init initital parameter of Linf for non-linear sqaures fitting (default 10)
