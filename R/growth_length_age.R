@@ -112,7 +112,7 @@ growth_length_age <- function(param, method, Linf_est = NA,
            K <- -1/delta_t * log(b)
            Linf <- a/(1-b)
 
-           plot(Lt_delta_t ~ Lt_short, pch = 16, ylim = c(0,max(y,na.rm=TRUE)*1.1),
+           plot(y ~ x, pch = 16, ylim = c(0,max(y,na.rm=TRUE)*1.1),
                 xlim = c(0,max(x,na.rm=TRUE)*1.1),
                 xlab = "L(t)",
                 ylab=expression(paste("L(t+",delta,"t)")),
