@@ -7,6 +7,8 @@
 #'   gillnet selectivity function.
 #' @param regression_fit logical; indicating if a plot with the fit of the regression
 #'    line should be displayed
+#' @param cols a specification for the two colours of the two selection curves.
+#'    Default is c("darkgreen","orange").
 #' @param ... additional parameters of the \link{plot} function
 #'
 #' @examples
@@ -24,7 +26,11 @@
 #'
 #' @export
 
-plot.select <- function(x, regression_fit = TRUE, ...){
+plot.select <- function(x, regression_fit = TRUE,
+                        cols = c("darkgreen","orange"), ...){
+
+  if(length(cols) < 2) stop("Please provide two colours!")
+
   res <- x
   classes.num <- res$classes.num
 
@@ -69,18 +75,18 @@ plot.select <- function(x, regression_fit = TRUE, ...){
     axis(side=1,at=classes.num)
     lines(classes.num.plot,numNet2,type='s', lty=2)
     par(new=TRUE)
-    plot(xL, exp(- ((xL - LmNet1)^2 / (2 * s2))), type = "l", col='darkgreen',lwd=2.5,
+    plot(xL, exp(- ((xL - LmNet1)^2 / (2 * s2))), type = "l", col=cols[1],lwd=2.5,
          axes=F,bty = "n", xlab = "", ylab = "")
-    lines(xL, exp(- ((xL - LmNet2)^2 / (2 * s2))), type = "l", col='orange',lwd=2.5,
+    lines(xL, exp(- ((xL - LmNet2)^2 / (2 * s2))), type = "l", col=cols[2],lwd=2.5,
           bty = "n", xlab = "", ylab = "")
     axis(side=4, at = pretty(range(SNet1)))
     mtext("Fractions retained", side=4, line=3)
     text(labels = paste("ms = ",msNet1,"cm"), x = LmNet1, y =
            ((exp(- ((LmNet1 - LmNet1)^2 / (2 * s2))))/0.98),
-         col = 'darkgreen',xpd = TRUE)
+         col = cols[1],xpd = TRUE)
     text(labels = paste("ms = ",msNet2,"cm"), x = LmNet2, y =
            ((exp(- ((LmNet2 - LmNet2)^2 / (2 * s2))))/0.98),
-         col = 'orange',xpd = TRUE)
+         col = cols[2],xpd = TRUE)
     par(op)
   }
 

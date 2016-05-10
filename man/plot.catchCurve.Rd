@@ -4,16 +4,24 @@
 \alias{plot.catchCurve}
 \title{Plotting catch curve}
 \usage{
-\method{plot}{catchCurve}(x, plot_selec = FALSE, ...)
+\method{plot}{catchCurve}(x, plot_selec = FALSE, col = "blue", cex = 1.5,
+  ...)
 }
 \arguments{
 \item{x}{A list of the class \code{"catchCurve"} containing the results of the
 catchCurve model.}
 
 \item{plot_selec}{logical; if TRUE the regression line is plotted for not fully
-exploited length groups and the probability of capture is plotted}
+exploited length groups and the probability of capture is plotted. This
+only works if the \link{catchCurve} was applied with
+\code{calc_ogive} == TRUE.}
 
-\item{...}{normal parameters from plot function}
+\item{col}{a specification for colour of regression points, line and annotation}
+
+\item{cex}{a numerical value giving the amount by which plotting text and
+symbols should be magnified relative to the default.}
+
+\item{...}{standard parameters of plot function}
 }
 \description{
 This function plots the results from the \code{\link{catchCurve}} model.

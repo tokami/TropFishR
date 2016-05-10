@@ -5,8 +5,13 @@
 #' @param x A list of the class \code{"catchCurve"} containing the results of the
 #'      catchCurve model.
 #' @param plot_selec logical; if TRUE the regression line is plotted for not fully
-#'      exploited length groups and the probability of capture is plotted
-#' @param ... normal parameters from plot function
+#'      exploited length groups and the probability of capture is plotted. This
+#'      only works if the \link{catchCurve} was applied with
+#'      \code{calc_ogive} == TRUE.
+#' @param col a specification for colour of regression points, line and annotation
+#' @param cex a numerical value giving the amount by which plotting text and
+#'      symbols should be magnified relative to the default.
+#' @param ... standard parameters of plot function
 #'
 #' @examples
 #' \donttest{
@@ -23,7 +28,7 @@
 #'
 #' @export
 
-plot.catchCurve <- function(x, plot_selec = FALSE,...){
+plot.catchCurve <- function(x, plot_selec = FALSE, col='blue', cex = 1.5, ...){
   pes <- x
 
   xlabel <- "Age [yrs]"
@@ -59,7 +64,8 @@ plot.catchCurve <- function(x, plot_selec = FALSE,...){
   minyplot <- ifelse(min(yplot,na.rm=TRUE) < 0, min(yplot,na.rm=TRUE),0)
   maxyplot <- max(yplot,na.rm=TRUE) + 1
 
-  if(plot_selec){
+  if(plot_selec & any(names(pes) != "Sest")) writeLines("Please run the catchCurve with calc_ogive == TRUE \nin order to show selectivity plot!")
+  if(plot_selec & any(names(pes) == "Sest")){
     maxyplot <- ceiling(pes$intercept)
 
     op <- par(mfrow=c(2,1), xpd = FALSE,
@@ -68,22 +74,22 @@ plot.catchCurve <- function(x, plot_selec = FALSE,...){
     #final plot
     plot(x = xplot, y = yplot, ylim = c(minyplot,maxyplot),
          xlab = '', xaxt = 'n', ylab = ylabel,
-         cex = 1.5)
+         cex = cex)
     #par(new=T)
     points(x = xplot[reg_int[1]:reg_int[2]], y = yplot[reg_int[1]:reg_int[2]],
-           pch = 19, col = 'blue', cex = 1.5)
+           pch = 19, col = col, cex = cex)
     segments(x0=xplot[reg_int[1]],
              y0=yplot[reg_int[1]],
              x1=xplot[reg_int[2]],
              y1=yplot[reg_int[2]],
-             col="blue",lwd = 1.7)
+             col=col,lwd = 1.7)
     segments(x0=0,
              y0=pes$intercept,
              x1=xplot[reg_int[1]],
              y1=yplot[reg_int[1]],
-             col="blue",lwd = 1.7, lty = 2)
+             col=col,lwd = 1.7, lty = 2)
     mtext(side = 3, line = 0.3,  text = paste("Z =",round(Z_lm1,2),"+/-",
-                                 round(SE_Z_lm1,2)), col = 'blue')
+                                 round(SE_Z_lm1,2)), col = col)
 
     plot(pes$Sest ~ xplot, type ='o', xlab = xlabel,
          ylab = "Probability of capture")
@@ -101,17 +107,17 @@ plot.catchCurve <- function(x, plot_selec = FALSE,...){
     #final plot
     plot(x = xplot, y = yplot, ylim = c(minyplot,maxyplot),
          xlab = xlabel, ylab = ylabel,
-         cex = 1.5)
+         cex = cex)
     par(new=T)
     points(x = xplot[reg_int[1]:reg_int[2]], y = yplot[reg_int[1]:reg_int[2]],
-           pch = 19, col = 'blue', cex = 1.5)
+           pch = 19, col = col, cex = cex)
     segments(x0=xplot[reg_int[1]],
              y0=yplot[reg_int[1]],
              x1=xplot[reg_int[2]],
              y1=yplot[reg_int[2]],
-             col="blue",lwd = 1.7)
+             col=col,lwd = 1.7)
     mtext(side = 3, text = paste("Z =",round(Z_lm1,2),"+/-",
-                                 round(SE_Z_lm1,2)), col = 'blue')
+                                 round(SE_Z_lm1,2)), col = col)
   }
 }
 

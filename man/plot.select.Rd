@@ -4,7 +4,8 @@
 \alias{plot.select}
 \title{Selectivity plot}
 \usage{
-\method{plot}{select}(x, regression_fit = TRUE, ...)
+\method{plot}{select}(x, regression_fit = TRUE, cols = c("darkgreen",
+  "orange"), ...)
 }
 \arguments{
 \item{x}{a list of the class \code{"select"} containing the results of the
@@ -12,6 +13,9 @@ gillnet selectivity function.}
 
 \item{regression_fit}{logical; indicating if a plot with the fit of the regression
 line should be displayed}
+
+\item{cols}{a specification for the two colours of the two selection curves.
+Default is c("darkgreen","orange").}
 
 \item{...}{additional parameters of the \link{plot} function}
 }
