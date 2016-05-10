@@ -14,17 +14,19 @@
 #' }
 #' @param catch_column optional; in case catch is a matrix or data.frame, a number
 #'    indicating which column of the matrix should be analysed (Default: \code{NA}).
+#' @param Lprime_tprime length or age prime, above which all fish are under full exploitation as
+#'    mid length or age class.
 #'
 #' @keywords function mortality Z
 #'
 #' @examples
 #' # based on length-frequency data
 #' data(synLFQ2)
-#' Z_BevertonHolt(synLFQ2, catch_column = 2)
+#' Z_BevertonHolt(synLFQ2, catch_column = 2, Lprime_tprime = 47.5)
 #'
 #' # based on age composition data
 #' data(synCAA1)
-#' Z_BevertonHolt(synCAA1, catch_column = 3)
+#' Z_BevertonHolt(synCAA1, catch_column = 3, Lprime_tprime = 2.5)
 #'
 #' @details  The first length group or age class within the list object \code{midLengths} or
 #'    \code{age} will be used as the Lprim or tprime (length of recruitment to fishery).
@@ -48,7 +50,7 @@
 #'
 #' @export
 
-Z_BevertonHolt <- function(param, catch_column = NA){
+Z_BevertonHolt <- function(param, catch_column = NA, Lprime_tprime){
   res <- param
   catch <- res$catch
 
@@ -69,28 +71,31 @@ Z_BevertonHolt <- function(param, catch_column = NA){
     K <- res$K
 
     # Error message if catch and age do not have same length
-    if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
-      if(length(classes) != length(catch[,1])) stop("Ages and catch do not have the same length!")
-    }else if(class(catch) == 'numeric'){
+    if(class(catch) == 'numeric'){
       if(length(classes) != length(catch)) stop("Ages and catch do not have the same length!")
     }
+
+    # calculate L prime
+    #Lprime <- classes.num[1] -
+    #  ((classes.num[2] - classes.num[1]) / 2)
+    interval <- (classes.num[2] - classes.num[1]) / 2
+    Lprime_tprime <- Lprime_tprime - interval
+
 
     # calculate  C * (L1 + L2) / 2
     c_midlength <- catch * classes.num
 
     # calculate L mean
-    Lmean <- sum(c_midlength) / sum(catch)
+    c_midlength_for_Lmean <- c_midlength[Lprime_tprime:length(c_midlength)]
+    catch_for_Lmean <- catch[Lprime_tprime:length(catch)]
+    Lmean <- sum(c_midlength_for_Lmean) / sum(catch_for_Lmean)
 
-    # calculate L prime
-    Lprime <- classes.num[1] -
-      ((classes.num[2] - classes.num[1]) / 2 )
-
-    Z = K * (Linf - Lmean) / (Lmean - Lprime)
+    Z = K * (Linf - Lmean) / (Lmean - Lprime_tprime)
 
     #save all in list
     ret <- c(res,list(
       Lmean = Lmean,
-      Lprime = Lprime,
+      Lprime = Lprime_tprime,
       Z = Z
     ))
     return(ret)
@@ -106,24 +111,25 @@ Z_BevertonHolt <- function(param, catch_column = NA){
     classes.num <- as.numeric(classes.num[,1])
 
     # Error message if catch and age do not have same length
-    if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
-      if(length(classes) != length(catch[,1])) stop("Ages and catch do not have the same length!")
-    }else if(class(catch) == 'numeric'){
+    if(class(catch) == 'numeric'){
       if(length(classes) != length(catch)) stop("Ages and catch do not have the same length!")
     }
 
-    sample.size <- sum(catch,na.rm=T)
-    sum.age.number <- sum((catch * classes.num), na.rm=T)
-    tmean <- sum.age.number/sample.size
     interval <- (classes.num[2] - classes.num[1]) / 2
-    tprime <- classes.num[1] - interval
+    Lprime_tprime <- Lprime_tprime - interval
+    #tprime <- classes.num[1] - interval
+    catch_for_tprime <- catch[Lprime_tprime:length(catch)]
+    classes.num_for_tprime <- classes.num[Lprime_tprime:length(classes.num)]
+    sample.size <- sum(catch_for_tprime,na.rm=T)
+    sum.age.number <- sum((catch_for_tprime * classes.num_for_tprime), na.rm=T)
+    tmean <- sum.age.number/sample.size
 
-    Z.BH <- 1 / (tmean - tprime)
+    Z.BH <- 1 / (tmean - Lprime_tprime)
 
     #save all in list
     ret <- c(res,list(
       tmean = tmean,
-      tprime = tprime,
+      tprime = Lprime_tprime,
       Z = Z.BH
     ))
     return(ret)

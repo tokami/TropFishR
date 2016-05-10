@@ -4,7 +4,7 @@
 \alias{Z_BevertonHolt}
 \title{Beverton & Holt's Z-Equations}
 \usage{
-Z_BevertonHolt(param, catch_column = NA)
+Z_BevertonHolt(param, catch_column = NA, Lprime_tprime)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -19,6 +19,9 @@ Z_BevertonHolt(param, catch_column = NA)
 
 \item{catch_column}{optional; in case catch is a matrix or data.frame, a number
 indicating which column of the matrix should be analysed (Default: \code{NA}).}
+
+\item{Lprime_tprime}{length or age prime, above which all fish are under full exploitation as
+mid length or age class.}
 }
 \value{
 A list with the input parameters and following objects:
@@ -40,11 +43,11 @@ The first length group or age class within the list object \code{midLengths} or
 \examples{
 # based on length-frequency data
 data(synLFQ2)
-Z_BevertonHolt(synLFQ2, catch_column = 2)
+Z_BevertonHolt(synLFQ2, catch_column = 2, Lprime_tprime = 47.5)
 
 # based on age composition data
 data(synCAA1)
-Z_BevertonHolt(synCAA1, catch_column = 3)
+Z_BevertonHolt(synCAA1, catch_column = 3, Lprime_tprime = 2.5)
 
 }
 \references{
