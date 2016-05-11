@@ -4,7 +4,7 @@
 \alias{select}
 \title{Selectivity model}
 \usage{
-select(param, plot = TRUE)
+select(param, plot = FALSE)
 }
 \arguments{
 \item{param}{a list with following parameters:

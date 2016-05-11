@@ -63,7 +63,7 @@
 #'
 #' @export
 
-select <- function(param, plot = TRUE){
+select <- function(param, plot = FALSE){
   res <- param
   classes <- as.character(res$midLengths)
 
@@ -127,11 +127,13 @@ select <- function(param, plot = TRUE){
     # calculate fraction retained (SL obs)
     SLobs <- numCodend/(numCodend + numCover)
 
+
+
     # ln( 1 / SL - 1)
     lnSL <- log(1/SLobs - 1)
 
     #excluding point where no (0) or full (1) retention was obtained and all values beyond those points, even if they are between 0 and 1
-    lnSL[which(classes.num >= classes.num[which(SLobs == 1)])] <- NA
+    lnSL[which(classes.num >= classes.num[which(SLobs == 1)[1]])] <- NA   ##many ones in data, use first one?
     lnSL[which(lnSL == Inf | lnSL == -Inf)] <- NA
 
     #model
