@@ -187,7 +187,7 @@ output <- predict_mod(param = shrimps, FM_change = seq(0.1,3,0.1),
 
 # create list with selectivity information
 select.list <- list(selecType = 'knife_edge',  #or 'gillnet' or 'trawl_ogive'
-   Lc = 34, tc = 5, selecDist = 'lognormal',    #or 'normal_fixed'
+   L50 = 34, t50 = 5, selecDist = 'lognormal',    #or 'normal_fixed'
    mesh_size = 8.1, mesh_size1 = 9.1, select_p1 = 21.1, select_p2 = 23.8)
 
 # add additional parameters to data list

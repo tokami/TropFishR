@@ -54,9 +54,9 @@ select_ogive <- function(s_list, Lt, Lc = NA){
            if(is.na(Lc)){
              if("L50" %in% names(s_list)){L50 <- s_list$L50
              }else L50 <- s_list$Lc
-           }
+           }else L50 <- Lc
            sel <- rep(0, length(Lt))
-           sel[as.numeric(as.character(Lt)) >= Lc] <- 1
+           sel[as.numeric(as.character(Lt)) >= L50] <- 1
          },
 
          'trawl_ogive' = {
