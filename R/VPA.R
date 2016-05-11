@@ -28,6 +28,7 @@
 #' @param algorithm an Algorithm to use to solve for fishing mortality. The default
 #'   setting \code{"new"} uses \code{\link[stats]{optimize}},
 #'   while \code{"old"} uses the algorithm described by Sparre and Venema (1998).
+#' @param plus_group logical; indicating if the last length group is a plus group
 #' @param plot logical; indicating whether a plot should be printed
 #'
 #' @details The main difference between virtual population analysis (VPA) and cohort
@@ -47,6 +48,8 @@
 #'    classes without catch information are omitted. It is recommended to only
 #'    follow a real cohort if there is enough information for all age classes
 #'    (test with: \code{dim(catch)[1] <= dim(catch)[2]}).
+#'    If \code{plus_group} is TRUE a different calculation for the survivors of the last length group
+#'    is used (for more details please refer to Sparre & Venema (1998)).
 #'
 #' @keywords function VPA mortality F stock biomass cohort
 #'
@@ -109,7 +112,7 @@
 #' @export
 
 VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
-                algorithm = "new", plot = FALSE){
+                algorithm = "new", plus_group = FALSE, plot = FALSE){
 
   res <- param
   catch <- res$catch
@@ -161,9 +164,10 @@ VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
 
     # survivors last size class
     lastLengthClass <- max(which(!is.na(catch_cor)),na.rm=TRUE)  ###
-    survivors[lastLengthClass] <-
+    if(!plus_group) survivors[lastLengthClass] <-
       catch_cor[lastLengthClass] / ((terminalF/(terminalF + M)) * (1 - exp(-(terminalF + M))))
-
+    if(plus_group) survivors[lastLengthClass] <-
+      catch_cor[lastLengthClass] / (terminalF/(terminalF + M))
 
     #   Age-based Cohort Analysis (Pope's cohort analysis)
     if(analysis_type == "CA"){
