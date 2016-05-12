@@ -62,7 +62,7 @@ plot.prod_mod <- function(x, display_MSY = TRUE, ...){
   y.S = a.S*x + b.S*x^2
   y.F = x * exp(a.F + b.F*x)
   plot(x,rep(max(Y),length(x)),type='n',
-       ylim=c(0,max(Y)), xlab = "", ylab = "Yield")
+       ylim=c(0,max(Y)*1.1), xlab = "", ylab = "Yield")
   points(Y ~ f)
   lines(x, y = y.S)
   lines(x, y = y.F,col='blue', lty = 5)
