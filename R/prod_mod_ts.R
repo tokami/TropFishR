@@ -86,7 +86,7 @@ prod_mod_ts <- function(data, method = "Schaefer",
   Y <- res$Y
   if("f" %in% names(res)){
     f <- res$f
-  }else f <- res$CPUE / Y
+  }else f <- Y/res$CPUE
   if("CPUE"  %in% names(res)){
     CPUE <- res$CPUE
   }else CPUE <- Y/f
@@ -209,14 +209,14 @@ prod_mod_ts <- function(data, method = "Schaefer",
   if(method == "Schaefer"){
     MSY <- r * K / 4
     Bmsy <- K / 2
-    Fmsy <- r / 2
-    Emsy <- r / (2 * q) * effort_unit
+    Emsy <- r / 2
+    Fmsy <- r / (2 * q) * effort_unit
   }
   if(method == "Fox"){
     MSY <- (K * r) / exp(1)
     Bmsy <- K / exp(1)
-    Fmsy <- r / exp(1)
-    Emsy <- r / (exp(1) * q) * effort_unit
+    Emsy <- r / exp(1)
+    Fmsy <- r / (exp(1) * q) * effort_unit
   }
 
 
