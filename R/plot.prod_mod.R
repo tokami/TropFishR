@@ -50,15 +50,15 @@ plot.prod_mod <- function(x, display_MSY = TRUE, ...){
   layout(matrix(c(1,2), nrow = 2, byrow=TRUE), heights=c(4,4))
 
   # CPUE plot
-  x = seq(min(f),max(f),1)
-  y = exp(a.F + b.F*x)
+  x <- seq(from = min(f),to = max(f),length.out = 500)
+  y <- exp(a.F + b.F*x)
   plot(CPUE.S ~ f, xlab='', ylab='CPUE')
   lines(x = x, y = (a.S + x * b.S))
   #abline(a = a.S, b=b.S)
   lines(x = x, y = y, col = 'blue', lty = 5)
 
   # biomass plot
-  x = seq(0,abs(a.S / b.S),1)
+  x = seq(0,abs(a.S / b.S),length.out = 500)
   y.S = a.S*x + b.S*x^2
   y.F = x * exp(a.F + b.F*x)
   plot(x,rep(max(Y),length(x)),type='n',

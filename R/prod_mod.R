@@ -80,13 +80,13 @@ prod_mod <- function(data, plot = FALSE){
   Y <- res$Y
   if("f" %in% names(res)){
     f <- res$f
-  }else f <- res$CPUE / Y
+  }else f <- Y/res$CPUE
   if("CPUE"  %in% names(res)){
     CPUE <- res$CPUE
   }else CPUE <- Y/f
 
-  mean.f <- mean(f,na.rm=T)
-  sd.f <- sd(f,na.rm=T)
+  mean.f <- mean(f,na.rm=TRUE)
+  sd.f <- sd(f,na.rm=TRUE)
 
   # first: Schaefer, second: Fox
   CPUEs <- list(CPUE, log(CPUE))
@@ -98,8 +98,8 @@ prod_mod <- function(data, plot = FALSE){
 
   for(i in 1:2){
     CPUEi <- CPUEs[[i]]
-    mean.CPUEi <- mean(CPUEi,na.rm=T)
-    sd.CPUEi <- sd(CPUEi,na.rm=T)
+    mean.CPUEi <- mean(CPUEi,na.rm=TRUE)
+    sd.CPUEi <- sd(CPUEi,na.rm=TRUE)
     mod.sum <- summary(lm(CPUEi ~ f))
     a <- mod.sum$coefficients[1]
     b <- mod.sum$coefficients[2]
