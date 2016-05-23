@@ -36,6 +36,7 @@
 #' # Gillnet
 #' data(gillnet)
 #'
+#' select_Millar(gillnet, x0 = c(2,0.2), rtype = "lognorm")
 #' output <- select_Millar(gillnet, x0 = c(60,4), rtype = "norm.loc")
 #'
 #' plot(output,plotlens=seq(40,90,0.1))
@@ -56,7 +57,13 @@
 #' @source https://www.stat.auckland.ac.nz/~millar/selectware/
 #'
 #' @details Model adapted from the selectivity functions provided by Prof. Dr. Russell Millar
-#'   (https://www.stat.auckland.ac.nz/~millar/).
+#'   (https://www.stat.auckland.ac.nz/~millar/). In the deviance plot open circles correspond to negative,
+#'   closed to positive residuals. The size of the circles is proportional to the square of the residuals.
+#'   To assess the model fit by the deviance plot it requires some experience, in general the pattern should
+#'   be random and the sizes not too big. Please refer to Millar's publications and other publications for
+#'   comparison. The model can produce errors if the starting values (\code{x0}) for the \link{optim}
+#'   function are not realistic. Please be aware that if the method is changed the outcoming parameters
+#'   can greatly vary. Simliarly the starting values have to be adapted when changing the method (\code{rtype}).
 #'
 #'
 #' @references

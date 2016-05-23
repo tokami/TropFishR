@@ -10,7 +10,8 @@ Description: This package includes fisheries models based on the the FAO
 	S.C. Venema. It focuses on the assessment of length-frequency data of 
 	data poor fisheries.
 Imports: 
-    msm
+    msm,
+    lubridate
 License: MIT + file LICENSE
 LazyData: TRUE
 URL: https://github.com/tokami/TropFishR
