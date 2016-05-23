@@ -36,7 +36,7 @@
 #' # Gillnet
 #' data(gillnet)
 #'
-#' select_Millar(gillnet, x0 = c(2,0.2), rtype = "lognorm")
+#' select_Millar(gillnet, x0 = c(10,3), rtype = "lognorm")
 #' output <- select_Millar(gillnet, x0 = c(60,4), rtype = "norm.loc")
 #'
 #' plot(output,plotlens=seq(40,90,0.1))
@@ -128,6 +128,7 @@ select_Millar <- function(param,
 
   # Estimates
   x <- res3$par
+  if(det(res3$hess) == 0) stop("It is impossible to invert the matrix. Please change starting parameters (x0) or the method (rtype) and try again.")
   varx <- solve(res3$hess)
   names <- c("Mode(mesh1)","Std dev.(mesh1)")
   switch(res3$rtype,

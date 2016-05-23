@@ -61,7 +61,7 @@ legend(32,0.5,c("Control","Experimental"),lty=1:2,col=1:2,cex=0.8,bg="white")
 # Gillnet
 data(gillnet)
 
-select_Millar(gillnet, x0 = c(2,0.2), rtype = "lognorm")
+select_Millar(gillnet, x0 = c(10,3), rtype = "lognorm")
 output <- select_Millar(gillnet, x0 = c(60,4), rtype = "norm.loc")
 
 plot(output,plotlens=seq(40,90,0.1))
