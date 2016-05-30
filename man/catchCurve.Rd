@@ -35,11 +35,13 @@ A list with the input parameters and following list objects:
      \strong{ln_Linf_L}: age, relative age or subsitute depending on input and method,
   \item \strong{lnC} or \strong{lnC_dt}: logarithm of (rearranged) catches,
   \item \strong{reg_int}: the interval used for the regression analysis,
+  \item \strong{linear_mod}: linear model used for the regression analysis,
   \item \strong{Z}: instantaneous total mortality rate,
   \item \strong{se}: standard error of the total mortality;}
 in case calc_ogive == TRUE, additionally:
 \itemize{
   \item \strong{intercept}: intercept of regression analysis,
+  \item \strong{linear_mod_sel}: linear model used for the selectivity analysis,
   \item \strong{Sobs}: observed selection ogive,
   \item \strong{ln_1_S_1}: dependent variable of regression analysis for
   selectivity parameters,
@@ -88,7 +90,8 @@ This function includes a so called 'locator' function, which asks you to
 # Variable paramter system (with catch vector)
 # based on length frequency data
 data(goatfish)
-catchCurve(goatfish)
+output <- catchCurve(goatfish)
+summary(output$linear_mod)
 
 # based on age composition data
 data(whiting)
@@ -111,7 +114,8 @@ catchCurve(synCAA2, cumulative = TRUE)
 #_______________________________________________
 # Catch Curve with estimation of selection ogive
 data(synLFQ3)
-catchCurve(synLFQ3, calc_ogive = TRUE)
+output <- catchCurve(synLFQ3, calc_ogive = TRUE)
+summary(output$linear_mod_sel)
  }
 
 }

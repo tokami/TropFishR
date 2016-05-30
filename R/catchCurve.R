@@ -31,7 +31,8 @@
 #' # Variable paramter system (with catch vector)
 #' # based on length frequency data
 #' data(goatfish)
-#' catchCurve(goatfish)
+#' output <- catchCurve(goatfish)
+#' summary(output$linear_mod)
 #'
 #' # based on age composition data
 #' data(whiting)
@@ -54,7 +55,8 @@
 #' #_______________________________________________
 #' # Catch Curve with estimation of selection ogive
 #' data(synLFQ3)
-#' catchCurve(synLFQ3, calc_ogive = TRUE)
+#' output <- catchCurve(synLFQ3, calc_ogive = TRUE)
+#' summary(output$linear_mod_sel)
 #'  }
 #'
 #' @details This function includes a so called 'locator' function, which asks you to
@@ -85,11 +87,13 @@
 #'      \strong{ln_Linf_L}: age, relative age or subsitute depending on input and method,
 #'   \item \strong{lnC} or \strong{lnC_dt}: logarithm of (rearranged) catches,
 #'   \item \strong{reg_int}: the interval used for the regression analysis,
+#'   \item \strong{linear_mod}: linear model used for the regression analysis,
 #'   \item \strong{Z}: instantaneous total mortality rate,
 #'   \item \strong{se}: standard error of the total mortality;}
 #' in case calc_ogive == TRUE, additionally:
 #' \itemize{
 #'   \item \strong{intercept}: intercept of regression analysis,
+#'   \item \strong{linear_mod_sel}: linear model used for the selectivity analysis,
 #'   \item \strong{Sobs}: observed selection ogive,
 #'   \item \strong{ln_1_S_1}: dependent variable of regression analysis for
 #'   selectivity parameters,
@@ -356,7 +360,7 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
     xvar = xvar,
     yvar = yvar,
     reg_int = cutter,
-    mod_summary = sum_lm1,
+    linear_mod = lm1,
     Z =  Z_lm1,
     se = SE_Z_lm1
   ))
@@ -383,7 +387,8 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
     ln_1_S_1 <- log((1/Sobs) - 1)
 
     #regression analysis to caluclate T1 and T2
-    sum_lm_ogive <- summary(lm(ln_1_S_1 ~ t_ogive, na.action = na.omit))
+    mod_ogive <- lm(ln_1_S_1 ~ t_ogive, na.action = na.omit)
+    sum_lm_ogive <- summary(mod_ogive)
     T1 <- sum_lm_ogive$coefficients[1]
     T2 <- abs(sum_lm_ogive$coefficients[2])
 
@@ -401,7 +406,7 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
 
     ret2 <- c(ret,list(
       intercept = intercept_lm1,
-      sel_mod_summary = sum_lm_ogive,
+      linear_mod_sel = mod_ogive,
       Sobs = Sobs,
       ln_1_S_1 = ln_1_S_1,
       Sest = Sest,
