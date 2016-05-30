@@ -356,6 +356,7 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
     xvar = xvar,
     yvar = yvar,
     reg_int = cutter,
+    mod_summary = sum_lm1,
     Z =  Z_lm1,
     se = SE_Z_lm1
   ))
@@ -400,6 +401,7 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
 
     ret2 <- c(ret,list(
       intercept = intercept_lm1,
+      sel_mod_summary = sum_lm_ogive,
       Sobs = Sobs,
       ln_1_S_1 = ln_1_S_1,
       Sest = Sest,

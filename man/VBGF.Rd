@@ -4,11 +4,13 @@
 \alias{VBGF}
 \title{Von Bertalanffy Growth function (VBGF)}
 \usage{
-VBGF(t, Linf = NA, Winf = NA, K, t0 = 0, b = 3, D = 1, L0 = NA,
-  ts = 0, C = 0)
+VBGF(t = NA, L = NA, Linf = NA, Winf = NA, K, t0 = 0, b = 3,
+  D = 1, L0 = NA, ts = 0, C = 0)
 }
 \arguments{
-\item{t}{age}
+\item{t}{ages for which to calculate corresponding lengths, or}
+
+\item{L}{lengths for which to calculate corresponding ages}
 
 \item{Linf}{infinite length for investigated species in cm, or}
 
@@ -16,24 +18,24 @@ VBGF(t, Linf = NA, Winf = NA, K, t0 = 0, b = 3, D = 1, L0 = NA,
 
 \item{K}{growth coefficent for investigated species per year}
 
-\item{t0}{theoretical time zero, at which individuals of this species hatch}
+\item{t0}{theoretical time zero, at which individuals of this species hatch (default: 0)}
 
-\item{b}{exponent of weight length relationship}
+\item{b}{exponent of weight length relationship (default: 3)}
 
-\item{D}{surface factor}
+\item{D}{surface factor (default: 1)}
 
 \item{L0}{length at hatching for VBGF with L0}
 
 \item{ts}{onset of the first oscillation relative to t0}
 
-\item{C}{intensity of (sinusoid) growth oscillations}
+\item{C}{intensity of (sinusoid) growth oscillations. Default is no oscillation (C = 0).}
 }
 \value{
 A vector with estimated lengths corresponding to provided ages.
 }
 \description{
 This function applies the von Bertalanffy growth function (VBGF).
-   It allows to calculate ages from lengths based on the special,
+   It allows to calculate ages from lengths or lengths from ages based on the special,
    generalised or seasonalised VBGF.
 }
 \details{
@@ -41,6 +43,7 @@ Based upon which input parameters are given one of the following
 VBGF types is applied: "special", "generalised", or "seasonalised" VBGF.
 }
 \examples{
+# calculation of lengths
 # with t0
 t <- seq(0,6,0.1)
 Lt <- VBGF(Linf=80, K=0.6, t=t, t0=-0.1)
@@ -51,10 +54,22 @@ t <- seq(0,6,0.1)
 Lt <- VBGF(Linf=80, K=0.6, t=t, L0=2)
 plot(t, Lt, t="l")
 
-#seasonalised
+# with Winf
+t <- seq(0,6,0.1)
+Wt <- VBGF(Winf=4000, K=0.8, t=t)
+plot(t, Wt, t="l")
+
+# seasonalised VBGF
 t <- seq(0,6,0.1)
 Lt <- VBGF(Linf=80, K=0.6, t=t, t0=-0.1, ts=0.5, C=0.75)
 plot(t, Lt, t="l")
+
+
+# calculation of ages
+L <- seq(2,200,0.1)
+t <- VBGF(L = L, Linf=210, K=0.8, C= 0.75)
+plot(t, L, t="l")
+
 
 }
 \references{
