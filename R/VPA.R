@@ -58,11 +58,11 @@
 #' # Virtual Popuation Analysis with age-composition data
 #' data(whiting)
 #' output <- VPA(param = whiting, terminalF = 0.5, analysis_type = "VPA")
-#'
+#' plot(output)
 #'#_______________________________________________
 #' # Pope's Cohort Analysis with age-composition data
 #' data(whiting)
-#' VPA(whiting, terminalF = 0.5, analysis_type = "CA")
+#' VPA(whiting, terminalF = 0.5, analysis_type = "CA", plot= TRUE)
 #'
 #'#_______________________________________________
 #' # Jones's Cohort Analysis with length-composition data
@@ -128,7 +128,7 @@ VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
     # Error message if catch and age do not have same length
     if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
       #if(length(classes) != length(catch[,1])) stop("Age/length classes and catch do not have the same length!")
-      if(length(classes) != length(diag(as.matrix(catch)))) writeLines("Age/length classes and the real cohort in the catch matrix \ndo not have the same length. The missing age/length \nclasses will be omitted.")
+      if(length(classes) != length(diag(as.matrix(catch)))) writeLines("Warning: Age/length classes and the real cohort in the catch matrix \ndo not have the same length. The missing age/length \nclasses will be omitted.")
       }else if(class(catch) == 'numeric'){
       if(length(classes) != length(catch)) stop("Age/length classes and catch do not have the same length!")
     }

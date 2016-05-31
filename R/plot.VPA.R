@@ -52,11 +52,12 @@ plot.VPA <- function(x, display_last_class = TRUE, ...){
          y.intersp = 1.2, box.lty=0, cex=0.8, xjust = -0.3, yjust = 0.7)
   par(new = TRUE, mar=c(7, 5, 4, 5) + 0.3)
   plot(mids, FM_calc, col='red',xlim=c(0,ceiling(max(mids))),
+       ylim=c(0,ceiling(max(max_FM))),
        type = "n",axes = FALSE, bty = "n", xlab = "", ylab = "", ann=TRUE)
   lines(x=mids,y=FM_calc,col='red',lwd=2)
   usr <- par("usr")
   par(usr=c(usr[1:2], 0, max_FM), mar=c(7, 5, 4, 5) + 0.3)
-  axis(4, at = pretty(c(0,max_FM)))
-  mtext("Fishing mortatlity", side=4, line=3)
+  axis(4, at = pretty(c(0,max_FM)),line = 1)
+  mtext("Fishing mortatlity", side=4, line=3.5)
 }
 
