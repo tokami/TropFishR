@@ -17,7 +17,8 @@
 #' @examples
 #' # Gillnet selectivity
 #' data(tilapia)
-#' select(param = tilapia)
+#' out <- select(param = tilapia)
+#' plot(out)
 #'
 #' # Trawl selectivity
 #' data(bream)
@@ -28,6 +29,8 @@
 #'   \item \strong{classes.num}: numeric vector with length classes without a plus group,
 #'   \item \strong{SNet1}: selection ogive net 1,
 #'   \item \strong{SNet2}: selection ogive net 2,
+#'   \item \strong{lnNet2_Net1}: logarithm ratio between nets,
+#'   \item \strong{linear_mod}: linear model,
 #'   \item \strong{LmNet1}: optimum length net 1,
 #'   \item \strong{LmNet2}: optimum length net 2,
 #'   \item \strong{SF}: selection factor,
@@ -38,6 +41,8 @@
 #'   \item \strong{classes.num}: numeric vector with length classes,
 #'   \item \strong{SLobs}: observed selection ogive,
 #'   \item \strong{SLest}: estimated selection ogive,
+#'   \item \strong{lnSL}: logarithm of observed selection,
+#'   \item \strong{linear_mod}: linear model,
 #'   \item \strong{S1}: constant of selection curve,
 #'   \item \strong{S2}: another constant of selection curve,
 #'   \item \strong{L25}: length at which 25% of the fish are retained in the codend,
@@ -65,6 +70,7 @@
 
 select <- function(param, plot = FALSE){
   res <- param
+  if(is.null(res$midLengths)) stop("The method requires midpoints of length classes (midLengths).")
   classes <- as.character(res$midLengths)
 
   # create column without plus group (sign) if present
@@ -111,7 +117,7 @@ select <- function(param, plot = FALSE){
                  SNet1=SNet1,
                  SNet2=SNet2,
                  lnNet2_Net1 = lnNet2_Net1,
-                 reg.coeffs = sum.mod$coefficients,
+                 linear_mod = mod,
                  LmNet1 = LmNet1,  #Lm optimum length
                  LmNet2 = LmNet2,
                  SF = SF,
@@ -126,8 +132,6 @@ select <- function(param, plot = FALSE){
 
     # calculate fraction retained (SL obs)
     SLobs <- numCodend/(numCodend + numCover)
-
-
 
     # ln( 1 / SL - 1)
     lnSL <- log(1/SLobs - 1)
@@ -157,7 +161,7 @@ select <- function(param, plot = FALSE){
                  SLobs = SLobs,
                  SLest = SLest,
                  lnSL = lnSL,
-                 reg.coeffs = sum.mod$coefficients,
+                 linear_mod = mod,
                  S1 = S1,
                  S2 = S2,
                  L25 = L25,

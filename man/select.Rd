@@ -25,6 +25,8 @@ A list with the input parameters and following list objects for type = "gillnet"
   \item \strong{classes.num}: numeric vector with length classes without a plus group,
   \item \strong{SNet1}: selection ogive net 1,
   \item \strong{SNet2}: selection ogive net 2,
+  \item \strong{lnNet2_Net1}: logarithm ratio between nets,
+  \item \strong{linear_mod}: linear model,
   \item \strong{LmNet1}: optimum length net 1,
   \item \strong{LmNet2}: optimum length net 2,
   \item \strong{SF}: selection factor,
@@ -35,6 +37,8 @@ and following objects for type = "trawl_net":
   \item \strong{classes.num}: numeric vector with length classes,
   \item \strong{SLobs}: observed selection ogive,
   \item \strong{SLest}: estimated selection ogive,
+  \item \strong{lnSL}: logarithm of observed selection,
+  \item \strong{linear_mod}: linear model,
   \item \strong{S1}: constant of selection curve,
   \item \strong{S2}: another constant of selection curve,
   \item \strong{L25}: length at which 25% of the fish are retained in the codend,
@@ -62,7 +66,8 @@ This function estimates the fractions retained by each net, the
 \examples{
 # Gillnet selectivity
 data(tilapia)
-select(param = tilapia)
+out <- select(param = tilapia)
+plot(out)
 
 # Trawl selectivity
 data(bream)

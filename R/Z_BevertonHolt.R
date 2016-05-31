@@ -88,9 +88,9 @@ Z_BevertonHolt <- function(param, catch_column = NA, Lprime_tprime){
     # calculate L mean
     c_midlength_for_Lmean <- c_midlength[Lprime_tprime:length(c_midlength)]
     catch_for_Lmean <- catch[Lprime_tprime:length(catch)]
-    Lmean <- sum(c_midlength_for_Lmean) / sum(catch_for_Lmean)
+    Lmean <- sum(c_midlength_for_Lmean, na.rm = TRUE) / sum(catch_for_Lmean, na.rm = TRUE)
 
-    Z = K * (Linf - Lmean) / (Lmean - Lprime_tprime)
+    Z <- K * (Linf - Lmean) / (Lmean - Lprime_tprime)
 
     #save all in list
     ret <- c(res,list(
@@ -120,8 +120,8 @@ Z_BevertonHolt <- function(param, catch_column = NA, Lprime_tprime){
     #tprime <- classes.num[1] - interval
     catch_for_tprime <- catch[Lprime_tprime:length(catch)]
     classes.num_for_tprime <- classes.num[Lprime_tprime:length(classes.num)]
-    sample.size <- sum(catch_for_tprime,na.rm=T)
-    sum.age.number <- sum((catch_for_tprime * classes.num_for_tprime), na.rm=T)
+    sample.size <- sum(catch_for_tprime,na.rm=TRUE)
+    sum.age.number <- sum((catch_for_tprime * classes.num_for_tprime), na.rm=TRUE)
     tmean <- sum.age.number/sample.size
 
     Z.BH <- 1 / (tmean - Lprime_tprime)
