@@ -51,6 +51,12 @@ This method includes the \code{\link{identify}} function, which allows to
      Sparre and Venema (1998).
 }
 \examples{
+# The following example requires to choose certain values for the regression analyses:
+# first cohort:   point  2 to  8
+# second cohort:  point 12 to 17
+# third cohort:   point 19 to 23
+# fourth cohort:  point 26 to 30
+
 \donttest{
  data(synLFQ1)
  Bhattacharya(param = synLFQ1)

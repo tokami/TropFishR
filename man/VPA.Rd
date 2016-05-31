@@ -91,11 +91,11 @@ The main difference between virtual population analysis (VPA) and cohort
 # Virtual Popuation Analysis with age-composition data
 data(whiting)
 output <- VPA(param = whiting, terminalF = 0.5, analysis_type = "VPA")
-
+plot(output)
 #_______________________________________________
 # Pope's Cohort Analysis with age-composition data
 data(whiting)
-VPA(whiting, terminalF = 0.5, analysis_type = "CA")
+VPA(whiting, terminalF = 0.5, analysis_type = "CA", plot= TRUE)
 
 #_______________________________________________
 # Jones's Cohort Analysis with length-composition data

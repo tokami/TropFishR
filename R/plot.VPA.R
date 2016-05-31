@@ -51,8 +51,8 @@ plot.VPA <- function(x, display_last_class = TRUE, ...){
          pt.cex = 2, x.intersp = c(0.7,0.7,0.7,0.7), merge=TRUE,
          y.intersp = 1.2, box.lty=0, cex=0.8, xjust = -0.3, yjust = 0.7)
   par(new = TRUE, mar=c(7, 5, 4, 5) + 0.3)
-  plot(mids, FM_calc, col='red',xlim=c(0,ceiling(max(mids))),
-       ylim=c(0,ceiling(max(max_FM))),
+  plot(mids, FM_calc, col='red',xlim=c(0,ceiling(max(mids, na.rm = TRUE))),
+       ylim=c(0,max_FM),
        type = "n",axes = FALSE, bty = "n", xlab = "", ylab = "", ann=TRUE)
   lines(x=mids,y=FM_calc,col='red',lwd=2)
   usr <- par("usr")

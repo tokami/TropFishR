@@ -71,6 +71,7 @@ data(emperor)
 prod_mod_ts(emperor, method = "Schaefer")
 prod_mod_ts(emperor, method = "Fox")
 
+
 }
 \references{
 Dharmendra, D., Solmundsson, J., 2005. Stock assessment of the offshore Mauritian banks

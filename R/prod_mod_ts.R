@@ -29,6 +29,7 @@
 #' prod_mod_ts(emperor, method = "Schaefer")
 #' prod_mod_ts(emperor, method = "Fox")
 #'
+#'
 #' @return A list with the input parameters and following list objects:
 #' \itemize{
 #'   \item \strong{Bvec}: biomass vector,
@@ -209,14 +210,14 @@ prod_mod_ts <- function(data, method = "Schaefer",
   if(method == "Schaefer"){
     MSY <- r * K / 4
     Bmsy <- K / 2
-    Emsy <- r / 2
-    Fmsy <- r / (2 * q) * effort_unit
+    Fmsy <- r / 2
+    Emsy <- r / (2 * q) * effort_unit
   }
   if(method == "Fox"){
     MSY <- (K * r) / exp(1)
     Bmsy <- K / exp(1)
-    Emsy <- r / exp(1)
-    Fmsy <- r / (exp(1) * q) * effort_unit
+    Fmsy <- r / exp(1)
+    Emsy <- r / (exp(1) * q) * effort_unit
   }
 
 
