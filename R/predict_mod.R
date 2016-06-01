@@ -25,7 +25,8 @@
 #'   \item \strong{meanWeight}: vector with mean weight per length group or age class,
 #'   \item \strong{meanValue}: vector with mean value per length group or age class,
 #' }
-#' @param FM_change vector with ascending fishing mortalities
+#' @param FM_change vector with ascending fishing mortalities, or
+#' @param E_change vector with ascending exploitation rates
 #' @param Lc_tc_change vector with ascending lengths or ages at first capture (Lc/tc)
 #' @param type indicating which model should be applied: \code{"ypr"} for Beverton
 #'    and Holt's yield per recruit model and \code{"ThompBell"} for the Thompson and Bell model
@@ -60,22 +61,33 @@
 #' # Leiognathus spendens (Pauly, 1980)
 #' ponyfish <- list(Winf = 64, K = 1, t0 = -0.2, M = 1.8, tr = 0.2)
 #'
-#' predict_mod(ponyfish, Lc_tc_change = c(0.2,0.3,1.0), type = 'ypr')
+#' predict_mod(ponyfish, Lc_tc_change = c(0.2,0.3,1.0), type = 'ypr', plot=TRUE)
 #'
 #' #______________________________________
 #' # length structured data
 #' # Xiphias gladius (Berkeley and Houde, 1980)
 #' swordfish <- list(Linf = 309, K = 0.0949, M = 0.18,
-#'                   a=0.0003, b=3, Lr = 90, growthFun = "growth_VB")  ## T_Lr , a, b ??? assumed
+#'                   a = 0.0003, b = 3, Lr = 90)
 #'
-#' select.list <- list(selecType = 'trawl_ogive', L50 = 120, L75 = 132) ###Lc = 100)
+#' select.list <- list(selecType = 'trawl_ogive', L50 = 120, L75 = 132)
 #' #swordfish$midLengths <- seq(60,300,5)
 #'
 #' output <- predict_mod(param = swordfish, Lc_tc_change = c(100,118,150,180),
 #'             s_list = select.list, type = 'ypr', Lmin = 90, Lincr = 8)
+#' plot(output)
 #'
-#' ####test: E <- seq(0,0.9,0.1) FM <- E * M / (1 - E)
+#' data(hake)
+#' select.list <- list(selecType = 'trawl_ogive', L50 = 20, L75 = 24)
+#' output <- predict_mod(param = hake, FM_change = seq(0,3,0.01),
+#'                       Lc_tc_change = seq(5,80,1), s_list = select.list,
+#'                       type = 'ypr', plot = FALSE)
+#' plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "Y_R.rel", identify = FALSE)
 #'
+#' select.list <- list(selecType = 'knife_edge', L50 = 20, L75 = 24)
+#' output <- predict_mod(param = hake, FM_change = seq(0,3,0.01),
+#'                       Lc_tc_change = seq(5,80,1), s_list = select.list,
+#'                       type = 'ypr', plot = FALSE)
+#' plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "B_R.rel")
 #'
 #' #______________________________________
 #' #      Thompson and Bell model
@@ -84,19 +96,21 @@
 #' data(shrimps)
 #'
 #' output <- predict_mod(param = shrimps, FM_change = seq(0.1,3,0.1),
-#'      type = "ThompBell", age_unit = "month")
+#'      type = "ThompBell", age_unit = "month", plot = TRUE)
+#'
 #'
 #' # create list with selectivity information
-#' select.list <- list(selecType = 'knife_edge',  #or 'gillnet' or 'trawl_ogive'
-#'    L50 = 34, t50 = 5, selecDist = 'lognormal',    #or 'normal_fixed'
-#'    mesh_size = 8.1, mesh_size1 = 9.1, select_p1 = 21.1, select_p2 = 23.8)
+#' select.list <- list(selecType = 'trawl_ogive',
+#'    L50 = 34, L75 = 36)
 #'
 #' # add additional parameters to data list
 #' shrimps <- c(shrimps,  list(Linf = 50, K = 0.3, t0 = 0.01))
 #'
-#' output <- predict_mod(shrimps, FM_change = seq(0,3,0.2),
-#'    Lc_tc_change = seq(24,44,2),
-#'    type = 'ThompBell', s_list = select.list, age_unit = 'month')
+#' output <- predict_mod(param = shrimps, E_change = seq(0,1,0.01),
+#'    Lc_tc_change = seq(10,44,2),
+#'    type = 'ThompBell', s_list = select.list,  age_unit = 'month')
+#' plot(output, xaxis = "E")
+#'
 #' #______________________________________
 #' # with length structured data
 #' data(hake)
@@ -240,10 +254,10 @@
 #'
 #' @export
 
-predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_list = NA,
+predict_mod <- function(param, FM_change = NA, E_change = NA, Lc_tc_change = NULL, type,  s_list = NA,
                         stock_size_1 = NA, age_unit = 'year', curr.E = NA,
                         curr.Lc_tc = NA,
-                        plus_group = NA, Lmin = NA, Lincr = NA, plot = TRUE){
+                        plus_group = NA, Lmin = NA, Lincr = NA, plot = FALSE){
   res <- param
 
   # Beverton and Holt's ypr
@@ -254,10 +268,17 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
     a <- ifelse(!is.null(res$a),res$a,NA)
     b <- ifelse(!is.null(res$b),res$b,NA)
 
-    if(length(FM_change) == 1 & is.na(FM_change[1])){
+    if(length(FM_change) == 1 & is.na(FM_change[1]) & length(E_change) == 1 & is.na(E_change[1])){
       FM_change <- seq(0,10,0.1)
-      print(noquote("No fishing mortality (FM_change) was provided, a default range of 0 to 10 is used."))
+      print(noquote("No fishing mortality (FM_change) or exploitation rate (E_change) was provided, a default range for fishing mortality of 0 to 10 is used."))
     }
+
+    # transfer E_change into F_change if provided
+    if(length(FM_change) == 1 & is.na(FM_change[1]) & length(E_change) != 1 & !is.na(E_change[1])){
+      FM_change <- (E_change * M) / (1 - E_change)
+      FM_change[FM_change == Inf] <- (0.9999 * M) / (1 - 0.9999)
+    }
+
 
 
     # yield and biomass functions
@@ -268,7 +289,7 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
       if(type == "age"){
         S <- exp(-K * (Lci_tci - t0))
         A <- exp(-M * (Lci_tci - tr))
-        }
+      }
       if(type == "length"){
         S <- (1 - (Lci_tci/Linf))
         A <- (((Linf - Lci_tci)/(Linf - Lr)) ^ (M/K))
@@ -319,11 +340,15 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
       }
       Z <- (FM_change + M)
       m <- ((1-(FM_change/Z))/(M/K))    ## == K/Z
-      y <- (1/Z) * ((S)^(M/K)) * (1 - ((3*S)/(1+m)) + ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
+      if(!is.na(Lci_tci)) m_p <- (1/(M/K))
+      if(is.na(Lci_tci)) m_p <- (1/(1-(FM_change/Z)))
+      Ol <- 1-(3*S/(1+m_p))+(3*S^2/(1+(2*m_p)))-(S^3/(1+(3*m_p)))
+      Ox <- (1-(FM_change/Z))*(1-((3*S)/(1+m))+((3*S^2)/(1+(2*m)))-(S^3/(1+(3*m))))
+      if(!is.na(Lci_tci)) y <- Ox/Ol
+      if(is.na(Lci_tci)) y <- (1-(FM_change/Z)) * (Ox/Ol)
       return(y)
     }
     # derivative of yield function
-    # MY FUNCITON REASONABLE RESULTS
     derivative <- function(FM_change, Lci_tci = NA, Lti = NA, type){
       if(type == "age"){
         if(!is.na(Lci_tci)) S <- exp(-K * (Lci_tci - t0)) # knife edge
@@ -342,57 +367,55 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
       des <- (FM_change/Z) * (S^(M/K)) * D + B
       return(des)
     }
-    # GAYANILO FUNCTION NO REASONABLE RESULTS
-    derivative.test <- function(FM_change, Lci, type){
-    Z <- (FM_change + M)
-    S <- (1 - (Lci/Linf))
-    B <- ((1-(FM_change/Z))/(M/K))
-    A <- 2 * S *
-      (1 + (2*B)^-2 - S^2) *
-      (1 + (3*B)^-2 ) *
-      (1 + B^-2)
-    des <- (S^(M/K) * Y_R.rel) + ((3*(FM_change/Z) * S^(1+(M/K))) / (M/K)) * A
-    return(des)
-  }
 
     # with selection ogive
     # i = length classes from Lmin to Lmax
     ypr.rel.sel <- function(FM_change, P, Lt){
+      interval <- (Lt[2] - Lt[1])/ 2
       Z <- FM_change + M
       Y_R.rel.tot.all.classes <- rep(NA,length(FM_change))
       for(FMi in 1:length(FM_change)){
-
         FMx <- FM_change[FMi]
         Zx <- Z[FMi]
         # population levels
         # Calculations per size class
+        lower_classes <- Lt - interval
+        upper_classes <- Lt + interval
 
-        S = (1 - (Lt/Linf))      ###### BIG ASSUMPTION THAT Lc = Lt
+        S1 <- (1 - (lower_classes/Linf))
+        S2 <- (1 - (upper_classes/Linf))
 
         # reduction factor per size group
-        r <- rep(NA, length(Lt))
-        for(x1 in 2:length(Lt)){
-          r[x1] <- (S[x1] ^ ((M/K) *
-                               ((FMx/Zx)/(1-(FMx/Zx)))*P[x1]))  /
-            (S[x1-1] ^ ((M/K) * ((FMx/Zx)/(1-(FMx/Zx)))*P[x1]))
-        }
+        r <- (S2 ^ ((M/K) * ((FMx/Zx)/(1-(FMx/Zx)))*P)) / (S1 ^ ((M/K) * ((FMx/Zx)/(1-(FMx/Zx)))*P))
 
         # G per size group
         G <- rep(NA,length(Lt))
-        for(x2 in 1:length(Lt)){
-          G[x2] <- prod(r[1:x2], na.rm = TRUE)
-        }
         G[1] <- r[1]  # because: rLmin-1 = 1
-        G[length(Lt)] <- 0  # because: rLinf = 0
+        for(x1 in 2:length(r)){
+          G[x1] <- prod(G[x1-1], r[x1], na.rm = TRUE)
+        }
+        # G[length(r)] <- 0  # because: rLinf = 0
 
-        Y_R.rel_CLASS <- ypr.rel(FMx, Lti = Lt, type = "length")
+        Y_R.rel_1 <- ypr.rel(FMx, Lti = lower_classes, type = "length")
+        Y_R.rel_2 <- ypr.rel(FMx, Lti = upper_classes, type = "length")
 
-        Y_R.rel.tot <- rep(NA,length(Lt))
-        for(x3 in 2:(length(Lt)-1)){
-          Y_R.rel.tot[x3] <- (P[x3]*((Y_R.rel_CLASS[x3]*G[x3-1]) - (Y_R.rel_CLASS[x3+1]*G[x3])))
+        b_1 <- rep(NA,length(S1))
+        b_2 <- rep(NA,length(S1))
+        for (x2 in 2:length(S1)){
+          b_1[x2] <- G[x2-1] * Y_R.rel_1[x2]
+          b_2[x2] <- G[x2] * Y_R.rel_2[x2]
         }
 
-        Y_R.rel.tot.all.classes[FMi] <- sum(Y_R.rel.tot, na.rm=TRUE)
+        Y_R.rel_pre <- P * (b_1-b_2)
+
+        cum_Y_R.rel <- rep(0,length(S1))
+        for (x3 in 2:length(S1)){
+          cum_Y_R.rel[x3] <- cum_Y_R.rel[x3-1] + Y_R.rel_pre[x3]
+        }
+
+        nonNA <- which(!is.na(cum_Y_R.rel))
+        Y_R.rel.tot.all.classes[FMi] <- cum_Y_R.rel[length(nonNA)]
+
       }
       return(Y_R.rel.tot.all.classes)
     }
@@ -407,7 +430,7 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         # population levels
         # Calculations per size class
 
-        S = (1 - (Lt/Linf))      ###### BIG ASSUMPTION THAT Lc = Lt
+        S = (1 - (Lt/Linf))
 
         # reduction factor per size group
         r <- rep(NA, length(Lt))
@@ -441,6 +464,78 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         }
 
         B_R.rel.tot.all.classes[FMi] <- sum(B_R.rel.tot, na.rm=TRUE)
+      }
+      return(B_R.rel.tot.all.classes)
+    }
+    bpr.rel.sel2 <- function(FM_change, P, Lt){
+      interval <- (Lt[2] - Lt[1])/ 2
+      Z <- FM_change + M
+      B_R.rel.tot.all.classes <- rep(NA,length(FM_change))
+      for(FMi in 1:length(FM_change)){
+
+        FMx <- FM_change[FMi]
+        Zx <- Z[FMi]
+        # population levels
+        # Calculations per size class
+        lower_classes <- Lt - interval
+        upper_classes <- Lt + interval
+
+        # S1 <- (1 - (lower_classes/Linf))
+        # S2 <- (1 - (upper_classes/Linf))
+
+        # # reduction factor per size group
+        # r <- (S2 ^ ((M/K) * ((FMx/Zx)/(1-(FMx/Zx)))*P)) / (S1 ^ ((M/K) * ((FMx/Zx)/(1-(FMx/Zx)))*P))
+        #
+        # # G per size group
+        # G <- rep(NA,length(Lt))
+        # G[1] <- r[1]  # because: rLmin-1 = 1
+        # for(x1 in 2:length(r)){
+        #   G[x1] <- prod(G[x1-1], r[x1], na.rm = TRUE)
+        # }
+        # # G[length(r)] <- 0  # because: rLinf = 0
+        #
+        # # TWO ALTERNATIVES FOR CALCULATION NOT CLEAR:
+        # # 1. corresponds to Y_R / F
+        # #B_R.rel_CLASS <- bpr.rel(FMx, Lti = Lt, type = "length")
+        # B_R.rel_1 <- bpr.rel(FMx, Lti = lower_classes, type = "length")
+        # B_R.rel_2 <- bpr.rel(FMx, Lti = upper_classes, type = "length")
+        #
+        # b_1 <- rep(NA,length(S1))
+        # b_2 <- rep(NA,length(S1))
+        # for (x2 in 2:length(S1)){
+        #   b_1[x2] <- G[x2-1] * B_R.rel_1[x2]
+        #   b_2[x2] <- G[x2] * B_R.rel_2[x2]
+        # }
+        #
+        # B_R.rel_pre <- P * (b_1-b_2)
+        #
+        # cum_B_R.rel <- rep(0,length(S1))
+        # for (x3 in 2:length(S1)){
+        #   cum_B_R.rel[x3] <- cum_B_R.rel[x3-1] + B_R.rel_pre[x3]
+        # }
+
+        # 2. new approach according to Gayanilo 06
+        #           m = (1-(FMx/Zx))/(M/K)  #  == K/Z
+        #           mx = m / (1 - (FMx/Zx)) # == 1/(M/K)
+        #           A <- (1 - ((3*S)/(1+m)) + ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
+        #           B <- (1 - ((3*S)/(1+mx)) + ((3*S^2)/(1+2*mx)) - ((S^3)/(1+3*mx)))
+        #           B_R.rel_CLASS <- ((1-(FMx/Zx)) * A) / B
+
+        # Sx <- (M/K)*((FMx/Zx)/(1-(FMx/Zx)))*P
+        # rx <- (S2^Sx)/(S1^Sx)
+        #
+        # gx <- rep(NA,length(rx))
+        # gx[1] <- rx[1]
+        # for (x4 in 2:length(rx)) {
+        #   gx[x4] <- gx[x4-1] * rx[x4]
+        # }
+
+
+         B_R.rel.tot <- bpr.rel(FMx, Lti = lower_classes, type = "length") ##(1-(FMx/Zx))*(N1/D1)
+
+        #nonNA <- which(!is.na(cum_B_R.rel))
+        B_R.rel.tot.all.classes[FMi] <- B_R.rel.tot[length(B_R.rel.tot)]
+
       }
       return(B_R.rel.tot.all.classes)
     }
@@ -517,9 +612,87 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
       }
       return(dev.tot.all.classes)
     }
+    derivative.sel2 <- function(FM_change, P, Lt){
+      interval <- (Lt[2] - Lt[1])/ 2
+      Z <- (FM_change + M)
+      dev.tot.all.classes <- rep(NA,length(FM_change))
+      for(FMi in 1:length(FM_change)){
+
+        FMx <- FM_change[FMi]
+        Zx <- Z[FMi]
+        # Calculations per size class
+        lower_classes <- Lt - interval
+        upper_classes <- Lt + interval
+
+        S1 <- (1 - (lower_classes/Linf))
+        S2 <- (1 - (upper_classes/Linf))
+
+        # reduction factor per size group
+        r <- (S2 ^ ((M/K) * ((FMx/Zx)/(1-(FMx/Zx)))*P)) / (S1 ^ ((M/K) * ((FMx/Zx)/(1-(FMx/Zx)))*P))
+
+        # derivative of r
+        expo <- (M * P * FMx) / (K * Zx *(1 - (FMx/Zx)))
+        r.dev <- (M * P * S2^expo * (log(S2) - log(S1)) * Zx) / (K * S1^expo * (FMx-Zx)^2)
+
+        # G per size group
+        G <- rep(NA,length(Lt))
+        G[1] <- r[1]  # because: rLmin-1 = 1
+        for(x1 in 2:length(r)){
+          G[x1] <- prod(G[x1-1], r[x1], na.rm = TRUE)
+        }
+        # G[length(r)] <- 0  # because: rLinf = 0
+
+        G.dev <- rep(NA,length(Lt))
+        G.dev[1] <- r.dev[1]
+        for(x2a in 2:length(r)){
+          G_pre <- rep(NA,x2a)
+          for(x2b in 1:x2a){
+            G_pre[x2b] <- r.dev[x2b] * prod(r[1:x2a][-x2b],na.rm = TRUE)
+          }
+          G.dev[x2a] <- sum(G_pre, na.rm = TRUE)
+        }
+
+        Y_R.rel_1 <- ypr.rel(FMx, Lti = lower_classes, type = "length")
+        Y_R.rel_2 <- ypr.rel(FMx, Lti = upper_classes, type = "length")
+
+        b_1 <- rep(NA,length(S1))
+        b_2 <- rep(NA,length(S1))
+        for (x2 in 2:length(S1)){
+          b_1[x2] <- G[x2-1] * Y_R.rel_1[x2]
+          b_2[x2] <- G[x2] * Y_R.rel_2[x2]
+        }
+
+        Y_R.rel_pre <- P * (b_1-b_2)
+
+        # derivative of Y_R.rel per size group
+        dev.Y_R.rel.tot_1 <- derivative(FMx, Lti = lower_classes, type = "length")
+        dev.Y_R.rel.tot_2 <- derivative(FMx, Lti = upper_classes, type = "length")
+
+        dev.b_1 <- rep(NA,length(S1))
+        dev.b_2 <- rep(NA,length(S1))
+        for (x2 in 2:length(S1)){
+          dev.b_1[x2] <- G.dev[x2-1] * dev.Y_R.rel.tot_1[x2]
+          dev.b_2[x2] <- G.dev[x2] * dev.Y_R.rel.tot_2[x2]
+        }
+
+        dev.Y_R.rel_pre <- P * (dev.b_1 - dev.b_2)
+
+        # total derivative
+        dev.tot <- rep(NA,length(Lt))
+        for(x5 in 2:(length(Lt)-1)){
+          firstA <- Y_R.rel_pre[x5] * G.dev[x5-1] + dev.Y_R.rel_pre[x5] * G[x5-1]
+          secondA <- Y_R.rel_pre[x5+1] * G.dev[x5] + dev.Y_R.rel_pre[x5+1] * G[x5]
+          dev.tot[x5] <- P[x5] * (firstA - secondA)
+          #dev.tot[x3] <- (P[x3]*((dev.Y_R.rel[x3]*G.dev[x3-1]) - (dev.Y_R.rel[x3+1]*G.dev[x3])))
+        }
+        dev.tot.all.classes[FMi] <- sum(dev.tot, na.rm=TRUE)
+
+      }
+      return(dev.tot.all.classes)
+    }
 
 
-  # ___________________________________________________
+    # ___________________________________________________
 
     # age based
     if("Winf" %in% names(res)){
@@ -527,6 +700,19 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
       Linf <- a * Winf^b
       tr <- res$tr
       tc <- Lc_tc_change
+
+      # Error message if no Lc/L50 value is provided
+      if(is.na(Lc_tc_change[1]) & !("Lc" %in% s_list) & !("L50" %in% s_list)) stop("At least one Lc (L50) value has to be provided, either in Lc_tc_change or in s_list.")
+      if(length(s_list) > 1){
+        selecType <- s_list$selecType
+      }else{
+        selecType <- "knife_edge"
+      }
+      if(is.na(Lc_tc_change[1])){
+        if("Lc" %in% s_list) sLc <- s_list$Lc
+        if("L50" %in% s_list) sL50 <- s_list$L50
+        Lc <- ifelse(("Lc" %in% s_list), sLc, sL50)
+      }
 
       list_tc_runs <- vector("list",length(tc))
       list_Es <- vector("list",length(tc))
@@ -621,11 +807,23 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
 
     # length based
     if("Linf" %in% names(res)){
+
       Linf <- res$Linf
       Lr <- res$Lr
       Lc <- Lc_tc_change
 
-
+      # Error message if no Lc/L50 value is provided
+      if(is.na(Lc_tc_change[1]) & !("Lc" %in% s_list) & !("L50" %in% s_list)) stop("At least one Lc (L50) value has to be provided, either in Lc_tc_change or in s_list.")
+      if(length(s_list) > 1){
+        selecType <- s_list$selecType
+      }else{
+        selecType <- "knife_edge"
+      }
+      if(is.na(Lc_tc_change[1])){
+        if("Lc" %in% s_list) sLc <- s_list$Lc
+        if("L50" %in% s_list) sL50 <- s_list$L50
+        Lc <- ifelse(("Lc" %in% s_list), sLc, sL50)
+      }
 
       list_Lc_runs <- vector("list", length(Lc))
       list_Es <- vector("list", length(Lc))
@@ -645,64 +843,67 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
 
 
         # KNIFE EDGE
-        if(length(s_list) == 1){
+        if(length(s_list) == 1 | selecType == "knife_edge"){
           Y_R <- ypr(FM_change, Lci, type = "length")
           B_R <- bpr(FM_change, Lci, type = "length")
 
-          Y_R.rel <- ypr.rel(FM_change, Lci, type = "length") # Y_R_test = Y_R.rel * Winf * exp(M *(tr - t0))
-          B_R.rel <- bpr.rel(FM_change, Lci, type = "length") # B_R.rel <- B_R / (Winf * exp(M*(tr-t0)))
+          Y_R.rel <- ypr.rel(FM_change, Lci, type = "length")
+          B_R.rel <- bpr.rel(FM_change, Lci, type = "length")
 
-          deri <- derivative(FM_change, Lci, type = "length")   # GAYANILO : deri.test <- derivative.test(FM_change, Lci)  # weird results
+          deri <- derivative(FM_change, Lci, type = "length")
+
         }
 
+
         # SELECTION OGIVE
-        if(length(s_list) > 1){
+        if(length(s_list) > 1 & selecType != "knife_edge"){
           if("midLengths" %in% names(res)){
-            Lincr <- res$midLengths[2] - res$midLengths[1]
-            Lmin <- res$midLengths[1] - (Lincr/2)
+            classes <- as.character(res$midLengths)
+            # create column without plus group (sign) if present
+            classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
+            classes.num <- as.numeric(classes.num[,1])
+            Lt <- classes.num
+            # Lincr <- res$midLengths[2] - res$midLengths[1]
+            # Lmin <- res$midLengths[1] - (Lincr/2)
           }
           if(!"midLengths" %in% names(res)){
             if(is.na(Lmin) | is.na(Lincr)) stop(noquote("Please provide Lmin and Lincr!"))
             Lmin <- Lmin
             Lincr <- Lincr
-          } # make Lt fixed except depending on Linf and as detailed as possible, e.g. Lincr = 0.5 (takes a lot time)
+            # mid length vector
+            Lt <- seq(Lmin,(Linf*0.98),Lincr)
+          } # make Lt fixed except depending on Linf and as detailed as possible, e.g. Lincr = 0.5 (takes a long time)
 
-          # mid length vector
-          Lt <- seq(Lmin,Linf,Lincr)
           # selectivity
           P <- select_ogive(s_list, Lt =  Lt, Lc = Lci)
 
+          # relative yield and biomass per recruit
           Y_R.rel <- ypr.rel.sel(FM_change, P, Lt)
-          B_R.rel <- bpr.rel.sel(FM_change, P, Lt)  # new approach? maybe B_R = Y_R / F is not valid anymore with size classes
+          B_R.rel <- bpr.rel.sel2(FM_change, P, Lt)
 
           #test
-          Y_R <- Y_R.rel * Winf * exp(M *(tr - t0))
-          B_R <- B_R.rel * (Winf * exp(M*(tr-t0)))
+          Y_R <- Y_R.rel * Winf * exp(M * (tr - t0))
+          B_R <- B_R.rel * Winf * exp(M * (tr - t0))
 
-          deri <- derivative.sel(FM_change, P, Lt)
-
-
-
-
-          #         plot(deri ~ FM_change)
-          #         plot(deri.test ~ FM_change)
-          #         abline(h=0)
-          #
-          #         plot(Y_R.rel ~ FM_change)
-          #         plot(B_R ~ FM_change)
+          # derivative
+          deri <- derivative.sel2(FM_change, P, Lt)
 
 
-          if(i == length(Lc)) plot(Lt, P, type = 'l', ylab = 'Prob of capture',
-                                   main = 'Selectivity function')
+          # biased because only prints P for largest Lc value
+          #if(i == length(Lc)) plot(Lt, P, type = 'l', ylab = 'Prob of capture',
+          #                         main = 'Selectivity function')
         }
 
 
         # virgin biomass
-        if(0 %in% FM_change) Bv_R <- B_R[FM_change == 0]
+        if(0 %in% FM_change){
+          Bv_R <- B_R[FM_change == 0]
+        }else{
+          Bv_R <- B_R[FM_change == min(FM_change,na.rm = TRUE)]
+        }
 
         #biomass in percetage of virgin biomass
         B_R.percent <- round((B_R / Bv_R ) * 100, digits = 1)
-
 
         #mean length in the annual yield
         S <- 1 - (Lci/Linf)
@@ -717,11 +918,13 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
                                   Ly = Ly,
                                   Wy = Wy,
                                   E = E,
-                                  Y_R = Y_R,
                                   Y_R.rel = Y_R.rel,
-                                  B_R = B_R,
-                                  B_R.rel = B_R.rel,
-                                  B_R.percent = B_R.percent)
+                                  B_R.rel = B_R.rel)
+
+        if(length(Y_R) > 0) results.PBH$Y_R = Y_R
+        if(length(B_R) > 0) results.PBH$B_R = B_R
+        if(length(B_R.percent) > 0) results.PBH$B_R.percent = B_R.percent
+
 
         list_Lc_runs[[i]] <- results.PBH
 
@@ -733,39 +936,38 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
         N05 <- which.min(abs(B_R.percent - 50))  #which.min(abs(deri - (deri[1] * 0.5)))
 
         df_loop_Es <- data.frame(Lc = Lci,
-                                 F01 = FM_change[N01],
-                                 F05 = FM_change[N05],
-                                 Fmax = FM_change[Nmax],
-                                 E01 = E[N01],
-                                 E05 = E[N05],
-                                 Emax = E[Nmax]
-        )
+                                 F01 = FM_change[N01])
+        if(length(B_R.percent) > 0) df_loop_Es$F05 <- FM_change[N05]
+        df_loop_Es$Fmax <- FM_change[Nmax]
+        df_loop_Es$E01 <- E[N01]
+        if(length(B_R.percent) > 0) df_loop_Es$E05 <- E[N05]
+        df_loop_Es$Emax <- E[Nmax]
+
         list_Es[[i]] <- df_loop_Es
       }
 
 
       df_Es <- do.call(rbind,list_Es)
 
-      # current exploitation rate
-      curr.F = (M * curr.E)/(1-curr.E)
-      df_currents <- data.frame(curr.E = curr.E,
-                                curr.F = curr.F,
-                                curr.YPR = ypr(curr.F, curr.Lc_tc, type = "length"),
-                                curr.YPR.rel = ypr.rel(curr.F, curr.Lc_tc, type = "length"),
-                                curr.BPR = bpr(curr.F, curr.Lc_tc, type = "length"),
-                                curr.BPR.rel = bpr.rel(curr.F, curr.Lc_tc, type = "length"))
-
       names(list_Lc_runs) <- Lc
       ret <- c(res,list(FM = FM_change,
                         Lc = Lc,
                         list_Lc_runs = list_Lc_runs,
-                        df_Es = df_Es,
-                        currents = df_currents))
+                        df_Es = df_Es))
+
+      if(!is.na(curr.E) & !is.na(curr.Lc_tc)){
+        # current exploitation rate
+        curr.F = (M * curr.E)/(1-curr.E)
+        df_currents <- data.frame(curr.E = curr.E,
+                                  curr.F = curr.F,
+                                  curr.YPR = ypr(curr.F, curr.Lc_tc, type = "length"),
+                                  curr.YPR.rel = ypr.rel(curr.F, curr.Lc_tc, type = "length"),
+                                  curr.BPR = bpr(curr.F, curr.Lc_tc, type = "length"),
+                                  curr.BPR.rel = bpr.rel(curr.F, curr.Lc_tc, type = "length"))
+        ret$currents <- df_currents
+      }
     }
   }
-
-
-
 
   # Thompson and Bell model
   if(type == "ThompBell"){
@@ -796,8 +998,14 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
     classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
     classes.num <- as.numeric(classes.num[,1])
 
+    # transfer E_change into F_change if provided
+    if(length(FM_change) == 1 & is.na(FM_change[1]) & length(E_change) != 1 & !is.na(E_change[1])){
+      FM_change <- (E_change * nM) / (1 - E_change)
+      FM_change[FM_change == Inf] <- (0.9999 * nM) / (1 - 0.9999)
+    }
+
     # Only FM change provided without Lc_tc change
-    if(is.null(Lc_tc_change)){
+    if(is.null(Lc_tc_change) | length(s_list) == 1){
       #prediction based on f_change
       pred_mat <- as.matrix(FM) %*% FM_change
 
@@ -817,9 +1025,9 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
     }
 
     # FM and Lc_tc change provided
-    if(!is.null(Lc_tc_change)){
+    if(!is.null(Lc_tc_change) & length(s_list) > 1){
       # instead of s_list the outcome of one of the other select functions?
-      #as a option or put values per hand
+
 
       Lt <- Linf * (1- exp(-K * (classes.num - t0)))
 
@@ -901,7 +1109,8 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
       ret <- c(res,
                list(FM_change = FM_change,
                     Lc_tc_change = Lc_tc_change,
-                    Lt=Lt,sel=sel,
+                    Lt=Lt,
+                    sel=sel,
                     mat_FM_Lc_com.C=mat_FM_Lc_com.C,
                     mat_FM_Lc_com.Y=mat_FM_Lc_com.Y,
                     mat_FM_Lc_com.V=mat_FM_Lc_com.V,
@@ -914,7 +1123,7 @@ predict_mod <- function(param, FM_change = NA, Lc_tc_change = NULL, type,  s_lis
 
   # return results and plot
   class(ret) <- "predict_mod"
-  #if(plot) plot(ret)
+  if(plot) plot(ret)
   return(ret)
 }
 

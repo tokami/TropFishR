@@ -4,9 +4,10 @@
 \alias{predict_mod}
 \title{Prediction models}
 \usage{
-predict_mod(param, FM_change = NA, Lc_tc_change = NULL, type, s_list = NA,
-  stock_size_1 = NA, age_unit = "year", curr.E = NA, curr.Lc_tc = NA,
-  plus_group = NA, Lmin = NA, Lincr = NA, plot = TRUE)
+predict_mod(param, FM_change = NA, E_change = NA, Lc_tc_change = NULL,
+  type, s_list = NA, stock_size_1 = NA, age_unit = "year", curr.E = NA,
+  curr.Lc_tc = NA, plus_group = NA, Lmin = NA, Lincr = NA,
+  plot = FALSE)
 }
 \arguments{
 \item{param}{a list consisting of following parameters (not all are required):
@@ -30,7 +31,9 @@ additional list objects for the Thompson and Bell model:
   \item \strong{meanValue}: vector with mean value per length group or age class,
 }}
 
-\item{FM_change}{vector with ascending fishing mortalities}
+\item{FM_change}{vector with ascending fishing mortalities, or}
+
+\item{E_change}{vector with ascending exploitation rates}
 
 \item{Lc_tc_change}{vector with ascending lengths or ages at first capture (Lc/tc)}
 
@@ -159,22 +162,33 @@ predict_mod(threadfin, FM_change = seq(0,6,0.1),
 # Leiognathus spendens (Pauly, 1980)
 ponyfish <- list(Winf = 64, K = 1, t0 = -0.2, M = 1.8, tr = 0.2)
 
-predict_mod(ponyfish, Lc_tc_change = c(0.2,0.3,1.0), type = 'ypr')
+predict_mod(ponyfish, Lc_tc_change = c(0.2,0.3,1.0), type = 'ypr', plot=TRUE)
 
 #______________________________________
 # length structured data
 # Xiphias gladius (Berkeley and Houde, 1980)
 swordfish <- list(Linf = 309, K = 0.0949, M = 0.18,
-                  a=0.0003, b=3, Lr = 90, growthFun = "growth_VB")  ## T_Lr , a, b ??? assumed
+                  a = 0.0003, b = 3, Lr = 90)
 
-select.list <- list(selecType = 'trawl_ogive', L50 = 120, L75 = 132) ###Lc = 100)
+select.list <- list(selecType = 'trawl_ogive', L50 = 120, L75 = 132)
 #swordfish$midLengths <- seq(60,300,5)
 
 output <- predict_mod(param = swordfish, Lc_tc_change = c(100,118,150,180),
             s_list = select.list, type = 'ypr', Lmin = 90, Lincr = 8)
+plot(output)
 
-####test: E <- seq(0,0.9,0.1) FM <- E * M / (1 - E)
+data(hake)
+select.list <- list(selecType = 'trawl_ogive', L50 = 20, L75 = 24)
+output <- predict_mod(param = hake, FM_change = seq(0,3,0.01),
+                      Lc_tc_change = seq(5,80,1), s_list = select.list,
+                      type = 'ypr', plot = FALSE)
+plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "Y_R.rel", identify = FALSE)
 
+select.list <- list(selecType = 'knife_edge', L50 = 20, L75 = 24)
+output <- predict_mod(param = hake, FM_change = seq(0,3,0.01),
+                      Lc_tc_change = seq(5,80,1), s_list = select.list,
+                      type = 'ypr', plot = FALSE)
+plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "B_R.rel")
 
 #______________________________________
 #      Thompson and Bell model
@@ -183,19 +197,21 @@ output <- predict_mod(param = swordfish, Lc_tc_change = c(100,118,150,180),
 data(shrimps)
 
 output <- predict_mod(param = shrimps, FM_change = seq(0.1,3,0.1),
-     type = "ThompBell", age_unit = "month")
+     type = "ThompBell", age_unit = "month", plot = TRUE)
+
 
 # create list with selectivity information
-select.list <- list(selecType = 'knife_edge',  #or 'gillnet' or 'trawl_ogive'
-   L50 = 34, t50 = 5, selecDist = 'lognormal',    #or 'normal_fixed'
-   mesh_size = 8.1, mesh_size1 = 9.1, select_p1 = 21.1, select_p2 = 23.8)
+select.list <- list(selecType = 'trawl_ogive',
+   L50 = 34, L75 = 36)
 
 # add additional parameters to data list
 shrimps <- c(shrimps,  list(Linf = 50, K = 0.3, t0 = 0.01))
 
-output <- predict_mod(shrimps, FM_change = seq(0,3,0.2),
-   Lc_tc_change = seq(24,44,2),
-   type = 'ThompBell', s_list = select.list, age_unit = 'month')
+output <- predict_mod(param = shrimps, E_change = seq(0,1,0.01),
+   Lc_tc_change = seq(10,44,2),
+   type = 'ThompBell', s_list = select.list,  age_unit = 'month')
+plot(output, xaxis = "E")
+
 #______________________________________
 # with length structured data
 data(hake)

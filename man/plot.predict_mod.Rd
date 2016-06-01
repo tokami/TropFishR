@@ -4,19 +4,34 @@
 \alias{plot.predict_mod}
 \title{Plotting prediction models yield per recruit and Thompson & Bell}
 \usage{
-\method{plot}{predict_mod}(x, type = "ypr", xaxis1 = "FM", yaxis1 = "Y_R",
-  yaxis2 = "B_R", ...)
+\method{plot}{predict_mod}(x, type = "ypr", xaxis1 = "FM",
+  yaxis1 = "Y_R.rel", yaxis2 = "B_R.rel", identify = FALSE, mark = TRUE,
+  ...)
 }
 \arguments{
 \item{x}{a object of the class 'predict_mod'}
 
-\item{type}{default = "ypr" or "Isopleth" for isopleth plot}
+\item{type}{a character indicating, which type of plot should be displayed in case of
+Beverton and Holt's yield per recurit model. Options are either "ypr" (default) for
+line plot or "Isopleth" for isopleth plot.}
 
-\item{xaxis1}{default = "FM" which x axis should be plotted? FM or E?}
+\item{xaxis1}{which x-axis should be plotted? Either "FM" (fishing mortality; default) or "E"
+(exploitation rate).}
 
-\item{yaxis1}{default = "Y_R" for ypr plot, which first y axis should be plotted? Y_R or Y_R.rel}
+\item{yaxis1}{which (first) y-axis should be plotted? "Y_R" (yield per recruit; default) or
+"Y_R.rel" (relative yield per recruit) for type = "ypr". For "Isopleth" in addition: "B_R"
+(biomass per recruit) and "B_R.rel" (relative yield per recruit). For Thompson and Bell model
+in addition also "value" or "catch" possible.}
 
-\item{yaxis2}{default = "B_R" for ypr plot, which second y axis should be plotted? B_R or B_R.percent}
+\item{yaxis2}{which second y-axis should be plotted for type = "ypr"? Either "B_R" (biomass
+per recruit; default), "B_R.rel" (relative biomass per recruit), or "B_R.percent"
+(percentage biomass per recruit)}
+
+\item{identify}{logical; indicating whether points in the graph are supposed to be identified by
+clicking on them (uses \code{\link{locator}} function). To stop press right mouse click.
+(default: TRUE).}
+
+\item{mark}{logical; if value of choosen points should be displayed in graph (default: TRUE)}
 
 \item{...}{optional parameters of plot function}
 }
@@ -30,7 +45,6 @@ This function plots objects of the class "predict_mod", which are results
 # Nemipterus marginatus
 # threadfin <- list(Winf = 286,K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4)
 
-# run model
 # predict_mod(threadfin, FM_change = seq(0,6,0.1),
 #    Lc_tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
 

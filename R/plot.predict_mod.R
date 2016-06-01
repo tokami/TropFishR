@@ -4,10 +4,22 @@
 #'    of the function \code{\link{predict_mod}}.
 #'
 #' @param x a object of the class 'predict_mod'
-#' @param type default = "ypr" or "Isopleth" for isopleth plot
-#' @param xaxis1 default = "FM" which x axis should be plotted? FM or E?
-#' @param yaxis1  default = "Y_R" for ypr plot, which first y axis should be plotted? Y_R or Y_R.rel
-#' @param yaxis2 default = "B_R" for ypr plot, which second y axis should be plotted? B_R or B_R.percent
+#' @param type a character indicating, which type of plot should be displayed in case of
+#'    Beverton and Holt's yield per recurit model. Options are either "ypr" (default) for
+#'    line plot or "Isopleth" for isopleth plot.
+#' @param xaxis1  which x-axis should be plotted? Either "FM" (fishing mortality; default) or "E"
+#'    (exploitation rate).
+#' @param yaxis1  which (first) y-axis should be plotted? "Y_R" (yield per recruit; default) or
+#'    "Y_R.rel" (relative yield per recruit) for type = "ypr". For "Isopleth" in addition: "B_R"
+#'    (biomass per recruit) and "B_R.rel" (relative yield per recruit). For Thompson and Bell model
+#'    in addition also "value" or "catch" possible.
+#' @param yaxis2 which second y-axis should be plotted for type = "ypr"? Either "B_R" (biomass
+#'    per recruit; default), "B_R.rel" (relative biomass per recruit), or "B_R.percent"
+#'    (percentage biomass per recruit)
+#' @param identify logical; indicating whether points in the graph are supposed to be identified by
+#'    clicking on them (uses \code{\link{locator}} function). To stop press right mouse click.
+#'    (default: TRUE).
+#' @param mark logical; if value of choosen points should be displayed in graph (default: TRUE)
 #' @param ... optional parameters of plot function
 #'
 #' @examples
@@ -16,7 +28,6 @@
 #' # Nemipterus marginatus
 #' # threadfin <- list(Winf = 286,K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4)
 #'
-#' # run model
 #' # predict_mod(threadfin, FM_change = seq(0,6,0.1),
 #' #    Lc_tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
 #'
@@ -27,8 +38,35 @@
 #' @export
 
 plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
-                             yaxis1 = "Y_R", yaxis2 = "B_R",...){
+                             yaxis1 = "Y_R.rel", yaxis2 = "B_R.rel",
+                             identify = FALSE, mark = TRUE,...){
   pes <- x
+
+  # function for identifying Lc and yield/biomass values in plot
+  image.identifier <- function(x_y_z, mark=mark, digits=3){
+    intiX <- (xyz$x[2]-xyz$x[1])/2
+    intiY <- (xyz$y[2]-xyz$y[1])/2
+    newX <- c(xyz$x - intiX,xyz$x[length(xyz$x)]+intiX)
+    newY <- c(xyz$y - intiY,xyz$y[length(xyz$y)]+intiY)
+    nx <- length(xyz$x)
+    ny <- length(xyz$y)
+    res <- data.frame()
+    xy <- locator(1)
+    while(!is.null(xy)){
+      xbin <- as.numeric(cut(xy$x,newX))
+      ybin <- as.numeric(cut(xy$y,newY))
+      if(mark){
+        points(xy$x,xy$y,pch=19,cex=.5,col="blue")
+        text(xy$x,xy$y,format(xyz$z[xbin,ybin],digits=digits),adj=-.2,col="blue")
+      }
+      cat("[",xbin,",",ybin,"] = ",xyz$z[xbin,ybin],"\n",sep='')
+      lcc <- xy$y * pes$Linf
+      res <- rbind(res,data.frame(i=xbin,j=ybin,x=xy$x,y=xy$y,z=xyz$z[xbin,ybin],Lc=lcc))
+      xy <- locator(1)
+    }
+    colnames(res) <- c("i","j",p.FE,"Lc/Linf",p.yield,"Lc")
+    res
+  }
 
   #THOMPBELL
   if("totals" %in% names(pes)){
@@ -71,24 +109,48 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
 
   # THOMP BELL WITH LC change - ISOPLETHS
   if("mat_FM_Lc_com.C" %in% names(pes)){
-    FM_change <- pes$FM_change
+    p.yield <- yaxis1
+    p.FE <- xaxis1
+    p.B <- yaxis2
+    xlabel1 <- ifelse(xaxis1 == "FM", "Fishing mortality", "Exploitation rate")
+    ylabel1 <- ifelse(yaxis1 == "Y_R", "Y/R", "rel. Y/R")
+
     Lc_change <- pes$Lc_tc_change
-    mat_FM_Lc_com.Y <- pes$mat_FM_Lc_com.Y
+    FM_change <- pes$FM_change
+    if(p.FE == "FM"){
+      px <- FM_change
+    }else{
+      px <- FM_change/(FM_change + pes$M)
+    }
+
+    if(p.yield == "Y_R.rel" | p.yield == "Y_R"){
+      pz <- pes$mat_FM_Lc_com.Y
+    }else if(p.yield == "B_R.rel" | p.yield == "B_R"){
+      pz <- pes$mat_FM_Lc_com.B
+    }else if(p.yield == "value"){
+      pz <- pes$mat_FM_Lc_com.V
+    }else if(p.yield == "catch"){
+      pz <- pes$mat_FM_Lc_com.C
+    }
 
     # colours for plot
     pal <- colorRampPalette(rev(c(
       rgb(1,0.5,0.5), rgb(1,1,0.5), rgb(0.5,1,1), rgb(0.5,0.5,1))))
 
-    #plot
-    image(x = FM_change,
-          y = Lc_change,
-          z = mat_FM_Lc_com.Y, col=pal(100),
-          xlab = 'Fishing mortality', ylab = 'Lc')
-    contour(x = FM_change,
-            y = Lc_change,
-            z = mat_FM_Lc_com.Y, add=TRUE)
-    #mtext("Yield", line=0.5, side=3)
+    m <- list(x = px,
+              y = Lc_change,
+              z = pz)
 
+    #plot
+    if(identify == TRUE){
+      if(.Platform$OS.type == "unix") quartz()
+      if(.Platform$OS.type == "windows") windows()
+    }
+    image(m, col=pal(100),
+          xlab = xlabel1, ylab = 'Lc')
+    contour(m, add=TRUE)
+    #mtext("Yield", line=0.5, side=3)
+    if(identify == TRUE) image.identifier(m)
   }
 
   # YPR
@@ -108,6 +170,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     xlabel1 <- ifelse(xaxis1 == "FM", "Fishing mortality", "Exploitation rate")
     ylabel1 <- ifelse(yaxis1 == "Y_R", "Y/R", "rel. Y/R")
     ylabel2 <- ifelse(yaxis2 == "B_R", "B/R", "B/R [%]")
+
 
     df_Es <- pes$df_Es
     if(xaxis1 == "FM"){
@@ -162,14 +225,19 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
         py <- p.dat[,which(names(p.dat) == p.yield)]
         px <- p.dat[,which(names(p.dat) == p.FE)]
         # F or  E 0.1
-        segments(x0 = -1, x1 = N01, y0 = py[which(px == N01)], y1 = py[which(px == N01)],
+        if(N01 == Nmax){
+          add_shift <- 1.005
+        }else  add_shift <- 1
+        segments(x0 = -1, x1 = N01, y0 = py[which(px == N01)],
+                 y1 = py[which(px == N01)],
                  col= 'darkgreen',lty = 2, lwd=1.5)
         segments(x0 = N01, x1 = N01, y0 = -1, y1 = py[which(px == N01)],
                  col= 'darkgreen',lty = 2, lwd=1.5)
         # F or E max
-        segments(x0 = -1, x1 = Nmax, y0 = py[which(px == Nmax)], y1 = py[which(px == Nmax)],
+        segments(x0 = -1, x1 = Nmax, y0 = py[which(px == Nmax)]*add_shift,
+                 y1 = py[which(px == Nmax)]*add_shift,
                  col= 'goldenrod1',lty = 2, lwd=1.5)
-        segments(x0 = Nmax, x1 = Nmax, y0 = -1, y1 = py[which(px == Nmax)],
+        segments(x0 = Nmax*add_shift, x1 = Nmax*add_shift, y0 = -1, y1 = py[which(px == Nmax)],
                  col= 'goldenrod1',lty = 2, lwd=1.5)
         # Legend
         legend("top", legend = legend.lab, xpd = TRUE, horiz = TRUE,
@@ -178,11 +246,13 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
                y.intersp = -2, box.lty=0,cex=0.8, lwd =2)
 
         # current Exploitation rate or fishing mortality
-        currents <- pes$currents
-        if(!is.na(currents$curr.E)){
-          px <- ifelse(p.FE == "FM",currents$curr.F, currents$curr.E)
-          py <- ifelse(p.yield == "Y_R",currents$curr.YPR,currents$curr.YPR.rel)
-          points(px,py, pch = 16)
+        if(!is.null(pes$currents)){
+          currents <- pes$currents
+          if(!is.na(currents$curr.E)){
+            px <- ifelse(p.FE == "FM",currents$curr.F, currents$curr.E)
+            py <- ifelse(p.yield == "Y_R",currents$curr.YPR,currents$curr.YPR.rel)
+            points(px,py, pch = 16)
+          }
         }
       }
 
@@ -204,7 +274,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
         lines(px, py, type = 'l',
               ylab = ylabel1, xlab = xlabel1, col='blue', lty = j)
       }
-      if(length(N01) == 1){
+      if(length(N05) == 1){
         p.dat <- list_tc_Lc_runs[[tc_Lc_start]]
         px <- p.dat[,which(names(p.dat) == p.FE)]
         py2 <- p.dat[,which(names(p.dat) == p.B)]
@@ -237,23 +307,30 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
         rownames(mat_FM_Lc_com.Y) <- round(px,digits=2)
         colnames(mat_FM_Lc_com.Y) <- round(Lc_change/pes$Linf,digits = 2)
 
+        m <- list(x = px,
+                  y = Lc_change/pes$Linf,
+                  z = mat_FM_Lc_com.Y)
+
         # colours for plot
         pal <- colorRampPalette(rev(c(
           rgb(1,0.5,0.5), rgb(1,1,0.5), rgb(0.5,1,1), rgb(0.5,0.5,1)
         )))
 
         #plot
-        image(x = px,
-              y = Lc_change/pes$Linf,
-              z = mat_FM_Lc_com.Y, col=pal(100),
+        if(identify == TRUE){
+          if(.Platform$OS.type == "unix") quartz()
+          if(.Platform$OS.type == "windows") windows()
+        }
+        image(m, col=pal(100),
               xlab = xlabel1, ylab = 'Lc / Linf')
-        contour(x = px,
-                y = Lc_change/pes$Linf,
-                z = mat_FM_Lc_com.Y, add=TRUE)
+        contour(m, add=TRUE)
         #mtext("Yield", line=0.5, side=3)
+        if(identify == TRUE) image.identifier(m)
       }
     }
   }
 }
+
+
 
 
