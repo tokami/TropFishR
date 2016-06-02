@@ -43,7 +43,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
   pes <- x
 
   # function for identifying Lc and yield/biomass values in plot
-  image.identifier <- function(x_y_z, mark=mark, digits=3){
+  image.identifier <- function(xyz, mark=mark, digits=3){
     intiX <- (xyz$x[2]-xyz$x[1])/2
     intiY <- (xyz$y[2]-xyz$y[1])/2
     newX <- c(xyz$x - intiX,xyz$x[length(xyz$x)]+intiX)
