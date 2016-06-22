@@ -56,5 +56,6 @@ plot.VPA <- function(x, display_last_class = TRUE, ...){
   lines(x=mids,y=FM_calc,col='red',lwd=2)
   axis(4, at = pretty(c(0,max_FM)),line = 1)
   mtext("Fishing mortatlity", side=4, line=3.5)
+  par(op)
 }
 
