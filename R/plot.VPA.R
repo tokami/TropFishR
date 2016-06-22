@@ -39,24 +39,21 @@ plot.VPA <- function(x, display_last_class = TRUE, ...){
 
   #create VPA plot
   dev.new()
-  par(mar = c(7, 5, 4, 5) + 0.3)
+  op <- par(mar = c(7, 5, 4, 5))
   barplot(df.VPAnew,col=c('darkgreen','darkmagenta','gold2'),
           xlab = xlabel, ylab = "Population",xlim=c(0,ceiling(max(mids))),
-          ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur),...)
-  legend(x = mids[(which(classes.num == max_clas)-(length(classes.num)/4))],
-         y = ceiling(max_sur/dim_sur)*dim_sur,
+          ylim = c(0,max_sur), yaxs="i", ...)
+  legend("topright",
          legend = c(rownames(df.VPAnew),"fishing mortality"),
          col = c('darkgreen','darkmagenta','gold2','red'),xpd = TRUE,
          pch=c(rep(15,3),NA), lty = c(NA,NA,NA,1), lwd=2, seg.len = 0.9,
          pt.cex = 2, x.intersp = c(0.7,0.7,0.7,0.7), merge=TRUE,
          y.intersp = 1.2, box.lty=0, cex=0.8, xjust = -0.3, yjust = 0.7)
-  par(new = TRUE, mar=c(7, 5, 4, 5) + 0.3)
+  par(new = TRUE)
   plot(mids, FM_calc, col='red',xlim=c(0,ceiling(max(mids, na.rm = TRUE))),
        ylim=c(0,max_FM),
-       type = "n",axes = FALSE, bty = "n", xlab = "", ylab = "", ann=TRUE)
+       type = "n", yaxs="i", axes = FALSE, bty = "n", xlab = "", ylab = "")
   lines(x=mids,y=FM_calc,col='red',lwd=2)
-  usr <- par("usr")
-  par(usr=c(usr[1:2], 0, max_FM), mar=c(7, 5, 4, 5) + 0.3)
   axis(4, at = pretty(c(0,max_FM)),line = 1)
   mtext("Fishing mortatlity", side=4, line=3.5)
 }
