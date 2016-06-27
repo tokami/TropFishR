@@ -143,8 +143,9 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
 
     #plot
     if(identify == TRUE){
-      if(.Platform$OS.type == "unix") quartz()
-      if(.Platform$OS.type == "windows") windows()
+      # if(.Platform$OS.type == "unix") quartz()
+      # if(.Platform$OS.type == "windows") windows()
+      dev.new(noRStudioGD = TRUE)
     }
     image(m, col=pal(100),
           xlab = xlabel1, ylab = 'Lc')
@@ -318,8 +319,9 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
 
         #plot
         if(identify == TRUE){
-          if(.Platform$OS.type == "unix") quartz()
-          if(.Platform$OS.type == "windows") windows()
+          # if(.Platform$OS.type == "unix") quartz()
+          # if(.Platform$OS.type == "windows") windows()
+          dev.new(noRStudioGD = TRUE)
         }
         image(m, col=pal(100),
               xlab = xlabel1, ylab = 'Lc / Linf')

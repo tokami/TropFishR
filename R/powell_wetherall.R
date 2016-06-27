@@ -111,8 +111,9 @@ powell_wetherall <- function(param, catch_column = NA, savePlots = FALSE){
 
     #identify plot
     repeat{
-      if(.Platform$OS.type == "unix") quartz()
-      if(.Platform$OS.type == "windows") windows()
+      #if(.Platform$OS.type == "unix") quartz()
+      #if(.Platform$OS.type == "windows") windows()
+      dev.new(noRStudioGD = TRUE)
       plot(x = Lprime,y = Lmean_Lprime,
            xlab = "Lprime", ylab = "Lmean - Lprime")
       writeLines("Please choose the minimum and maximum point in the \ngraph to include for the regression line!")

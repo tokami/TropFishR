@@ -48,7 +48,7 @@ A list with the input parameters and following list objects:
 }
 }
 \description{
-This function estimates recrutiment patterns from length-frequency data-
+This function estimates recrutiment patterns from length-frequency data.
 }
 \details{
 This function allows to extract information about the recruitment patterns of a
@@ -87,9 +87,7 @@ trout$Linf <- 16
 trout$K <- 0.4
 
 # retrieve sampling times from catch matrix
-s_dates <- strsplit(colnames(trout$catch),"X")
-s_dates <- unlist(lapply(s_dates, function(x) return(x[2])))
-s_dates <- as.POSIXlt(s_dates, format="\%d.\%m.\%Y")
+s_dates <- as.POSIXlt(trout$dates, format="\%d.\%m.\%Y")
 
 recruitment(trout, tsample = s_dates$yday/365, plot = TRUE)
 

@@ -52,6 +52,10 @@
 #'    \item \strong{cohort_plots} list with analysis plots (when savePlots = TRUE).
 #'    }
 #'
+#' @importFrom grDevices colorRampPalette dev.new dev.off quartz recordPlot rgb
+#' @importFrom graphics abline axis barplot box contour grid hist identify image layout legend lines locator matplot mtext par plot points rect segments text title
+#' @importFrom stats aggregate deviance dnorm lm lowess na.omit nlm nls optim optimise optimize predict qt rnorm sd update
+#'
 #' @references
 #' Bhattacharya, C.G., 1967. A simple method of resolution of a distribution into Gaussian
 #' components, \emph{Biometrics}, 23:115-135
@@ -144,8 +148,9 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
 
       repeat {
         # histogramm
-        if(.Platform$OS.type == "unix") quartz()
-        if(.Platform$OS.type == "windows") windows()
+        # if(.Platform$OS.type == "unix") quartz()
+        # if(.Platform$OS.type == "windows") windows()
+        dev.new(noRStudioGD = TRUE)
         par(mfrow = c(2,1),
             oma = c(6.5, 0.5, 2, 1) + 0.1,
             mar = c(0, 4, 0.5, 0) + 0.1)
@@ -261,8 +266,9 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
                     bhat.table.list[[1]]$N1.plus)
       h <- hist(freqis, breaks = 50, plot = FALSE)
 
-      if(.Platform$OS.type == "unix") quartz()
-      if(.Platform$OS.type == "windows") windows()
+      # if(.Platform$OS.type == "unix") quartz()
+      # if(.Platform$OS.type == "windows") windows()
+      dev.new(noRStudioGD = TRUE)
       par(mfrow = c(2,1),
           oma = c(6.5, 0.5, 2, 1) + 0.1,
           mar = c(0, 4, 0.5, 0) + 0.1)

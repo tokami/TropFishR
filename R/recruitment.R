@@ -1,6 +1,6 @@
 #' @title Recruitment patterns
 #'
-#' @description  This function estimates recrutiment patterns from length-frequency data-
+#' @description  This function estimates recrutiment patterns from length-frequency data.
 #'
 #' @param param a list consisting of following parameters:
 #' \itemize{
@@ -43,9 +43,7 @@
 #' trout$K <- 0.4
 #'
 #' # retrieve sampling times from catch matrix
-#' s_dates <- strsplit(colnames(trout$catch),"X")
-#' s_dates <- unlist(lapply(s_dates, function(x) return(x[2])))
-#' s_dates <- as.POSIXlt(s_dates, format="%d.%m.%Y")
+#' s_dates <- as.POSIXlt(trout$dates, format="%d.%m.%Y")
 #'
 #' recruitment(trout, tsample = s_dates$yday/365, plot = TRUE)
 #'
