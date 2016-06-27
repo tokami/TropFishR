@@ -8,7 +8,7 @@
 #'   \item \strong{dates} dates of sampling times (class Date),
 #'   \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column);
 #' }
-#' @param Linf_fix numeric; if used the K-Scan method with a fixed Linf value is applied.
+#' @param Linf_fix numeric; if used the K-Scan method is applied with a fixed Linf value (i.e. varying K only).
 #' @param Linf_range numeric vector with potential Linf values. Default is the last length class plus/minus 5 cm
 #' @param K_range K values for which the score of growth functions should be calculated
 #'    (by default: exp(seq(log(0.1),log(10),length.out = 100)))
@@ -16,8 +16,8 @@
 #' @param WP winter point (default: 0)
 #' @param MA number indicating over how many length classes the moving average should be performed (defalut: 5, for
 #'    more information see \link{lfqRestructure}).
-#' @param addl.sqrt additional squareroot transformation of positive values according to Brey et al. (1988).
-#'    (defalut: FALSE, for more information see \link{lfqRestructure}).
+#' @param addl.sqrt Passed to \link{lfqRestructure}. Applied an additional square-root transformation of positive values according to Brey et al. (1988).
+#'    (default: FALSE, for more information see \link{lfqRestructure}).
 #'
 #' @examples
 #' data(trout)
@@ -26,12 +26,11 @@
 #' ELEFAN(trout, Linf_fix = 16)
 #'
 #' # Surface response analysis
-#' ELEFAN(trout)
 #' ELEFAN(trout, K_range = seq(0.1,2,0.1), Linf_range = seq(14,17,1))
 #'
-#' @details This functions allows to perform the K-Scan and Response sruface analysis to estimate growth parameters.
-#'    It combines the restructuring of length-frequency data (\link{lfqRestructure}) and the fitting of VBGF
-#'    curves through the restructured data (\link{lfqFitCurves}). K-Scan is a method, to search for the K
+#' @details This functions allows to perform the K-Scan and Response surface analysis to estimate growth parameters.
+#'    It combines the step of restructuring length-frequency data (\link{lfqRestructure}) followed by the fitting of VBGF
+#'    curves through the restructured data (\link{lfqFitCurves}). K-Scan is a method used to search for the K
 #'    parameter with the best fit while keeping the Linf fixed. In contrast, with response surface analysis
 #'    both parameters are estimated and the fits are displayed in a heatmap.
 #'

@@ -3,11 +3,11 @@ Type: Package
 Title: Tropical Fisheries Analysis with R
 Version: 0.1
 Date: 2015-10-02
-Author: Tobias K. Mildenberger, Marc Taylor, Matthias Wolff
+Author: Tobias K. Mildenberger, Marc H. Taylor, Matthias Wolff
 Maintainer: Tobias K. Mildenberger <t.k.mildenberger@gmail.com>
-Description: This package includes fisheries models based on the the FAO 
-	Manual "Introduction to tropical fish stock assessment" by P.Sparre and 
-	S.C. Venema. It focuses on the analysis of length-frequency data of 
+Description: This package includes fisheries models based on the the FAO
+	Manual "Introduction to tropical fish stock assessment" by P.Sparre and
+	S.C. Venema. It focuses on the analysis of length-frequency data of
 	data poor fisheries.
 Depends: R (>= 3.0.0)
 Imports: msm, lubridate, reshape2

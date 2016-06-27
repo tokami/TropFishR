@@ -317,8 +317,6 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
 
   #identify plot
   writeLines("Please choose the minimum and maximum point in the graph \nto include for the regression line!")
-  # if(.Platform$OS.type == "unix") quartz()
-  # if(.Platform$OS.type == "windows") windows()
   dev.new(noRStudioGD = TRUE)
   op <- par(mfrow = c(1,1),
             c(5, 4, 4, 2) + 0.1,
