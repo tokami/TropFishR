@@ -52,7 +52,7 @@
 #'    \item \strong{cohort_plots} list with analysis plots (when savePlots = TRUE).
 #'    }
 #'
-#' @importFrom grDevices colorRampPalette dev.new dev.off dev.new recordPlot rgb
+#' @importFrom grDevices colorRampPalette dev.new dev.off recordPlot rgb
 #' @importFrom graphics abline axis barplot box contour grid hist identify image layout legend lines locator matplot mtext par plot points rect segments text title
 #' @importFrom stats aggregate deviance dnorm lm lowess na.omit nlm nls optim optimise optimize predict qt rnorm sd update
 #'

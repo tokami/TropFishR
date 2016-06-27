@@ -56,6 +56,9 @@
 #'      (only if Bertalanffy plot was applied).
 #' }
 #'
+#' @importFrom graphics abline lines plot segments
+#' @importFrom stats lm nls predict
+#'
 #' @references
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 #' Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.

@@ -34,6 +34,9 @@
 #'    parameter with the best fit while keeping the Linf fixed. In contrast, with response surface analysis
 #'    both parameters are estimated and the fits are displayed in a heatmap.
 #'
+#' @importFrom grDevices colorRampPalette
+#' @importFrom graphics abline axis grid image mtext par plot text title
+#'
 #' @references
 #' Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and expanded
 #' user's guide to ELEFAN 0, 1 and 2.
