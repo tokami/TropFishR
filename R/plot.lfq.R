@@ -36,6 +36,8 @@
 #'    calculated. It can happen that different starting points return the same fit (ESP value), with
 #'    \code{multiple_best_fits} the preferred starting point can be chosen.
 #'
+#' @import lubridate
+#'
 #' @references
 #' Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and expanded
 #' user's guide to ELEFAN 0, 1 and 2.

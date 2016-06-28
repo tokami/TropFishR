@@ -23,14 +23,14 @@ lfqFitCurves(lfq, par = list(Linf = 100, K = 0.1, C = 0, WP = 0))
 }}
 }
 \description{
-Second step of the Electronic LEngth Frequency ANalysis (ELEFAN), which is fitting von Bertalanffy
+Second step of the Electronic LEngth Frequency ANalysis (ELEFAN), which fits von Bertalanffy
    growth curves through restructured length-frequency data.
 }
 \details{
 This function is used in the analysis of growth parameters with the \link{ELEFAN} function. It is often
    referred to as ELEFAN 1. C expresses the amplitude of growth oscillations and
-   should be between 0 (no oscillation) and 1 (no growth), values above 1 suggest
-   a reduction of length and thus are unlikely. Winter point (WP) designates the period of the year when
+   should be between 0 (no oscillation) and 1 (oscillation with period of zero growth), values above 1 suggest
+   a period of negative growth, and thus are unlikely. Winter point (WP) designates the period of the year when
    growth is slowest, which
    in the northern hemisphere is often found around 0.2 (February) and in the southern
    hemisphere aorund 0.7 (October) (Pauly and Morgan, 1987).

@@ -15,7 +15,7 @@ ELEFAN(param, Linf_fix = NA, Linf_range = NA, K_range = exp(seq(log(0.1),
   \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column);
 }}
 
-\item{Linf_fix}{numeric; if used the K-Scan method with a fixed Linf value is applied.}
+\item{Linf_fix}{numeric; if used the K-Scan method is applied with a fixed Linf value (i.e. varying K only).}
 
 \item{Linf_range}{numeric vector with potential Linf values. Default is the last length class plus/minus 5 cm}
 
@@ -29,16 +29,16 @@ ELEFAN(param, Linf_fix = NA, Linf_range = NA, K_range = exp(seq(log(0.1),
 \item{MA}{number indicating over how many length classes the moving average should be performed (defalut: 5, for
 more information see \link{lfqRestructure}).}
 
-\item{addl.sqrt}{additional squareroot transformation of positive values according to Brey et al. (1988).
-(defalut: FALSE, for more information see \link{lfqRestructure}).}
+\item{addl.sqrt}{Passed to \link{lfqRestructure}. Applied an additional square-root transformation of positive values according to Brey et al. (1988).
+(default: FALSE, for more information see \link{lfqRestructure}).}
 }
 \description{
 Electronic LEngth Frequency ANalysis for estimating growth parameter of exploited fish populations.
 }
 \details{
-This functions allows to perform the K-Scan and Response sruface analysis to estimate growth parameters.
-   It combines the restructuring of length-frequency data (\link{lfqRestructure}) and the fitting of VBGF
-   curves through the restructured data (\link{lfqFitCurves}). K-Scan is a method, to search for the K
+This functions allows to perform the K-Scan and Response surface analysis to estimate growth parameters.
+   It combines the step of restructuring length-frequency data (\link{lfqRestructure}) followed by the fitting of VBGF
+   curves through the restructured data (\link{lfqFitCurves}). K-Scan is a method used to search for the K
    parameter with the best fit while keeping the Linf fixed. In contrast, with response surface analysis
    both parameters are estimated and the fits are displayed in a heatmap.
 }

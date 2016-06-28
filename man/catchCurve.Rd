@@ -62,7 +62,7 @@ This function applies the linearized catch curve or the
    the cumulative catch curve.
 }
 \details{
-This function includes a so called 'locator' function, which asks you to
+This function includes the \link{identify} function, which asks you to
   choose two points from a graph manually. The two points which you choose by clicking
   on the plot in the graphical device represent the start and end of the data points,
   which should be used for the analysis. Based on these points the regression line
