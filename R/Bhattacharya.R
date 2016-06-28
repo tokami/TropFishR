@@ -52,9 +52,9 @@
 #'    \item \strong{cohort_plots} list with analysis plots (when savePlots = TRUE).
 #'    }
 #'
-#' @importFrom grDevices colorRampPalette dev.new dev.off recordPlot rgb
-#' @importFrom graphics abline axis barplot box contour grid hist identify image layout legend lines locator matplot mtext par plot points rect segments text title
-#' @importFrom stats aggregate deviance dnorm lm lowess na.omit nlm nls optim optimise optimize predict qt rnorm sd update
+#' @importFrom grDevices dev.new dev.off recordPlot
+#' @importFrom graphics abline hist identify layout lines par plot points text title
+#' @importFrom stats dnorm lm rnorm sd
 #'
 #' @references
 #' Bhattacharya, C.G., 1967. A simple method of resolution of a distribution into Gaussian

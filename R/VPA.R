@@ -26,7 +26,7 @@
 #'   catch does spatially or temporarily not reflect catch for fishing ground of
 #'   a whole year.
 #' @param algorithm an Algorithm to use to solve for fishing mortality. The default
-#'   setting \code{"new"} uses \code{\link[stats]{optimize}},
+#'   setting \code{"new"} uses \code{\link[stats]{optimise}},
 #'   while \code{"old"} uses the algorithm described by Sparre and Venema (1998).
 #' @param plus_group logical; indicating if the last length group is a plus group
 #' @param plot logical; indicating whether a plot should be printed
@@ -87,9 +87,8 @@
 #'   and catches for plotting;
 #' }
 #'
-#' @importFrom grDevices colorRampPalette dev.new dev.off recordPlot rgb
-#' @importFrom graphics abline axis barplot box contour grid hist identify image layout legend lines locator matplot mtext par plot points rect segments text title
-#' @importFrom stats aggregate deviance dnorm lm lowess na.omit nlm nls optim optimise optimize predict qt rnorm sd update
+#' @importFrom graphics plot
+#' @importFrom stats optimise
 #'
 #' @references
 #' Jones, R., 1984. Assessing the effects of changes in exploitation pattern using length
@@ -223,7 +222,7 @@ VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
           Fcalc <- function(sur.F=sur.M){
             ((sur.F/(sur.F+sur.M)) * (exp(sur.F+sur.M) - 1) - (sur.C / sur.Ntplus1))^2
           }
-          tmp <- optimize(Fcalc, interval=c(0,100))
+          tmp <- optimise(Fcalc, interval=c(0,100))
           sur.F <- tmp$min
         }
 
