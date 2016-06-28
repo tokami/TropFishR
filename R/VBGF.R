@@ -53,6 +53,10 @@
 #'
 #' @return A vector with estimated lengths corresponding to provided ages.
 #'
+#' @importFrom grDevices colorRampPalette dev.new dev.off recordPlot rgb
+#' @importFrom graphics abline axis barplot box contour grid hist identify image layout legend lines locator matplot mtext par plot points rect segments text title
+#' @importFrom stats aggregate deviance dnorm lm lowess na.omit nlm nls optim optimise optimize predict qt rnorm sd update
+#'
 #' @references
 #'
 #' Somers, I. F. (1988). On a seasonally oscillating growth function.

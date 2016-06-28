@@ -30,6 +30,8 @@
 #'    in the northern hemisphere is often found around 0.2 (February) and in the southern
 #'    hemisphere aorund 0.7 (October) (Pauly and Morgan, 1987).
 #'
+#' @importFrom stats na.omit
+#'
 #' @references
 #' Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and expanded
 #' user's guide to ELEFAN 0, 1 and 2.
