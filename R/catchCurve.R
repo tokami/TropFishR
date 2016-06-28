@@ -59,7 +59,7 @@
 #' summary(output$linear_mod_sel)
 #'  }
 #'
-#' @details This function includes a so called 'locator' function, which asks you to
+#' @details This function includes the \link{identify} function, which asks you to
 #'   choose two points from a graph manually. The two points which you choose by clicking
 #'   on the plot in the graphical device represent the start and end of the data points,
 #'   which should be used for the analysis. Based on these points the regression line
@@ -105,6 +105,10 @@
 #'   probability to be caught),
 #'   \item \strong{L75}: length at which fish have a 75% probability to be caught;
 #' }
+#'
+#' @importFrom grDevices dev.new
+#' @importFrom graphics identify par plot
+#' @importFrom stats lm na.omit
 #'
 #' @references
 #' Baranov, F.I., 1926. On the question of the dynamics of the fishing industry.
