@@ -37,7 +37,7 @@
 #' data(gillnet)
 #'
 #' select_Millar(gillnet, x0 = c(10,3), rtype = "lognorm")
-#' output <- select_Millar(gillnet, x0 = c(60,4), rtype = "norm.loc")
+#' output <- select_Millar(gillnet, x0 = c(60,4), rtype = "norm.loc", plot=FALSE)
 #'
 #' plot(output,plotlens=seq(40,90,0.1))
 #'
