@@ -21,7 +21,6 @@ data(emperor)
 output <-  prod_mod_ts(emperor, method  = "Fox")
 plot(output, correlation_plots = TRUE)
 
-
 }
 \references{
 Dharmendra, D., Solmundsson, J., 2005. Stock assessment of the offshore Mauritian banks

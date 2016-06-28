@@ -31,7 +31,7 @@ This function is used in the analysis of growth parameters with the \link{ELEFAN
 }
 \examples{
 data(trout)
-lfqRestructure(trout)
+lfqRestructure(param = trout)
 
 }
 \references{

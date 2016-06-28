@@ -38,6 +38,7 @@
 #'
 #' @importFrom grDevices colorRampPalette
 #' @importFrom graphics abline axis grid image mtext par plot text title
+#' @importFrom utils setTxtProgressBar txtProgressBar
 #'
 #' @references
 #' Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and expanded

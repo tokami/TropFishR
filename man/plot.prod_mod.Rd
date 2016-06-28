@@ -22,7 +22,6 @@ data(trawl_fishery_Java)
 output <-  prod_mod(data = trawl_fishery_Java)
 plot(output, display_years = TRUE)
 
-
 }
 \references{
 Fox, W. W. Jr., 1970. An exponential surplus-yield model for optimizing exploited fish

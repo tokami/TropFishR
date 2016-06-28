@@ -89,7 +89,7 @@ trout$K <- 0.4
 # retrieve sampling times from catch matrix
 s_dates <- as.POSIXlt(trout$dates, format="\%d.\%m.\%Y")
 
-recruitment(trout, tsample = s_dates$yday/365, plot = TRUE)
+recruitment(param = trout, tsample = s_dates$yday/365, plot = TRUE)
 
 }
 \references{

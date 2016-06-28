@@ -34,7 +34,7 @@ catch does spatially or temporarily not reflect catch for fishing ground of
 a whole year.}
 
 \item{algorithm}{an Algorithm to use to solve for fishing mortality. The default
-setting \code{"new"} uses \code{\link[stats]{optimize}},
+setting \code{"new"} uses \code{\link[stats]{optimise}},
 while \code{"old"} uses the algorithm described by Sparre and Venema (1998).}
 
 \item{plus_group}{logical; indicating if the last length group is a plus group}
