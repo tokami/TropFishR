@@ -10,7 +10,7 @@
 #'   \item \strong{dates} dates of sampling times (class Date),
 #'   \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column);
 #' }
-#' @param MA number indicating over how many length classes the moving average should be performed (defalut: 5)
+#' @param MA number indicating over how many length classes the moving average should be performed (default: 5)
 #' @param addl.sqrt additional squareroot transformation of positive values according to Brey et al. (1988)
 #'    (default: FALSE).
 #'    Particularly useful if many observations have a low frequency (<10).
