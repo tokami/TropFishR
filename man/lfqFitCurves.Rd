@@ -22,6 +22,14 @@ lfqFitCurves(lfq, par = list(Linf = 100, K = 0.1, C = 0, WP = 0))
   \item \strong{WP} winter point (WP = ts + 0.5) (default: 0);
 }}
 }
+\value{
+A list with following list objects:
+\itemize{
+  \item \strong{max_ESP}: maximum explained sum of peaks,
+  \item \strong{startingSample}: sample number which yield in best ESP value,
+  \item \strong{startingLength}: length (in cm) which yield in best ESP value;
+}
+}
 \description{
 Second step of the Electronic LEngth Frequency ANalysis (ELEFAN), which fits von Bertalanffy
    growth curves through restructured length-frequency data.

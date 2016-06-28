@@ -22,6 +22,18 @@
 #' @details This function is used in the analysis of growth parameters with the \link{ELEFAN} function. It is often
 #'    referred to as ELEFAN 0.
 #'
+#' @return A list with the input parameters and following list objects:
+#' \itemize{
+#'   \item \strong{samplingPeriod}: length of sampling period in years,
+#'   \item \strong{samplingDays}: time of sampling times in relation to first sampling time,
+#'   \item \strong{delta_t}: array with time differences between relative sampling time set to zero and
+#'      other sampling times,
+#'   \item \strong{rcounts}: restructured frequencies,
+#'   \item \strong{peaks_mat}: matrix with positive peaks with distinct values,
+#'   \item \strong{ASP}: available sum of peaks, sum of posititve peaks which could be potential be hit by
+#'      growth curves;
+#' }
+#'
 #' @references
 #' Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and expanded
 #' user's guide to ELEFAN 0, 1 and 2.
@@ -81,7 +93,8 @@ lfqRestructure <- function(param, MA = 5, addl.sqrt = FALSE){
     # sampling period # OLD: sample.period.days <- days[length(days)] - days[1]  sp.years <- sample.period.days/365
     sp.years <- days.years[length(days.years)] - days.years[1]
 
-    time_diff_year <- as.numeric(diff(dates.all)/365)
+    # OLD: time_diff_year <- as.numeric(diff(dates.all)/365)   # cum_diff_year <- cumsum(time_diff_year)
+    time_diff_year <- as.numeric(diff(julian_days))
     cum_diff_year <- cumsum(time_diff_year)
 
     # from dates of sampling times to relative delta ts

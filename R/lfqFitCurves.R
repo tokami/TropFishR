@@ -30,6 +30,13 @@
 #'    in the northern hemisphere is often found around 0.2 (February) and in the southern
 #'    hemisphere aorund 0.7 (October) (Pauly and Morgan, 1987).
 #'
+#' @return A list with following list objects:
+#' \itemize{
+#'   \item \strong{max_ESP}: maximum explained sum of peaks,
+#'   \item \strong{startingSample}: sample number which yield in best ESP value,
+#'   \item \strong{startingLength}: length (in cm) which yield in best ESP value;
+#' }
+#'
 #' @importFrom stats na.omit
 #'
 #' @references

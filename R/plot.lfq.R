@@ -21,6 +21,7 @@
 #' }
 #' @param multiple_best_fits numeric; indicating which startingPoints should be used in case there are more
 #'    than one (default: 1)
+#' @param col colour of growth curves (default: "blue")
 #' @param ... additional options of the plot function
 #'
 #'
@@ -29,7 +30,11 @@
 #' res <- lfqRestructure(trout)
 #' plot(x = res, Fname = "rcounts")
 #' plot(res, Fname = "rcounts", par = list(Linf = 16, K = 0.77))
-#' plot(res, Fname = "rcounts", par = list(Linf = 16, K = 0.77, C= 0.5, WP = 0.6))
+#' plot(res, Fname = "catch", par = list(Linf = 16, K = 0.77, C= 0.5, WP = 0.6))
+#'
+#' # plot length frequency data without restructuring
+#' class(trout) <- "lfq"
+#' plot(trout, Fname = "catch")
 #'
 #' @details This function runs \link{lfqFitCurves} when growth parameters are provided. Thereby the starting point
 #'    calculated. It can happen that different starting points return the same fit (ESP value), with
@@ -83,7 +88,7 @@
 
 plot.lfq <- function(x, Fname = "rcounts",
                      par = NULL,
-                     multiple_best_fits = 1, ...){
+                     multiple_best_fits = 1, col = "blue", ...){
   dates <- x$dates
   classes <- x$midLengths
   catch <- get(Fname, x)
@@ -93,14 +98,15 @@ plot.lfq <- function(x, Fname = "rcounts",
 
   # get length of smapling period
   # continuous time in years
-  days <- as.numeric(dates - as.Date((dates[1])))
-  days.years <- days/365
+  julian_days1 <- as.numeric(format(dates, format="%Y")) + as.numeric(format(dates, format="%j"))/366
+  days.years <- julian_days1 - julian_days1[1]  # OLD: #days <- as.numeric(dates - as.Date((dates[1]))) #days.years <- days/365
 
   # for x axis
   months_first <- update(object = dates, mdays = 1, hours = 0, minutes = 0, seconds = 0)
-  date_seq <- seq.Date(months_first[1],months_first[length(months_first)],by = "month")
+  date_seq <- seq.Date(months_first[1],months_first[length(months_first)], by = "month")
   date_label <- format(date_seq, "%b")
-  date_ticks <- as.numeric(date_seq - as.Date((dates[1])))/365
+  julian_days2 <- as.numeric(format(date_seq, format="%Y")) + as.numeric(format(date_seq, format="%j"))/366
+  date_ticks <- julian_days2 - julian_days1[1]  #date_ticks <- as.numeric(date_seq - as.Date((dates[1])))/365
 
   # for years beneath x axis
   year <- unique(format(dates, "%Y"))
@@ -111,21 +117,21 @@ plot.lfq <- function(x, Fname = "rcounts",
   year_ticks <- date_ticks[year_pre]
 
   #for plotting
-  xplot <- c((min(days.years)-0.2),(max(days.years)+0.2))
+  xplot <- c((min(days.years, na.rm = TRUE)-0.2),(max(days.years, na.rm = TRUE)+0.2))
   yplot <- c(0,classes[length(classes)]*1.1)  #### c(classes[1],classes[length(classes)])
 
 
   # Plot with rearranged histogramms
   par(mar = c(5, 5, 1, 1) + .1)
   plot(xplot, yplot, type = "n",axes = FALSE, #ylim = c(0,max(yplot)),
-       ann = FALSE,  xaxs = "i", yaxs = "i",...)
+       ann = FALSE,  xaxs = "i", yaxs = "i")
   axis(1,at = date_ticks, labels = date_label, cex.axis = 1.2)
   mtext(side = 1, at = year_ticks, text = year, line = 3, cex = 1.2)
   axis(2, cex.axis = 1.2)
   mtext(side = 2, outer = F, line = 3.5, "Length [cm]", cex = 1.2)
   box(col = "gray40") #bty = "L"
 
-  min_delta_t <- min(diff(days.years))
+  min_delta_t <- min(diff(days.years),na.rm=TRUE)
   max_peak <- max(abs(catch),na.rm = TRUE)
   if(min_delta_t <= max_peak){
     bar_height_adjust <- floor(max_peak /  min_delta_t)
@@ -150,17 +156,26 @@ plot.lfq <- function(x, Fname = "rcounts",
   }
 
   # when parameters given then plot growth curves
-  if(!is.null(par[[1]])){
-    if(!("Linf" %in% names(par)) | !("K" %in% names(par))) stop("At least 'Linf' and 'K' have to be defined in par!")
-    Linfi <- get("Linf",par)
-    Ki <- get("K",par)
-    if("C" %in% names(par)){
-      C <- get("C",par)
-    }else C <- 0
-    if("WP" %in% names(par)){
-      WP <- get("WP",par)
-    }else WP <- 0
-    if("ts" %in% names(par)) WP <- 0.5 + get("ts",par)
+  if(!is.null(par[[1]]) | ("K_opt" %in% names(x) & "Linf_fix" %in% names(x))){
+    if(!is.null(par[[1]])){
+      if(!("Linf" %in% names(par)) | !("K" %in% names(par))) stop("At least 'Linf' and 'K' have to be defined in par!")
+      Linfi <- get("Linf",par)
+      Ki <- get("K",par)
+      if("C" %in% names(par)){
+        C <- get("C",par)
+      }else C <- 0
+      if("WP" %in% names(par)){
+        WP <- get("WP",par)
+      }else WP <- 0
+      if("ts" %in% names(par)) WP <- 0.5 + get("ts",par)
+    }
+    if(("K_opt" %in% names(x) & "Linf_fix" %in% names(x))){
+      Linfi <- x$Linf_fix
+      Ki <- x$K_opt[multiple_best_fits]
+      C <- x$C
+      WP <-  x$WP
+      par <- list(Linf = Linfi, K = Ki, C = C, WP = WP)
+    }
 
     res <- lfqFitCurves(lfq = x, par = par)
 
@@ -220,7 +235,7 @@ plot.lfq <- function(x, Fname = "rcounts",
       Lt <- Linfi * (1 - exp(-Ki * (t_cohorti - tstart - addi) +
                                (((C*Ki)/(2*pi)) * sin(2*pi*((t_cohorti - tstart - addi)-(WP-0.5)))) -
                                (((C*Ki)/(2*pi)) * sin(2*pi*(0-(WP-0.5))))))
-      lines(y = Lt, x = t_cohorti, lty=2, col='blue')
+      lines(y = Lt, x = t_cohorti, lty=2, col=col)
     }
     return(res)
   }

@@ -32,8 +32,31 @@ more information see \link{lfqRestructure}).}
 \item{addl.sqrt}{Passed to \link{lfqRestructure}. Applied an additional square-root transformation of positive values according to Brey et al. (1988).
 (default: FALSE, for more information see \link{lfqRestructure}).}
 }
+\value{
+A list with the input parameters and following list objects:
+\itemize{
+  \item \strong{samplingPeriod}: length of sampling period in years,
+  \item \strong{samplingDays}: time of sampling times in relation to first sampling time,
+  \item \strong{delta_t}: array with time differences between relative sampling time set to zero and
+     other sampling times,
+  \item \strong{rcounts}: restructured frequencies,
+  \item \strong{peaks_mat}: matrix with positive peaks with distinct values,
+  \item \strong{ASP}: available sum of peaks, sum of posititve peaks which could be potential be hit by
+     growth curves,
+  \item \strong{score_mat}: matrix with scores for each Linf (only Linf_fix) and K combination,
+  \item \strong{ESP_starting_point_L}: array with best starting points for each Linf
+     (only Linf_fix) and K combination,
+  \item \strong{C}: amplitude of growth oscillation,
+  \item \strong{WP}: winter point winter point (WP = ts + 0.5);
+when the K-Scan method is applied (fixed Linf) in addition following parameters:
+  \item \strong{Rn_max}: highest score value,
+  \item \strong{Linf_fix}: fixed Linf (asymptotic length of VBGF),
+  \item \strong{K_opt}: curving factor (of VBGF, K) which returns best score,
+  \item \strong{startingPoints}: starting sample and starting length yielding in best fit;
+}
+}
 \description{
-Electronic LEngth Frequency ANalysis for estimating growth parameter of exploited fish populations.
+Electronic LEngth Frequency ANalysis for estimating growth parameter.
 }
 \details{
 This functions allows to perform the K-Scan and Response surface analysis to estimate growth parameters.

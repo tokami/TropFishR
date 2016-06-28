@@ -20,6 +20,19 @@ lfqRestructure(param, MA = 5, addl.sqrt = FALSE)
 (default: FALSE).
 Particularly useful if many observations have a low frequency (<10).}
 }
+\value{
+A list with the input parameters and following list objects:
+\itemize{
+  \item \strong{samplingPeriod}: length of sampling period in years,
+  \item \strong{samplingDays}: time of sampling times in relation to first sampling time,
+  \item \strong{delta_t}: array with time differences between relative sampling time set to zero and
+     other sampling times,
+  \item \strong{rcounts}: restructured frequencies,
+  \item \strong{peaks_mat}: matrix with positive peaks with distinct values,
+  \item \strong{ASP}: available sum of peaks, sum of posititve peaks which could be potential be hit by
+     growth curves;
+}
+}
 \description{
 First step of the Electronic LEngth Frequency ANalysis (ELEFAN), which is restructuring
    length-frequency data (lfq). This is done according to a certain protocol, described by many authors (see

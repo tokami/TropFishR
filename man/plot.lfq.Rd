@@ -5,7 +5,7 @@
 \title{Plotting of length frequency data (with VBGF curves)}
 \usage{
 \method{plot}{lfq}(x, Fname = "rcounts", par = NULL,
-  multiple_best_fits = 1, ...)
+  multiple_best_fits = 1, col = "blue", ...)
 }
 \arguments{
 \item{x}{a list of the class "lfq" consisting of following parameters:
@@ -46,7 +46,11 @@ data(trout)
 res <- lfqRestructure(trout)
 plot(x = res, Fname = "rcounts")
 plot(res, Fname = "rcounts", par = list(Linf = 16, K = 0.77))
-plot(res, Fname = "rcounts", par = list(Linf = 16, K = 0.77, C= 0.5, WP = 0.6))
+plot(res, Fname = "catch", par = list(Linf = 16, K = 0.77, C= 0.5, WP = 0.6))
+
+# plot length frequency data without restructuring
+class(trout) <- "lfq"
+plot(trout, Fname = "catch")
 
 }
 \references{
