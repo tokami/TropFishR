@@ -26,7 +26,9 @@
 #' ELEFAN(trout, Linf_fix = 16)
 #'
 #' # Surface response analysis
-#' ELEFAN(trout, K_range = seq(0.1,2,0.1), Linf_range = seq(14,17,1))
+#' ELEFAN(trout, K_range = seq(0.1,2,0.1), Linf_range = seq(12,17,1))
+#'
+#' # ELEFAN(trout) # default settings using fine-resolution intervals
 #'
 #' @details This functions allows to perform the K-Scan and Response surface analysis to estimate growth parameters.
 #'    It combines the step of restructuring length-frequency data (\link{lfqRestructure}) followed by the fitting of VBGF
@@ -111,6 +113,9 @@ ELEFAN <- function(param, Linf_fix = NA, Linf_range = NA,
 
   ESP_starting_point_L <- array(NA,dim=c(length(Ks),2,length(Linfs)))
   ESP_list_L <- matrix(NA,nrow=length(Ks),ncol=length(Linfs))
+  nlk <- prod(dim(ESP_list_L))
+  pb <- txtProgressBar(min=1, max=nlk, style=3)
+  counter <- 1
   for(li in 1:length(Linfs)){
 
     ESP_starting_point_K <- matrix(NA,nrow=length(Ks),ncol=2)
@@ -128,6 +133,10 @@ ELEFAN <- function(param, Linf_fix = NA, Linf_range = NA,
       # export max_ESP, startingSample, startingClass
       ESP_list_K[ki] <- max_ESP
       ESP_starting_point_K[ki,] <- c(startingSample,startingLength)
+
+      # update counter and progress bar
+      setTxtProgressBar(pb, counter)
+      counter <- counter + 1
     }
     ESP_list_L[,li] <- ESP_list_K
     ESP_starting_point_L[,,li] <- ESP_starting_point_K

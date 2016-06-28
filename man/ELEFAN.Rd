@@ -49,7 +49,9 @@ data(trout)
 ELEFAN(trout, Linf_fix = 16)
 
 # Surface response analysis
-ELEFAN(trout, K_range = seq(0.1,2,0.1), Linf_range = seq(14,17,1))
+ELEFAN(trout, K_range = seq(0.1,2,0.1), Linf_range = seq(12,17,1))
+
+# ELEFAN(trout) # default settings using fine-resolution intervals
 
 }
 \references{

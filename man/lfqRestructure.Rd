@@ -14,7 +14,7 @@ lfqRestructure(param, MA = 5, addl.sqrt = FALSE)
   \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column);
 }}
 
-\item{MA}{number indicating over how many length classes the moving average should be performed (defalut: 5)}
+\item{MA}{number indicating over how many length classes the moving average should be performed (default: 5)}
 
 \item{addl.sqrt}{additional squareroot transformation of positive values according to Brey et al. (1988)
 (default: FALSE).

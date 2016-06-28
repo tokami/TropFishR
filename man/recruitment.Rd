@@ -13,11 +13,11 @@ recruitment(param, tsample, catch_column = NA, plot = FALSE)
   data),
   \item \code{Linf}: infinite length for investigated species in cm [cm],
   \item \code{K}: growth coefficent for investigated species per year [1/year],
-  \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
+  \item \code{t0}: theoretical time zero, when growth curve crosses length equalling zero,
   \item \code{D}: optional; for generalised vBGF
   \item \code{C}: optional; intensity of the (sinusoid) growth oscillations of
   the model,
-  \item \code{ts}: optional; onset of the first oscillation with regard to t = 0,
+  \item \code{ts}: optional; onset of the positive phase of the growth oscillation (fraction of year; i.e. Jan 1 = 0, July 1 = 0.5, etc.),
   \item \code{catch}: catches, vector or matrix with catches of subsequent sampling
   times
 }}
@@ -51,21 +51,21 @@ A list with the input parameters and following list objects:
 This function estimates recrutiment patterns from length-frequency data.
 }
 \details{
-This function allows to extract information about the recruitment patterns of a
+This function calculates recruitment patterns of a
 stock by backward projection onto the length axis of a set of length frequency data
 using the (special, generalised or seasonalised)
 von Bertallanfy growth curve (vBGF, Pauly 1982). The method assumes that (i) all fish in a
 data set grow as described by a single set of growth parameters and (ii) one month out
-of twelve always has zero recruitment. The second assumption is probably not met as
-in temperate waters more than one month has zero recruitment and in the tropics
-there might always be recruitment.
-If t0 is not provided, only a realtive recruitment pattern can be estimated. It is
-therefore not possible to assign months to the results. However, an estimate of t0
+of twelve always has zero recruitment. The second assumption is probably not met, since
+temperate species may contain more than one month with zero recruitment, while tropical species
+may have more constant recruitment without months of no recruitment.
+If t0 is not provided, a relative recruitment pattern will be estimated without
+specific month values returned in the results. However, an estimate of t0
 can be obtained by the time
 lag between peak spawning and recruitment. Several length-frequency data sets
 can be used to estimate the recrutiment pattern by providing catch as a matrix and
 setting catch_column to NA (default). Then the fraction per time is calculated for
-each size class in each sample an then pooled together. For the generalised vBGF D is
+each size class in each sample and then pooled together. For the generalised vBGF, D is
 required, for the seasonalised vBGF C, ts and D.
 }
 \examples{

@@ -44,7 +44,7 @@ This function runs \link{lfqFitCurves} when growth parameters are provided. Ther
 \examples{
 data(trout)
 res <- lfqRestructure(trout)
-require(lubridate)
+library(lubridate)
 plot(x = res, Fname = "rcounts")
 plot(res, Fname = "rcounts", par = list(Linf = 16, K = 0.77))
 plot(res, Fname = "rcounts", par = list(Linf = 16, K = 0.77, C= 0.5, WP = 0.6))
