@@ -15,7 +15,7 @@
   \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column);
 }}
 
-\item{Fname}{indicating whether restructured ("rcounts") or original frequencies ("counts") should be
+\item{Fname}{indicating whether restructured ("rcounts") or original frequencies ("catch") should be
 displayed (default: "rcounts")}
 
 \item{par}{a list with following growth parameters (default NULL):
@@ -28,6 +28,8 @@ displayed (default: "rcounts")}
 
 \item{multiple_best_fits}{numeric; indicating which startingPoints should be used in case there are more
 than one (default: 1)}
+
+\item{col}{colour of growth curves (default: "blue")}
 
 \item{...}{additional options of the plot function}
 }

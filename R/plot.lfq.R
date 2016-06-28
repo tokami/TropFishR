@@ -10,7 +10,7 @@
 #'   \item \strong{dates} dates of sampling times (class Date),
 #'   \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column);
 #' }
-#' @param Fname indicating whether restructured ("rcounts") or original frequencies ("counts") should be
+#' @param Fname indicating whether restructured ("rcounts") or original frequencies ("catch") should be
 #'    displayed (default: "rcounts")
 #' @param par a list with following growth parameters (default NULL):
 #'  \itemize{

@@ -120,8 +120,7 @@ This function applies the Beverton & Holt's yield per recruit model
    fishing mortality scenarions (in combination with gear changes).
 }
 \details{
-better to treat last group always as a plus group.....
-   The Thompson and Bell model incorporates an iteration step simulating the
+The Thompson and Bell model incorporates an iteration step simulating the
    stock by means
    of the \code{\link{stock_sim}} function. In case changes in gear
    characteristics -
@@ -131,6 +130,12 @@ better to treat last group always as a plus group.....
    to be provided and
    the prediction models make use of the selectivity \code{\link{select_ogive}}
    function.
+   Sparre and Venema (1998) recommend to treat the last length class always as plus group.
+   This model is very sensitive to zeros in the ultimate length classes. If weird results are returned,
+   it is recommended to cut length classes with zero observations or to change the interval between
+   length classes.
+
+
    F0.1 according to Gulland and Boerema 1973
 
    Caution:
