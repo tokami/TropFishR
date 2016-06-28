@@ -25,6 +25,9 @@
 #'    \code{"select_Millar"}, which is created by applying Millar's selectivity model
 #'    \code{\link{select_Millar}}.
 #'
+#' @importFrom grDevices dev.new
+#' @importFrom graphics abline axis matplot par plot points
+#'
 #' @references
 #'  Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
 #'  using log-linear models. \emph{ICES Journal of Marine Science: Journal du Conseil},
@@ -64,7 +67,7 @@ plot.select_Millar <- function(x,
   if(standardise) rmatrix = rmatrix / max(rmatrix, na.rm = TRUE)
 
 
-  dev.new()
+  #dev.new()
   #create plot
   if(deviance_plot & ((nmeshes > 2 & AreLensUnique) | nmeshes == 2)){
     op <- par(mfrow = c(2,1), xpd = FALSE,

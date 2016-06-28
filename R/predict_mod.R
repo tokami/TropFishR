@@ -194,6 +194,8 @@
 #'   }
 #' }
 #'
+#' @importFrom graphics plot
+#'
 #' @references
 #' Berkeley, S.A., and Houde, E.D., 1980. Swordfish, Xiphias gladius, dynamics in
 #' the Straits of Florida. \emph{ICES C.M.}, 11.

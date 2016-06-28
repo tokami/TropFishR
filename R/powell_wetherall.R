@@ -47,6 +47,10 @@
 #'   \item \strong{Z_K}: total mortality divided by K.
 #' }
 #'
+#' @importFrom grDevices dev.new recordPlot
+#' @importFrom graphics abline identify par plot points
+#' @importFrom stats lm qt
+#'
 #' @references
 #' Powell, D.G., 1979. Estimation of mortality and growth parameters from the length-
 #' frequency of a catch. \emph{Rapp.P.-v.Reun.CIEM}, 175:167-169

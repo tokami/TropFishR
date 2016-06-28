@@ -20,6 +20,9 @@
 #' output <- select(bream, plot = FALSE)
 #' plot(output, regression_fit = TRUE)
 #'
+#' @importFrom grDevices dev.new
+#' @importFrom graphics abline axis lines par plot segments text
+#'
 #' @references
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 #' Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.
@@ -54,7 +57,7 @@ plot.select <- function(x, regression_fit = TRUE,
     classes.num.plot <- classes.num - 0.5
     xL <- seq(min(classes.num,na.rm=TRUE),max(classes.num,na.rm=TRUE),0.1)
 
-    dev.new()
+    #dev.new()
     #create plot
     if(regression_fit){
       op <- par(mfrow = c(2,1), xpd = FALSE,
@@ -82,10 +85,10 @@ plot.select <- function(x, regression_fit = TRUE,
     axis(side=4, at = pretty(range(SNet1)))
     mtext("Fractions retained", side=4, line=3)
     text(labels = paste("ms = ",msNet1,"cm"), x = LmNet1, y =
-           ((exp(- ((LmNet1 - LmNet1)^2 / (2 * s2))))/0.98),
+           ((exp(- ((LmNet1 - LmNet1)^2 / (2 * s2))))/0.92),
          col = cols[1],xpd = TRUE)
     text(labels = paste("ms = ",msNet2,"cm"), x = LmNet2, y =
-           ((exp(- ((LmNet2 - LmNet2)^2 / (2 * s2))))/0.98),
+           ((exp(- ((LmNet2 - LmNet2)^2 / (2 * s2))))/0.92),
          col = cols[2],xpd = TRUE)
     par(op)
   }
@@ -102,7 +105,7 @@ plot.select <- function(x, regression_fit = TRUE,
 
     xL <- seq(min(classes.num,na.rm=TRUE),max(classes.num,na.rm=TRUE),0.1)
 
-    dev.new()
+    #dev.new()
     if(regression_fit){
       op <- par(mfrow = c(2,1), xpd = FALSE,
                 mar = c(4, 4, 2, 2) + 0.1,

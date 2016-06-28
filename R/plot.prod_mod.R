@@ -12,6 +12,7 @@
 #' output <-  prod_mod(data = trawl_fishery_Java)
 #' plot(output, display_years = TRUE)
 #'
+#' @importFrom graphics abline layout legend lines par plot points segments text title
 #'
 #' @references
 #' Fox, W. W. Jr., 1970. An exponential surplus-yield model for optimizing exploited fish

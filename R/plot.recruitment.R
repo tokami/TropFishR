@@ -19,6 +19,9 @@
 #' output <- recruitment(param = dat, tsample = 0.25)
 #' plot(output, percent = FALSE)
 #'
+#' @importFrom grDevices dev.new
+#' @importFrom graphics axis barplot par
+#'
 #' @references
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 #' Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
@@ -53,13 +56,13 @@ plot.recruitment <- function(x, percent = TRUE, col = "darkgreen",
     mids <- barplot(xvari, xlab="", ann=TRUE, plot = FALSE)
   }
 
-  #create VPA plot
-  dev.new()
-  op <- par(mar = c(7, 5, 4, 5) + 0.3)
+  #create plot
+  #dev.new()
+  #op <- par(mar = c(7, 5, 4, 5) + 0.3)
   barplot(xvari, col = col, ylab = ytitle,
           xlab = xtitle, ylim = ylimits)
   if("t0" %in% names(pes)){
     axis(1, at=mids, labels=months_abb)
   }else writeLines("If no t0 is provided only relative recruitment pattern can be estimated.")
-  par(op)
+  #par(op)
 }
