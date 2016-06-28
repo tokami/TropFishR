@@ -179,7 +179,7 @@ plot(output)
 
 data(hake)
 select.list <- list(selecType = 'trawl_ogive', L50 = 20, L75 = 24)
-output <- predict_mod(param = hake, FM_change = seq(0,3,0.01),
+output <- predict_mod(param = hake, E_change = seq(0,1,0.05),
                       Lc_tc_change = seq(5,80,1), s_list = select.list,
                       type = 'ypr', plot = FALSE)
 plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "Y_R.rel", identify = FALSE)
@@ -215,7 +215,7 @@ plot(output, xaxis = "E")
 #______________________________________
 # with length structured data
 data(hake)
-predict_mod(hake,FM_change = seq(0.1,3,0.1), type = 'ThompBell')
+predict_mod(hake,FM_change = seq(0.1,3,0.1), type = 'ThompBell', plot = TRUE)
 
 }
 \references{

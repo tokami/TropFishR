@@ -78,7 +78,7 @@
 #'
 #' data(hake)
 #' select.list <- list(selecType = 'trawl_ogive', L50 = 20, L75 = 24)
-#' output <- predict_mod(param = hake, FM_change = seq(0,3,0.01),
+#' output <- predict_mod(param = hake, E_change = seq(0,1,0.05),
 #'                       Lc_tc_change = seq(5,80,1), s_list = select.list,
 #'                       type = 'ypr', plot = FALSE)
 #' plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "Y_R.rel", identify = FALSE)
@@ -114,7 +114,7 @@
 #' #______________________________________
 #' # with length structured data
 #' data(hake)
-#' predict_mod(hake,FM_change = seq(0.1,3,0.1), type = 'ThompBell')
+#' predict_mod(hake,FM_change = seq(0.1,3,0.1), type = 'ThompBell', plot = TRUE)
 #'
 #' @details better to treat last group always as a plus group.....
 #'    The Thompson and Bell model incorporates an iteration step simulating the
@@ -195,6 +195,7 @@
 #' }
 #'
 #' @importFrom graphics plot
+#' @importFrom utils setTxtProgressBar txtProgressBar
 #'
 #' @references
 #' Berkeley, S.A., and Houde, E.D., 1980. Swordfish, Xiphias gladius, dynamics in
@@ -718,6 +719,11 @@ predict_mod <- function(param, FM_change = NA, E_change = NA, Lc_tc_change = NUL
 
       list_tc_runs <- vector("list",length(tc))
       list_Es <- vector("list",length(tc))
+
+      nlk <- length(tc)
+      pb <- txtProgressBar(min=1, max=nlk, style=3)
+      counter <- 1
+
       for(i in 1:length(tc)){
 
         tci <- tc[i]
@@ -785,6 +791,10 @@ predict_mod <- function(param, FM_change = NA, E_change = NA, Lc_tc_change = NUL
                                  E05 = E[N05],
                                  Emax = E[Nmax])
         list_Es[[i]] <- df_loop_Es
+
+        # update counter and progress bar
+        setTxtProgressBar(pb, counter)
+        counter <- counter + 1
       }
 
       df_Es <- do.call(rbind,list_Es)
@@ -829,6 +839,11 @@ predict_mod <- function(param, FM_change = NA, E_change = NA, Lc_tc_change = NUL
 
       list_Lc_runs <- vector("list", length(Lc))
       list_Es <- vector("list", length(Lc))
+
+      nlk <- length(Lc)
+      pb <- txtProgressBar(min=1, max=nlk, style=3)
+      counter <- 1
+
       for(i in 1:length(Lc)){
 
         Lci <- Lc[i]
@@ -946,6 +961,10 @@ predict_mod <- function(param, FM_change = NA, E_change = NA, Lc_tc_change = NUL
         df_loop_Es$Emax <- E[Nmax]
 
         list_Es[[i]] <- df_loop_Es
+
+        # update counter and progress bar
+        setTxtProgressBar(pb, counter)
+        counter <- counter + 1
       }
 
 
@@ -1053,10 +1072,14 @@ predict_mod <- function(param, FM_change = NA, E_change = NA, Lc_tc_change = NUL
 
       param.loop <- res
 
-      pred.FM_Lc_com_res_loopC_list <- list()
-      pred.FM_Lc_com_res_loopY_list <- list()
-      pred.FM_Lc_com_res_loopB_list <- list()
-      pred.FM_Lc_com_res_loopV_list <- list()
+      pred.FM_Lc_com_res_loopC_list <- vector("list",length(FM_Lc_com_mat.list))
+      pred.FM_Lc_com_res_loopY_list <- vector("list",length(FM_Lc_com_mat.list))
+      pred.FM_Lc_com_res_loopB_list <- vector("list",length(FM_Lc_com_mat.list))
+      pred.FM_Lc_com_res_loopV_list <- vector("list",length(FM_Lc_com_mat.list))
+
+      nlk <- prod(length(FM_Lc_com_mat.list),dim(FM_Lc_com_mat.list[[1]])[2])
+      pb <- txtProgressBar(min=1, max=nlk, style=3)
+      counter <- 1
 
       for(x21 in 1:length(FM_Lc_com_mat.list)){  #loop for length of list == Lc changes
         mati <- FM_Lc_com_mat.list[[x21]]
@@ -1069,6 +1092,10 @@ predict_mod <- function(param, FM_change = NA, E_change = NA, Lc_tc_change = NUL
           res2 <- stock_sim(param.loop, age_unit,
                             stock_size_1, plus_group=plus_group)
           pred.FM_Lc_com_res_loop1_list[[x22]] <- res2$totals
+
+          # update counter and progress bar
+          setTxtProgressBar(pb, counter)
+          counter <- counter + 1
         }
         prev_mat <- do.call(rbind, pred.FM_Lc_com_res_loop1_list)
         prev_matC <- prev_mat[,'totC']
