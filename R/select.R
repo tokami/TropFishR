@@ -62,6 +62,8 @@
 #'   same time.
 #'   To calculate selection factor (SF), L25, L50 and L75 for trawl nets /fisheries.
 #'
+#' @importFrom graphics plot
+#'
 #' @references
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 #' Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.

@@ -59,6 +59,10 @@
 #'   },
 #' }
 #'
+#' @importFrom grDevices colorRampPalette dev.new dev.off recordPlot rgb
+#' @importFrom graphics abline axis barplot box contour grid hist identify image layout legend lines locator matplot mtext par plot points rect segments text title
+#' @importFrom stats aggregate deviance dnorm lm lowess na.omit nlm nls optim optimise optimize predict qt rnorm sd update
+#'
 #' @references
 #' Garcia, S. and N.P. van Zalinge, 1982. Shrimp fishing in Kuwait: methodology
 #'    for a joint analysis of the artisanal and industrial fisheries. pp. 119-142 In:

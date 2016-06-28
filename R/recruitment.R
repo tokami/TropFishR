@@ -45,7 +45,7 @@
 #' # retrieve sampling times from catch matrix
 #' s_dates <- as.POSIXlt(trout$dates, format="%d.%m.%Y")
 #'
-#' recruitment(trout, tsample = s_dates$yday/365, plot = TRUE)
+#' recruitment(param = trout, tsample = s_dates$yday/365, plot = TRUE)
 #'
 #' @details
 #' This function calculates recruitment patterns of a
@@ -79,6 +79,9 @@
 #'   \item \strong{per_recruits}: precentage number of recruits per month.
 #' }
 #'
+#' @importFrom graphics plot
+#' @importFrom stats aggregate
+#'
 #' @references
 #' Brey, T., Soriano, M., Pauly, D., 1988. Electronic length frequency analysis. A
 #' revised and expanded user's guide to ELEFAN 0, 1 and 2. (Second edition).
@@ -102,9 +105,9 @@ recruitment <- function(param, tsample, catch_column = NA, plot = FALSE){
   Linf <- res$Linf
   K <- res$K
   t0 <- ifelse("t0" %in% names(res),res$t0, 0)
-  D <- ifelse("D" %in% names(res),res$D, NA)
-  C <- ifelse("C" %in% names(res),res$C, NA)
-  ts <- ifelse("ts" %in% names(res),res$ts, NA)
+  D <- ifelse("D" %in% names(res),res$D, 1)
+  C <- ifelse("C" %in% names(res),res$C, 0)
+  ts <- ifelse("ts" %in% names(res),res$ts, 0)
   classes <- as.character(res$midLengths)
   # create column without plus group (sign) if present
   classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
@@ -136,13 +139,16 @@ recruitment <- function(param, tsample, catch_column = NA, plot = FALSE){
       tsampli <- tsample
     }
 
-    # special vBGF (D = 1)
-    ti[,i] <- log(1 - classes.num/Linf)/-K + t0 - tsampli
-    # generalised vBGF
-    if(!is.na(D)) ti[,i] <- log(1 - (classes.num/Linf)^D)/(-K*D) + t0 - tsampli
-    # seasonalized vBGF
-    if(!is.na(C) & !is.na(ts)) ti[,i] <- (log(1 - (classes.num/Linf)^D) +
-                                        C * ((K*D)/2*pi)*sin(2*pi)*((t0-tsampli)-ts))/(-K*D) + t0 - tsampli
+    # # special vBGF (D = 1)
+    # ti[,i] <- log(1 - classes.num/Linf)/-K + t0 - tsampli
+    # # generalised vBGF
+    # if(!is.na(D)) ti[,i] <- log(1 - (classes.num/Linf)^D)/(-K*D) + t0 - tsampli
+    # # seasonalized vBGF
+    # if(!is.na(C) & !is.na(ts)) ti[,i] <- (log(1 - (classes.num/Linf)^D) +
+    #                                     C * ((K*D)/2*pi)*sin(2*pi)*((t0-tsampli)-ts))/(-K*D) + t0 - tsampli
+
+    ti[,i] <- (log(1 - (classes.num/Linf)^D) +
+                 C * ((K*D)/2*pi)*sin(2*pi)*((t0-tsampli)-ts))/(-K*D) + t0 - tsampli
 
     # t at S = 0 as fraction of year
     tS_frac[,i] <- ti[,i] - floor(ti[,i])

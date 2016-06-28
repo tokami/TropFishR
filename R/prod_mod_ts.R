@@ -58,6 +58,9 @@
 #'    the Thiel's U statistic \code{sqrt(sum(CPUE - predicted CPUE)/sum(CPUE(t) - CPUE(t-1)))}
 #'    (Wittink, 1988).
 #'
+#' @importFrom graphics plot
+#' @importFrom stats nlm
+#'
 #' @references
 #' Dharmendra, D., Solmundsson, J., 2005. Stock assessment of the offshore Mauritian banks
 #' using dynamic biomass models and analysis of length frequency of the Sky Emperor

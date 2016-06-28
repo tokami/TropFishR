@@ -28,7 +28,6 @@
 #'    \code{"bilognorm"} for a bi-lognormal curve,
 #'    \code{"tt.logistic"} for a control and logistic curve.
 #'
-#'
 #' @references
 #'  Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
 #'  using log-linear models. \emph{ICES Journal of Marine Science: Journal du Conseil},

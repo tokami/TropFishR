@@ -65,6 +65,8 @@
 #'   function are not realistic. Please be aware that if the method is changed the outcoming parameters
 #'   can greatly vary. Simliarly the starting values have to be adapted when changing the method (\code{rtype}).
 #'
+#' @importFrom graphics plot
+#' @importFrom stats deviance optim
 #'
 #' @references
 #'  Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity

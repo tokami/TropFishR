@@ -51,6 +51,8 @@
 #'    the equilibrium approach. For dynamic production models please refer
 #'    to \link{prod_mod_ts}.
 #'
+#' @importFrom graphics plot
+#' @importFrom stats lm qt sd
 #'
 #' @references
 #' Fox, W. W. Jr., 1970. An exponential surplus-yield model for optimizing exploited fish
