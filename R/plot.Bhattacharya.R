@@ -18,6 +18,8 @@
 #'
 #' @details This function plots the results of the Bhattacharya method.
 #'
+#' @importFrom graphics abline hist layout lines par plot points title
+#'
 #' @references
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 #' Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.

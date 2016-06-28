@@ -11,6 +11,9 @@
 #' output <-  prod_mod_ts(emperor, method  = "Fox")
 #' plot(output, correlation_plots = TRUE)
 #'
+#' @importFrom grDevices dev.new
+#' @importFrom graphics abline layout legend lines par plot
+#' @importFrom stats lowess
 #'
 #' @references
 #' Dharmendra, D., Solmundsson, J., 2005. Stock assessment of the offshore Mauritian banks

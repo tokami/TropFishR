@@ -12,6 +12,9 @@
 #' output <- VPA(whiting, terminalF = 0.5, analysis_type = "VPA")
 #' plot(output, display_last_class = FALSE)
 #'
+#' @importFrom grDevices dev.new
+#' @importFrom graphics axis barplot legend lines par plot mtext
+#'
 #' @references
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 #' Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
@@ -38,7 +41,7 @@ plot.VPA <- function(x, display_last_class = TRUE, ...){
                   ylim = c(0,ceiling(max_sur/dim_sur)*dim_sur))
 
   #create VPA plot
-  dev.new()
+  #dev.new()
   op <- par(mar = c(7, 5, 4, 5))
   barplot(df.VPAnew,col=c('darkgreen','darkmagenta','gold2'),
           xlab = xlabel, ylab = "Population",xlim=c(0,ceiling(max(mids))),

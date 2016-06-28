@@ -17,7 +17,7 @@
 #'
 #' @examples
 #' data(trout)
-#' lfqRestructure(trout)
+#' lfqRestructure(param = trout)
 #'
 #' @details This function is used in the analysis of growth parameters with the \link{ELEFAN} function. It is often
 #'    referred to as ELEFAN 0.
@@ -75,11 +75,11 @@ lfqRestructure <- function(param, MA = 5, addl.sqrt = FALSE){
     dates.all <- as.Date(param$dates)
     # get length of smapling period
     # continuous time in years
-    days <- as.numeric(dates.all - as.Date((dates.all[1])))
-    days.years <- days/365
-    # sampling period
-    sample.period.days <- days[length(days)] - days[1]
-    sp.years <- sample.period.days/365
+    julian_days <- as.numeric(format(dates.all, format="%Y")) + as.numeric(format(dates.all, format="%j"))/366
+    days.years <- julian_days - julian_days[1]  # OLD: #days <- as.numeric(dates.all - as.Date((dates.all[1]))) #days.years <- days/365
+
+    # sampling period # OLD: sample.period.days <- days[length(days)] - days[1]  sp.years <- sample.period.days/365
+    sp.years <- days.years[length(days.years)] - days.years[1]
 
     time_diff_year <- as.numeric(diff(dates.all)/365)
     cum_diff_year <- cumsum(time_diff_year)

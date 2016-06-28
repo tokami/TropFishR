@@ -27,7 +27,6 @@
 #' @examples
 #' data(trout)
 #' res <- lfqRestructure(trout)
-#' library(lubridate)
 #' plot(x = res, Fname = "rcounts")
 #' plot(res, Fname = "rcounts", par = list(Linf = 16, K = 0.77))
 #' plot(res, Fname = "rcounts", par = list(Linf = 16, K = 0.77, C= 0.5, WP = 0.6))
@@ -37,6 +36,9 @@
 #'    \code{multiple_best_fits} the preferred starting point can be chosen.
 #'
 #' @import lubridate
+#' @importFrom grDevices colorRampPalette dev.new dev.off recordPlot rgb
+#' @importFrom graphics abline axis box lines mtext par plot rect
+#' @importFrom stats update
 #'
 #' @references
 #' Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and expanded
