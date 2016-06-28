@@ -135,8 +135,10 @@ VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
       if(length(classes) != length(catch)) stop("Age/length classes and catch do not have the same length!")
     }
 
+    if(!("a" %in% names(res)) | !("b" %in% names(res))) stop("VPA requires information about the length-weight relationship. Please provide 'a' and 'b' estimates in res.")
     a <- res$a
     b <- res$b
+    if(!("M" %in% names(res))) stop("Please provide a natural mortality estimate 'M' in res.")
     M <- res$M
 
     # create column without plus group (sign) if present
@@ -331,8 +333,10 @@ VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
     Linf <- res$Linf
     K <- res$K
     t0 <- ifelse(is.null(res$t0),0,res$t0)
+    if(!("a" %in% names(res)) | !("b" %in% names(res))) stop("VPA requires information about the length-weight relationship. Please provide 'a' and 'b' estimates in res.")
     a <- res$a
     b <- res$b
+    if(!("M" %in% names(res))) stop("Please provide a natural mortality estimate 'M' in res.")
     M <- res$M
 
     # create column without plus group (sign) if present
