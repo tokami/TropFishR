@@ -127,27 +127,17 @@
 #'    the prediction models make use of the selectivity \code{\link{select_ogive}}
 #'    function.
 #'    Sparre and Venema (1998) recommend to treat the last length class always as plus group.
-#'    This model is very sensitive to zeros in the ultimate length classes. If weird results are returned,
-#'    it is recommended to cut length classes with zero observations or to change the interval between
+#'    This model is very sensitive to zero observations in the ultimate length
+#'    classes. If unrealistic results are returned,
+#'    it is recommended to cut length classes with zero observations, group
+#'    them in a plus group or to change the interval between
 #'    length classes.
-#'
-#'
-#'    F0.1 according to Gulland and Boerema 1973
-#'
-#'    Caution:
-#'    Equations of this function assume isometric growth (to power of 3).
-#'    Often not met!
-#'    Physical yield obtained by multiplying yield per recruit times number of
-#'    recruits produced in the stock.
-#'    Assumes that there is no relationship between parental stock size and progeny
-#'    over a wide range of F or E values, respectively (which is not true). In
-#'    other words: no density dependency assumed: the weight at age is constant
-#'    irrespective of stock size, the natural mortality is constant irresepctive of
-#'    stock size
-#'    assumption of knife edge recruitment and selection implicit in equations
-#'    conclusions drawn are highly dependent on the assumption of natural mortality
-#'    does not consider potential population collapse at high fishing mortalities
-#'    single species model
+#'    Equations which are used in this function assume isometric growth, an
+#'    assumption often not met. Further, the assumption that there is no relationship
+#'    between the parental stock size and progeny
+#'    over a wide range of fishing mortalities or exploitation values,
+#'    respectively, is also said to be untrue. By default, the functions assume
+#'    knife-edge recruitment and selection of gears (Sparre and Venema, 1998).
 #'
 #'
 #' @return A list with the input parameters and dependent on the model type following

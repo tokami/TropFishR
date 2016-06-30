@@ -19,7 +19,7 @@
 #' data(trout)
 #' lfqRestructure(param = trout)
 #'
-#' @details This function is used in the analysis of growth parameters with the \link{ELEFAN} function. It is often
+#' @details This function is used in the analysis of growth parameters with the \code{\link{ELEFAN}} function. It is often
 #'    referred to as ELEFAN 0.
 #'
 #' @return A list with the input parameters and following list objects:

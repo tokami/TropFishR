@@ -22,7 +22,7 @@
 #' res <- lfqRestructure(trout)
 #' lfqFitCurves(res)
 #'
-#' @details This function is used in the analysis of growth parameters with the \link{ELEFAN} function. It is often
+#' @details This function is used in the analysis of growth parameters with the \code{\link{ELEFAN}} function. It is often
 #'    referred to as ELEFAN 1. C expresses the amplitude of growth oscillations and
 #'    should be between 0 (no oscillation) and 1 (oscillation with period of zero growth), values above 1 suggest
 #'    a period of negative growth, and thus are unlikely. Winter point (WP) designates the period of the year when
