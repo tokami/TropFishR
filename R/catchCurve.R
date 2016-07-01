@@ -88,8 +88,9 @@
 #'   \item \strong{lnC} or \strong{lnC_dt}: logarithm of (rearranged) catches,
 #'   \item \strong{reg_int}: the interval used for the regression analysis,
 #'   \item \strong{linear_mod}: linear model used for the regression analysis,
-#'   \item \strong{Z}: instantaneous total mortality rate,
-#'   \item \strong{se}: standard error of the total mortality;}
+#'   \item \strong{Z}: instantaneous total mortality rate, confidenceInt
+#'   \item \strong{se}: standard error of the total mortality;
+#'   \item \strong{confidenceInt}: confidence interval of the total mortality;}
 #' in case calc_ogive == TRUE, additionally:
 #' \itemize{
 #'   \item \strong{intercept}: intercept of regression analysis,
@@ -349,7 +350,9 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
   #fit of regression line
   lm1.fit <- sum_lm1$r.squared
   Z_lm1 <- abs(slope_lm1)
-  SE_Z_lm1 <- abs(se_slope_lm1) * qt(0.975,sum_lm1$df[2])
+  SE_Z_lm1 <- abs(se_slope_lm1)
+  confi <-  abs(se_slope_lm1) * qt(0.975,sum_lm1$df[2])
+  conf_Z_lm1 <- Z_lm1 + c(-confi,confi)
 
 
   # special case when cumulative and length-frequency data
@@ -365,7 +368,8 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
     reg_int = cutter,
     linear_mod = lm1,
     Z =  Z_lm1,
-    se = SE_Z_lm1
+    se = SE_Z_lm1,
+    confidenceInt = conf_Z_lm1
   ))
   names(ret)[names(ret) == "xvar"] <- xname
   names(ret)[names(ret) == "yvar"] <- yname

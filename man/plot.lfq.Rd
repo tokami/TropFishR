@@ -35,11 +35,11 @@ than one (default: 1)}
 }
 \description{
 This function plots length frequency (lfq) samples sequentially arranged in time. An object
- of "lfq" class is obatined by applying the \link{lfqRestructure} function. In case growth
+ of "lfq" class is obatined by applying the \code{\link{lfqRestructure}} function. In case growth
  parameters are known, von Bertalanffy growth curves can be plotted through the lfq samples.
 }
 \details{
-This function runs \link{lfqFitCurves} when growth parameters are provided. Thereby the starting point
+This function runs \code{\link{lfqFitCurves}} when growth parameters are provided. Thereby the starting point
    calculated. It can happen that different starting points return the same fit (ESP value), with
    \code{multiple_best_fits} the preferred starting point can be chosen.
 }

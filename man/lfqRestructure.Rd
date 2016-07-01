@@ -39,7 +39,7 @@ First step of the Electronic LEngth Frequency ANalysis (ELEFAN), which is restru
    References for more information).
 }
 \details{
-This function is used in the analysis of growth parameters with the \link{ELEFAN} function. It is often
+This function is used in the analysis of growth parameters with the \code{\link{ELEFAN}} function. It is often
    referred to as ELEFAN 0.
 }
 \examples{

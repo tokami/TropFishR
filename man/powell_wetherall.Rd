@@ -31,8 +31,12 @@ and/or following objects when applying the Powell and Wetherall method:
   \item \strong{Lmean_Lprime}: dependent variable for regression analysis,
   \item \strong{Lprime}: some length for which all fish of that length and
      longer are under full exploitation,
-  \item \strong{Linf_est}: infinite length in [cm],
-  \item \strong{Z_K}: total mortality divided by K.
+  \item \strong{Linf_est}: infinite length in [cm] (Linf),
+  \item \strong{se_Linf}: standard error of Linf,
+  \item \strong{confidenceInt_Linf}: confidence interval for Linf,
+  \item \strong{ZK}: total mortality divided by K (Z/K),
+  \item \strong{se_ZK}: standard error of Z/K,
+  \item \strong{confidenceInt_ZK}: confidence interval of Z/K;
 }
 }
 \description{

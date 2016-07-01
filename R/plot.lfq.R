@@ -157,6 +157,13 @@ plot.lfq <- function(x, Fname = "rcounts",
 
   # when parameters given then plot growth curves
   if(!is.null(par[[1]]) | ("K_opt" %in% names(x) & "Linf_fix" %in% names(x))){
+    if(("K_opt" %in% names(x) & "Linf_fix" %in% names(x)) & is.null(par[[1]])){
+      Linfi <- x$Linf_fix
+      Ki <- x$K_opt[multiple_best_fits]
+      C <- x$C
+      WP <-  x$WP
+      par <- list(Linf = Linfi, K = Ki, C = C, WP = WP)
+    }
     if(!is.null(par[[1]])){
       if(!("Linf" %in% names(par)) | !("K" %in% names(par))) stop("At least 'Linf' and 'K' have to be defined in par!")
       Linfi <- get("Linf",par)
@@ -168,13 +175,6 @@ plot.lfq <- function(x, Fname = "rcounts",
         WP <- get("WP",par)
       }else WP <- 0
       if("ts" %in% names(par)) WP <- 0.5 + get("ts",par)
-    }
-    if(("K_opt" %in% names(x) & "Linf_fix" %in% names(x))){
-      Linfi <- x$Linf_fix
-      Ki <- x$K_opt[multiple_best_fits]
-      C <- x$C
-      WP <-  x$WP
-      par <- list(Linf = Linfi, K = Ki, C = C, WP = WP)
     }
 
     res <- lfqFitCurves(lfq = x, par = par)

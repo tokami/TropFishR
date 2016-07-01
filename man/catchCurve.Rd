@@ -36,8 +36,9 @@ A list with the input parameters and following list objects:
   \item \strong{lnC} or \strong{lnC_dt}: logarithm of (rearranged) catches,
   \item \strong{reg_int}: the interval used for the regression analysis,
   \item \strong{linear_mod}: linear model used for the regression analysis,
-  \item \strong{Z}: instantaneous total mortality rate,
-  \item \strong{se}: standard error of the total mortality;}
+  \item \strong{Z}: instantaneous total mortality rate, confidenceInt
+  \item \strong{se}: standard error of the total mortality;
+  \item \strong{confidenceInt}: confidence interval of the total mortality;}
 in case calc_ogive == TRUE, additionally:
 \itemize{
   \item \strong{intercept}: intercept of regression analysis,

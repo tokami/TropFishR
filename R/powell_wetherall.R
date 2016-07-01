@@ -43,8 +43,12 @@
 #'   \item \strong{Lmean_Lprime}: dependent variable for regression analysis,
 #'   \item \strong{Lprime}: some length for which all fish of that length and
 #'      longer are under full exploitation,
-#'   \item \strong{Linf_est}: infinite length in [cm],
-#'   \item \strong{Z_K}: total mortality divided by K.
+#'   \item \strong{Linf_est}: infinite length in [cm] (Linf),
+#'   \item \strong{se_Linf}: standard error of Linf,
+#'   \item \strong{confidenceInt_Linf}: confidence interval for Linf,
+#'   \item \strong{ZK}: total mortality divided by K (Z/K),
+#'   \item \strong{se_ZK}: standard error of Z/K,
+#'   \item \strong{confidenceInt_ZK}: confidence interval of Z/K;
 #' }
 #'
 #' @importFrom grDevices dev.new recordPlot
@@ -150,11 +154,29 @@ powell_wetherall <- function(param, catch_column = NA, savePlots = FALSE){
     #fit of regression line
     lm1.fit <- sum_lm1$r.squared
 
-    SE_slope <- abs(se_slope_lm1) * qt(0.975,sum_lm1$df[2])
-    SE_intercept <- abs(se_intercept_lm1) * qt(0.975,sum_lm1$df[1])
+    SE_slope <- abs(se_slope_lm1)
+    confi_slope <- abs(se_slope_lm1) * qt(0.975,sum_lm1$df[2])
+    conf_slope <- slope_lm1 + c(-confi_slope,confi_slope)
 
-    Linf.BH <- - intercept_lm1 / slope_lm1
-    ZK.BH <- - (1+slope_lm1)/slope_lm1
+    SE_intercept <- abs(se_intercept_lm1)
+    confi_intercept <- abs(se_intercept_lm1) * qt(0.975,sum_lm1$df[1])
+    conf_intercept <- intercept_lm1 + c(-confi_intercept,confi_intercept)
+
+    # Linf with SE and confidence interval
+    Linf.BH <- (-intercept_lm1 / slope_lm1)
+    se_Linf.BH <- (abs(SE_intercept)/abs(intercept_lm1) +
+                     abs(SE_slope)/abs(slope_lm1)) *
+      (abs(intercept_lm1) / abs(slope_lm1))
+    confi_Linf <- (abs(SE_intercept)/abs(intercept_lm1) +
+                     abs(SE_slope)/abs(slope_lm1)) *
+      (abs(intercept_lm1) / abs(slope_lm1)) * qt(0.975,sum_lm1$df[2])
+    conf_Linf.BH <- Linf.BH + c(-confi_Linf,confi_Linf)
+
+    # Z/K with SE and confidence interval
+    ZK.BH <- (-(1+slope_lm1)/slope_lm1)
+    se_ZK.BH <- abs(SE_slope)
+    confi_ZK <- se_ZK.BH * qt(0.975,sum_lm1$df[2])
+    conf_ZK.BH <- ZK.BH + c(-confi_ZK,confi_ZK)
 
     #final plot
     plot(x = Lprime,y = Lmean_Lprime,
@@ -174,7 +196,11 @@ powell_wetherall <- function(param, catch_column = NA, savePlots = FALSE){
       Lmean_Lprime = Lmean_Lprime,
       Lprime = Lprime,
       Linf_est = Linf.BH,
-      Z_K = ZK.BH,
+      se_Linf = se_Linf.BH,
+      confidenceInt_Linf = conf_Linf.BH,
+      ZK = ZK.BH,
+      se_ZK = se_ZK.BH,
+      confidenceInt_ZK = conf_ZK.BH,
       plot = ploti
     ))
     return(ret)
