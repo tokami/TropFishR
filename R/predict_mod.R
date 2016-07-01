@@ -278,7 +278,6 @@ predict_mod <- function(param, FM_change = NA, E_change = NA, Lc_tc_change = NUL
     }
 
 
-
     # yield and biomass functions
     # type either age or length
     # ___________________________________________________
@@ -419,53 +418,6 @@ predict_mod <- function(param, FM_change = NA, E_change = NA, Lc_tc_change = NUL
     }
     # relative biomass function with selction ogive
     bpr.rel.sel <- function(FM_change, P, Lt){
-      Z <- FM_change + M
-      B_R.rel.tot.all.classes <- rep(NA,length(FM_change))
-      for(FMi in 1:length(FM_change)){
-
-        FMx <- FM_change[FMi]
-        Zx <- Z[FMi]
-        # population levels
-        # Calculations per size class
-
-        S = (1 - (Lt/Linf))
-
-        # reduction factor per size group
-        r <- rep(NA, length(Lt))
-        for(x1 in 2:length(Lt)){
-          r[x1] <- (S[x1] ^ ((M/K) * ((FMx/Zx)/(1-(FMx/Zx)))*P[x1]))  /  (S[x1-1] ^ ((M/K) * ((FMx/Zx)/(1-(FMx/Zx)))*P[x1]))
-        }
-
-        # G per size group
-        G <- rep(NA,length(Lt))
-        for(x2 in 1:length(Lt)){
-          G[x2] <- prod(r[1:x2], na.rm = TRUE)
-        }
-        G[1] <- r[1]  # because: rLmin-1 = 1
-        G[length(Lt)] <- 0  # because: rLinf = 0
-
-
-        # TWO ALTERNATIVES FOR CALCULATION NOT CLEAR:
-        # 1. corresponds to Y_R / F
-        B_R.rel_CLASS <- bpr.rel(FMx, Lti = Lt, type = "length")
-
-        # 2. new approach according to Gayanilo 06
-        #           m = (1-(FMx/Zx))/(M/K)  #  == K/Z
-        #           mx = m / (1 - (FMx/Zx)) # == 1/(M/K)
-        #           A <- (1 - ((3*S)/(1+m)) + ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
-        #           B <- (1 - ((3*S)/(1+mx)) + ((3*S^2)/(1+2*mx)) - ((S^3)/(1+3*mx)))
-        #           B_R.rel_CLASS <- ((1-(FMx/Zx)) * A) / B
-
-        B_R.rel.tot <- rep(NA,length(Lt))
-        for(x3 in 2:(length(Lt)-1)){
-          B_R.rel.tot[x3] <- (P[x3]*((B_R.rel_CLASS[x3]*G[x3-1]) - (B_R.rel_CLASS[x3+1]*G[x3])))
-        }
-
-        B_R.rel.tot.all.classes[FMi] <- sum(B_R.rel.tot, na.rm=TRUE)
-      }
-      return(B_R.rel.tot.all.classes)
-    }
-    bpr.rel.sel2 <- function(FM_change, P, Lt){
       interval <- (Lt[2] - Lt[1])/ 2
       Z <- FM_change + M
       B_R.rel.tot.all.classes <- rep(NA,length(FM_change))
@@ -478,60 +430,7 @@ predict_mod <- function(param, FM_change = NA, E_change = NA, Lc_tc_change = NUL
         lower_classes <- Lt - interval
         upper_classes <- Lt + interval
 
-        # S1 <- (1 - (lower_classes/Linf))
-        # S2 <- (1 - (upper_classes/Linf))
-
-        # # reduction factor per size group
-        # r <- (S2 ^ ((M/K) * ((FMx/Zx)/(1-(FMx/Zx)))*P)) / (S1 ^ ((M/K) * ((FMx/Zx)/(1-(FMx/Zx)))*P))
-        #
-        # # G per size group
-        # G <- rep(NA,length(Lt))
-        # G[1] <- r[1]  # because: rLmin-1 = 1
-        # for(x1 in 2:length(r)){
-        #   G[x1] <- prod(G[x1-1], r[x1], na.rm = TRUE)
-        # }
-        # # G[length(r)] <- 0  # because: rLinf = 0
-        #
-        # # TWO ALTERNATIVES FOR CALCULATION NOT CLEAR:
-        # # 1. corresponds to Y_R / F
-        # #B_R.rel_CLASS <- bpr.rel(FMx, Lti = Lt, type = "length")
-        # B_R.rel_1 <- bpr.rel(FMx, Lti = lower_classes, type = "length")
-        # B_R.rel_2 <- bpr.rel(FMx, Lti = upper_classes, type = "length")
-        #
-        # b_1 <- rep(NA,length(S1))
-        # b_2 <- rep(NA,length(S1))
-        # for (x2 in 2:length(S1)){
-        #   b_1[x2] <- G[x2-1] * B_R.rel_1[x2]
-        #   b_2[x2] <- G[x2] * B_R.rel_2[x2]
-        # }
-        #
-        # B_R.rel_pre <- P * (b_1-b_2)
-        #
-        # cum_B_R.rel <- rep(0,length(S1))
-        # for (x3 in 2:length(S1)){
-        #   cum_B_R.rel[x3] <- cum_B_R.rel[x3-1] + B_R.rel_pre[x3]
-        # }
-
-        # 2. new approach according to Gayanilo 06
-        #           m = (1-(FMx/Zx))/(M/K)  #  == K/Z
-        #           mx = m / (1 - (FMx/Zx)) # == 1/(M/K)
-        #           A <- (1 - ((3*S)/(1+m)) + ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
-        #           B <- (1 - ((3*S)/(1+mx)) + ((3*S^2)/(1+2*mx)) - ((S^3)/(1+3*mx)))
-        #           B_R.rel_CLASS <- ((1-(FMx/Zx)) * A) / B
-
-        # Sx <- (M/K)*((FMx/Zx)/(1-(FMx/Zx)))*P
-        # rx <- (S2^Sx)/(S1^Sx)
-        #
-        # gx <- rep(NA,length(rx))
-        # gx[1] <- rx[1]
-        # for (x4 in 2:length(rx)) {
-        #   gx[x4] <- gx[x4-1] * rx[x4]
-        # }
-
-
-         B_R.rel.tot <- bpr.rel(FMx, Lti = lower_classes, type = "length") ##(1-(FMx/Zx))*(N1/D1)
-
-        #nonNA <- which(!is.na(cum_B_R.rel))
+        B_R.rel.tot <- bpr.rel(FMx, Lti = lower_classes, type = "length")
         B_R.rel.tot.all.classes[FMi] <- B_R.rel.tot[length(B_R.rel.tot)]
 
       }
@@ -539,78 +438,6 @@ predict_mod <- function(param, FM_change = NA, E_change = NA, Lc_tc_change = NUL
     }
     # derivative of selectivity function
     derivative.sel <- function(FM_change, P, Lt){
-      Z <- (FM_change + M)
-      dev.tot.all.classes <- rep(NA,length(FM_change))
-      for(FMi in 1:length(FM_change)){
-
-        FMx <- FM_change[FMi]
-        Zx <- Z[FMi]
-        # Calculations per size class
-
-        S = (1 - (Lt/Linf))      ###### BIG ASSUMPTION THAT LC = Lt
-
-        # reduction factor per size group
-        # reduction factor per size group
-        r <- rep(NA, length(Lt))
-        for(x1 in 2:length(Lt)){
-          r[x1] <- (S[x1] ^ ((M/K) * ((FMx/Zx)/(1-(FMx/Zx)))*P[x1]))  /
-            (S[x1-1] ^ ((M/K) * ((FMx/Zx)/(1-(FMx/Zx)))*P[x1]))
-        }
-
-        # derivative of r
-        r.dev <- rep(NA,length(Lt))
-        for(x1a in 2:length(Lt)){
-          s1 <- S[x1a]
-          s2 <- S[x1a-1]
-          expo <- (M * P[x1a] * FMx) / (K * Zx *(1 - (FMx/Zx)))
-          r.dev[x1a] <- (M * P[x1a] * s1^expo * (log(s1) - log(s2)) * Zx) / (K * s2^expo * (FMx-Zx)^2)
-        }
-
-
-        # G per size group
-        G <- rep(NA,length(Lt))
-        for(x2 in 1:length(Lt)){
-          G[x2] <- prod(r[1:x2], na.rm = TRUE)
-        }
-        G[1] <- r[1]  # because: rLmin-1 = 1
-        G[length(Lt)] <- 0  # because: rLinf = 0
-
-        # derivative of G
-        G.dev <- rep(NA,length(Lt))
-        for(x2a in 1:length(Lt)){
-          re.G <- rep(NA,x2a)
-          for(x2b in 1:x2a){
-            if(length(r.dev[x2b] * r[1:x2a][-x2b]) == 0){
-              re.G[x2b] <- NA
-            }else re.G[x2b] <- r.dev[x2b] * prod(r[1:x2a][-x2b], na.rm=TRUE)
-          }
-          G.dev[x2a] <- sum(re.G, na.rm=TRUE)
-        }
-
-        # Yield per size group
-        Y_R.rel_CLASS <- ypr.rel(FMx, Lti = Lt, type = "length")
-
-        Y_R.rel.tot <- rep(NA,length(Lt))
-        for(x3 in 2:(length(Lt)-1)){
-          Y_R.rel.tot[x3] <- (P[x3]*((Y_R.rel_CLASS[x3]*G[x3-1]) - (Y_R.rel_CLASS[x3+1]*G[x3])))
-        }
-
-        # derivative of Y_R.rel per size group
-        dev.Y_R.rel.tot <- derivative(FMx, Lti = Lt, type = "length")
-
-        # total derivative
-        dev.tot <- rep(NA,length(Lt))
-        for(x5 in 2:(length(Lt)-1)){
-          firstA <- Y_R.rel.tot[x5]*G.dev[x5-1] + dev.Y_R.rel.tot[x5]*G[x5-1]
-          secondA <- Y_R.rel.tot[x5+1]*G.dev[x5] + dev.Y_R.rel.tot[x5+1]*G[x5]
-          dev.tot[x5] <- P[x5] * (firstA - secondA)
-          #dev.tot[x3] <- (P[x3]*((dev.Y_R.rel[x3]*G.dev[x3-1]) - (dev.Y_R.rel[x3+1]*G.dev[x3])))
-        }
-        dev.tot.all.classes[FMi] <- sum(dev.tot, na.rm=TRUE)
-      }
-      return(dev.tot.all.classes)
-    }
-    derivative.sel2 <- function(FM_change, P, Lt){
       interval <- (Lt[2] - Lt[1])/ 2
       Z <- (FM_change + M)
       dev.tot.all.classes <- rep(NA,length(FM_change))
@@ -688,8 +515,6 @@ predict_mod <- function(param, FM_change = NA, E_change = NA, Lc_tc_change = NUL
       }
       return(dev.tot.all.classes)
     }
-
-
     # ___________________________________________________
 
     # age based
@@ -736,8 +561,7 @@ predict_mod <- function(param, FM_change = NA, E_change = NA, Lc_tc_change = NUL
         deri <- derivative(FM_change, tci, type = "age")
 
         # SELECTION OGIVE
-
-        #?
+        # so far yield per recruit models with selection ogive is only possible for lfq data
 
 
         #virgin biomass
@@ -863,7 +687,6 @@ predict_mod <- function(param, FM_change = NA, E_change = NA, Lc_tc_change = NUL
           B_R.rel <- bpr.rel(FM_change, Lci, type = "length")
 
           deri <- derivative(FM_change, Lci, type = "length")
-
         }
 
 
@@ -891,15 +714,14 @@ predict_mod <- function(param, FM_change = NA, E_change = NA, Lc_tc_change = NUL
 
           # relative yield and biomass per recruit
           Y_R.rel <- ypr.rel.sel(FM_change, P, Lt)
-          B_R.rel <- bpr.rel.sel2(FM_change, P, Lt)
+          B_R.rel <- bpr.rel.sel(FM_change, P, Lt)
 
           #test
           Y_R <- Y_R.rel * Winf * exp(M * (tr - t0))
           B_R <- B_R.rel * Winf * exp(M * (tr - t0))
 
           # derivative
-          deri <- derivative.sel2(FM_change, P, Lt)
-
+          deri <- derivative.sel(FM_change, P, Lt)
 
           # biased because only prints P for largest Lc value
           #if(i == length(Lc)) plot(Lt, P, type = 'l', ylab = 'Prob of capture',
