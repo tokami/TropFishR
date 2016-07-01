@@ -18,6 +18,8 @@
 #'    more information see \link{lfqRestructure}).
 #' @param addl.sqrt Passed to \link{lfqRestructure}. Applied an additional square-root transformation of positive values according to Brey et al. (1988).
 #'    (default: FALSE, for more information see \link{lfqRestructure}).
+#' @param plot logical; indicating if plot with restrucutred frequencies and growth curves should
+#'    be displayed
 #'
 #' @examples
 #' data(trout)
@@ -106,7 +108,7 @@
 ELEFAN <- function(param, Linf_fix = NA, Linf_range = NA,
                    K_range = exp(seq(log(0.1),log(10),length.out=100)),
                    C = 0, WP = 0,
-                   MA = 5, addl.sqrt = FALSE){
+                   MA = 5, addl.sqrt = FALSE, plot = FALSE){
 
   res <- param
   classes <- res$midLengths
@@ -222,6 +224,7 @@ ELEFAN <- function(param, Linf_fix = NA, Linf_range = NA,
     ret$startingPoints <- startingPoints
   }
   class(ret) <- "lfq"
+  if(plot) plot(ret, Fname = "rcounts")
   return(ret)
 }
 

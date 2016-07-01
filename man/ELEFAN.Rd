@@ -5,7 +5,8 @@
 \title{ELEFAN}
 \usage{
 ELEFAN(param, Linf_fix = NA, Linf_range = NA, K_range = exp(seq(log(0.1),
-  log(10), length.out = 100)), C = 0, WP = 0, MA = 5, addl.sqrt = FALSE)
+  log(10), length.out = 100)), C = 0, WP = 0, MA = 5, addl.sqrt = FALSE,
+  plot = FALSE)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -31,6 +32,9 @@ more information see \link{lfqRestructure}).}
 
 \item{addl.sqrt}{Passed to \link{lfqRestructure}. Applied an additional square-root transformation of positive values according to Brey et al. (1988).
 (default: FALSE, for more information see \link{lfqRestructure}).}
+
+\item{plot}{logical; indicating if plot with restrucutred frequencies and growth curves should
+be displayed}
 }
 \value{
 A list with the input parameters and following list objects:
