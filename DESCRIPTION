@@ -2,17 +2,18 @@ Package: TropFishR
 Type: Package
 Title: Tropical Fisheries Analysis with R
 Version: 0.1
-Date: 2015-10-02
+Date: 2016-06-30
 Author: Tobias K. Mildenberger, Marc H. Taylor, Matthias Wolff
 Maintainer: Tobias K. Mildenberger <t.k.mildenberger@gmail.com>
-Description: This package includes fisheries models based on the the FAO
-	Manual "Introduction to tropical fish stock assessment" by P.Sparre and
-	S.C. Venema. It focuses on the analysis of length-frequency data of
-	data poor fisheries.
 Depends: R (>= 3.0.0)
 Imports: msm, lubridate, reshape2
-License: MIT + file LICENSE
 LazyData: TRUE
+Description: Fish stock assessment methods and fisheries models based on the FAO
+	Manual "Introduction to tropical fish stock assessment" by P. Sparre and
+	S.C. Venema <http://www.fao.org/docrep/W5449E/W5449E00.htm>.  Focus is the 
+	analysis of length-frequency data and data poor fisheries.
+License: GPL-3
+BugReports: https://github.com/tokami/TropFishR/issues
 URL: https://github.com/tokami/TropFishR
 RoxygenNote: 5.0.1
 Suggests: knitr, rmarkdown
