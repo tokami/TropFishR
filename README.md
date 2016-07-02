@@ -2,6 +2,9 @@ TropFishR
 =====
 Tropical Fisheries Analysis with R
 
+#### Released version
+[![CRAN version](http://www.r-pkg.org/badges/version/TropFishR)](https://cran.r-project.org/web/packages/TropFishR/index.html) [![](http://cranlogs.r-pkg.org/badges/grand-total/TropFishR)](https://cran.r-project.org/web/packages/TropFishR/index.html)
+
 A collection of fisheries models based on the the FAO Manual "Introduction to tropical fish stock assessment" by Sparre and Venema (1998, 1999).
 
 **To load** (using `devtools`):
