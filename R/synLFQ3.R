@@ -11,7 +11,7 @@
 #'
 #' @format A list consisting of:
 #' \itemize{
-#'   \item \code{midLengths}: a vector of the mid lengths of the length groups,
+#'   \item \code{midLengths}: midpoints of the length classes,
 #'   \item \code{Linf}: infinite length for investigated species in cm [cm],
 #'   \item \code{K}: growth coefficent for investigated species per year [1/year],
 #'   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
