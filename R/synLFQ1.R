@@ -10,8 +10,9 @@
 #'
 #' @format A list consisting of:
 #' \itemize{
-#'   \item \strong{midLengths} a vector of the mid lengths of the length groups,
-#'   \item \strong{catch} a matrix with the catches for different years.
+#'   \item \strong{dates} dates of sampling times (class Date),
+#'   \item \strong{midLengths} midpoints of the length classes,
+#'   \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column).
 #' }
 #'
 #' @source Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
