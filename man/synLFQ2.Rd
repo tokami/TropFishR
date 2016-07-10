@@ -6,10 +6,11 @@
 \title{Synthetic length frequency data II}
 \format{A list consisting of:
 \itemize{
-  \item \code{midLengths}: a vector of the mid lengths of the length groups,
+  \item \strong{dates} dates of sampling times (class Date),
+  \item \code{midLengths}: midpoints of the length classes,
   \item \code{Linf}: infinite length for investigated species in cm [cm],
   \item \code{K}: growth coefficent for investigated species per year [1/year],
-  \item \code{catch}: a matrix with the catches for different years.
+  \item \code{catch}: matrix with catches/counts per length class (row) and sampling date (column).
 }}
 \source{
 Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.

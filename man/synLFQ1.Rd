@@ -6,8 +6,9 @@
 \title{Synthetic length-frequency data I}
 \format{A list consisting of:
 \itemize{
-  \item \strong{midLengths} a vector of the mid lengths of the length groups,
-  \item \strong{catch} a matrix with the catches for different years.
+  \item \strong{dates} dates of sampling times (class Date),
+  \item \strong{midLengths} midpoints of the length classes,
+  \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column).
 }}
 \source{
 Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
@@ -18,7 +19,8 @@ data(synLFQ1)
 }
 \description{
 Synthetic length-frequency data as provided in Sparre & Venema (1998).
-   Can be used to apply the function \code{\link[TropFishR]{Bhattacharya}}.
+   Can be used to apply the function \code{\link[TropFishR]{Bhattacharya}} or
+   \code{\link[TropFishR]{ELEFAN}}.
 }
 \examples{
 data(synLFQ1)

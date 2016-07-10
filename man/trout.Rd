@@ -4,8 +4,13 @@
 \name{trout}
 \alias{trout}
 \title{Trout data}
-\format{A list consisting of: 1. sample numbers, 2. the midlengths of size classes,
- 2. a matrix with catch in numbers.}
+\format{A list consisting of:
+\itemize{
+  \item \strong{sample.no} sample numbers,
+  \item \strong{dates} dates of sampling times (class Date),
+  \item \strong{midLengths} midpoints of the length classes,
+  \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column).
+}}
 \source{
 Goeden, G.B., 1978. A monograph of the coral trout \emph{Plectropomus leopardus}
 (Lacepede). \emph{Res.Bull.Fish.Serv.Queensl.}, (1):42 p.
