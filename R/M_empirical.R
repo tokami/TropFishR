@@ -22,9 +22,9 @@
 #' @param schooling logical; if TRUE it is accounted for the schooling behaviour of
 #'      the species. Default is FALSE.
 #' @param method vector of method names. Any combination of following methods can
-#'    be employed: "AlversonCarney","Gislason","GundersonDygert","Hoenig",
-#'    "Lorenzen","Pauly_Linf","Pauly_Winf","PetersonWroblewski",
-#'    "RikhterEfanov","Roff". Please refer to Details to see which input parameters
+#'    be employed: "AlversonCarney", "Gislason", "GundersonDygert", "Hoenig",
+#'    "Lorenzen", "Pauly_Linf", "Pauly_Winf", "PetersonWroblewski",
+#'    "RikhterEfanov", "Roff". Please refer to Details to see which input parameters
 #'    are required by each method.
 #'
 #' @keywords function mortality M
