@@ -47,7 +47,7 @@ plot.select <- function(x, regression_fit = TRUE,
     s2 <- res$stand.dev
     SNet1 <- res$SNet1
     SNet2 <- res$SNet2
-    reg.coeffs <- res$reg.coeffs
+    linear_mod <- res$linear_mod
     lnNet2_Net1 <- res$lnNet2_Net1
 
     if(max(numNet2,na.rm=T) > max(numNet1,na.rm=T)){
@@ -60,6 +60,9 @@ plot.select <- function(x, regression_fit = TRUE,
     #dev.new()
     #create plot
     if(regression_fit){
+
+      coeffs <- summary(linear_mod)$coefficients
+
       op <- par(mfrow = c(2,1), xpd = FALSE,
       mar = c(4, 4, 2, 3) + 0.1,
       oma = c(3, 0.5, 1, 2) + 0.1)
@@ -67,7 +70,7 @@ plot.select <- function(x, regression_fit = TRUE,
       plot(classes.num, lnNet2_Net1, xlab = "Length groups", ylab = "ln(Nnet2/Nnet1)",
            ylim = c(min(lnNet2_Net1,na.rm=TRUE)*1.05,
                     max(lnNet2_Net1,na.rm=TRUE)*1.05))
-      abline(a = reg.coeffs[1], b = reg.coeffs[2])
+      abline(a = coeffs[1,1], b = coeffs[2,1])
 
     }else op <- par(mfrow = c(1,1), mar = c(5, 5, 3, 3),
                     oma = c(3, 0.5, 1, 2))
