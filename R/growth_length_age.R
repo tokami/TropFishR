@@ -7,7 +7,7 @@
 #' @param param a list consisting of following parameters:
 #' \itemize{
 #'   \item \strong{age}: age measurements,
-#'   \item \strong{length}: corresponding lengths.
+#'   \item \strong{length}: corresponding lengths in cm.
 #' }
 #' @param method indicating which of following methods should be applied:
 #'    \code{"GullandHolt"},
@@ -18,13 +18,17 @@
 #' @param Linf_init initital parameter of Linf for non-linear sqaures fitting (default 10)
 #' @param K_init initital parameter of K for non-linear sqaures fitting (default 0.1)
 #' @param t0_init initital parameter of t0 for non-linear sqaures fitting (default 0)
+#' @param CI logical; Should confidence intervals be calculated? This option only
+#'    works for the LSM method. Default is FALSE.
+#' @param ci.level required confidence level (for LSM method only)
 #'
 #' @examples
 #' # synthetical length at age data
 #' dat <- list(age = 1:7, length = c(25.7,36,42.9,47.5,50.7,52.8,54.2))
 #' growth_length_age(dat, method = "GullandHolt")
 #'
-#' growth_length_age(dat, method = "LSM", Linf_init = 30)
+#' output <- growth_length_age(dat, method = "LSM", Linf_init = 30, CI = TRUE)
+#' summary(output$mod)
 #'
 #' # Bertalaffy plot
 #' dat <- list(age = c(0.64,1.16,1.65,2.1,2.64,3.21),
@@ -49,11 +53,13 @@
 #' \itemize{
 #'  \item \strong{x}: independent variable used for regression analysis,
 #'  \item \strong{y}: dependent variable used for regression analysis,
-#'  \item \strong{reg_coeffs}: regression coefficients,
+#'  \item \strong{mod}: (non) linear model,
 #'  \item \strong{Linf}: infinite length for investigated species in cm [cm],
 #'  \item \strong{K}: growth coefficent for investigated species per year [1/year],
 #'  \item \strong{t0}: theoretical time zero, at which individuals of this species hatch
-#'      (only if Bertalanffy plot was applied).
+#'      (only for Bertalanffy plot and LSM method).
+#'  \item \strong{estimates}: dataframe with growth parameters and confidence intervals
+#'      (only if LSM method was applied).
 #' }
 #'
 #' @importFrom graphics abline lines plot segments
@@ -66,7 +72,8 @@
 #' @export
 
 growth_length_age <- function(param, method, Linf_est = NA,
-                              Linf_init = 10, K_init = 0.1, t0_init = 0){
+                              Linf_init = 10, K_init = 0.1, t0_init = 0,
+                              CI = FALSE, ci.level = 0.95){
 
   res <- param
   t <- res$age
@@ -88,6 +95,7 @@ growth_length_age <- function(param, method, Linf_est = NA,
              x[i] <- (Lt[i] + Lt[i+1])/ 2
            }
 
+           mod <- lm(y ~ x)
            sum_mod <- summary(lm(y ~ x))
            a <- sum_mod$coefficients[1]
            b <- sum_mod$coefficients[2]
@@ -113,6 +121,7 @@ growth_length_age <- function(param, method, Linf_est = NA,
            y <- Lt[2:length(Lt)]
            x <- Lt[-length(Lt)]
 
+           mod <- lm(y ~ x)
            sum_mod <- summary(lm(y ~ x))
            a <- sum_mod$coefficients[1]
            b <- sum_mod$coefficients[2]
@@ -142,6 +151,7 @@ growth_length_age <- function(param, method, Linf_est = NA,
            x <- Lt_short
 
 
+           mod <- lm(y ~ x)
            sum_mod <- summary(lm(y ~ x))
            a <- sum_mod$coefficients[1]
            b <- sum_mod$coefficients[2]
@@ -166,6 +176,7 @@ growth_length_age <- function(param, method, Linf_est = NA,
            y <- -log(1 - Lt / Linf_est)
            x <- t
 
+           mod <- lm(y ~ x)
            sum_mod <- summary(lm(y ~ x))
            a <- sum_mod$coefficients[1]
            b <- sum_mod$coefficients[2]
@@ -181,7 +192,7 @@ growth_length_age <- function(param, method, Linf_est = NA,
                 main = "Bertalanffy plot")
            abline(a,b)
 
-           tmp <- list(x=x,y=y,R2=R2)
+           tmp <- list(x=x,y=y,R2=R2,t0=t0)
 
 
            if(max(Lt, na.rm=TRUE) > Linf_est) writeLines("Some lengths were larger as the Linf value which was \nprovided. These lengths are omitted.")
@@ -201,7 +212,23 @@ growth_length_age <- function(param, method, Linf_est = NA,
            K <- sum_mod$coefficients[2]
            t0 <- sum_mod$coefficients[3]
 
-           tmp <- list(t0 =t0)
+           mod <- nls_mod
+           tmp <- list(t0 = t0)
+
+           if(CI){
+             suppressMessages(cis <- confint(nls_mod, level = ci.level))
+             nls_res <- data.frame(Names=c("Linf","K","t0"),
+                                   Value=c(round(Linf,2),
+                                           round(K,2),
+                                           round(t0,2)),
+                                   Lower.CI = c(round(cis[1,1],2),
+                                                round(cis[2,1],2),
+                                                round(cis[3,1],2)),
+                                   Upper.CI = c(round(cis[1,2],2),
+                                                round(cis[2,2],2),
+                                                round(cis[3,2],2)))
+             tmp$nls_res = nls_res
+           }
          })
 
   res2 <- c(res,list(delta_t = delta_t))
@@ -209,11 +236,13 @@ growth_length_age <- function(param, method, Linf_est = NA,
   if(exists("y", where = tmp)) res2$y <- y
   if(exists("R2", where = tmp)) res2$r2 <- R2
 
-  ret <- c(res2,list(reg_coeffs = sum_mod$coefficients,
+  ret <- c(res2,list(mod = mod,
                     Linf = Linf,
                     K = K))
 
   if(exists("t0", where = tmp)) ret$t0 <- t0
+  if(exists("nls_res", where = tmp)) ret$estimates <- nls_res
+
   return(ret)
 }
 
