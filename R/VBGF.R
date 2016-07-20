@@ -81,21 +81,25 @@ VBGF <- function(t = NA, L = NA, Linf = NA, Winf = NA, K, t0 = 0,
 
 
     if(is.na(Winf) & is.na(t[1])){
+      if(D == 1 & C == 0) res <- t0 - (log(1-L/Linf)/K)
       # lookup table for soVBGF
-      tmax <- (t0 * K * D - log(1 - exp(D*log(L[length(L)]/Linf)))) / (K*D)
-      lookup_age <- seq(0,(tmax+10),0.01)
-      lookup_length <-  Linf * (1 - exp(-K * D * (lookup_age - t0) + (((C*K*D)/(2*pi)) *
-                                                                        sin(2*pi*(lookup_age-ts))) -
-                                          (((C*K*D)/(2*pi)) * sin(2*pi*(t0-ts))))) ^ (1/D)
+      if(D != 1 | C != 0){
+        tmax <- (t0 * K * D - log(1 - exp(D*log(L[length(L)]/Linf)))) / (K*D)
+        if(is.na(tmax)) tmax <- 40
+        lookup_age <- seq(0,(tmax+10),0.001)
+        lookup_length <-  Linf * (1 - exp(-K * D * (lookup_age - t0) + (((C*K*D)/(2*pi)) *
+                                                                          sin(2*pi*(lookup_age-ts))) -
+                                            (((C*K*D)/(2*pi)) * sin(2*pi*(t0-ts))))) ^ (1/D)
 
-      # OLD:
-      # lookup_length <-  Linf * (1 - exp(-K * D * (lookup_age - t0) -
-      #                                     ((C*K*D)/(2*pi)) *
-      #                                     ((sin(2*pi*(lookup_age-ts))) +
-      #                                        (sin(2*pi*(t0-ts))))))^ (1/D)
+        # OLD:
+        # lookup_length <-  Linf * (1 - exp(-K * D * (lookup_age - t0) -
+        #                                     ((C*K*D)/(2*pi)) *
+        #                                     ((sin(2*pi*(lookup_age-ts))) +
+        #                                        (sin(2*pi*(t0-ts))))))^ (1/D)
 
-      lookup_ind <- lapply(X = L, FUN = function(x) which.min((lookup_length - x)^2))
-      res <- lookup_age[unlist(lookup_ind)]
+        lookup_ind <- lapply(X = L, FUN = function(x) which.min((lookup_length - x)^2))
+        res <- lookup_age[unlist(lookup_ind)]
+      }
     }
 
 
