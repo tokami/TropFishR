@@ -8,7 +8,7 @@ Tropical Fisheries Analysis with R
 
 
 ### Introduction
-A collection of fisheries models based on the the FAO Manual "Introduction to tropical fish stock assessment" by Sparre and Venema (1998, 1999).
+A collection of fisheries models based on the the FAO Manual "Introduction to tropical fish stock assessment" by Sparre and Venema (1998, 1999). Not only scientists working in the tropics will benefit from this new toolbox. The methods work with age based or length-frequency data and assist in the assessment of data poor fish stocks. Overall, the package comes with 22 functions, 18 data sets and ten s3 methods. All objects are documented and provide examples that allow reproducing the examples from the FAO manual. 
 
 
 ### Installation
