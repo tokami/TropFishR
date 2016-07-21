@@ -22,7 +22,7 @@ To install the development version of ***TropFishR***, use
 
 ```r
 require(devtools)
-install_github(“tokami/TropFishR”, ref = “dev0.1.10”)
+install_github(“tokami/TropFishR”, ref = “dev_v0.1.10”)
 ```
 
 ### Questions / Issues
