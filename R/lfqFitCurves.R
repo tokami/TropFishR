@@ -238,7 +238,7 @@ lfqFitCurves <- function(lfq, par = list(Linf = 100, K = 0.1, C = 0, WP = 0)){
                            dim = dimensions)
   indicator_array <- class_array + indicator_array
 
-  cohort_all_sampling_times_array <- apply(indicator_array, MARGIN = c(3,4), FUN = function(x) c(unlist(na.omit(c(unlist(x))))))
+  cohort_all_sampling_times_array <- apply(indicator_array, MARGIN = c(3,4), FUN = function(x) c(na.omit(c(x))))
 
   # get asp_mat
   loop_mat <- as.matrix(catch_aAF_F)
@@ -250,9 +250,10 @@ lfqFitCurves <- function(lfq, par = list(Linf = 100, K = 0.1, C = 0, WP = 0)){
 
 
   get.best.ESP <- function(x){
-    x_vec <- unlist(x)                                         # unlist x
-    peaks_unique <- (!duplicated(peaks_mat[x_vec]) & peaks_mat[x_vec] > 0)  | peaks_mat[x_vec] <= 0
-
+    x_vec <- x[[1]] ##  unlist(x)                                         # unlist x
+    ## peaks_unique <- (!duplicated(peaks_mat[x_vec]) & peaks_mat[x_vec] > 0)  | peaks_mat[x_vec] <= 0
+    pmx <- peaks_mat[x_vec]
+    peaks_unique <- (!duplicated(pmx) & pmx > 0) | pmx <= 0
     hits_whole_peaks <- x_vec[peaks_unique]
 
     ESP <- loop_mat[hits_whole_peaks]                                      # get negative and unique positive scores from score matrix
