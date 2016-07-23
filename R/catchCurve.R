@@ -16,7 +16,7 @@
 #'   \item \code{catch}: catches, vector or matrix with catches of subsequent years if
 #'   the catch curve with constat time intervals should be applied;
 #' }
-#' @param catch_column numerical; indicating the column of the catch matrix which should be
+#' @param catch_columns numerical; indicating the column of the catch matrix which should be
 #'   used for the analysis.
 #' @param cumulative logical; if TRUE the cumulative
 #'   catch curve is applied (Jones and van Zalinge method)
@@ -36,7 +36,7 @@
 #'
 #' # based on age composition data
 #' data(whiting)
-#' catchCurve(whiting, catch_column = 1)
+#' catchCurve(whiting, catch_columns = 1)
 #'
 #' #_______________________________________________
 #' # Constant parameter system based on age composition data (with catch matrix)
@@ -72,10 +72,11 @@
 #'   for not fully exploited old fish (e.g. due to gillnet fishery) can not be calculated yet
 #'   by use of the catch curve.
 #'   Based on the format of the list argument \code{catch} and whether the argument
-#'   \code{catch_column} is defined, the function automatically
+#'   \code{catch_columns} is defined, the function automatically
 #'   distinguishes between the catch curve with variable parameter system (if catch is a
 #'   vector) and the one with constant parameter system (if catch is a matrix or a
-#'   data.frame and \code{catch_column = NA}). In the case of the variable parameter system the catches of one year are
+#'   data.frame and \code{catch_columns = NA}). In the case of the variable parameter
+#'   system the catches of one year are
 #'   assumed to represent the catches during the entire life span of a so called
 #'   pseudo-cohort.
 #'   The cumulative catch curve does not allow for the estimation of the selectivity
@@ -158,7 +159,7 @@
 #'
 #' @export
 
-catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
+catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
                        calc_ogive = FALSE){
 
   res <- param
@@ -170,21 +171,34 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
   classes.num <- as.numeric(classes.num[,1])
 
   constant_dt <- FALSE
-  if(is.na(catch_column) & (class(res$catch) == 'matrix' |
+  if(is.na(catch_columns[1]) & (class(res$catch) == 'matrix' |
      class(res$catch) == 'data.frame')){
+    writeLines("Please be aware that you provided the catch as a matrix without specifiying any columns for \n the analysis. In this case the methods applies by default the catch curve with constant \n parameter system (refer to the help file for more information).")
     constant_dt <- TRUE
     catch <- res$catch
   }
 
   # non cumulative catch curve
   if(cumulative == FALSE){
-    if(is.na(catch_column) & constant_dt == FALSE) catch <- res$catch
-    if(!is.na(catch_column)) catch <- res$catch[,catch_column]
+    if(is.na(catch_columns[1]) & constant_dt == FALSE) catch <- res$catch
+    if(!is.na(catch_columns[1])){
+      catchmat <- res$catch[,(catch_columns)]
+      if(length(catch_columns) > 1){
+        catch <- rowSums(catchmat, na.rm = TRUE)
+      }else catch <- catchmat
+    }
   }
   #  cumulative catch curve
   if(cumulative){
-    if(is.na(catch_column)) catch <- rev(cumsum(rev(res$catch)))
-    if(!is.na(catch_column)) catch <- rev(cumsum(rev(res$catch[,catch_column])))
+    if(is.na(catch_columns[1])) catch <- rev(cumsum(rev(res$catch)))
+    if(!is.na(catch_columns[1])){
+      catchmat <- res$catch[,(catch_columns)]
+      if(length(catch_columns) > 1){
+        catchpre <- rowSums(catchmat, na.rm = TRUE)
+      }else catchpre <- catchmat
+      catch <- rev(cumsum(rev(catchpre)))
+      #catch <- rev(cumsum(rev(res$catch[,(catch_columns)])))
+    }
   }
 
   # Error message if catch and age do not have same length

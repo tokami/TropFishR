@@ -12,7 +12,7 @@
 #'   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
 #'   \item \code{catch}: catch as vector, or a matrix with catches of subsequent years;
 #' }
-#' @param catch_column optional; in case catch is a matrix or data.frame, a number
+#' @param catch_columns optional; in case catch is a matrix or data.frame, a number
 #'    indicating which column of the matrix should be analysed (Default: \code{NA}).
 #' @param savePlots logical; if TRUE the plot is recorded. Default is FALSE.
 #'
@@ -68,14 +68,20 @@
 #'
 #' @export
 
-powell_wetherall <- function(param, catch_column = NA, savePlots = FALSE){
+powell_wetherall <- function(param, catch_columns = NA, savePlots = FALSE){
 
   res <- param
   catch <- res$catch
 
   if(class(catch) == "data.frame" | class(catch) == "matrix"){
-    if(is.na(catch_column)) stop("Please provide a number indicating which column of the catch matrix should be analysed!")
-    catch <- catch[,catch_column]
+    if(is.na(catch_columns[1])){
+      writeLines("By default the whole catch matrix is considered for this analysis. Please be aware that this \n method requires catches representing one year. You can choose separate columns of the catch \n matrix with 'catch_columns'.")
+    }else{
+      catchmat <- catch[,(catch_columns)]
+      if(length(catch_columns) > 1){
+        catch <- rowSums(catchmat, na.rm = TRUE)
+      }else catch <- catchmat
+    } # stop("Please provide a number indicating which column of the catch matrix should be analysed!")
   }
 
   if("midLengths" %in% names(res)){
