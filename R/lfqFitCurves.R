@@ -238,7 +238,7 @@ lfqFitCurves <- function(lfq, par = list(Linf = 100, K = 0.1, C = 0, WP = 0)){
                            dim = dimensions)
   indicator_array <- class_array + indicator_array
 
-  cohort_all_sampling_times_array <- apply(indicator_array, MARGIN = c(3,4), FUN = function(x) c(na.omit(c(x))))
+  cohort_all_sampling_times_array <- apply(indicator_array, MARGIN = c(3,4), FUN = function(x) na.omit(as.vector(x))) #c(na.omit(c(x))))
 
   # get asp_mat
   loop_mat <- as.matrix(catch_aAF_F)
@@ -250,13 +250,33 @@ lfqFitCurves <- function(lfq, par = list(Linf = 100, K = 0.1, C = 0, WP = 0)){
 
 
   get.best.ESP <- function(x){
-    x_vec <- x[[1]] ##  unlist(x)                                         # unlist x
+    x_vec <- x[[1]] ##  unlist(x)      # unlist x
     ## peaks_unique <- (!duplicated(peaks_mat[x_vec]) & peaks_mat[x_vec] > 0)  | peaks_mat[x_vec] <= 0
     pmx <- peaks_mat[x_vec]
-    peaks_unique <- (!duplicated(pmx) & pmx > 0) | pmx <= 0
-    hits_whole_peaks <- x_vec[peaks_unique]
+    scoremx <- loop_mat[x_vec]
 
-    ESP <- loop_mat[hits_whole_peaks]                                      # get negative and unique positive scores from score matrix
+    # deal with positive ones
+    uni <- unique(pmx)
+    positives <- rep(NA,length(uni))
+    for(i in 1:length(uni)){
+      loopi <- uni[i]
+      indi <- which(pmx == loopi)
+      positives[i] <- max(scoremx[indi])
+    }
+
+    # sum up all negative ones
+    neg_indi <- which(pmx == 0)
+    negatives <- scoremx[neg_indi]
+
+    # combine
+    ESP <- c(positives,negatives)
+
+    # OLD : wrong because chooses always the first score value of a cohort peak which is hit more often, should choose the highest
+    # peaks_unique <- (!duplicated(pmx) & pmx > 0) | pmx <= 0
+    # hits_whole_peaks <- x_vec[peaks_unique]
+    # ESP <- loop_mat[hits_whole_peaks]                                      # get negative and unique positive scores from score matrix
+
+    # and add up
     if(length(ESP) > 0){
       ESP_sum <- sum(ESP,na.rm=TRUE)                             # take the sum
     }else ESP_sum <- -Inf                    # if startingLength exceeds Linf it is numeric(0) then fit is 0 but should be smaller tthan this

@@ -169,7 +169,7 @@ ELEFAN <- function(param, Linf_fix = NA, Linf_range = NA,
 
   dimnames(ESP_list_L) <- list(Ks,Linfs)
   score_mat <- round((10^(ESP_list_L/ASP)) /10,digits = 3)
-  rownames(score_mat) <- round(as.numeric(rownames(score_mat)),digits = 2)
+  rownames(score_mat) <- round(as.numeric(rownames(score_mat)), digits = 2)
 
   colnames(ESP_starting_point_L) <- c("startingSample","startingLength")
 
