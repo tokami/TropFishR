@@ -4,17 +4,17 @@
 #'
 #' @param param a list consisting of following parameters (not all are required):
 #' \itemize{
-#'   \item \strong{Linf}: infinite length in cm,
-#'   \item \strong{Winf}: infinite weight,
+#'   \item \strong{Linf}: infinite length in cm
+#'   \item \strong{Winf}: infinite weight
 #'   \item \strong{K}: growth coefficent for investigated species per year [1/year],
 #'   \item \strong{t0}: theoretical time zero, at which individuals of this species
-#'        hatch,
-#'   \item \strong{M}: natural mortality,
+#'        hatch
+#'   \item \strong{M}: natural mortality
 #'   \item \strong{tr}: age of recruitment
-#'   \item \strong{tc}: age of first capture;}
-#' @param FM_change vector with ascending fishing mortalities,
-#' @param Lt
-#' @param P
+#'   \item \strong{tc}: age of first capture}
+#' @param FM_change vector with ascending fishing mortalities
+#' @param Lt length at time
+#' @param P population size
 #'
 #' @keywords function prediction ypr
 #'

@@ -7,7 +7,9 @@
 #' @examples
 #'  yeardec2date(2014.14)
 #'
-#' @return date in format "%Y-%m-%d" (class 'Date').
+#' @return date in format "\%Y-\%m-\%d" (class 'Date').
+#'
+#' @export
 
 
 yeardec2date <- function(yeardec){
