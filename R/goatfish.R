@@ -9,8 +9,8 @@
 #' @docType data
 #' @format A list consisting of:
 #' \itemize{
-#'   \item \code{midLengths}: a vector of the mid ages of the age groups,
-#'   \item \code{catch}: a matrix with the catches for different years,
+#'   \item \code{midLengths}: mid points of length classes,
+#'   \item \code{catch}: a vector with catches in numbers,
 #'   \item \code{Linf}: infinite length in cm [cm],
 #'   \item \code{K}: growth coefficent per year [1/year].
 #' }

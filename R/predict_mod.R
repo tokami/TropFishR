@@ -48,6 +48,7 @@
 #' @keywords function prediction ypr
 #'
 #' @examples
+#' \dontrun{
 #' #______________________________________
 #' # Yiel Per Recruit (YPR) / Beverton and Holt's model
 #' #______________________________________
@@ -115,7 +116,7 @@
 #' # with length structured data
 #' data(hake)
 #' predict_mod(hake,FM_change = seq(0.1,3,0.1), type = 'ThompBell', plot = TRUE)
-#'
+#' }
 #' @details The Thompson and Bell model incorporates an iteration step simulating the
 #'    stock by means
 #'    of the \code{\link{stock_sim}} function. In case changes in gear
@@ -147,18 +148,26 @@
 #'   \itemize{
 #'      \item \strong{FM}: fishing mortalities,
 #'      \item \strong{Lc} or \strong{tc}: lengths or ages at first capture,
-#'      \item \strong{list_Lc_runs} or \strong{list_tc_runs}: a list with the dataframes for each Lc or tc value:
+#'      \item \strong{list_Lc_runs}: a list with dataframes for each Lc value:
 #'      \itemize{
-#'        \item \strong{FM_change}: fishing mortality
-#'        \item \strong{Y_R}: yield per recurit (catch in weight per recruit)
+#'        \item \strong{FM_change}: fishing mortalities
+#'        \item \strong{E}: expoitation rates
+#'        \item \strong{Ty}: mean age in annual yield
+#'        \item \strong{LY}: mean length in annual yield
+#'        \item \strong{Wy}: mean weight in annual yield
 #'        \item \strong{Y_R.rel}: relative yield per recruit (change in catch in
 #'            weigth per recruit relative to initial Y/R value)
+#'        \item \strong{B_R.rel}: relative biomass per recruit
+#'        \item \strong{Y_R}: yield per recurit (catch in weight per recruit)
 #'        \item \strong{B_R}: biomass per recruit
 #'        \item \strong{B_R.percent}: percentage biomass per recurit in relation to virgin
 #'            biomass per recruit
-#'        \item \strong{Ty} or \strong{LY}: mean age or mean length in annual yield
-#'        \item \strong{Wy}: mean weight in annual yield
 #'      }
+#'      \item \strong{df_Es}: a dataframe with references points (columns) for
+#'          different Lc values (rows)
+#'      \item \strong{df_current}: a dataframe with the exploitation status, yield
+#'          and biomass values of current exploitation or selectivity (if E_curr or
+#'          Lc_tc_curr provided).
 #'   }
 #'   \item \code{type = 'ThomBell'}
 #'   \itemize{
@@ -268,11 +277,12 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
     a <- res$a  # might be NULL
     b <- res$b  # might be NULL
     Winf <- res$Winf  # might be NULL
-    Linf <- ifelse(!is.null(res$Linf),res$Linf, a * Winf^b)
+    Linf <- ifelse(!is.null(res$Linf),res$Linf, exp(log(Winf/a)/b))
     # REALLY ? maybe without Linf: then message that Winf has to exist
     if(is.null(Linf) | is.na(Linf)) stop("Either Linf or Winf with a and b has to be provided!")
-    if(is.null(Winf)) Winf <- exp((log(Linf) - a)/b) # might still be NULL
+    if(is.null(Winf)) Winf <-  a * Linf ^ b###exp((log(Linf) - a)/b) # might still be NULL
     # or              Winf <- exp(log(Linf-a)/b)
+
 
 
     if(length(FM_change) == 1 & is.na(FM_change[1]) & length(E_change) == 1 & is.na(E_change[1])){
@@ -290,8 +300,8 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
     tr <- res$tr   # might be NULL
     Lr <- res$Lr   # might be NULL
     if(is.null(tr) & is.null(Lr)) stop("Either the age or the length at recruitment (tr or Lr) has to be provided in param!")
-    if(is.null(tr)) tr <- VBGF(L=Lr,Linf=Linf,K=K,t0=t0)
-    if(is.null(Lr)) Lr <- VBGF(t=tr,Linf=Linf,K=K,t0=t0)
+    if(is.null(tr)) tr <- VBGF(L=Lr,param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lr,Linf=Linf,K=K,t0=t0)
+    if(is.null(Lr)) Lr <- VBGF(t=tr,param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tr,Linf=Linf,K=K,t0=t0)
 
 
     # Selectivity - knife edge or with selctivtiy ogive
@@ -302,10 +312,10 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
       if("Lc" %in% s_list) Lc <- s_list$Lc
       if(!("Lc" %in% s_list) & !("L50" %in% s_list))stop("Either the age or the length at first capture (tc or Lc) has to be provided in param! \n Or provide a Lc value in s_list!")
     }
-    if(is.null(tc)) tc <- VBGF(L=Lc,Linf=Linf,K=K,t0=t0)
-    if(is.null(Lc)) Lc <- VBGF(t=tc,Linf=Linf,K=K,t0=t0)
-    if(is.null(tc_change) & !is.null(Lc_change)) tc_change <- VBGF(L=Lc_change,Linf=Linf,K=K,t0=t0)
-    if(is.null(Lc_change) & !is.null(tc_change)) Lc_change <- VBGF(t=tc_change,Linf=Linf,K=K,t0=t0)
+    if(is.null(tc)) tc <- VBGF(L=Lc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc,Linf=Linf,K=K,t0=t0)
+    if(is.null(Lc)) Lc <- VBGF(t=tc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tc,Linf=Linf,K=K,t0=t0)
+    if(is.null(tc_change) & !is.null(Lc_change)) tc_change <- VBGF(L=Lc_change, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc_change,Linf=Linf,K=K,t0=t0)
+    if(is.null(Lc_change) & !is.null(tc_change)) Lc_change <- VBGF(t=tc_change, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tc_change,Linf=Linf,K=K,t0=t0)
     tc <- c(tc,tc_change)
     Lc <- c(Lc,Lc_change)
 
@@ -424,10 +434,10 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
 
 
       results.PBH <- data.frame(FM = FM_change,
+                                E = E,
                                 Ty = Ty,
                                 Ly = Ly,
                                 Wy = Wy,
-                                E = E,
                                 Y_R.rel = Y_R.rel,
                                 B_R.rel = B_R.rel)
       # WHY NECESSARY???
@@ -442,14 +452,17 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
       Nmax <- which.min(abs(deri))
       deri_pot <- deri[1:Nmax]
       N01 <- which.min(abs(deri_pot - (deri[1] * 0.1)))
+      Nmsy <- which.max(Y_R.rel)
       N05 <- which.min(abs(B_R.percent - 50))  #which.min(abs(deri - (deri[1] * 0.5)))
 
       df_loop_Es <- data.frame(Lc = Lci,
                                tc = tci,
-                               F01 = FM_change[N01])
+                               F01 = FM_change[N01],
+                               Fmsy = FM_change[Nmsy])
       if(length(B_R.percent) > 0) df_loop_Es$F05 <- FM_change[N05]   # WHY NECESSARY????
       df_loop_Es$Fmax <- FM_change[Nmax]
       df_loop_Es$E01 <- E[N01]
+      df_loop_Es$Emsy <- E[Nmsy]
       if(length(B_R.percent) > 0) df_loop_Es$E05 <- E[N05]    # WHY NECESSARY????
       df_loop_Es$Emax <- E[Nmax]
 
@@ -464,7 +477,7 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
 
     df_Es <- do.call(rbind,list_Es)
 
-    names(list_Lc_runs) <- Lc   # names(list_tc_runs) <- tc
+    names(list_Lc_runs) <- paste0("Lc_",Lc)   # names(list_tc_runs) <- tc
     ret <- c(res,list(FM = FM_change,
                       Lc = Lc,           #   tc = tc,
                       list_Lc_runs = list_Lc_runs,   #   list_tc_runs = list_tc_runs,
@@ -476,10 +489,10 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
       curr.F = (M * curr.E)/(1-curr.E)  # curr.F <- (M * curr.E)/(1-curr.E)
       df_currents <- data.frame(curr.E = curr.E,
                                 curr.F = curr.F,
-                                curr.YPR = ypr(curr.F, curr.Lc_tc, type = "length"),           # curr.YPR = ypr(curr.F, curr.Lc_tc, type = "age"),
-                                curr.YPR.rel = ypr.rel(curr.F, curr.Lc_tc, type = "length"),   # curr.YPR.rel = ypr.rel(curr.F, curr.Lc_tc, type = "age"),
-                                curr.BPR = bpr(curr.F, curr.Lc_tc, type = "length"),           # curr.BPR = bpr(curr.F, curr.Lc_tc, type = "age"),
-                                curr.BPR.rel = bpr.rel(curr.F, curr.Lc_tc, type = "length"))   # curr.BPR.rel = bpr.rel(curr.F, curr.Lc_tc, type = "age"))
+                                curr.YPR = ypr(curr.F, curr.Lc_tc),           #, type = "length"),           # curr.YPR = ypr(curr.F, curr.Lc_tc, type = "age"),
+                                curr.YPR.rel = ypr.rel(curr.F, curr.Lc_tc),   #, type = "length"),   # curr.YPR.rel = ypr.rel(curr.F, curr.Lc_tc, type = "age"),
+                                curr.BPR = bpr(curr.F, curr.Lc_tc),           #, type = "length"),           # curr.BPR = bpr(curr.F, curr.Lc_tc, type = "age"),
+                                curr.BPR.rel = bpr.rel(curr.F, curr.Lc_tc))   #, type = "length"))   # curr.BPR.rel = bpr.rel(curr.F, curr.Lc_tc, type = "age"))
       ret$currents <- df_currents
     }
   }

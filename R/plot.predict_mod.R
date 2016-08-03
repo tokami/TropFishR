@@ -23,6 +23,7 @@
 #' @param ... optional parameters of plot function
 #'
 #' @examples
+#' \dontrun{
 #' # YPR
 #' # age structured data
 #' # Nemipterus marginatus
@@ -30,7 +31,7 @@
 #'
 #' # predict_mod(threadfin, FM_change = seq(0,6,0.1),
 #' #    Lc_tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
-#'
+#'}
 #' @importFrom grDevices colorRampPalette dev.new rgb
 #' @importFrom graphics mtext par plot axis contour identify image legend lines locator points rect segments text
 #'

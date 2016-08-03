@@ -71,18 +71,26 @@ A list with the input parameters and dependent on the model type following
   \itemize{
      \item \strong{FM}: fishing mortalities,
      \item \strong{Lc} or \strong{tc}: lengths or ages at first capture,
-     \item \strong{list_Lc_runs} or \strong{list_tc_runs}: a list with the dataframes for each Lc or tc value:
+     \item \strong{list_Lc_runs}: a list with dataframes for each Lc value:
      \itemize{
-       \item \strong{FM_change}: fishing mortality
-       \item \strong{Y_R}: yield per recurit (catch in weight per recruit)
+       \item \strong{FM_change}: fishing mortalities
+       \item \strong{E}: expoitation rates
+       \item \strong{Ty}: mean age in annual yield
+       \item \strong{LY}: mean length in annual yield
+       \item \strong{Wy}: mean weight in annual yield
        \item \strong{Y_R.rel}: relative yield per recruit (change in catch in
            weigth per recruit relative to initial Y/R value)
+       \item \strong{B_R.rel}: relative biomass per recruit
+       \item \strong{Y_R}: yield per recurit (catch in weight per recruit)
        \item \strong{B_R}: biomass per recruit
        \item \strong{B_R.percent}: percentage biomass per recurit in relation to virgin
            biomass per recruit
-       \item \strong{Ty} or \strong{LY}: mean age or mean length in annual yield
-       \item \strong{Wy}: mean weight in annual yield
      }
+     \item \strong{df_Es}: a dataframe with references points (columns) for
+         different Lc values (rows)
+     \item \strong{df_current}: a dataframe with the exploitation status, yield
+         and biomass values of current exploitation or selectivity (if E_curr or
+         Lc_tc_curr provided).
   }
   \item \code{type = 'ThomBell'}
   \itemize{
@@ -144,6 +152,7 @@ The Thompson and Bell model incorporates an iteration step simulating the
    knife-edge recruitment and selection of gears (Sparre and Venema, 1998).
 }
 \examples{
+\dontrun{
 #______________________________________
 # Yiel Per Recruit (YPR) / Beverton and Holt's model
 #______________________________________
@@ -211,7 +220,7 @@ plot(output, xaxis = "E")
 # with length structured data
 data(hake)
 predict_mod(hake,FM_change = seq(0.1,3,0.1), type = 'ThompBell', plot = TRUE)
-
+}
 }
 \references{
 Berkeley, S.A., and Houde, E.D., 1980. Swordfish, Xiphias gladius, dynamics in

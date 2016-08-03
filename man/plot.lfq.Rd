@@ -5,7 +5,11 @@
 \title{Plotting of length frequency data (with VBGF curves)}
 \usage{
 \method{plot}{lfq}(x, Fname = "rcounts", par = NULL,
-  multiple_best_fits = 1, col = "blue", ...)
+  multiple_best_fits = 1, col = "blue", add.image = TRUE,
+  col.image = NULL, zlim = NULL, zlimtype = "balanced",
+  date.axis = "traditional", date.at = seq(as.Date("1500-01-01"),
+  as.Date("2500-01-01"), by = "months"), date.format = "'\%y-\%b",
+  xlab = "", ylab = "Length classes", ...)
 }
 \arguments{
 \item{x}{a list of the class "lfq" consisting of following parameters:
