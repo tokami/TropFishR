@@ -4,7 +4,7 @@
 \alias{catchCurve}
 \title{Catch curve}
 \usage{
-catchCurve(param, catch_column = NA, cumulative = FALSE,
+catchCurve(param, catch_columns = NA, cumulative = FALSE,
   calc_ogive = FALSE)
 }
 \arguments{
@@ -19,7 +19,7 @@ catchCurve(param, catch_column = NA, cumulative = FALSE,
   the catch curve with constat time intervals should be applied;
 }}
 
-\item{catch_column}{numerical; indicating the column of the catch matrix which should be
+\item{catch_columns}{numerical; indicating the column of the catch matrix which should be
 used for the analysis.}
 
 \item{cumulative}{logical; if TRUE the cumulative
@@ -76,10 +76,11 @@ This function includes the \link{identify} function, which asks you to
   for not fully exploited old fish (e.g. due to gillnet fishery) can not be calculated yet
   by use of the catch curve.
   Based on the format of the list argument \code{catch} and whether the argument
-  \code{catch_column} is defined, the function automatically
+  \code{catch_columns} is defined, the function automatically
   distinguishes between the catch curve with variable parameter system (if catch is a
   vector) and the one with constant parameter system (if catch is a matrix or a
-  data.frame and \code{catch_column = NA}). In the case of the variable parameter system the catches of one year are
+  data.frame and \code{catch_columns = NA}). In the case of the variable parameter
+  system the catches of one year are
   assumed to represent the catches during the entire life span of a so called
   pseudo-cohort.
   The cumulative catch curve does not allow for the estimation of the selectivity
@@ -96,7 +97,7 @@ summary(output$linear_mod)
 
 # based on age composition data
 data(whiting)
-catchCurve(whiting, catch_column = 1)
+catchCurve(whiting, catch_columns = 1)
 
 #_______________________________________________
 # Constant parameter system based on age composition data (with catch matrix)

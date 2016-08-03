@@ -11,7 +11,15 @@ lfqFitCurves(lfq, par = list(Linf = 100, K = 0.1, C = 0, WP = 0))
 \itemize{
   \item \strong{midLengths} midpoints of the length classes,
   \item \strong{dates} dates of sampling times (class Date),
-  \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column);
+  \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column),
+  \item \strong{samplingPeriod} length of sampling period in years,
+  \item \strong{samplingDays} time of sampling times in relation to first sampling time,
+  \item \strong{delta_t} array with time differences between relative sampling time set to zero and
+     other sampling times,
+  \item \strong{rcounts} restructured frequencies,
+  \item \strong{peaks_mat} matrix with positive peaks with distinct values,
+  \item \strong{ASP} available sum of peaks, sum of posititve peaks which could be potential be hit by
+     growth curves;
 }}
 
 \item{par}{a list with following growth parameters:
