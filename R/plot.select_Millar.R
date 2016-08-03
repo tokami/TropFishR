@@ -14,13 +14,14 @@
 #' @param ... additional parameter options from plot function
 #'
 #' @examples
+#' \dontrun{
 #' data(gillnet)
 #'
 #' output <- select_Millar(gillnet, x0 = c(60,4), rel.power = rep(1,8),
 #'    rtype = "norm.loc", plot = FALSE)
 #'
 #' plot(output, plotlens = seq(40,90,0.1), deviance_plot = FALSE)
-#'
+#'}
 #' @details This function draws a selectivity plot for the object class
 #'    \code{"select_Millar"}, which is created by applying Millar's selectivity model
 #'    \code{\link{select_Millar}}.

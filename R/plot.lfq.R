@@ -42,7 +42,7 @@
 #'
 #' @import lubridate
 #' @importFrom grDevices colorRampPalette dev.new dev.off recordPlot rgb
-#' @importFrom graphics abline axis box lines mtext par plot rect
+#' @importFrom graphics abline axis box lines mtext par plot rect polygon axis.Date
 #' @importFrom stats update
 #'
 #' @references
@@ -86,158 +86,192 @@
 #'
 #' @export
 
-plot.lfq <- function(x, Fname = "rcounts",
+plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
                      par = NULL,
-                     multiple_best_fits = 1, col = "blue", ...){
+                     multiple_best_fits = 1,
+                     col = "blue",
+                     add.image=TRUE,
+                     col.image=NULL,
+                     zlim=NULL,
+                     zlimtype = "balanced",   # alternative : "range"
+                     date.axis = "traditional",  # alternative : "modern"
+                     date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by="months"),
+                     date.format = "'%y-%b",
+                     xlab = "",
+                     ylab = "Length classes",
+                     ...){
+
   dates <- x$dates
   classes <- x$midLengths
   catch <- get(Fname, x)
-  n_samples <- dim(catch)[2]
 
-  interval <- (classes[2]-classes[1])/2
+  bin.width <- diff(classes)
+  bin.lower <- classes - c(bin.width[1], bin.width)/2
+  bin.upper <- classes + c(bin.width, bin.width[length(bin.width)])/2
+  sc <- min(diff(dates))/2 / max(abs(catch)) # bin height scaling
 
-  # get length of smapling period
-  # continuous time in years
-  julian_days1 <- as.numeric(format(dates, format="%Y")) + as.numeric(format(dates, format="%j"))/366
-  days.years <- julian_days1 - julian_days1[1]  # OLD: #days <- as.numeric(dates - as.Date((dates[1]))) #days.years <- days/365
+  # image colour
+  if(is.null(col.image)){
+    pal <- colorRampPalette(c(rgb(1,0.8,0.8), rgb(1,1,1), rgb(0.8,0.8,1)))
+    col.image <- pal(21)
+  }
 
-  # for x axis
-  months_first <- update(object = dates, mdays = 1, hours = 0, minutes = 0, seconds = 0)
-  date_seq <- seq.Date(months_first[1],months_first[length(months_first)], by = "month")
-  date_label <- format(date_seq, "%b")
-  julian_days2 <- as.numeric(format(date_seq, format="%Y")) + as.numeric(format(date_seq, format="%j"))/366
-  date_ticks <- julian_days2 - julian_days1[1]  #date_ticks <- as.numeric(date_seq - as.Date((dates[1])))/365
+  # zlim value + type
+  if(is.null(zlim) & zlimtype == "balanced"){
+    zlim = c(-1,1) * max(abs(catch), na.rm=TRUE)
+  }
+  if(is.null(zlim) & zlimtype == "range"){
+    zlim = range(catch, na.rm = TRUE)
+  }
 
-  # for years beneath x axis
-  year <- unique(format(dates, "%Y"))
-  year_num <- floor(date_ticks[length(date_ticks)] - date_ticks[1]) + 1
-  year_pre <- which(date_label %in% "Jan")
-  if(!(1 %in% year_pre)) year_pre <- c(1,which(date_label %in% "Jan"))
-  #year_pre <- seq(1,1:year_num*12,length.out = year_num)
-  year_ticks <- date_ticks[year_pre]
+  # with image
+  if(add.image){
+    #par(mar = c(5, 5, 1, 1) + .1)
+    image(x=dates, y=classes, z=t(catch), col=col.image, zlim=zlim,
+          xaxt="n",  xlab = xlab, ylab = ylab)#, ...)
+  }
+  # without image
+  if(add.image == FALSE){
+    image(x=dates, y=classes, z=t(catch), col=NA, zlim=zlim,
+          xaxt="n",  xlab = xlab, ylab = ylab, ...)
+  }
 
-  #for plotting
-  xplot <- c((min(days.years, na.rm = TRUE)-0.2),(max(days.years, na.rm = TRUE)+0.2))
-  yplot <- c(0,classes[length(classes)]*1.1)  #### c(classes[1],classes[length(classes)])
+  # add time axis
+  if(date.axis == "modern"){
+    axis.Date(side = 1, x=dates, at=date.at, format = date.format)
+  }else if(date.axis == "traditional"){
+    axis.Date(side = 1, x = dates, at = date.at, format = "%b")
+    year <- unique(format(dates, "%Y"))
+    date_seq <- seq.Date(dates[1],dates[length(dates)], by = "month")
+    date_label <- format(date_seq, "%m")
+    year_pre <- which(date_label %in% "01")
+    if(!(1 %in% year_pre)) year_pre <- c(1,which(date_label %in% "01"))
+    dates_for_years <- as.Date(paste(format(date_seq,"%Y"),date_label,"01",sep="-"))
+    year_ticks <- dates_for_years[year_pre]
+    mtext(side = 1, at = year_ticks, text = year, line = 2.5)
+  }
 
-
-  # Plot with rearranged histogramms
-  par(mar = c(5, 5, 1, 1) + .1)
-  plot(xplot, yplot, type = "n",axes = FALSE, #ylim = c(0,max(yplot)),
-       ann = FALSE,  xaxs = "i", yaxs = "i")
-  axis(1,at = date_ticks, labels = date_label, cex.axis = 1.2)
-  mtext(side = 1, at = year_ticks, text = year, line = 3, cex = 1.2)
-  axis(2, cex.axis = 1.2)
-  mtext(side = 2, outer = F, line = 3.5, "Length [cm]", cex = 1.2)
+  # frame
   box(col = "gray40") #bty = "L"
 
-  min_delta_t <- min(diff(days.years),na.rm=TRUE)
-  max_peak <- max(abs(catch),na.rm = TRUE)
-  if(min_delta_t <= max_peak){
-    bar_height_adjust <- floor(max_peak /  min_delta_t)
-  }else bar_height_adjust = 1
-
-
   #Histograms
-  y.b <- classes - interval
-  y.t <- classes + interval
-  for(histi in 1:n_samples){
-    x.l <- rep(days.years[histi],length(classes))
-    x.r <- x.l - catch[,histi] / bar_height_adjust
-    abline(v = x.l[1],col = "gray70")
-    # positive ones
-    posi <- x.r > x.l
-    rect(xleft = x.l[posi], ybottom = y.b[posi], xright = x.r[posi], ytop = y.t[posi],
-         col = "white", border = "black")
-    # negative ones
-    negi <- x.r <= x.l
-    rect(xleft = x.l[negi], ybottom = y.b[negi], xright = x.r[negi], ytop = y.t[negi],
-         col = "black", border = "black")
+  for(i in seq(length(dates))){
+    score.sc <- catch[,i] * sc
+    for(j in seq(classes)){
+      polygon(x = c(dates[i], dates[i], dates[i]-score.sc[j], dates[i]-score.sc[j]),
+        y = c(bin.lower[j], bin.upper[j], bin.upper[j], bin.lower[j]),
+        col = c("white", "black")[(score.sc[j]>0)+1],
+        border = "grey20", lwd = 1)
+    }
   }
 
-  # when parameters given then plot growth curves
-  if(!is.null(par[[1]]) | ("K_opt" %in% names(x) & "Linf_fix" %in% names(x))){
-    if(("K_opt" %in% names(x) & "Linf_fix" %in% names(x)) & is.null(par[[1]])){
-      Linfi <- x$Linf_fix
-      Ki <- x$K_opt[multiple_best_fits]
-      C <- x$C
-      WP <-  x$WP
-      par <- list(Linf = Linfi, K = Ki, C = C, WP = WP)
-    }
-    if(!is.null(par[[1]])){
-      if(!("Linf" %in% names(par)) | !("K" %in% names(par))) stop("At least 'Linf' and 'K' have to be defined in par!")
-      Linfi <- get("Linf",par)
-      Ki <- get("K",par)
-      if("C" %in% names(par)){
-        C <- get("C",par)
-      }else C <- 0
-      if("WP" %in% names(par)){
-        WP <- get("WP",par)
-      }else WP <- 0
-      if("ts" %in% names(par)) WP <- 0.5 + get("ts",par)
-    }
-
-    res <- lfqFitCurves(lfq = x, par = par)
-
-    if(length(res$startingSample) == 1){
-      startingSample <- res$startingSample
-      rel_time_startingSample <- days.years[as.numeric(startingSample)]
-      startingLength <- as.numeric(res$startingLength)
-    }else{
-      startingSample <- res$startingSample[multiple_best_fits]
-      rel_time_startingSample <- days.years[as.numeric(startingSample)]
-      startingLength <- as.numeric(res$startingLength[multiple_best_fits])
-    }
-
-    # maximum age to be displayed - end of growth curve
-    Lmax <- Linfi * 0.98
-    tmax_plot <- log(1-Lmax/Linfi) / -Ki
-
-    # lookup table for soVBGF
-    if(C != 0 | WP != 0.5){
-      lookup_age <- seq(0,tmax_plot+30,0.01)   ##ISSUE: tmax
-      lookup_length <- Linfi * (1 - exp(-Ki * lookup_age + (((C*Ki)/(2*pi)) * sin(2*pi*(lookup_age-(WP-0.5)))) - (((C*Ki)/(2*pi))*sin(2*pi*(-(WP-0.5))))))
-    }
-
-    tsample_t0 <- log(1-startingLength/Linfi) / -Ki
-    if(C != 0 | WP != 0.5){
-      lookup_ind <- which.min(abs(lookup_length - startingLength))
-      tsample_t0 <- lookup_age[lookup_ind]
-    }
-    tstart <- -tsample_t0 + rel_time_startingSample
-
-    # maximum age to be displayed - end of growth curve - get more exact value if seasonalised
-    if(C != 0 | WP != 0.5){
-      lookup_ind <- which.min(abs(lookup_length - Lmax))
-      tmax_plot <- lookup_age[lookup_ind]
-    }
-
-
-    #number of cohorts
-    n_cohorti <- ceiling(abs(tmax_plot))
-    n_cohorti <- ifelse(n_cohorti == 0,1,n_cohorti)
-    n_cohorti <- ifelse(is.na(n_cohorti),1,n_cohorti)
-
-
-    # x axis intercept of growth curves in comparison to:  days.years to get this sequence
-    # negative tstart is intercept with x axis of starting cohort
-    younger_cohorts <- floor(abs(tstart - days.years[length(days.years)]))
-    older_cohorts <- floor(tmax_plot - tstart)
-
-    add_t_plot_seq <- seq(-older_cohorts,younger_cohorts,1)
-
-    births_cohorts <- tstart + add_t_plot_seq
-    deaths_cohorts <- births_cohorts + tmax_plot
-
-    for(cohorti in 1:length(add_t_plot_seq)){
-      addi <- add_t_plot_seq[cohorti]
-      t_cohorti <- seq(births_cohorts[cohorti],deaths_cohorts[cohorti],0.005)
-      Lt <- Linfi * (1 - exp(-Ki * (t_cohorti - tstart - addi) +
-                               (((C*Ki)/(2*pi)) * sin(2*pi*((t_cohorti - tstart - addi)-(WP-0.5)))) -
-                               (((C*Ki)/(2*pi)) * sin(2*pi*(0-(WP-0.5))))))
-      lines(y = Lt, x = t_cohorti, lty=2, col=col)
-    }
-    return(res)
-  }
+  # # when parameters given then plot growth curves
+  # if(!is.null(par[[1]]) | ("K_opt" %in% names(x) & "Linf_fix" %in% names(x))){
+  #   if(("K_opt" %in% names(x) & "Linf_fix" %in% names(x)) & is.null(par[[1]])){
+  #     Linfi <- x$Linf_fix
+  #     Ki <- x$K_opt[multiple_best_fits]
+  #     C <- x$C
+  #     WP <-  x$WP
+  #     par <- list(Linf = Linfi, K = Ki, C = C, WP = WP)
+  #   }
+  #   if(!is.null(par[[1]])){
+  #     if(!("Linf" %in% names(par)) | !("K" %in% names(par))) stop("At least 'Linf' and 'K' have to be defined in par!")
+  #     Linfi <- get("Linf",par)
+  #     Ki <- get("K",par)
+  #     if("C" %in% names(par)){
+  #       C <- get("C",par)
+  #     }else C <- 0
+  #     if("WP" %in% names(par)){
+  #       WP <- get("WP",par)
+  #     }else WP <- 0
+  #     if("ts" %in% names(par)) WP <- 0.5 + get("ts",par)
+  #   }
+  #
+  #   res <- lfqFitCurves(lfq = x, par = par)
+  #
+  #   if(length(res$startingSample) == 1){
+  #     startingSample <- res$startingSample
+  #     rel_time_startingSample <- days.years[as.numeric(startingSample)]
+  #     startingLength <- as.numeric(res$startingLength)
+  #   }else{
+  #     startingSample <- res$startingSample[multiple_best_fits]
+  #     rel_time_startingSample <- days.years[as.numeric(startingSample)]
+  #     startingLength <- as.numeric(res$startingLength[multiple_best_fits])
+  #   }
+  #
+  #   # maximum age to be displayed - end of growth curve
+  #   Lmax <- Linfi * 0.98
+  #   tmax_plot <- log(1-Lmax/Linfi) / -Ki
+  #
+  #   # lookup table for soVBGF
+  #   if(C != 0 | WP != 0.5){
+  #     lookup_age <- seq(0,tmax_plot+30,0.01)   ##ISSUE: tmax
+  #     lookup_length <- Linfi * (1 - exp(-Ki * lookup_age + (((C*Ki)/(2*pi)) * sin(2*pi*(lookup_age-(WP-0.5)))) - (((C*Ki)/(2*pi))*sin(2*pi*(-(WP-0.5))))))
+  #   }
+  #
+  #   tsample_t0 <- log(1-startingLength/Linfi) / -Ki
+  #   if(C != 0 | WP != 0.5){
+  #     lookup_ind <- which.min(abs(lookup_length - startingLength))
+  #     tsample_t0 <- lookup_age[lookup_ind]
+  #   }
+  #   tstart <- -tsample_t0 + rel_time_startingSample
+  #
+  #   # maximum age to be displayed - end of growth curve - get more exact value if seasonalised
+  #   if(C != 0 | WP != 0.5){
+  #     lookup_ind <- which.min(abs(lookup_length - Lmax))
+  #     tmax_plot <- lookup_age[lookup_ind]
+  #   }
+  #
+  #   #number of cohorts
+  #   n_cohorti <- ceiling(abs(tmax_plot))
+  #   n_cohorti <- ifelse(n_cohorti == 0,1,n_cohorti)
+  #   n_cohorti <- ifelse(is.na(n_cohorti),1,n_cohorti)
+  #
+  #
+  #   # x axis intercept of growth curves in comparison to:  days.years to get this sequence
+  #   # negative tstart is intercept with x axis of starting cohort
+  #   younger_cohorts <- floor(abs(tstart - days.years[length(days.years)]))
+  #   older_cohorts <- floor(tmax_plot - tstart)
+  #
+  #   add_t_plot_seq <- seq(-older_cohorts,younger_cohorts,1)
+  #
+  #   births_cohorts <- tstart + add_t_plot_seq
+  #   deaths_cohorts <- births_cohorts + tmax_plot
+  #
+  #   for(cohorti in 1:length(add_t_plot_seq)){
+  #     addi <- add_t_plot_seq[cohorti]
+  #     t_cohorti <- seq(births_cohorts[cohorti],deaths_cohorts[cohorti],0.005)
+  #     Lt <- Linfi * (1 - exp(-Ki * (t_cohorti - tstart - addi) +
+  #                              (((C*Ki)/(2*pi)) * sin(2*pi*((t_cohorti - tstart - addi)-(WP-0.5)))) -
+  #                              (((C*Ki)/(2*pi)) * sin(2*pi*(0-(WP-0.5))))))
+  #     lines(y = Lt, x = t_cohorti, lty=2, col=col)
+  #   }
+  #   return(res)
+  # }
 }
+
+
+
+# get length of smapling period
+# continuous time in years
+# julian_days1 <- as.numeric(format(dates, format="%Y")) + as.numeric(format(dates, format="%j"))/366
+# days.years <- julian_days1 - julian_days1[1]  # OLD: #days <- as.numeric(dates - as.Date((dates[1]))) #days.years <- days/365
+#
+# for x axis
+# months_first <- update(object = dates, mdays = 1, hours = 0, minutes = 0, seconds = 0)
+# date_seq <- seq.Date(months_first[1],months_first[length(months_first)], by = "month")
+# date_label <- format(date_seq, "%b")
+# julian_days2 <- as.numeric(format(date_seq, format="%Y")) + as.numeric(format(date_seq, format="%j"))/366
+# date_ticks <- julian_days2 - julian_days1[1]  #date_ticks <- as.numeric(date_seq - as.Date((dates[1])))/365
+#
+# for years beneath x axis
+# year <- unique(format(dates, "%Y"))
+# year_num <- floor(date_ticks[length(date_ticks)] - date_ticks[1]) + 1
+# year_pre <- which(date_label %in% "Jan")
+# if(!(1 %in% year_pre)) year_pre <- c(1,which(date_label %in% "Jan"))
+# #year_pre <- seq(1,1:year_num*12,length.out = year_num)
+# year_ticks <- date_ticks[year_pre]
+#for plotting
+# xplot <- c((min(days.years, na.rm = TRUE)-0.2),(max(days.years, na.rm = TRUE)+0.2))
+# yplot <- c(0,classes[length(classes)]*1.1)  #### c(classes[1],classes[length(classes)])
 

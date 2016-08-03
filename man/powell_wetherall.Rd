@@ -4,7 +4,7 @@
 \alias{powell_wetherall}
 \title{Powell-Wetherall method}
 \usage{
-powell_wetherall(param, catch_column = NA, savePlots = FALSE)
+powell_wetherall(param, catch_columns = NA, savePlots = FALSE)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -16,7 +16,7 @@ powell_wetherall(param, catch_column = NA, savePlots = FALSE)
   \item \code{catch}: catch as vector, or a matrix with catches of subsequent years;
 }}
 
-\item{catch_column}{optional; in case catch is a matrix or data.frame, a number
+\item{catch_columns}{optional; in case catch is a matrix or data.frame, a number
 indicating which column of the matrix should be analysed (Default: \code{NA}).}
 
 \item{savePlots}{logical; if TRUE the plot is recorded. Default is FALSE.}

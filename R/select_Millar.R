@@ -23,6 +23,7 @@
 #'
 #'
 #' @examples
+#' \dontrun{
 #' # Trouser trawl net
 #' data(haddock)
 #'
@@ -37,7 +38,8 @@
 #' data(gillnet)
 #'
 #' select_Millar(gillnet, x0 = c(10,3), rtype = "lognorm")
-#' output <- select_Millar(gillnet, x0 = c(60,4), rtype = "norm.loc", plot=FALSE)
+#' output <- select_Millar(param = gillnet, x0=c(2,18), rtype = "gamma", plot=FALSE)
+#' output <- select_Millar(gillnet, x0=c(40,18), rtype = "norm.loc", plot=FALSE)
 #'
 #' plot(output,plotlens=seq(40,90,0.1))
 #'
@@ -53,7 +55,7 @@
 #'    rtype="norm.loc", rel.power = rep(1,6))
 #'
 #' plot(output,plotlens=seq(10,40,0.1))
-#'
+#' }
 #' @source https://www.stat.auckland.ac.nz/~millar/selectware/
 #'
 #' @details Model adapted from the selectivity functions provided by Prof. Dr. Russell Millar
@@ -67,6 +69,7 @@
 #'
 #' @importFrom graphics plot
 #' @importFrom stats deviance optim
+#' @import msm
 #'
 #' @references
 #'  Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
@@ -80,7 +83,7 @@
 #' @export
 
 select_Millar <- function(param,
-                          x0,
+                          x0 = NULL,
                           rtype = "norm.loc",
                           rel.power = NULL, plot = TRUE
                           ){
@@ -88,6 +91,7 @@ select_Millar <- function(param,
 
   res <- param
   meshSizes <- res$meshSizes
+  mSize1 <- meshSizes[1]
   classes <- res$midLengths
   CatchPerNet_mat <- res$CatchPerNet_mat
 
@@ -109,6 +113,11 @@ select_Millar <- function(param,
 
   r <- rtypes_Millar(rtype) #Get selection curve function
 
+  #test
+  theta = x0
+  theta = c(-100,1900)
+  outer(classes, meshSizes, r, theta)
+
   # nllhood
   nllhood <- function(theta, classes, CatchPerNet_mat, meshSizes, r, rel.power){
     rmatrix <- outer(classes, meshSizes, r, theta)
@@ -119,11 +128,27 @@ select_Millar <- function(param,
     return(nll)
   }
 
+  # get initial values
+  if(is.null(x0)){
+    inits <- find_init_Millar(param = param, rtype = rtype, rel.power = rel.power)
+    x0 <- as.numeric(inits)
+  }
+  # x0 <- c(2,19)
+  # x0 <- c(x01[2]-1,-1/x01[1])
+  # x0 <- as.numeric(inits)[1:2]
+  # x0 <- c(0.,15) #between 1.2 and 2.2, second between 0.2 and 19
+  #
+  # #x0 <- res2$par + 0.05
+
+  x0 = c(2,15.85)
+
   res2 <- optim(x0, nllhood, classes = classes, CatchPerNet_mat = CatchPerNet_mat,
                meshSizes = meshSizes, r = r, rel.power = rel.power,
-               hessian = T, control = list(trace = F))
+               hessian = FALSE, control = list(trace = FALSE))
 
-  cat("Parameters =", res2$par, ",  Deviance =", 2*(fullfit.l + res2$value), "\n")
+  #res2
+
+  #cat("Parameters =", res2$par, ",  Deviance =", 2*(fullfit.l + res2$value), "\n")
 
   res3 <- c(res, res2, deviance=deviance, rtype=rtype, rel.power=list(rel.power))  # invisible
 
@@ -143,15 +168,23 @@ select_Millar <- function(param,
            varpars <- varx
            },
          "lognorm"={
-           pars <- c(exp(x[1]-x[2]^2),sqrt(exp(2*x[1]+x[2]^2)*(exp(x[2]^2)-1)))
-           varpars <- msm::deltamethod(list(~exp(x1-x2^2),
-                                    ~sqrt(exp(2*x1+x2^2)*(exp(x2^2)-1))),x,varx,ses=F)
+           pars <- c(exp(x[1]-x[2]^2),
+                     sqrt(exp(2*x[1]+x[2]^2)*(exp(x[2]^2)-1)))
+           varpars <- msm:::deltamethod(list(~exp(x1-x2^2),
+                                    ~sqrt(exp(2*x1+x2^2)*(exp(x2^2)-1))), x, varx, ses=FALSE)
            },
+         "gamma"={  # is missing in Millar's RNext functions (adopted from older gillnet functions)
+           pars <- c((x[1]-1)*x[2]*meshSizes[1],
+                     sqrt(x[1]*(x[2]*meshSizes[1])^2))
+           mSize1 <- meshSizes[1]
+           varpars <- msm:::deltamethod(list(~(x1-1)*x2*mSize1,
+                                   ~sqrt(x1*(x2*mSize1)^2)), x, varx, ses=FALSE)
+         },
          "binorm.sca"={
            pars <- c(x[1:4],exp(x[5])/(1+exp(x[5])))
            names <- c("Mode1(mesh1)","Std dev.1(mesh1)",
                    "Mode2(mesh1)","Std dev.2(mesh1)","P(mode1)")
-           varpars <- msm::deltamethod(list(~x1,~x2,~x3,~x4,~exp(x5)/(1+exp(x5))),
+           varpars <- msm:::deltamethod(list(~x1,~x2,~x3,~x4,~exp(x5)/(1+exp(x5))),
                                x,varx,ses=F)
            },
          "bilognorm"={
@@ -160,16 +193,16 @@ select_Millar <- function(param,
                   exp(x[5])/(1+exp(x[5])))
            names <- c("Mode1(mesh1)","Std dev.1(mesh1)",
                    "Mode2(mesh1)","Std dev.2(mesh1)","P(mode1)")
-           varpars <- msm::deltamethod(
+           varpars <- msm:::deltamethod(
              list(~exp(x1-x2^2),~sqrt(exp(2*x1+x2^2)*(exp(x2^2)-1)),
                   ~exp(x3-x4^2),~sqrt(exp(2*x3+x4^2)*(exp(x4^2)-1)),
-                  ~exp(x5)/(1+exp(x5))),x,varx,ses=F)
+                  ~exp(x5)/(1+exp(x5))),x,varx,ses=FALSE)
            },
          "tt.logistic"={
            pars <- c(-x[1]/x[2],2*(log(3))/x[2],exp(x[3])/(1+exp(x[3])))
            names <- c("L50","SR","p")
-           varpars <- msm::deltamethod(list(~-x1/x2,~2*log(3)/x2,~exp(x3)/(1+exp(x3))),
-                               x,varx,ses=F)
+           varpars <- msm:::deltamethod(list(~-x1/x2,~2*log(3)/x2,~exp(x3)/(1+exp(x3))),
+                               x,varx,ses=FALSE)
            },
          stop(paste("\n",res3$rtype, "not recognised, possible curve types are \n",
                     "\"norm.loc\", \"norm.sca\", \"lognorm\" \n",

@@ -30,6 +30,7 @@
 #' output <- growth_length_age(dat, method = "LSM", Linf_init = 30, CI = TRUE)
 #' summary(output$mod)
 #'
+#'
 #' # Bertalaffy plot
 #' dat <- list(age = c(0.64,1.16,1.65,2.1,2.64,3.21),
 #'    length = c(17.3,27.9,35.3,40.2,43.3,45.5))
@@ -64,6 +65,7 @@
 #'
 #' @importFrom graphics abline lines plot segments
 #' @importFrom stats lm nls predict
+#' @import MASS
 #'
 #' @references
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
@@ -216,7 +218,7 @@ growth_length_age <- function(param, method, Linf_est = NA,
            tmp <- list(t0 = t0)
 
            if(CI){
-             suppressMessages(cis <- confint(nls_mod, level = ci.level))
+             suppressMessages(cis <- MASS:::confint.nls(nls_mod, level = ci.level))
              nls_res <- data.frame(Names=c("Linf","K","t0"),
                                    Value=c(round(Linf,2),
                                            round(K,2),

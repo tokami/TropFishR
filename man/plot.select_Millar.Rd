@@ -32,13 +32,14 @@ This function draws a selectivity plot for the object class
    \code{\link{select_Millar}}.
 }
 \examples{
+\dontrun{
 data(gillnet)
 
 output <- select_Millar(gillnet, x0 = c(60,4), rel.power = rep(1,8),
    rtype = "norm.loc", plot = FALSE)
 
 plot(output, plotlens = seq(40,90,0.1), deviance_plot = FALSE)
-
+}
 }
 \references{
 Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity

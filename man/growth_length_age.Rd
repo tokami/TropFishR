@@ -5,13 +5,13 @@
 \title{Estimation from growth parameter using length-at-age data}
 \usage{
 growth_length_age(param, method, Linf_est = NA, Linf_init = 10,
-  K_init = 0.1, t0_init = 0)
+  K_init = 0.1, t0_init = 0, CI = FALSE, ci.level = 0.95)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
 \itemize{
   \item \strong{age}: age measurements,
-  \item \strong{length}: corresponding lengths.
+  \item \strong{length}: corresponding lengths in cm.
 }}
 
 \item{method}{indicating which of following methods should be applied:
@@ -27,17 +27,24 @@ or \code{"LSM"}}
 \item{K_init}{initital parameter of K for non-linear sqaures fitting (default 0.1)}
 
 \item{t0_init}{initital parameter of t0 for non-linear sqaures fitting (default 0)}
+
+\item{CI}{logical; Should confidence intervals be calculated? This option only
+works for the LSM method. Default is FALSE.}
+
+\item{ci.level}{required confidence level (for LSM method only)}
 }
 \value{
 A list with the input parameters and following parameters:
 \itemize{
  \item \strong{x}: independent variable used for regression analysis,
  \item \strong{y}: dependent variable used for regression analysis,
- \item \strong{reg_coeffs}: regression coefficients,
+ \item \strong{mod}: (non) linear model,
  \item \strong{Linf}: infinite length for investigated species in cm [cm],
  \item \strong{K}: growth coefficent for investigated species per year [1/year],
  \item \strong{t0}: theoretical time zero, at which individuals of this species hatch
-     (only if Bertalanffy plot was applied).
+     (only for Bertalanffy plot and LSM method).
+ \item \strong{estimates}: dataframe with growth parameters and confidence intervals
+     (only if LSM method was applied).
 }
 }
 \description{
@@ -63,7 +70,9 @@ growth parameters according to Sparre and Venema (1998).
 dat <- list(age = 1:7, length = c(25.7,36,42.9,47.5,50.7,52.8,54.2))
 growth_length_age(dat, method = "GullandHolt")
 
-growth_length_age(dat, method = "LSM", Linf_init = 30)
+output <- growth_length_age(dat, method = "LSM", Linf_init = 30, CI = TRUE)
+summary(output$mod)
+
 
 # Bertalaffy plot
 dat <- list(age = c(0.64,1.16,1.65,2.1,2.64,3.21),

@@ -7,7 +7,7 @@
 https://www.stat.auckland.ac.nz/~millar/selectware/
 }
 \usage{
-select_Millar(param, x0, rtype = "norm.loc", rel.power = NULL,
+select_Millar(param, x0 = NULL, rtype = "norm.loc", rel.power = NULL,
   plot = TRUE)
 }
 \arguments{
@@ -48,6 +48,7 @@ Model adapted from the selectivity functions provided by Prof. Dr. Russell Milla
   can greatly vary. Simliarly the starting values have to be adapted when changing the method (\code{rtype}).
 }
 \examples{
+\dontrun{
 # Trouser trawl net
 data(haddock)
 
@@ -62,7 +63,8 @@ legend(32,0.5,c("Control","Experimental"),lty=1:2,col=1:2,cex=0.8,bg="white")
 data(gillnet)
 
 select_Millar(gillnet, x0 = c(10,3), rtype = "lognorm")
-output <- select_Millar(gillnet, x0 = c(60,4), rtype = "norm.loc", plot=FALSE)
+output <- select_Millar(param = gillnet, x0=c(2,18), rtype = "gamma", plot=FALSE)
+output <- select_Millar(gillnet, x0=c(40,18), rtype = "norm.loc", plot=FALSE)
 
 plot(output,plotlens=seq(40,90,0.1))
 
@@ -78,7 +80,7 @@ output <- select_Millar(trammelnet, x0 = c(25,4),
    rtype="norm.loc", rel.power = rep(1,6))
 
 plot(output,plotlens=seq(10,40,0.1))
-
+}
 }
 \references{
 Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
