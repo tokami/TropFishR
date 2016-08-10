@@ -179,13 +179,13 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     if(xaxis1 == "FM"){
       N01 <- df_Es$F01
       N05 <- df_Es$F05
-      Nmax <- df_Es$Fmax
-      legend.lab <- c("F0.1","F0.5","Fmax")
+      Nmax <- df_Es$Fmsy
+      legend.lab <- c("F0.1","F0.5","Fmsy")
     }else{
       N01 <- df_Es$E01
       N05 <- df_Es$E05
-      Nmax <- df_Es$Emax
-      legend.lab <- c("E0.1","E0.5","Emax")
+      Nmax <- df_Es$Emsy
+      legend.lab <- c("E0.1","E0.5","Emsy")
     }
 
     #standard plot (ypr vs. E or FM)

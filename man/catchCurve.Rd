@@ -5,7 +5,7 @@
 \title{Catch curve}
 \usage{
 catchCurve(param, catch_columns = NA, cumulative = FALSE,
-  calc_ogive = FALSE)
+  calc_ogive = FALSE, reg_int = NULL)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -27,6 +27,10 @@ catch curve is applied (Jones and van Zalinge method)}
 
 \item{calc_ogive}{logical; if TRUE the selection ogive is additionally
 calculated from the catch curve (only if \code{cumulative = FALSE})}
+
+\item{reg_int}{instead of using the identity method a range can be determined,
+which is to be used for the regression analysis. If equal to NULL identity method
+is applied (default).}
 }
 \value{
 A list with the input parameters and following list objects:

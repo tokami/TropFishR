@@ -15,6 +15,9 @@
 #' @param catch_columns optional; in case catch is a matrix or data.frame, a number
 #'    indicating which column of the matrix should be analysed (Default: \code{NA}).
 #' @param savePlots logical; if TRUE the plot is recorded. Default is FALSE.
+#' @param reg_int instead of using the identity method a range can be determined,
+#'    which is to be used for the regression analysis. If equal to NULL identity method
+#'    is applied (default).
 #'
 #' @keywords function mortality Z/K Linf
 #'
@@ -68,7 +71,8 @@
 #'
 #' @export
 
-powell_wetherall <- function(param, catch_columns = NA, savePlots = FALSE){
+powell_wetherall <- function(param, catch_columns = NA,
+                             savePlots = FALSE, reg_int = NULL){
 
   res <- param
   catch <- res$catch
@@ -124,27 +128,33 @@ powell_wetherall <- function(param, catch_columns = NA, savePlots = FALSE){
     Lmean_Lprime <- Lmean - Lprime
 
     #identify plot
-    repeat{
-      dev.new(noRStudioGD = TRUE)
-      plot(x = Lprime,y = Lmean_Lprime,
-           xlab = "Lprime", ylab = "Lmean - Lprime")
-      writeLines("Please choose the minimum and maximum point in the \ngraph to include for the regression line!")
-      cutter <- identify(x = Lprime,y = Lmean_Lprime,
-                         labels = order(Lprime), n=2)
+    if(is.null(reg_int)){
+      repeat{
+        dev.new(noRStudioGD = TRUE)
+        plot(x = Lprime,y = Lmean_Lprime,
+             xlab = "Lprime", ylab = "Lmean - Lprime")
+        text(Lprime+0.5, Lmean_Lprime+0.5, labels=as.character(order(Lprime)), cex= 0.7)
+        writeLines("Please choose the minimum and maximum point in the \ngraph to include for the regression line!")
+        cutter <- identify(x = Lprime,y = Lmean_Lprime,
+                           labels = order(Lprime), n=2)
 
-      if(length(cutter) == 0){
-        stop(noquote("You did not choose any points! Please run the function again \nand choose points to include into the estimation of Z."))
+        if(length(cutter) == 0){
+          stop(noquote("You did not choose any points! Please run the function again \nand choose points to include into the estimation of Z."))
 
-      }
+        }
 
-      length.cutter <- length(cutter[1]:cutter[2])
-      # Break loop if selection does not embrace at least 3 points
-      if(length.cutter < 3) writeLines("Your selection is not possible. You have to choose two \npoints which include at least one other point. At least \nthree points are required for a regression line. Please choose again!")
-      if(length.cutter >= 3){
-        break
+        length.cutter <- length(cutter[1]:cutter[2])
+        # Break loop if selection does not embrace at least 3 points
+        if(length.cutter < 3) writeLines("Your selection is not possible. You have to choose two \npoints which include at least one other point. At least \nthree points are required for a regression line. Please choose again!")
+        if(length.cutter >= 3){
+          break
+        }
       }
     }
-
+    if(!is.null(reg_int)){
+      cutter <- reg_int
+    }
+    if(length(cutter) != 2) stop("You have to provide 2 numbers in reg_int.")
 
     #calculations + model
     df.BH <- as.data.frame(cbind(classes.num,Lmean_Lprime,Lprime))

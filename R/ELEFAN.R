@@ -18,6 +18,7 @@
 #'    more information see \link{lfqRestructure}).
 #' @param addl.sqrt Passed to \link{lfqRestructure}. Applied an additional square-root transformation of positive values according to Brey et al. (1988).
 #'    (default: FALSE, for more information see \link{lfqRestructure}).
+#' @param hide.progressbar logical; should the progress bar be hidden? (default: FALSE)
 #' @param plot logical; indicating if plot with restrucutred frequencies and growth curves should
 #'    be displayed
 #'
@@ -108,7 +109,9 @@
 ELEFAN <- function(param, Linf_fix = NA, Linf_range = NA,
                    K_range = exp(seq(log(0.1),log(10),length.out=100)),
                    C = 0, WP = 0,
-                   MA = 5, addl.sqrt = FALSE, plot = FALSE){
+                   MA = 5, addl.sqrt = FALSE,
+                   hide.progressbar = FALSE,
+                   plot = FALSE){
 
   res <- param
   classes <- res$midLengths
@@ -138,9 +141,11 @@ ELEFAN <- function(param, Linf_fix = NA, Linf_range = NA,
 
   ESP_starting_point_L <- array(NA,dim=c(length(Ks),2,length(Linfs)))
   ESP_list_L <- matrix(NA,nrow=length(Ks),ncol=length(Linfs))
-  nlk <- prod(dim(ESP_list_L))
-  pb <- txtProgressBar(min=1, max=nlk, style=3)
-  counter <- 1
+  if(!hide.progressbar){
+    nlk <- prod(dim(ESP_list_L))
+    pb <- txtProgressBar(min=1, max=nlk, style=3)
+    counter <- 1
+  }
   for(li in 1:length(Linfs)){
 
     ESP_starting_point_K <- matrix(NA,nrow=length(Ks),ncol=2)
@@ -160,8 +165,10 @@ ELEFAN <- function(param, Linf_fix = NA, Linf_range = NA,
       ESP_starting_point_K[ki,] <- c(startingSample,startingLength)
 
       # update counter and progress bar
-      setTxtProgressBar(pb, counter)
-      counter <- counter + 1
+      if(!hide.progressbar){
+        setTxtProgressBar(pb, counter)
+        counter <- counter + 1
+      }
     }
     ESP_list_L[,li] <- ESP_list_K
     ESP_starting_point_L[,,li] <- ESP_starting_point_K

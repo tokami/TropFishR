@@ -22,6 +22,9 @@
 #'   catch curve is applied (Jones and van Zalinge method)
 #' @param calc_ogive logical; if TRUE the selection ogive is additionally
 #'   calculated from the catch curve (only if \code{cumulative = FALSE})
+#' @param reg_int instead of using the identity method a range can be determined,
+#'    which is to be used for the regression analysis. If equal to NULL identity method
+#'    is applied (default).
 #'
 #' @keywords function mortality Z catchCurve
 #'
@@ -160,7 +163,7 @@
 #' @export
 
 catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
-                       calc_ogive = FALSE){
+                       calc_ogive = FALSE, reg_int = NULL){
 
   res <- param
 
@@ -335,20 +338,26 @@ catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
   maxY <- max(yvar,na.rm=TRUE) + 1
 
   #identify plot
-  writeLines("Please choose the minimum and maximum point in the graph \nto include for the regression line!")
-  dev.new(noRStudioGD = TRUE)
-  op <- par(mfrow = c(1,1),
-            c(5, 4, 4, 2) + 0.1,
-            oma = c(2, 1, 0, 1) + 0.1)
-  plot(x = xvar,y = yvar, ylim = c(minY,maxY),
-       xlab = xlabel, ylab = ylabel)
-  cutter <- identify(x = xvar, y = yvar,
-                     labels = order(xvar), n=2)
-  par(op)
+  if(is.null(reg_int)){
+    writeLines("Please choose the minimum and maximum point in the graph \nto include for the regression line!")
+    dev.new(noRStudioGD = TRUE)
+    op <- par(mfrow = c(1,1),
+              c(5, 4, 4, 2) + 0.1,
+              oma = c(2, 1, 0, 1) + 0.1)
+    plot(x = xvar,y = yvar, ylim = c(minY,maxY),
+         xlab = xlabel, ylab = ylabel)
+    text(xvar+0.5, yvar+0.5, labels=as.character(order(xvar)), cex= 0.7)
+    cutter <- identify(x = xvar, y = yvar,
+                       labels = order(xvar), n=2)
+    par(op)
 
-  if(is.na(cutter[1]) | is.nan(cutter[1]) |
-     is.na(cutter[2]) | is.nan(cutter[2]) ) stop(noquote("You did not choose any points in the graph. Please re-run the function and choose points in the graph!"))
-
+    if(is.na(cutter[1]) | is.nan(cutter[1]) |
+       is.na(cutter[2]) | is.nan(cutter[2]) ) stop(noquote("You did not choose any points in the graph. Please re-run the function and choose points in the graph!"))
+  }
+  if(!is.null(reg_int)){
+    cutter <- reg_int
+  }
+  if(length(cutter) != 2) stop("You have to provide 2 numbers in reg_int.")
 
   #calculations + model
   df.CC <- as.data.frame(cbind(xvar,yvar))

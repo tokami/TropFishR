@@ -449,10 +449,9 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
 
 
       # reference points
-      Nmax <- which.min(abs(deri))
-      deri_pot <- deri[1:Nmax]
+      Nmsy <- which.max(Y_R.rel)  #  should be the same as which.min(abs(deri)) which is also labelled Nmax
+      deri_pot <- deri[1:Nmsy]
       N01 <- which.min(abs(deri_pot - (deri[1] * 0.1)))
-      Nmsy <- which.max(Y_R.rel)
       N05 <- which.min(abs(B_R.percent - 50))  #which.min(abs(deri - (deri[1] * 0.5)))
 
       df_loop_Es <- data.frame(Lc = Lci,
@@ -460,11 +459,11 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
                                F01 = FM_change[N01],
                                Fmsy = FM_change[Nmsy])
       if(length(B_R.percent) > 0) df_loop_Es$F05 <- FM_change[N05]   # WHY NECESSARY????
-      df_loop_Es$Fmax <- FM_change[Nmax]
+      # df_loop_Es$Fmax <- FM_change[Nmax]
       df_loop_Es$E01 <- E[N01]
       df_loop_Es$Emsy <- E[Nmsy]
       if(length(B_R.percent) > 0) df_loop_Es$E05 <- E[N05]    # WHY NECESSARY????
-      df_loop_Es$Emax <- E[Nmax]
+      # df_loop_Es$Emax <- E[Nmax]
 
       list_Es[[i]] <- df_loop_Es
 
