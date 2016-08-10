@@ -72,7 +72,10 @@ growth_length_age(dat, method = "GullandHolt")
 
 output <- growth_length_age(dat, method = "LSM", Linf_init = 30, CI = TRUE)
 summary(output$mod)
+<<<<<<< HEAD
+=======
 
+>>>>>>> 1796382087256c1da5ccf7a53dfeaf50865976fc
 
 # Bertalaffy plot
 dat <- list(age = c(0.64,1.16,1.65,2.1,2.64,3.21),
