@@ -5,6 +5,8 @@ Tropical Fisheries Analysis with R
 
 ### Released version
 [![CRAN version](http://www.r-pkg.org/badges/version/TropFishR)](https://cran.r-project.org/web/packages/TropFishR/index.html) [![](http://cranlogs.r-pkg.org/badges/grand-total/TropFishR)](https://cran.r-project.org/web/packages/TropFishR/index.html)
+[![Build Status](https://travis-ci.org/tokami/TropFishR.svg?branch=dev_v0.1.10)](https://travis-ci.org/tokami/TropFishR)
+[![codecov.io](https://codecov.io/github/tokami/TropFishR/coverage.svg?branch=dev_v0.1.10)](https://codecov.io/github/tokami/TropFishR/coverage.svg?branch=dev_v0.1.10)
 
 
 ### Introduction
