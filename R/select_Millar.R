@@ -170,21 +170,21 @@ select_Millar <- function(param,
          "lognorm"={
            pars <- c(exp(x[1]-x[2]^2),
                      sqrt(exp(2*x[1]+x[2]^2)*(exp(x[2]^2)-1)))
-           varpars <- msm:::deltamethod(list(~exp(x1-x2^2),
+           varpars <- msm::deltamethod(list(~exp(x1-x2^2),
                                     ~sqrt(exp(2*x1+x2^2)*(exp(x2^2)-1))), x, varx, ses=FALSE)
            },
          "gamma"={  # is missing in Millar's RNext functions (adopted from older gillnet functions)
            pars <- c((x[1]-1)*x[2]*meshSizes[1],
                      sqrt(x[1]*(x[2]*meshSizes[1])^2))
            mSize1 <- meshSizes[1]
-           varpars <- msm:::deltamethod(list(~(x1-1)*x2*mSize1,
+           varpars <- msm::deltamethod(list(~(x1-1)*x2*mSize1,
                                    ~sqrt(x1*(x2*mSize1)^2)), x, varx, ses=FALSE)
          },
          "binorm.sca"={
            pars <- c(x[1:4],exp(x[5])/(1+exp(x[5])))
            names <- c("Mode1(mesh1)","Std dev.1(mesh1)",
                    "Mode2(mesh1)","Std dev.2(mesh1)","P(mode1)")
-           varpars <- msm:::deltamethod(list(~x1,~x2,~x3,~x4,~exp(x5)/(1+exp(x5))),
+           varpars <- msm::deltamethod(list(~x1,~x2,~x3,~x4,~exp(x5)/(1+exp(x5))),
                                x,varx,ses=F)
            },
          "bilognorm"={
@@ -193,7 +193,7 @@ select_Millar <- function(param,
                   exp(x[5])/(1+exp(x[5])))
            names <- c("Mode1(mesh1)","Std dev.1(mesh1)",
                    "Mode2(mesh1)","Std dev.2(mesh1)","P(mode1)")
-           varpars <- msm:::deltamethod(
+           varpars <- msm::deltamethod(
              list(~exp(x1-x2^2),~sqrt(exp(2*x1+x2^2)*(exp(x2^2)-1)),
                   ~exp(x3-x4^2),~sqrt(exp(2*x3+x4^2)*(exp(x4^2)-1)),
                   ~exp(x5)/(1+exp(x5))),x,varx,ses=FALSE)
@@ -201,7 +201,7 @@ select_Millar <- function(param,
          "tt.logistic"={
            pars <- c(-x[1]/x[2],2*(log(3))/x[2],exp(x[3])/(1+exp(x[3])))
            names <- c("L50","SR","p")
-           varpars <- msm:::deltamethod(list(~-x1/x2,~2*log(3)/x2,~exp(x3)/(1+exp(x3))),
+           varpars <- msm::deltamethod(list(~-x1/x2,~2*log(3)/x2,~exp(x3)/(1+exp(x3))),
                                x,varx,ses=FALSE)
            },
          stop(paste("\n",res3$rtype, "not recognised, possible curve types are \n",

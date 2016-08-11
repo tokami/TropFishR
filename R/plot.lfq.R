@@ -22,6 +22,15 @@
 #' @param multiple_best_fits numeric; indicating which startingPoints should be used in case there are more
 #'    than one (default: 1)
 #' @param col colour of growth curves (default: "blue")
+#' @param add.image default TRUE
+#' @param col.image default NULL
+#' @param zlim default NULL
+#' @param zlimtype default "balanced", alternative : "range"
+#' @param date.axis default "traditional", alternative : "modern"
+#' @param date.at date scale
+#' @param date.format date format
+#' @param xlab Label of x axis.
+#' @param ylab Label of y axis.
 #' @param ... additional options of the plot function
 #'
 #'
@@ -96,9 +105,7 @@ plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
                      zlimtype = "balanced",   # alternative : "range"
                      date.axis = "traditional",  # alternative : "modern"
                      date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by="months"),
-                     date.format = "'%y-%b",
-                     xlab = "",
-                     ylab = "Length classes",
+                     date.format = "'%y-%b", xlab = "", ylab = "Length classes",
                      ...){
 
   dates <- x$dates

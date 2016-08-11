@@ -35,6 +35,24 @@ than one (default: 1)}
 
 \item{col}{colour of growth curves (default: "blue")}
 
+\item{add.image}{default TRUE}
+
+\item{col.image}{default NULL}
+
+\item{zlim}{default NULL}
+
+\item{zlimtype}{default "balanced", alternative : "range"}
+
+\item{date.axis}{default "traditional", alternative : "modern"}
+
+\item{date.at}{date scale}
+
+\item{date.format}{date format}
+
+\item{xlab}{Label of x axis.}
+
+\item{ylab}{Label of y axis.}
+
 \item{...}{additional options of the plot function}
 }
 \description{

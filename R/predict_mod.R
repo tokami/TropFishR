@@ -27,7 +27,8 @@
 #' }
 #' @param FM_change vector with ascending fishing mortalities, or
 #' @param E_change vector with ascending exploitation rates
-#' @param Lc_tc_change vector with ascending lengths or ages at first capture (Lc/tc)
+#' @param Lc_change vector with ascending lengths at first capture (Lc), or
+#' @param tc_change vector with ascending ages at first capture (tc)
 #' @param type indicating which model should be applied: \code{"ypr"} for Beverton
 #'    and Holt's yield per recruit model and \code{"ThompBell"} for the Thompson and Bell model
 #' @param s_list list with selectivity parameters

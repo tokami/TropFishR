@@ -218,7 +218,7 @@ growth_length_age <- function(param, method, Linf_est = NA,
            tmp <- list(t0 = t0)
 
            if(CI){
-             suppressMessages(cis <- MASS:::confint.nls(nls_mod, level = ci.level))
+             suppressMessages(cis <- confint(nls_mod, level = ci.level))
              nls_res <- data.frame(Names=c("Linf","K","t0"),
                                    Value=c(round(Linf,2),
                                            round(K,2),

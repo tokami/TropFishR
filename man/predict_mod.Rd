@@ -38,6 +38,10 @@ and Holt's yield per recruit model and \code{"ThompBell"} for the Thompson and B
 
 \item{E_change}{vector with ascending exploitation rates}
 
+\item{Lc_change}{vector with ascending lengths at first capture (Lc), or}
+
+\item{tc_change}{vector with ascending ages at first capture (tc)}
+
 \item{s_list}{list with selectivity parameters}
 
 \item{stock_size_1}{stock size of smallest size class, if NA values are calculated
@@ -60,8 +64,6 @@ selection ogive. The smaller the higher the resolution but the slower the model
 run. Not required for "knife_edge" selection type}
 
 \item{plot}{logical; if TRUE results are displayed graphically}
-
-\item{Lc_tc_change}{vector with ascending lengths or ages at first capture (Lc/tc)}
 }
 \value{
 A list with the input parameters and dependent on the model type following
