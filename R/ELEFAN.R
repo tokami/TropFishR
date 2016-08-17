@@ -19,7 +19,7 @@
 #' @param addl.sqrt Passed to \link{lfqRestructure}. Applied an additional square-root transformation of positive values according to Brey et al. (1988).
 #'    (default: FALSE, for more information see \link{lfqRestructure}).
 #' @param hide.progressbar logical; should the progress bar be hidden? (default: FALSE)
-#' @param plot logical; indicating if plot with restrucutred frequencies and growth curves should
+#' @param plot logical; indicating if plot with restructured frequencies and growth curves should
 #'    be displayed
 #'
 #' @examples
@@ -201,7 +201,7 @@ ELEFAN <- function(param, Linf_fix = NA, Linf_range = NA,
     }
     phis <- round(log10(K_labels) + 2 * log10(Linfs), digits = 2)
 
-    par(mar = c(12,5,4,2))
+    op <- par(mar = c(12,5,4,2))
     plot(K_plot,score_mat,type = 'l', ylim=c(0,max(score_mat, na.rm = TRUE)*1.4),
          ylab = "Score function", xlab = "Growth constant K (/year)", col = "red", lwd=2,xaxt='n')
     axis(1,at = K_ats,labels = K_labels)
@@ -211,6 +211,7 @@ ELEFAN <- function(param, Linf_fix = NA, Linf_range = NA,
     grid(nx = 0, NULL, lty = 6, col = "gray40")
     abline(v = K_ats, lty = 6, col = "gray40")
     title("K-Scan", line = 2)
+    par(op)
   }
 
   if(!is.na(Linf_fix)){

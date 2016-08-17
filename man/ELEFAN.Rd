@@ -35,7 +35,7 @@ more information see \link{lfqRestructure}).}
 
 \item{hide.progressbar}{logical; should the progress bar be hidden? (default: FALSE)}
 
-\item{plot}{logical; indicating if plot with restrucutred frequencies and growth curves should
+\item{plot}{logical; indicating if plot with restructured frequencies and growth curves should
 be displayed}
 }
 \value{
