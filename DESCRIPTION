@@ -6,7 +6,7 @@ Date: 2016-07-30
 Author: Tobias K. Mildenberger, Marc H. Taylor, Matthias Wolff
 Maintainer: Tobias K. Mildenberger <t.k.mildenberger@gmail.com>
 Depends: R (>= 3.0.0)
-Imports: msm, lubridate, reshape2, MASS
+Imports: msm, lubridate, reshape2, MASS, GenSA, beepr
 LazyData: TRUE
 Description: Fish stock assessment methods and fisheries models based on the FAO
 	Manual "Introduction to tropical fish stock assessment" by P. Sparre and

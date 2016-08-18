@@ -24,11 +24,16 @@
 #'   \item \strong{C} amplitude of growth oscillation (default: 0),
 #'   \item \strong{WP} winter point (WP = ts + 0.5) (default: 0);
 #' }
+#' @param draw logical; indicating whether growth curves should be added to
+#'    existing lfq plot
+#' @param col A specification for the default plotting color. See section
+#'    ‘Color Specification’.
 #'
 #' @examples
 #' data(trout)
 #' res <- lfqRestructure(trout)
-#' lfqFitCurves(res)
+#' plot(res)
+#' lfqFitCurves(res, par=list(Linf=16,K=0.7), draw = TRUE)
 #'
 #' @details This function is used in the analysis of growth parameters with the \code{\link{ELEFAN}} function. It is often
 #'    referred to as ELEFAN 1. C expresses the amplitude of growth oscillations and
@@ -88,7 +93,8 @@
 #'
 #' @export
 
-lfqFitCurves <- function(lfq, par = list(Linf = 100, K = 0.1, C = 0, WP = 0)){
+lfqFitCurves <- function(lfq, par = list(Linf = 100, K = 0.1, C = 0, WP = 0),
+                         draw = FALSE, col = "blue"){
 
   classes <- lfq$midLengths
   interval <- (classes[2] - classes[1])/2
@@ -100,6 +106,7 @@ lfqFitCurves <- function(lfq, par = list(Linf = 100, K = 0.1, C = 0, WP = 0)){
   sp.years <- lfq$samplingPeriod
   days.years <- lfq$samplingDays
   delta_list <- lfq$delta_t[,,1]
+  dates <- lfq$dates
 
 
   # Linf and K for this run
@@ -300,11 +307,57 @@ lfqFitCurves <- function(lfq, par = list(Linf = 100, K = 0.1, C = 0, WP = 0)){
   startingSample <- as.numeric(position_best_ESP[2])
   startingLength <- starting_lengths[as.numeric(position_best_ESP[1])]
 
+  decdates <- date2yeardec(dates)
+  t_anchor <- (decdates[startingSample] - VBGF(par, L=startingLength)) %% 1
+
+
+  if(draw){
+    decdates <- date2yeardec(dates)
+    rel_time_startingSample <- decdates[as.numeric(startingSample)] # several best fits ?
+
+    tsample_t0 <- log(1-startingLength/Linfi) / -Ki
+    if(C != 0 | WP != 0){
+      lookup_ind <- which.min(abs(lookup_length - startingLength))
+      tsample_t0 <- lookup_age[lookup_ind]
+    }
+    tstart <- -tsample_t0 + rel_time_startingSample
+
+    # maximum age to be displayed - end of growth curve - get more exact value if seasonalised
+    if(C != 0 | WP != 0){
+      lookup_ind <- which.min(abs(lookup_length - Lmax))
+      tmax <- lookup_age[lookup_ind]
+    }
+
+    # x axis intercept of growth curves in comparison to:  days.years to get this sequence
+    # negative tstart is intercept with x axis of starting cohort
+    younger_cohorts <- floor(abs(tstart - decdates[length(decdates)]))
+    older_cohorts <- floor((decdates[1] - tmax) - tstart)
+    add_t_plot_seq <- seq(older_cohorts,younger_cohorts,1)
+
+    births_cohorts <- tstart + add_t_plot_seq
+    deaths_cohorts <- births_cohorts + tmax
+
+    for(cohorti in 1:length(add_t_plot_seq)){
+      addi <- add_t_plot_seq[cohorti]
+      t_cohorti <- seq(births_cohorts[cohorti], deaths_cohorts[cohorti],0.005)
+      Lt <- Linfi * (1 - exp(-Ki * (t_cohorti - tstart - addi) +
+                               (((C*Ki)/(2*pi)) * sin(2*pi*((t_cohorti - tstart - addi)-(WP-0.5)))) -
+                               (((C*Ki)/(2*pi)) * sin(2*pi*(0-(WP-0.5))))))
+      date_cohorti <- yeardec2date(t_cohorti)
+      lines(y = Lt, x = date_cohorti, lty=2, col=col)
+    }
+  }
+
   ret <- list(max_ESP = max_ESP,
               startingSample = startingSample,
-              startingLength = startingLength)
+              startingLength = startingLength,
+              t_anchor = t_anchor)
   return(ret)
 }
 
+
+# questions:
+
+# why not always several best fits for starting points? one growth curve could be associated to several starting points, for each sample one
 
 

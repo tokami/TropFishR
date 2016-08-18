@@ -26,7 +26,8 @@
 #' data(trout)
 #'
 #' # K-Scan
-#' ELEFAN(trout, Linf_fix = 16)
+#' output2 <- ELEFAN(trout, Linf_fix = 14.37)
+#' plot(output2, ylim=c(0,18))
 #'
 #' # Surface response analysis
 #' ELEFAN(trout, K_range = seq(0.1,2,0.1), Linf_range = seq(12,17,1))

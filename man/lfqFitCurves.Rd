@@ -4,7 +4,8 @@
 \alias{lfqFitCurves}
 \title{Fitting of VBGF curves through length frequency data (ELEFAN 1)}
 \usage{
-lfqFitCurves(lfq, par = list(Linf = 100, K = 0.1, C = 0, WP = 0))
+lfqFitCurves(lfq, par = list(Linf = 100, K = 0.1, C = 0, WP = 0),
+  draw = FALSE, col = "blue")
 }
 \arguments{
 \item{lfq}{a list of the class "lfq" consisting of following parameters:
@@ -29,6 +30,12 @@ lfqFitCurves(lfq, par = list(Linf = 100, K = 0.1, C = 0, WP = 0))
   \item \strong{C} amplitude of growth oscillation (default: 0),
   \item \strong{WP} winter point (WP = ts + 0.5) (default: 0);
 }}
+
+\item{draw}{logical; indicating whether growth curves should be added to
+existing lfq plot}
+
+\item{col}{A specification for the default plotting color. See section
+‘Color Specification’.}
 }
 \value{
 A list with following list objects:
@@ -54,7 +61,8 @@ This function is used in the analysis of growth parameters with the \code{\link{
 \examples{
 data(trout)
 res <- lfqRestructure(trout)
-lfqFitCurves(res)
+plot(res)
+lfqFitCurves(res, par=list(Linf=16,K=0.7), draw = TRUE)
 
 }
 \references{

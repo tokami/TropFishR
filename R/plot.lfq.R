@@ -99,9 +99,9 @@ plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
                      par = NULL,
                      multiple_best_fits = 1,
                      col = "blue",
-                     add.image=TRUE,
-                     col.image=NULL,
-                     zlim=NULL,
+                     add.image = TRUE,
+                     col.image = NULL,
+                     zlim = NULL,
                      zlimtype = "balanced",   # alternative : "range"
                      date.axis = "traditional",  # alternative : "modern"
                      date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by="months"),
@@ -135,7 +135,7 @@ plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
   if(add.image){
     #par(mar = c(5, 5, 1, 1) + .1)
     image(x=dates, y=classes, z=t(catch), col=col.image, zlim=zlim,
-          xaxt="n",  xlab = xlab, ylab = ylab)#, ...)
+          xaxt="n",  xlab = xlab, ylab = ylab, ...)
   }
   # without image
   if(add.image == FALSE){
@@ -172,90 +172,102 @@ plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
     }
   }
 
-  # # when parameters given then plot growth curves
-  # if(!is.null(par[[1]]) | ("K_opt" %in% names(x) & "Linf_fix" %in% names(x))){
-  #   if(("K_opt" %in% names(x) & "Linf_fix" %in% names(x)) & is.null(par[[1]])){
-  #     Linfi <- x$Linf_fix
-  #     Ki <- x$K_opt[multiple_best_fits]
-  #     C <- x$C
-  #     WP <-  x$WP
-  #     par <- list(Linf = Linfi, K = Ki, C = C, WP = WP)
-  #   }
-  #   if(!is.null(par[[1]])){
-  #     if(!("Linf" %in% names(par)) | !("K" %in% names(par))) stop("At least 'Linf' and 'K' have to be defined in par!")
-  #     Linfi <- get("Linf",par)
-  #     Ki <- get("K",par)
-  #     if("C" %in% names(par)){
-  #       C <- get("C",par)
-  #     }else C <- 0
-  #     if("WP" %in% names(par)){
-  #       WP <- get("WP",par)
-  #     }else WP <- 0
-  #     if("ts" %in% names(par)) WP <- 0.5 + get("ts",par)
-  #   }
-  #
-  #   res <- lfqFitCurves(lfq = x, par = par)
-  #
-  #   if(length(res$startingSample) == 1){
-  #     startingSample <- res$startingSample
-  #     rel_time_startingSample <- days.years[as.numeric(startingSample)]
-  #     startingLength <- as.numeric(res$startingLength)
-  #   }else{
-  #     startingSample <- res$startingSample[multiple_best_fits]
-  #     rel_time_startingSample <- days.years[as.numeric(startingSample)]
-  #     startingLength <- as.numeric(res$startingLength[multiple_best_fits])
-  #   }
-  #
-  #   # maximum age to be displayed - end of growth curve
-  #   Lmax <- Linfi * 0.98
-  #   tmax_plot <- log(1-Lmax/Linfi) / -Ki
-  #
-  #   # lookup table for soVBGF
-  #   if(C != 0 | WP != 0.5){
-  #     lookup_age <- seq(0,tmax_plot+30,0.01)   ##ISSUE: tmax
-  #     lookup_length <- Linfi * (1 - exp(-Ki * lookup_age + (((C*Ki)/(2*pi)) * sin(2*pi*(lookup_age-(WP-0.5)))) - (((C*Ki)/(2*pi))*sin(2*pi*(-(WP-0.5))))))
-  #   }
-  #
-  #   tsample_t0 <- log(1-startingLength/Linfi) / -Ki
-  #   if(C != 0 | WP != 0.5){
-  #     lookup_ind <- which.min(abs(lookup_length - startingLength))
-  #     tsample_t0 <- lookup_age[lookup_ind]
-  #   }
-  #   tstart <- -tsample_t0 + rel_time_startingSample
-  #
-  #   # maximum age to be displayed - end of growth curve - get more exact value if seasonalised
-  #   if(C != 0 | WP != 0.5){
-  #     lookup_ind <- which.min(abs(lookup_length - Lmax))
-  #     tmax_plot <- lookup_age[lookup_ind]
-  #   }
-  #
-  #   #number of cohorts
-  #   n_cohorti <- ceiling(abs(tmax_plot))
-  #   n_cohorti <- ifelse(n_cohorti == 0,1,n_cohorti)
-  #   n_cohorti <- ifelse(is.na(n_cohorti),1,n_cohorti)
-  #
-  #
-  #   # x axis intercept of growth curves in comparison to:  days.years to get this sequence
-  #   # negative tstart is intercept with x axis of starting cohort
-  #   younger_cohorts <- floor(abs(tstart - days.years[length(days.years)]))
-  #   older_cohorts <- floor(tmax_plot - tstart)
-  #
-  #   add_t_plot_seq <- seq(-older_cohorts,younger_cohorts,1)
-  #
-  #   births_cohorts <- tstart + add_t_plot_seq
-  #   deaths_cohorts <- births_cohorts + tmax_plot
-  #
-  #   for(cohorti in 1:length(add_t_plot_seq)){
-  #     addi <- add_t_plot_seq[cohorti]
-  #     t_cohorti <- seq(births_cohorts[cohorti],deaths_cohorts[cohorti],0.005)
-  #     Lt <- Linfi * (1 - exp(-Ki * (t_cohorti - tstart - addi) +
-  #                              (((C*Ki)/(2*pi)) * sin(2*pi*((t_cohorti - tstart - addi)-(WP-0.5)))) -
-  #                              (((C*Ki)/(2*pi)) * sin(2*pi*(0-(WP-0.5))))))
-  #     lines(y = Lt, x = t_cohorti, lty=2, col=col)
-  #   }
-  #   return(res)
-  # }
+  # when parameters given then plot growth curves
+  if(!is.null(par[[1]]) | ("K_opt" %in% names(x) & "Linf_fix" %in% names(x))){
+    if(("K_opt" %in% names(x) & "Linf_fix" %in% names(x)) & is.null(par[[1]])){
+      Linfi <- x$Linf_fix
+      Ki <- x$K_opt[multiple_best_fits]
+      C <- x$C
+      WP <-  x$WP
+      par <- list(Linf = Linfi, K = Ki, C = C, WP = WP)
+    }
+    if(!is.null(par[[1]])){
+      if(!("Linf" %in% names(par)) | !("K" %in% names(par))) stop("At least 'Linf' and 'K' have to be defined in par!")
+      Linfi <- get("Linf",par)
+      Ki <- get("K",par)
+      if("C" %in% names(par)){
+        C <- get("C",par)
+      }else C <- 0
+      if("WP" %in% names(par)){
+        WP <- get("WP",par)
+      }else WP <- 0
+      if("ts" %in% names(par)) WP <- 0.5 + get("ts",par)
+    }
+
+    res <- lfqFitCurves(lfq = x, par = par)
+
+    decdates <- date2yeardec(dates)
+
+    if(length(res$startingSample) == 1){
+      startingSample <- res$startingSample
+      rel_time_startingSample <- decdates[as.numeric(startingSample)]
+      startingLength <- as.numeric(res$startingLength)
+    }else{
+      startingSample <- res$startingSample[multiple_best_fits]
+      rel_time_startingSample <- decdates[as.numeric(startingSample)]
+      startingLength <- as.numeric(res$startingLength[multiple_best_fits])
+    }
+
+    # maximum age to be displayed - end of growth curve
+    Lmax <- Linfi * 0.98
+    tmax_plot <- log(1-Lmax/Linfi) / -Ki
+
+    # lookup table for soVBGF
+    if(C != 0 | WP != 0){
+      lookup_age <- seq(0,tmax_plot+30,0.01)   ##ISSUE: tmax
+      lookup_length <- Linfi * (1 - exp(-Ki * lookup_age + (((C*Ki)/(2*pi)) * sin(2*pi*(lookup_age-(WP-0.5)))) - (((C*Ki)/(2*pi))*sin(2*pi*(-(WP-0.5))))))
+    }
+
+    tsample_t0 <- log(1-startingLength/Linfi) / -Ki
+    if(C != 0 | WP != 0){
+      lookup_ind <- which.min(abs(lookup_length - startingLength))
+      tsample_t0 <- lookup_age[lookup_ind]
+    }
+    tstart <- -tsample_t0 + rel_time_startingSample
+
+    # maximum age to be displayed - end of growth curve - get more exact value if seasonalised
+    if(C != 0 | WP != 0){
+      lookup_ind <- which.min(abs(lookup_length - Lmax))
+      tmax_plot <- lookup_age[lookup_ind]
+    }
+
+    #number of cohorts
+    n_cohorti <- ceiling(abs(tmax_plot))
+    n_cohorti <- ifelse(n_cohorti == 0,1,n_cohorti)
+    n_cohorti <- ifelse(is.na(n_cohorti),1,n_cohorti)
+
+
+    # x axis intercept of growth curves in comparison to:  decdates to get this sequence
+    # negative tstart is intercept with x axis of starting cohort
+    younger_cohorts <- floor(abs(tstart - decdates[length(decdates)]))
+    older_cohorts <- floor((decdates[1] - tmax_plot) - tstart)
+
+    add_t_plot_seq <- seq(older_cohorts,younger_cohorts,1)
+
+    births_cohorts <- tstart + add_t_plot_seq
+    deaths_cohorts <- births_cohorts + tmax_plot
+
+    for(cohorti in 1:length(add_t_plot_seq)){
+      addi <- add_t_plot_seq[cohorti]
+      t_cohorti <- seq(births_cohorts[cohorti],deaths_cohorts[cohorti],0.005)
+      Lt <- Linfi * (1 - exp(-Ki * (t_cohorti - tstart - addi) +
+                               (((C*Ki)/(2*pi)) * sin(2*pi*((t_cohorti - tstart - addi)-(WP-0.5)))) -
+                               (((C*Ki)/(2*pi)) * sin(2*pi*(0-(WP-0.5))))))
+      date_cohorti <- yeardec2date(t_cohorti)
+      lines(y = Lt, x = date_cohorti, lty=2, col=col)
+    }
+  }
 }
+
+
+
+
+
+
+
+
+
+
 
 
 
