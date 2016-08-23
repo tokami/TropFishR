@@ -108,7 +108,7 @@ calcLt <- function(lfq,
 
   # calc scores
   grd <- expand.grid(Lt=lfq$midLengths, t=date2yeardec(lfq$dates))
-  grd$Fs <- c(lfq$rcounts)
+  grd$Fs <- unlist(lfq$rcounts)  # old: c but has problems if data.frame has names, or is it supposed to be a list here?
   grd$cohort_peaks <- c(lfq$peaks_mat)
   grd$hit <- 0
   bin.width <- diff(lfq$midLengths)
@@ -134,7 +134,7 @@ calcLt <- function(lfq,
       dpch <- grd$hit[peaki]
       if(sum(dpch, na.rm = TRUE) > 1){
         grd$hit[peaki] <- 0
-        maxi <- max(grd$Fs[peaki])
+        maxi <- max(unlist(grd$Fs[peaki]), na.rm = TRUE)
         grd$hit[((peaki[1]-1) + which(grd$Fs[peaki] == maxi))] <- 1
       }
     }

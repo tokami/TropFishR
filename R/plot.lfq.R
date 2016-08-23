@@ -172,6 +172,8 @@ plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
     }
   }
 
+  # ADD posibility to add t_anchor point in par=
+
   # when parameters given then plot growth curves
   if(!is.null(par[[1]]) | ("K_opt" %in% names(x) & "Linf_fix" %in% names(x))){
     if(("K_opt" %in% names(x) & "Linf_fix" %in% names(x)) & is.null(par[[1]])){
