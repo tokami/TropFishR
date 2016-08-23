@@ -18,7 +18,6 @@
 #'
 #' @keywords function prediction ypr
 #'
-#' @examples
 #'
 #'
 #' @details The Thompson and Bell model incorporates an iteration step simulating the

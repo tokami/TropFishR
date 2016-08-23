@@ -18,8 +18,6 @@
 #'
 #' @keywords function prediction ypr
 #'
-#' @examples
-#'
 #'
 #' @details The Thompson and Bell model incorporates an iteration step simulating the
 #'    stock by means
@@ -120,8 +118,9 @@ ypr_sel <- function(param, FM_change, Lt, P){
   interval <- (Lt[2] - Lt[1])/ 2
   lower_classes <- Lt - interval
   upper_classes <- Lt + interval
-  lower_t <- VBGF(L = lower_classes, Linf = res$Linf, K = res$K, t0 = res$t0)
-  upper_t <- VBGF(L = upper_classes, Linf = res$Linf, K = res$K, t0 = res$t0)
+
+  lower_t <- VBGF(param, L = lower_classes)
+  upper_t <- VBGF(param, L = upper_classes)
 
   S1 <- (1 - (lower_classes/res$Linf))
   S2 <- (1 - (upper_classes/res$Linf))

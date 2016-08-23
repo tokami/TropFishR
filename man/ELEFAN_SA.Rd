@@ -65,12 +65,14 @@ Electronic LEngth Frequency ANalysis with simulated annealing
 This is cool function
 }
 \examples{
+\dontrun{
 data(trout)
 output <- ELEFAN_SA(trout, SA_time = 60*1)
 
 # view fit
 plot(output, ylim = c(0,15))
 Lt <- calcLt(output, col=1, par=output$par, draw=TRUE)
+}
 
 
 }

@@ -57,10 +57,6 @@ The Thompson and Bell model incorporates an iteration step simulating the
    respectively, is also said to be untrue. By default, the functions assume
    knife-edge recruitment and selection of gears (Sparre and Venema, 1998).
 }
-\examples{
-
-
-}
 \references{
 Berkeley, S.A., and Houde, E.D., 1980. Swordfish, Xiphias gladius, dynamics in
 the Straits of Florida. \emph{ICES C.M.}, 11.

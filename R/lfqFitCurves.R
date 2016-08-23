@@ -27,7 +27,7 @@
 #' @param draw logical; indicating whether growth curves should be added to
 #'    existing lfq plot
 #' @param col A specification for the default plotting color. See section
-#'    ‘Color Specification’.
+#'    'Color Specification'.
 #'
 #' @examples
 #' data(trout)
