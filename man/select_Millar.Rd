@@ -17,7 +17,9 @@ and a matrix with the number of individuals caught with each sized mesh
 (\code{CatchPerNet_mat}).}
 
 \item{x0}{A string of initial values for the parameters to be optimized over when applying the
-function \code{\link[stats]{optim}}.}
+function \code{\link[stats]{optim}}. When rtype = "norm.loc", "norm.sca", or "lognorm", initial values
+may be ommitted (\code{x0 = NULL}), and starting vallues will be estimated using the earlier approach of
+Millar and Holst (1997).}
 
 \item{rtype}{A character string indicating which method for estimating selection curves
 should be used:
@@ -48,25 +50,32 @@ Model adapted from the selectivity functions provided by Prof. Dr. Russell Milla
   can greatly vary. Simliarly the starting values have to be adapted when changing the method (\code{rtype}).
 }
 \examples{
-\dontrun{
-# Trouser trawl net
 data(haddock)
 
 output <- select_Millar(haddock, x0 = c(-10,0.3,0),
    rtype = "tt.logistic")
 
 plot(output, plotlens=seq(25,35,0.1), deviance_plot = FALSE)
-legend(32,0.5,c("Control","Experimental"),lty=1:2,col=1:2,cex=0.8,bg="white")
+legend("topleft",c("Control","Experimental"), lty=1:2, col=1:2)
 
 
 # Gillnet
 data(gillnet)
 
-select_Millar(gillnet, x0 = c(10,3), rtype = "lognorm")
-output <- select_Millar(param = gillnet, x0=c(2,18), rtype = "gamma", plot=FALSE)
-output <- select_Millar(gillnet, x0=c(40,18), rtype = "norm.loc", plot=FALSE)
+# Using inital estimates from old method
+select_Millar(gillnet, x0 = NULL, rtype = "norm.loc")$value
+select_Millar(gillnet, x0 = NULL, rtype = "norm.sca")$value
+select_Millar(gillnet, x0 = NULL, rtype = "lognorm")$value
 
-plot(output,plotlens=seq(40,90,0.1))
+# Calculation with finer length resolution
+output <- select_Millar(gillnet, x0 = NULL, rtype = "lognorm")
+plot(output, plotlens=seq(40,90,0.1))
+
+# Use alternate plot settings
+output <- select_Millar(gillnet, x0 = NULL, rtype = "lognorm")
+ncolor <- length(output$meshSizes)
+plot(output, plotlens=seq(40,90,0.1), deviance_plot = FALSE, lty=1, col=rainbow(ncolor))
+legend("topleft", col=rainbow(8), legend=output$meshSizes, lty=1, title="Mesh size [cm]")
 
 
 # Stacked trammel net
@@ -80,7 +89,7 @@ output <- select_Millar(trammelnet, x0 = c(25,4),
    rtype="norm.loc", rel.power = rep(1,6))
 
 plot(output,plotlens=seq(10,40,0.1))
-}
+
 }
 \references{
 Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
