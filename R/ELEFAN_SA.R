@@ -3,7 +3,7 @@
 #' @description Electronic LEngth Frequency ANalysis with simulated annealing
 #'    for estimating growth parameters.
 #'
-#' @param param a list consisting of following parameters:
+#' @param x a list consisting of following parameters:
 #' \itemize{
 #'   \item \strong{midLengths} midpoints of the length classes,
 #'   \item \strong{dates} dates of sampling times (class Date),
@@ -20,6 +20,7 @@
 #'    more information see \link{lfqRestructure}).
 #' @param addl.sqrt Passed to \link{lfqRestructure}. Applied an additional square-root transformation of positive values according to Brey et al. (1988).
 #'    (default: FALSE, for more information see \link{lfqRestructure}).
+#' @param flagging.out logical; passed to \link{calcLt}
 #' @param plot logical; indicating if plot with restrucutred frequencies and growth curves should
 #'    be displayed
 #'
@@ -61,7 +62,7 @@
 #'
 #' @export
 
-ELEFAN_SA <- function(param,
+ELEFAN_SA <- function(x,
                       seasonalised = FALSE,
                       init_par = list(Linf = 50, K = 0.5, t_anchor = 0.5, C = 0, ts = 0),
                       low_par = NULL, #list(Linf = 1, K = 0.01, t_anchor = 0, C = 0, ts = 0),
@@ -70,9 +71,10 @@ ELEFAN_SA <- function(param,
                       SA_temp = 100000,
                       verbose = TRUE,
                       MA = 5, addl.sqrt = FALSE,
+                      flagging.out = FALSE,
                       plot = FALSE){
 
-  res <- param
+  res <- x
   classes <- res$midLengths
   n_classes <- length(classes)
   Linf_est <- classes[n_classes]
@@ -150,39 +152,53 @@ ELEFAN_SA <- function(param,
 
   # seasonalised cost function
   soSAfun <- function(par=c(init_Linf, init_K, init_tanc, init_C, init_ts), lfq){
-    Lt <- calcLt(lfq, par=list(Linf=par[1], K=par[2],
-                               t_anchor=par[3], C=par[4], ts=par[5]))
-    return(-Lt$fESP)
+    Lt <- calcLt(
+      lfq,
+      par=list(Linf=par[1], K=par[2], t_anchor=par[3], C=par[4], ts=par[5]),
+      flagging.out = flagging.out
+    )
+    return(-Lt$ESP)
   }
   # cost function
   SAfun <- function(par=c(init_Linf, init_K, init_tanc), lfq){
-    Lt <- calcLt(lfq, par=list(Linf=par[1], K=par[2], t_anchor=par[3], C = 0, ts = 0))
-    return(-Lt$fESP)
+    Lt <- calcLt(
+      lfq,
+      par=list(Linf=par[1], K=par[2], t_anchor=par[3], C = 0, ts = 0),
+      flagging.out = flagging.out
+    )
+    return(-Lt$ESP)
   }
 
   if(seasonalised){
     # Simulated annealing
-    SAfit <- GenSA::GenSA(par = c(init_Linf, init_K, init_tanc, init_C, init_ts),
-                          fn = soSAfun,
-                          lower = c(low_Linf, low_K, low_tanc, low_C, low_ts),
-                          upper = c(up_Linf, up_K, up_tanc, up_C, up_ts),
-                          control = list(max.time = SA_time,
-                                         temperature = SA_temp,
-                                         verbose = verbose),
-                          lfq = res)
+    SAfit <- GenSA::GenSA(
+      par = c(init_Linf, init_K, init_tanc, init_C, init_ts),
+      fn = soSAfun,
+      lower = c(low_Linf, low_K, low_tanc, low_C, low_ts),
+      upper = c(up_Linf, up_K, up_tanc, up_C, up_ts),
+      control = list(
+        max.time = SA_time,
+        temperature = SA_temp,
+        verbose = verbose
+      ),
+      lfq = res
+    )
 
     pars <- as.list(SAfit$par)
-    names(pars) <- c("Linf","K","t_anchor","ts","C")
+    names(pars) <- c("Linf","K","t_anchor", "C", "ts")
   }else{
     # Simulated annealing
     SAfit <- GenSA::GenSA(par = c(init_Linf, init_K, init_tanc),
-                          fn = SAfun,
-                          lower = c(low_Linf, low_K, low_tanc),
-                          upper = c(up_Linf, up_K, up_tanc),
-                          control = list(max.time = SA_time,
-                                         temperature = SA_temp,
-                                         verbose = verbose),
-                          lfq = res)
+      fn = SAfun,
+      lower = c(low_Linf, low_K, low_tanc),
+      upper = c(up_Linf, up_K, up_tanc),
+      control = list(
+        max.time = SA_time,
+        temperature = SA_temp,
+        verbose = verbose
+      ),
+      lfq = res
+    )
 
     pars <- as.list(SAfit$par)
     names(pars) <- c("Linf","K","t_anchor")
@@ -192,31 +208,39 @@ ELEFAN_SA <- function(param,
   fitti <- as.data.frame(SAfit$trace.mat)
   fitti$score <- abs(fitti$current.minimum)
   fitti$jumpscore <- abs(fitti$function.value)
-  lo <- stats::loess(jumpscore ~ nb.steps, data=fitti, span = 0.075)
-  j <- order(fitti$nb.steps)
 
-  op <- par(mfrow=c(1,1),mar=c(5,5,3,5))
-  plot(fitti$nb.steps,fitti$jumpscore, type = "l",  lwd =3,
-       xlab = "Time [steps]", ylab = "Score",col="grey")
-  title("Score function")
+  op <- par(mfrow=c(1,1), mar=c(5,5,3,5))
+  plot(jumpscore ~ nb.steps, data=fitti, col=8,
+       ylim = range(jumpscore)*c(1,1.25),
+       xlab = "Time [steps]", ylab = "Score", main="Score function")
+  # Ran <- aggregate(jumpscore ~ nb.steps, data=fitti, range)
+  # segments(x0=Ran$nb.steps, x1=Ran$nb.steps, col=8,
+  #     y0=Ran$jumpscore[,1], y1=Ran$jumpscore[,2])
+  Med <- aggregate(jumpscore ~ nb.steps, data=fitti, median)
+  lines(jumpscore ~ nb.steps, data=Med, col=1)
+  lines(score ~ nb.steps, data=fitti, col = 2)
+
   par(new = TRUE)
-  plot(fitti$nb.steps,fitti$temperature, type = "l", col="blue",
-       axes = FALSE, xlab="",ylab="", lwd=3)
+  plot(temperature ~ nb.steps, data=fitti, type = "l", col="blue",
+       ylim = range(temperature)*c(1,1.25),
+       axes = FALSE, xlab="", ylab="")
   axis(4,col="blue", col.ticks = "blue", col.axis="blue")
   mtext(4,line = 2.5,text = "Temperature", col= "blue")
-  par(new = TRUE)
-  plot(fitti$nb.steps,fitti$jumpscore, type = "n",  lwd = 3,
-       xlab = "", ylab = "",col="grey",axes=FALSE)
-  lines(fitti$nb.steps[j], lo$fitted[j], col="black", lwd = 3)
-  lines(fitti$nb.steps,fitti$score, lwd =3, col ="red")
+  legend("top", ncol=2, bty = "n",
+    legend = c("step scores", "step median score", "current best score", "temperature"),
+    col=c(8,1,2,4), lty=1,
+    pch=c(1,NA,NA,NA)
+  )
   par(op)
 
+  # notify completion
+  beepr::beep(10); beepr::beep(1) # beepr::beep(2)
 
-  beepr::beep(10); beepr::beep(1)  ##beepr::beep(2) #
-
-  ret <- c(res, list(par = pars,
-                     Rn_max = abs(SAfit$value)))
-
+  # Results
+  ret <- c(
+    res, list(par = pars,
+    Rn_max = abs(SAfit$value))
+  )
   class(ret) <- "lfq"
   if(plot){
     plot(ret, Fname = "rcounts")
