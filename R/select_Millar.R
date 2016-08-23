@@ -54,6 +54,9 @@
 #' legend("topleft", col=rainbow(ncolor), legend=output$meshSizes,
 #'  lty=1, title="Mesh size [cm]")
 #'
+#'  # deviance plot only
+#'  plot(output, plotlens=seq(40,90,0.1), selectivity_plot = FALSE)
+#'
 #'
 #' # Stacked trammel net
 #' # The data come from two experiments using different mesh sizes
