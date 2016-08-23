@@ -9,6 +9,9 @@
 #' @param details include details in output
 #'
 #' @return list of fitted arameters
+#'
+#' @importFrom stats as.formula coef confint glm poisson resid
+#'
 #' @export
 #'
 #Welcome to:
@@ -48,8 +51,6 @@
 ####################################
 gillnetfit=function(data, meshsizes, type="norm.loc", rel=NULL,
                     plots=c(FALSE, FALSE), plotlens=NULL, details=F) {
-  require(msm)
-
 
  if(sum(sort(meshsizes)==meshsizes)!=length(meshsizes))
    stop("Mesh sizes must be ascending order")
@@ -73,10 +74,10 @@ gillnetfit=function(data, meshsizes, type="norm.loc", rel=NULL,
   x=coef(fit)[c("var1","var2")]
   varx=summary(fit)$cov.unscaled[1:2,1:2]
   k=-2*x[2]/x[1]; sigma=sqrt(-2*x[2]/(x[1]^2))
-  vartemp=deltamethod(list(~-2*x2/x1,~sqrt(-2*x2/(x1^2))),x,varx,ses=F)
+  vartemp=msm::deltamethod(list(~-2*x2/x1,~sqrt(-2*x2/(x1^2))),x,varx,ses=F)
   pars=c(k,sigma,k*msizes[1],sigma)
   form1=as.formula(sprintf("~x1*%f",msize1)) #Deltamethod quirk
-  varpars=deltamethod(list(~x1,~x2,form1,~x2),c(k,sigma),vartemp,ses=F)
+  varpars=msm::deltamethod(list(~x1,~x2,form1,~x2),c(k,sigma),vartemp,ses=F)
   gear.pars=cbind(estimate=pars,s.e.=sqrt(diag(varpars)))
   rownames(gear.pars)=c("k","sigma","mode(mesh1)","std_dev(all meshes)") },
   "norm.sca"={
@@ -87,11 +88,11 @@ gillnetfit=function(data, meshsizes, type="norm.loc", rel=NULL,
   x=coef(fit)[c("var3","var4")]
   varx=summary(fit)$cov.unscaled[1:2,1:2]
   k1=-x[2]/(2*x[1]); k2=-1/(2*x[1])
-  vartemp=deltamethod(list(~-x2/(2*x1),~-1/(2*x1)),x,varx,ses=F)
+  vartemp=msm::deltamethod(list(~-x2/(2*x1),~-1/(2*x1)),x,varx,ses=F)
   pars=c(k1,k2,k1*msizes[1],sqrt(k2*msizes[1]^2))
   form1=as.formula(sprintf("~x1*%f",msize1)) #Deltamethod quirk
   form2=as.formula(sprintf("~sqrt(x2*%f^2)",msize1)) #Deltamethod quirk
-  varpars=deltamethod(list(~x1,~x2,form1,form2),c(k1,k2),vartemp,ses=F)
+  varpars=msm::deltamethod(list(~x1,~x2,form1,form2),c(k1,k2),vartemp,ses=F)
   gear.pars=cbind(estimate=pars,s.e.=sqrt(diag(varpars)))
   rownames(gear.pars)=c("k1","k2","mode(mesh1)","std_dev(mesh1)") },
   "gamma"={
@@ -102,11 +103,11 @@ gillnetfit=function(data, meshsizes, type="norm.loc", rel=NULL,
   x=coef(fit)[c("var4","var5")]
   varx=summary(fit)$cov.unscaled[1:2,1:2]
   alpha=x[2]+1; k=-1/x[1]
-  vartemp=deltamethod(list(~x2+1,~-1/x1),x,varx,ses=F)
+  vartemp=msm::deltamethod(list(~x2+1,~-1/x1),x,varx,ses=F)
   pars=c(alpha,k,(alpha-1)*k*msizes[1],sqrt(alpha*(k*msizes[1])^2))
   form1=as.formula(sprintf("~(x1-1)*x2*%f",msize1)) #Deltamethod quirk
   form2=as.formula(sprintf("~sqrt(x1*(x2*%f)^2)",msize1)) #Deltamethod quirk
-  varpars=deltamethod(list(~x1,~x2,form1,form2),c(alpha,k),vartemp,ses=F)
+  varpars=msm::deltamethod(list(~x1,~x2,form1,form2),c(alpha,k),vartemp,ses=F)
   gear.pars=cbind(estimate=pars,s.e.=sqrt(diag(varpars)))
   rownames(gear.pars)=c("alpha","k","mode(mesh1)","std_dev(mesh1)")  },
   "lognorm"={
@@ -117,9 +118,9 @@ gillnetfit=function(data, meshsizes, type="norm.loc", rel=NULL,
   x=coef(fit)[c("var6","var7")]
   varx=summary(fit)$cov.unscaled[1:2,1:2]
   mu1=-(x[1]-1)/x[2]; sigma=sqrt(1/x[2])
-  vartemp=deltamethod(list(~-(x1-1)/x2,~sqrt(1/x2)),x,varx,ses=F)
+  vartemp=msm::deltamethod(list(~-(x1-1)/x2,~sqrt(1/x2)),x,varx,ses=F)
   pars=c(mu1,sigma,exp(mu1-sigma^2),sqrt(exp(2*mu1+sigma^2)*(exp(sigma^2)-1)))
-  varpars=deltamethod(list(~x1,~x2,~exp(x1-x2^2),
+  varpars=msm::deltamethod(list(~x1,~x2,~exp(x1-x2^2),
                       ~sqrt(exp(2*x1+x2^2)*(exp(x2^2)-1))),c(mu1,sigma),vartemp,ses=F)
   gear.pars=cbind(estimate=pars,s.e.=sqrt(diag(varpars)))
   rownames(gear.pars)=c("mu1(mode log-scale, mesh1)","sigma(std_dev log scale)",

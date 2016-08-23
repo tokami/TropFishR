@@ -35,7 +35,7 @@ lfqFitCurves(lfq, par = list(Linf = 100, K = 0.1, C = 0, WP = 0),
 existing lfq plot}
 
 \item{col}{A specification for the default plotting color. See section
-‘Color Specification’.}
+'Color Specification'.}
 }
 \value{
 A list with following list objects:

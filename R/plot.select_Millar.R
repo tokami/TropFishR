@@ -34,7 +34,6 @@
 #'    \code{"select_Millar"}, which is created by applying Millar's selectivity model
 #'    \code{\link{select_Millar}}.
 #'
-#' @importFrom grDevices dev.new
 #' @importFrom graphics abline axis matplot par plot points
 #'
 #' @references
@@ -116,10 +115,12 @@ plot.select_Millar <- function(x,
   }
 
   # selectivity plot
-  matplot(plotlens, rmatrix, type = "l", las = 1, ylim = c(0,1),
-          xlab=xlab_sel, ylab=ylab_sel,
-          main = title_sel, ...)
-  abline(h = seq(0,1,0.25), lty = 3)
+  if(selectivity_plot){
+    matplot(plotlens, rmatrix, type = "l", las = 1, ylim = c(0,1),
+      xlab=xlab_sel, ylab=ylab_sel,
+      main = title_sel, ...)
+    abline(h = seq(0,1,0.25), lty = 3)
+  }
 
   par(op)
 }

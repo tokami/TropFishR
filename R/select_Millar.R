@@ -49,8 +49,10 @@
 #' # Use alternate plot settings
 #' output <- select_Millar(gillnet, x0 = NULL, rtype = "lognorm")
 #' ncolor <- length(output$meshSizes)
-#' plot(output, plotlens=seq(40,90,0.1), deviance_plot = FALSE, lty=1, col=rainbow(ncolor))
-#' legend("topleft", col=rainbow(8), legend=output$meshSizes, lty=1, title="Mesh size [cm]")
+#' plot(output, plotlens=seq(40,90,0.1), deviance_plot = FALSE,
+#'  lty=1, col=rainbow(ncolor))
+#' legend("topleft", col=rainbow(ncolor), legend=output$meshSizes,
+#'  lty=1, title="Mesh size [cm]")
 #'
 #'
 #' # Stacked trammel net
@@ -64,7 +66,7 @@
 #'    rtype="norm.loc", rel.power = rep(1,6))
 #'
 #' plot(output,plotlens=seq(10,40,0.1))
-#' }
+#'
 #' @source https://www.stat.auckland.ac.nz/~millar/selectware/
 #'
 #' @details Model adapted from the selectivity functions provided by Prof. Dr. Russell Millar

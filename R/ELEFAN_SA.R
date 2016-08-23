@@ -24,12 +24,14 @@
 #'    be displayed
 #'
 #' @examples
+#' \dontrun{
 #' data(trout)
 #' output <- ELEFAN_SA(trout, SA_time = 60*1)
 #'
 #' # view fit
 #' plot(output, ylim = c(0,15))
 #' Lt <- calcLt(output, col=1, par=output$par, draw=TRUE)
+#' }
 #'
 #'
 #' @details This is cool function
