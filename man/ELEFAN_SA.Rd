@@ -7,7 +7,7 @@
 ELEFAN_SA(x, seasonalised = FALSE, init_par = list(Linf = 50, K = 0.5,
   t_anchor = 0.5, C = 0, ts = 0), low_par = NULL, up_par = NULL,
   SA_time = 60 * 3, SA_temp = 1e+05, verbose = TRUE, MA = 5,
-  addl.sqrt = FALSE, flagging.out = FALSE, plot = FALSE)
+  addl.sqrt = FALSE, flagging.out = TRUE, plot = FALSE)
 }
 \arguments{
 \item{x}{a list consisting of following parameters:
@@ -37,7 +37,7 @@ more information see \link{lfqRestructure}).}
 \item{addl.sqrt}{Passed to \link{lfqRestructure}. Applied an additional square-root transformation of positive values according to Brey et al. (1988).
 (default: FALSE, for more information see \link{lfqRestructure}).}
 
-\item{flagging.out}{logical; passed to \link{calcLt}}
+\item{flagging.out}{logical; passed to \link{calcLt}. Default is TRUE}
 
 \item{plot}{logical; indicating if plot with restrucutred frequencies and growth curves should
 be displayed}
@@ -68,12 +68,46 @@ This is cool function
 }
 \examples{
 \dontrun{
+
+## trout example
 data(trout)
-output <- ELEFAN_SA(trout, SA_time = 60*1)
+
+# ELEFAN_SA (takes approximately 10 seconds)
+output <- ELEFAN_SA(trout, SA_time = 30)
+output$par
+output$Rn_max
 
 # view fit
 plot(output, ylim = c(0,15))
-Lt <- calcLt(output, col=1, par=output$par, draw=TRUE)
+calcLt(output, col=1, par=output$par, draw=TRUE)$ESP
+
+
+
+## synthetic lfq example
+data(synLFQ4)
+
+# ELEFAN_SA (takes approximately 2 minutes)
+output <- ELEFAN_SA(synLFQ4, SA_time = 60*2, seasonalised = TRUE, MA = 15,
+  init_par = list(Linf = 75, K = 0.5, t_anchor = 0.5, C = 0.5, ts = 0.5),
+  low_par = list(Linf = 70, K = 0.3, t_anchor = 0, C = 0, ts = 0),
+  up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1),
+)
+output$par
+output$Rn_max
+
+# view fit
+plot(output)
+calcLt(output, col=1, par=output$par, draw=TRUE)$ESP
+
+# compare to original parameters
+tmp <- calcLt(
+  output, col=4, lty=1,
+  par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0),
+  draw=TRUE
+)
+tmp$ESP
+output$Rn_max
+
 }
 
 

@@ -20,18 +20,52 @@
 #'    more information see \link{lfqRestructure}).
 #' @param addl.sqrt Passed to \link{lfqRestructure}. Applied an additional square-root transformation of positive values according to Brey et al. (1988).
 #'    (default: FALSE, for more information see \link{lfqRestructure}).
-#' @param flagging.out logical; passed to \link{calcLt}
+#' @param flagging.out logical; passed to \link{calcLt}. Default is TRUE
 #' @param plot logical; indicating if plot with restrucutred frequencies and growth curves should
 #'    be displayed
 #'
 #' @examples
 #' \dontrun{
+#'
+#' ## trout example
 #' data(trout)
-#' output <- ELEFAN_SA(trout, SA_time = 60*1)
+#'
+#' # ELEFAN_SA (takes approximately 10 seconds)
+#' output <- ELEFAN_SA(trout, SA_time = 30)
+#' output$par
+#' output$Rn_max
 #'
 #' # view fit
 #' plot(output, ylim = c(0,15))
-#' Lt <- calcLt(output, col=1, par=output$par, draw=TRUE)
+#' calcLt(output, col=1, par=output$par, draw=TRUE)$ESP
+#'
+#'
+#'
+#' ## synthetic lfq example
+#' data(synLFQ4)
+#'
+#' # ELEFAN_SA (takes approximately 2 minutes)
+#' output <- ELEFAN_SA(synLFQ4, SA_time = 60*2, seasonalised = TRUE, MA = 15,
+#'   init_par = list(Linf = 75, K = 0.5, t_anchor = 0.5, C = 0.5, ts = 0.5),
+#'   low_par = list(Linf = 70, K = 0.3, t_anchor = 0, C = 0, ts = 0),
+#'   up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1),
+#' )
+#' output$par
+#' output$Rn_max
+#'
+#' # view fit
+#' plot(output)
+#' calcLt(output, col=1, par=output$par, draw=TRUE)$ESP
+#'
+#' # compare to original parameters
+#' tmp <- calcLt(
+#'   output, col=4, lty=1,
+#'   par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0),
+#'   draw=TRUE
+#' )
+#' tmp$ESP
+#' output$Rn_max
+#'
 #' }
 #'
 #'
@@ -54,7 +88,7 @@
 #' }
 #'
 #' @importFrom graphics par plot title lines
-#' @importFrom stats loess
+#' @importFrom stats median
 #'
 #' @references
 #' Pauly, D. and N. David, 1981. ELEFAN I, a BASIC program for the objective extraction of
@@ -68,10 +102,10 @@ ELEFAN_SA <- function(x,
                       low_par = NULL, #list(Linf = 1, K = 0.01, t_anchor = 0, C = 0, ts = 0),
                       up_par = NULL, #list(Linf = 1000, K = 10, t_anchor = 1, C = 1, ts = 1),
                       SA_time = 60 * 3,
-                      SA_temp = 100000,
+                      SA_temp = 1e5,
                       verbose = TRUE,
                       MA = 5, addl.sqrt = FALSE,
-                      flagging.out = FALSE,
+                      flagging.out = TRUE,
                       plot = FALSE){
 
   res <- x
@@ -211,24 +245,24 @@ ELEFAN_SA <- function(x,
 
   op <- par(mfrow=c(1,1), mar=c(5,5,3,5))
   plot(jumpscore ~ nb.steps, data=fitti, col=8,
-       ylim = range(jumpscore)*c(1,1.25),
+       ylim = range(fitti$jumpscore)*c(1,1.25),
        xlab = "Time [steps]", ylab = "Score", main="Score function")
   # Ran <- aggregate(jumpscore ~ nb.steps, data=fitti, range)
   # segments(x0=Ran$nb.steps, x1=Ran$nb.steps, col=8,
   #     y0=Ran$jumpscore[,1], y1=Ran$jumpscore[,2])
-  Med <- aggregate(jumpscore ~ nb.steps, data=fitti, median)
+  Med <- aggregate(jumpscore ~ nb.steps, data = fitti, FUN = median)
   lines(jumpscore ~ nb.steps, data=Med, col=1)
   lines(score ~ nb.steps, data=fitti, col = 2)
 
   par(new = TRUE)
   plot(temperature ~ nb.steps, data=fitti, type = "l", col="blue",
-       ylim = range(temperature)*c(1,1.25),
+       ylim = range(fitti$temperature)*c(1,1.25),
        axes = FALSE, xlab="", ylab="")
   axis(4,col="blue", col.ticks = "blue", col.axis="blue")
   mtext(4,line = 2.5,text = "Temperature", col= "blue")
   legend("top", ncol=2, bty = "n",
     legend = c("step scores", "step median score", "current best score", "temperature"),
-    col=c(8,1,2,4), lty=1,
+    col=c(8,1,2,4), lty=c(NA,1,1,1),
     pch=c(1,NA,NA,NA)
   )
   par(op)

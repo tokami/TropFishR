@@ -22,7 +22,7 @@
 #'   \item wqs = 0 (width between 25% and 75% prob. of capture quantiles;
 #'   i.e. knife-edge selection)
 #'   \item M = 0.5 (Natural mortality rate)
-#'   \item harvest rate = 0.5 (Fishing mortality rate)
+#'   \item harvest_rate = 0.5 (Fishing mortality rate)
 #' }
 #'
 #' @docType data
@@ -47,21 +47,9 @@
 #' plot(synLFQ4, Fname = "catch")
 #'
 #' # plot of restructured length frequencies
-#' synLFQ4 <- lfqRestructure(synLFQ4, MA = 11)
+#' synLFQ4 <- lfqRestructure(synLFQ4, MA = 15)
 #' plot(synLFQ4, Fname = "rcounts")
 #'
-#' # ELEFAN_SA (takes approximately 2 minutes)
-#' \dontrun{
-#' output <- ELEFAN_SA(synLFQ4, SA_time = 60*2, seasonalised = TRUE, MA = 11,
-#'   init_par = list(Linf = 75, K = 0.5, t_anchor = 0.5, C = 0.5, ts = 0.5),
-#'   low_par = list(Linf = 70, K = 0.3, t_anchor = 0, C = 0, ts = 0),
-#'   up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1)
-#' )
-#' output$par
-#' output$Rn_max
-#' plot(output)
-#' Lt <- calcLt(output, col=1, par=output$par, draw=TRUE)
-#' }
 #'
 #'
 NULL
