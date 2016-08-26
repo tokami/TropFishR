@@ -57,7 +57,8 @@
 #'      other sampling times,
 #'   \item \strong{rcounts}: restructured frequencies,
 #'   \item \strong{peaks_mat}: matrix with positive peaks with distinct values,
-#'   \item \strong{startingPoints}: starting sample and starting length yielding in best fit;
+#'   \item \strong{startingPoints}: starting sample and starting length yielding in best fit
+#'   \item \strong{agemax}: maximum age assumed
 #' }
 #'
 #'
@@ -81,10 +82,10 @@ calcLt <- function(lfq,
 
   yeardec <- date2yeardec(lfq$dates)
 
-  tmax <- max(yeardec, na.rm = TRUE)
-  ncohort <- agemax + ceiling(diff(range(yeardec)))
-  tA.use <- par$t_anchor
-  tAs <- seq(floor(tmax-ncohort), ceiling(tmax), by=1) + abs(tA.use)%%1   # tA  == tanchor
+  tmax <- max(yeardec, na.rm = TRUE) # maximum sample date
+  ncohort <- agemax + ceiling(diff(range(yeardec))) # number of cohorts
+  tA.use <- par$t_anchor # VBGF anchor time in year
+  tAs <- seq(floor(tmax-ncohort), floor(tmax), by=1) + (tA.use+1e6)%%1   # anchor times
   ncohort <- length(tAs)
 
 
@@ -93,34 +94,41 @@ calcLt <- function(lfq,
   Lt <- vector(mode="list", ncohort)
   for(ct in seq(ncohort)){
     par2$t_anchor <- tAs[ct]
-    Lt.ct <- VBGF(param = par2, t = t) ## do.call(what = VBGF,  par2)    # Lt.ct <- VBGF(lfq = par2, t = yeardec)   #
-    Lt[[ct]] <- data.frame(t=yeardec, Lt=Lt.ct)
-    if(draw){
-      tmp <- par2
-      t_tmp <- seq(tAs[ct], ceiling(tmax) + 1, by=tincr)
-      tmp$L <- VBGF(tmp, t = t_tmp) ## do.call(what = VBGF,  tmp)
-      tmp$t <- yeardec2date(t_tmp)
-      lines(L ~ t, tmp, lty=lty, lwd=lwd, col=col)
+    rel.age <- t-tAs[ct] # relative age to anchor time
+    t.ct <- t[which(rel.age <= agemax & rel.age > 0)]
+    if(length(t.ct) > 0){
+      Lt.ct <- VBGF(param = par2, t = t.ct) ## do.call(what = VBGF,  par2)    # Lt.ct <- VBGF(lfq = par2, t = yeardec)   #
+      Lt[[ct]] <- data.frame(t=t.ct, Lt=Lt.ct)
+      if(draw){
+        tmp <- par2
+        t_tmp <- seq(tAs[ct], max(t.ct)+tincr, by=tincr)
+        tmp$L <- VBGF(tmp, t = t_tmp) ## do.call(what = VBGF,  tmp)
+        tmp$t <- yeardec2date(t_tmp)
+        lines(L ~ t, tmp, lty=lty, lwd=lwd, col=col)
+      }
     }
   }
   Lt <- do.call(rbind, Lt)
+  Lt <- Lt[which(Lt$Lt>=0),]# trim negative lengths
 
 
   # calc scores
   grd <- expand.grid(Lt=lfq$midLengths, t=date2yeardec(lfq$dates))
-  grd$Fs <- unlist(lfq$rcounts)  # old: c but has problems if data.frame has names, or is it supposed to be a list here?
-  grd$cohort_peaks <- c(lfq$peaks_mat)
-  grd$hit <- 0
-  bin.width <- diff(lfq$midLengths)
-  grd$bin.lower <- lfq$midLengths - c(bin.width[1], bin.width)/2
-  grd$bin.upper <- lfq$midLengths + c(bin.width, bin.width[length(bin.width)])/2
+  grd$Fs <- c(lfq$rcounts)  # turn matrix into 1-D vector
+  grd$cohort_peaks <- c(lfq$peaks_mat) # turn matrix into 1-D vector
+  grd$hit <- 0 # empty vector to record bins that are "hit" by a growth curve
+  bin.width <- diff(lfq$midLengths) # bin width (should allow for uneven bin sizes)
+  grd$bin.lower <- lfq$midLengths - (c(bin.width[1], bin.width)/2) # upper bin limit
+  grd$bin.upper <- lfq$midLengths + (c(bin.width, bin.width[length(bin.width)])/2) # lower bin limit
 
   # mark all length classes (in all sampling times) which are hit
   for(h in seq(nrow(grd))){
     tmp <- grd$t[h] == Lt$t & grd$bin.lower[h] <= Lt$Lt & grd$bin.upper[h] > Lt$Lt
-    if(sum(tmp, na.rm = TRUE) > 0) grd$hit[h] <-  1
+    if(!flagging.out){
+      if(sum(tmp, na.rm = TRUE) > 0) grd$hit[h] <-  1
+    }
     if(flagging.out){
-      if(sum(tmp, na.rm = TRUE) > 0) grd$hit[h] <-  1 + grd$hit[h]
+      if(sum(tmp, na.rm = TRUE) > 0) grd$hit[h] <- 1 + grd$hit[h]
     }
   }
 
@@ -134,7 +142,7 @@ calcLt <- function(lfq,
       dpch <- grd$hit[peaki]
       if(sum(dpch, na.rm = TRUE) > 1){
         grd$hit[peaki] <- 0
-        maxi <- max(unlist(grd$Fs[peaki]), na.rm = TRUE)
+        maxi <- max(grd$Fs[peaki], na.rm = TRUE)
         grd$hit[((peaki[1]-1) + which(grd$Fs[peaki] == maxi))] <- 1
       }
     }
@@ -144,6 +152,10 @@ calcLt <- function(lfq,
   ESP <- sum(grd$Fs * grd$hit, na.rm = TRUE)
   fASP <- ESP/lfq$ASP
   fESP <- round((10^(ESP/lfq$ASP)) /10, digits = 3)
-  return(list(Lt = Lt, ASP = lfq$ASP,
-              ESP = ESP, fASP = fASP, fESP = fESP))
+  return(list(
+    Lt = Lt,
+    agemax = agemax,
+    ASP = lfq$ASP, ESP = ESP,
+    fASP = fASP, fESP = fESP
+  ))
 }

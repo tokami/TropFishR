@@ -65,7 +65,8 @@ A list with the input parameters and following list objects:
      other sampling times,
   \item \strong{rcounts}: restructured frequencies,
   \item \strong{peaks_mat}: matrix with positive peaks with distinct values,
-  \item \strong{startingPoints}: starting sample and starting length yielding in best fit;
+  \item \strong{startingPoints}: starting sample and starting length yielding in best fit
+  \item \strong{agemax}: maximum age assumed
 }
 }
 \description{
