@@ -115,7 +115,15 @@ plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
   bin.width <- diff(classes)
   bin.lower <- classes - c(bin.width[1], bin.width)/2
   bin.upper <- classes + c(bin.width, bin.width[length(bin.width)])/2
-  sc <- min(diff(dates))/2 / max(abs(catch)) # bin height scaling
+
+  # bin height scaling
+  if(Fname == "catch"){
+    sc <- min(diff(dates)) * 0.8 / max(abs(catch))
+  }
+  if(Fname == "rcounts"){
+    sc <- min(diff(dates)) * 0.5 / max(abs(catch))
+  }
+
 
   # image colour
   if(is.null(col.image)){
