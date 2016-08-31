@@ -87,7 +87,9 @@
 #'   \item \strong{Rn_max}: highest score value,
 #' }
 #'
-#' @importFrom graphics par plot title lines
+#' @importFrom graphics par plot title lines grid
+#' @importFrom grDevices adjustcolor
+#' @importFrom stats median
 #'
 #' @references
 #' Pauly, D. and N. David, 1981. ELEFAN I, a BASIC program for the objective extraction of
@@ -100,7 +102,7 @@ ELEFAN_SA <- function(x,
                       init_par = list(Linf = 50, K = 0.5, t_anchor = 0.5, C = 0, ts = 0),
                       low_par = NULL, #list(Linf = 1, K = 0.01, t_anchor = 0, C = 0, ts = 0),
                       up_par = NULL, #list(Linf = 1000, K = 10, t_anchor = 1, C = 1, ts = 1),
-                      SA_time = 60 * 3,
+                      SA_time = 60 * 1,
                       SA_temp = 1e5,
                       verbose = TRUE,
                       MA = 5, addl.sqrt = FALSE,
@@ -237,24 +239,29 @@ ELEFAN_SA <- function(x,
     names(pars) <- c("Linf","K","t_anchor")
   }
 
-  # Score graph
+  # Score graph in GA style
   tmp <- as.data.frame(SAfit$trace.mat)
-  Ave <- aggregate(function.value ~ nb.steps, data = tmp, FUN = mean)
-
-  op <- par(mar=c(5,5,3,5))
-  plot(function.value ~ nb.steps, tmp, col=8, xlab="steps", ylab="Score")
-  lines(function.value ~ nb.steps, Ave, col=8)
-  lines(current.minimum ~ nb.steps, tmp, col=1)
-  par(new=TRUE)
-  plot(temperature ~ nb.steps, tmp, col=2, lty=2, t="l", axes=FALSE, xlab="", ylab="", log="y")
-  axis(4, col=2, col.ticks = 2, col.axis=2)
-  mtext("Temperature", side=4, line=3, col=2)
-  legend("topright", ncol=1, bty = "n",
-    legend = c("step scores (plus mean)", "current minimum score", "temperature"),
-    col=c(8,1,2), lty=c(1,1,1),
-    pch=c(1,NA,NA)
-  )
-  par(op)
+  meani <- aggregate(tmp$function.value, list(step = tmp$nb.steps),mean, na.rm = TRUE)
+  exe <- aggregate(tmp$current.minimum, list(step = tmp$nb.steps),mean, na.rm = TRUE)
+  medi <- aggregate(tmp$function.value, list(step = tmp$nb.steps),median, na.rm = TRUE)
+  ylim <- c(min(range(exe$x,na.rm = TRUE, finite = TRUE)),
+            max(range(meani$x, na.rm = TRUE, finite = TRUE)))
+  plot(tmp$nb.steps, tmp$function.value, type = "n", ylim = ylim, xlab = "Iteration",
+       ylab = "Cost value")
+  graphics::grid(equilogs = FALSE)
+  points(tmp$nb.steps, tmp$current.minimum, type = "o", pch = 16, lty = 1,
+         col = "green3", cex = 0.7)
+  points(meani$step, meani$x, type = "o", pch = 1, lty = 2,
+         col = "dodgerblue3", cex = 0.7)
+  polygon(c(meani$step, rev(meani$step)),
+          c(exe$x, rev(medi$x)),
+          border = FALSE, col = adjustcolor("green3", alpha.f = 0.1))
+  legend("topright", legend = c("Best", "Mean", "Median"),
+         col = c("green3", "dodgerblue3",
+                 adjustcolor("green3", alpha.f = 0.1)),
+         pch = c(16,1, NA), lty = c(1,2,1),
+         lwd = c(1, 1, 10), pt.cex = c(rep(0.7,2), 2),
+         inset = 0.02)
 
   # notify completion
   beepr::beep(10); beepr::beep(1) # beepr::beep(2)

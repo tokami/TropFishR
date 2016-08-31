@@ -107,6 +107,5 @@ legend("top", legend=c("orig.", "GA"), lty=2, col=1:2, ncol=2)
 
 }
 
-
 }
 

@@ -89,7 +89,7 @@
 #'
 #'
 #' @export
-#'
+
 lfqRestructure2 <- function(lfq, k=5, addl.sqrt=FALSE){
   if(k%%2 == 0) stop("k must be an odd integer")
   rcounts <- NaN*lfq$catch

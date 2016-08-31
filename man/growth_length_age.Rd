@@ -2,10 +2,11 @@
 % Please edit documentation in R/growth_length_age.R
 \name{growth_length_age}
 \alias{growth_length_age}
-\title{Estimation from growth parameter using length-at-age data}
+\title{Estimation of growth parameter using length-at-age data}
 \usage{
 growth_length_age(param, method, Linf_est = NA, Linf_init = 10,
-  K_init = 0.1, t0_init = 0, CI = FALSE, ci.level = 0.95)
+  K_init = 0.1, t0_init = 0, CI = FALSE, ci.level = 0.95,
+  age_plot = NULL, do.sim = FALSE, nsim = 10000)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -32,6 +33,14 @@ or \code{"LSM"}}
 works for the LSM method. Default is FALSE.}
 
 \item{ci.level}{required confidence level (for LSM method only)}
+
+\item{age_plot}{sequence with ages used for plotting (LSM method only). By default
+age_plot = seq(min(param$age),max(param$age),0.1)}
+
+\item{do.sim}{logical. Should Monte Carlo simulation be applied? Default = FALSE}
+
+\item{nsim}{the number of Monte Carlo simulations to be performed,
+minimum is 10000 (default).}
 }
 \value{
 A list with the input parameters and following parameters:
@@ -48,7 +57,8 @@ A list with the input parameters and following parameters:
 }
 }
 \description{
-This function estimates growth parameters from length-at-age data. It
+This function estimates growth parameters from
+   length-at-age data. It
    allows to perform different methods: Gulland and Holt, Ford Walford plot,
    Chapman's method, Bertalanffy plot, or non linear least squares method (LSM).
 }
@@ -63,22 +73,25 @@ be used. Otherwise, the largest fish or the average of the ten largest fish can 
 used for a small or large sample, respectively. All lengths have to be smaller than
 Linf as otherwise the logarithm is not defined. Oldest fish (if larger than Linf) have
 to be omitted. Non-linear least squares fitting is the preferred method to estimate
-growth parameters according to Sparre and Venema (1998).
+growth parameters according to Sparre and Venema (1998). If \code{CI = TRUE} the
+confidence interval of parameters is calculated and plotted. For plotting the
+confidence interval the \code{\link{predictNLS}} from the \link{propagate} package
+is applied.
 }
 \examples{
 # synthetical length at age data
-dat <- list(age = 1:7, length = c(25.7,36,42.9,47.5,50.7,52.8,54.2))
+dat <- list(age = rep(1:7,each = 5),
+   length = c(rnorm(5,25.7,0.9),rnorm(5,36,1.2),rnorm(5,42.9,1.5),rnorm(5,47.5,2),
+   rnorm(5,50.7,0.4),rnorm(5,52.8,0.5),rnorm(5,54.2,0.7)))
 growth_length_age(dat, method = "GullandHolt")
 
-output <- growth_length_age(dat, method = "LSM", Linf_init = 30, CI = TRUE)
-summary(output$mod)
-
-
 # Bertalaffy plot
-dat <- list(age = c(0.64,1.16,1.65,2.1,2.64,3.21),
-   length = c(17.3,27.9,35.3,40.2,43.3,45.5))
 growth_length_age(dat, method = "BertalanffyPlot", Linf_est = 50)
 
+# non linear least squares method
+output <- growth_length_age(param = dat, method = "LSM",
+     Linf_init = 30, CI = TRUE, age_plot=NULL)
+summary(output$mod)
 
 }
 \references{
