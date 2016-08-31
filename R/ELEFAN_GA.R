@@ -47,6 +47,7 @@
 #'
 #' @examples
 #' \dontrun{
+#'
 #' # load data and view catch length frequencies
 #' data(synLFQ4)
 #' plot(synLFQ4, Fname="catch")
@@ -58,6 +59,9 @@
 #'   min = c(70, 0.25, 0, 0, 0),
 #'   max = c(90, 0.7, 1, 1, 1),
 #'   parallel = TRUE,
+#'   popSize = 40,
+#'   maxiter = 50,
+#'   run = 20,
 #'   k = 11, addl.sqrt = FALSE,
 #'   flagging.out = FALSE,
 #'   plot = TRUE,
@@ -73,7 +77,7 @@
 #' calcLt(res, par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0),
 #'        draw = TRUE, col=1, flagging.out = FALSE)$ESP
 #' calcLt(res, par=res$par, draw = TRUE, col=2, flagging.out = FALSE)$ESP
-#' legend("top", legend=c("orig.", "GA"), lty=2, col=1:2, ncol=2, bty="n")
+#' legend("top", legend=c("orig.", "GA"), lty=2, col=1:2, ncol=2)
 #'
 #' }
 #'
@@ -140,7 +144,7 @@ ELEFAN_GA <- function(
   }
 
   # Fitness graph
-  plot(fit)
+  GA::plot(fit)
 
   # notify completion
   beepr::beep(10); beepr::beep(1)
