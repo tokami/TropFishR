@@ -49,7 +49,6 @@
 #'    calculated. It can happen that different starting points return the same fit (ESP value), with
 #'    \code{multiple_best_fits} the preferred starting point can be chosen.
 #'
-#' @import lubridate
 #' @importFrom grDevices colorRampPalette dev.new dev.off recordPlot rgb
 #' @importFrom graphics abline axis box lines mtext par plot rect polygon axis.Date
 #' @importFrom stats update

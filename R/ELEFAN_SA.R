@@ -88,7 +88,6 @@
 #' }
 #'
 #' @importFrom graphics par plot title lines
-#' @importFrom stats median
 #'
 #' @references
 #' Pauly, D. and N. David, 1981. ELEFAN I, a BASIC program for the objective extraction of
@@ -239,31 +238,21 @@ ELEFAN_SA <- function(x,
   }
 
   # Score graph
-  fitti <- as.data.frame(SAfit$trace.mat)
-  fitti$score <- abs(fitti$current.minimum)
-  fitti$jumpscore <- abs(fitti$function.value)
+  tmp <- as.data.frame(SAfit$trace.mat)
+  Ave <- aggregate(function.value ~ nb.steps, data = tmp, FUN = mean)
 
-  op <- par(mfrow=c(1,1), mar=c(5,5,3,5))
-  plot(jumpscore ~ nb.steps, data=fitti, col=8,
-       ylim = range(fitti$jumpscore)*c(1,1.25),
-       xlab = "Time [steps]", ylab = "Score", main="Score function")
-  # Ran <- aggregate(jumpscore ~ nb.steps, data=fitti, range)
-  # segments(x0=Ran$nb.steps, x1=Ran$nb.steps, col=8,
-  #     y0=Ran$jumpscore[,1], y1=Ran$jumpscore[,2])
-  Med <- aggregate(jumpscore ~ nb.steps, data = fitti, FUN = median)
-  lines(jumpscore ~ nb.steps, data=Med, col=1)
-  lines(score ~ nb.steps, data=fitti, col = 2)
-
-  par(new = TRUE)
-  plot(temperature ~ nb.steps, data=fitti, type = "l", col="blue",
-       ylim = range(fitti$temperature)*c(1,1.25),
-       axes = FALSE, xlab="", ylab="")
-  axis(4,col="blue", col.ticks = "blue", col.axis="blue")
-  mtext(4,line = 2.5,text = "Temperature", col= "blue")
-  legend("top", ncol=2, bty = "n",
-    legend = c("step scores", "step median score", "current best score", "temperature"),
-    col=c(8,1,2,4), lty=c(NA,1,1,1),
-    pch=c(1,NA,NA,NA)
+  op <- par(mar=c(5,5,3,5))
+  plot(function.value ~ nb.steps, tmp, col=8, xlab="steps", ylab="Score")
+  lines(function.value ~ nb.steps, Ave, col=8)
+  lines(current.minimum ~ nb.steps, tmp, col=1)
+  par(new=TRUE)
+  plot(temperature ~ nb.steps, tmp, col=2, lty=2, t="l", axes=FALSE, xlab="", ylab="", log="y")
+  axis(4, col=2, col.ticks = 2, col.axis=2)
+  mtext("Temperature", side=4, line=3, col=2)
+  legend("topright", ncol=1, bty = "n",
+    legend = c("step scores (plus mean)", "current minimum score", "temperature"),
+    col=c(8,1,2), lty=c(1,1,1),
+    pch=c(1,NA,NA)
   )
   par(op)
 
@@ -278,7 +267,7 @@ ELEFAN_SA <- function(x,
   class(ret) <- "lfq"
   if(plot){
     plot(ret, Fname = "rcounts")
-    Lt <- calcLt(ret, par = pars)
+    Lt <- calcLt(ret, par = pars, draw=TRUE)
   }
   return(ret)
 }
