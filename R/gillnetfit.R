@@ -8,49 +8,27 @@
 #' @param plotlens plot lengths
 #' @param details include details in output
 #'
+#' @source https://www.stat.auckland.ac.nz/~millar/selectware/
+#'
 #' @return list of fitted arameters
 #'
 #' @importFrom stats as.formula coef confint glm poisson resid
 #'
-#' @export
+#' @references
+#' Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
+#'  using log-linear models. \emph{ICES Journal of Marine Science: Journal du Conseil},
+#'  54(3):471-477
 #'
-#Welcome to:
-#
-######  ####### #       #######  #####  #######       ######
-#     # #       #       #       #     #    #          #     #
-#       #       #       #       #          #          #     #
- #####  #####   #       #####   #          #     ###  ######
-      # #       #       #       #          #          #     #
-#     # #       #       #       #     #    #          #     #
- #####  ####### ####### #######  #####     #          #     #
-#
-#R CODE for fitting SELECT models to gillnet data
-#*******************************************************************************
-#Copyright Russell Millar, *****************************************************
-#          Department of Statistics, *******************************************
-#          University of Auckland, *********************************************
-#          P.O. Box 92019, Auckland.  08 Jan 1998*******************************
-#
-#Adapted for R from original Splus code:       Russell Millar,  8 Sept 2002
-#Updated to produce plots and better output:   Russell Millar,  1 Nov 2003
-#Documented (see gillnetfunctions.pdf):        Russell Millar,  1 Nov 2003
-#Variances added and return object modified:   Russell Millar, 16 Nov 2009
-#===============================================================================
-#THIS SOFTWARE IS FREE TO USE.
-#
-#THIS SOFTWARE MAY BE REDISTRIBUTED, BUT MUST BE REDISTRIBUTED FREE OF CHARGE.
-#
-#PLEASE ACKNOWLEDGE THE USE OF THIS SOFTWARE WHERE APPROPRIATE.
-#
-#NO WARRANTIES ARE GIVEN, AND NO RESPONSIBILITY IS ACCEPTED FOR
-#ANY FAULTS OR CONSEQUENCES ARISING FROM THE USE OF THIS SOFTWARE.
-#===============================================================================
-#
-####################################
-#Function for gillnet data analyses#
-####################################
-gillnetfit=function(data, meshsizes, type="norm.loc", rel=NULL,
-                    plots=c(FALSE, FALSE), plotlens=NULL, details=F) {
+#' @export
+
+gillnetfit <- function(data, meshsizes,
+                       type="norm.loc",
+                       rel=NULL,
+                    plots=c(FALSE, FALSE),
+                    plotlens=NULL,
+                    details=FALSE){
+  # Adapted R code from Russell Millar (https://www.stat.auckland.ac.nz/~millar/selectware/)
+
 
  if(sum(sort(meshsizes)==meshsizes)!=length(meshsizes))
    stop("Mesh sizes must be ascending order")
@@ -62,6 +40,7 @@ gillnetfit=function(data, meshsizes, type="norm.loc", rel=NULL,
  var4=lens/msizes; var5=-log(msizes); var6=log(msizes/msizes[1])
  var7=var6*log(lens) - 0.5*var6*var6; var8=lens*lens
  var9=msizes/lens
+
  if(is.null(plotlens)) plotlens=data[,1]
  if(is.null(rel)) os=0
   else os=rep(log(rel),rep(nrow(data),ncol(data[,-1])))
@@ -127,14 +106,14 @@ gillnetfit=function(data, meshsizes, type="norm.loc", rel=NULL,
                 "mode(mesh1)","std_dev(mesh1)")  },
  stop(paste("\n",type, "not recognised, possible curve types are ",
         "\"norm.loc\", \"norm.sca\", \"gamma\", and \"lognorm\"")))
- rselect=rcurves(type,meshsizes,rel,pars,plotlens)
+ rselect=rcurves_Millar(type,meshsizes,rel,pars,plotlens)
  devres=matrix(resid(fit,type="deviance"),nrow(data),ncol(data[,-1]))
  # if(plots[1]) plot.curves(type,plotlens,rselect)
  # if(plots[2]) plot.resids(devres,meshsizes,data[,1])
  g.o.f=c(deviance(fit),sum(resid(fit,type="pearson")^2),fit$df.res,fit$null)
  names(g.o.f)=c("model_dev","Pearson chi-sq","dof","null_dev")
  fit.type=paste(paste(type,ifelse(is.null(rel),"",": with unequal mesh efficiencies")))
- if(details==F)
+ if(details==FALSE)
   return(list(fit.type=fit.type,gear.pars=gear.pars,fit.stats=g.o.f))
  else
   return(list(

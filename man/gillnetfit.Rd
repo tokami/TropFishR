@@ -3,9 +3,12 @@
 \name{gillnetfit}
 \alias{gillnetfit}
 \title{Millar's original gillnet selectivity fitting function}
+\source{
+https://www.stat.auckland.ac.nz/~millar/selectware/
+}
 \usage{
 gillnetfit(data, meshsizes, type = "norm.loc", rel = NULL,
-  plots = c(FALSE, FALSE), plotlens = NULL, details = F)
+  plots = c(FALSE, FALSE), plotlens = NULL, details = FALSE)
 }
 \arguments{
 \item{data}{a matrix}
@@ -27,5 +30,10 @@ list of fitted arameters
 }
 \description{
 Millar's original gillnet selectivity fitting function
+}
+\references{
+Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
+ using log-linear models. \emph{ICES Journal of Marine Science: Journal du Conseil},
+ 54(3):471-477
 }
 
