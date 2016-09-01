@@ -30,7 +30,7 @@
 #' # threadfin <- list(Winf = 286,K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4)
 #'
 #' # predict_mod(threadfin, FM_change = seq(0,6,0.1),
-#' #    Lc_tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
+#' #    tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
 #'}
 #' @importFrom grDevices colorRampPalette dev.new rgb
 #' @importFrom graphics mtext par plot axis contour identify image legend lines locator points rect segments text
@@ -119,7 +119,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     xlabel1 <- ifelse(xaxis1 == "FM", "Fishing mortality", "Exploitation rate")
     ylabel1 <- ifelse(yaxis1 == "Y_R", "Y/R", "rel. Y/R")
 
-    Lc_change <- pes$Lc_tc_change
+    Lc_change <- pes$Lc_change
     FM_change <- pes$FM_change
     if(p.FE == "FM"){
       px <- FM_change
@@ -162,8 +162,9 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
 
     # necessary calculations
     FM <- pes$FM
-    if("tc" %in% names(pes)) tc_Lc <- pes$tc
-    if("Lc" %in% names(pes)) tc_Lc <- pes$Lc
+    if("tc" %in% names(pes)) if(!is.null(pes$tc)) tc_Lc <- pes$tc
+    if("Lc" %in% names(pes)) if(!is.null(pes$Lc)) tc_Lc <- pes$Lc
+    if(is.null(pes$tc) & is.null(pes$Lc)) tc_Lc <- names(pes$list_Lc_runs)
     if("list_tc_runs" %in% names(pes)) list_tc_Lc_runs <- pes$list_tc_runs
     if("list_Lc_runs" %in% names(pes)) list_tc_Lc_runs <- pes$list_Lc_runs
 

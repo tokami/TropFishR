@@ -18,8 +18,6 @@
 #'
 #' @keywords function prediction ypr
 #'
-#'
-#'
 #' @details The Thompson and Bell model incorporates an iteration step simulating the
 #'    stock by means
 #'    of the \code{\link{stock_sim}} function. In case changes in gear
@@ -107,8 +105,6 @@
 #'
 #' Sparre, P., and Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 #' Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.
-#'
-#' @export
 
 ypr <- function(param, FM_change, t = NA){
   # KNIFE EDGE
