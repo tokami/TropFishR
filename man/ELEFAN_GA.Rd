@@ -6,7 +6,7 @@
 \usage{
 ELEFAN_GA(lfq, seasonalised = FALSE, min = NULL, max = NULL,
   popSize = 100, maxiter = 100, run = 20, parallel = FALSE,
-  pmutation = 0.3, pcrossover = 0.8, elitism = 10, k = 5,
+  pmutation = 0.3, pcrossover = 0.8, elitism = 10, MA = 5,
   addl.sqrt = FALSE, flagging.out = TRUE, plot = FALSE, ...)
 }
 \arguments{
@@ -50,7 +50,7 @@ Typically this is a large value and by default is set to 0.8.}
 \item{elitism}{the number of best fitness individuals to survive at each generation.
 By default the top 5\% individuals will survive at each iteration.}
 
-\item{k}{number indicating over how many length classes the moving average
+\item{MA}{number indicating over how many length classes the moving average
 should be performed (default: 5)}
 
 \item{addl.sqrt}{additional squareroot transformation of positive values
@@ -88,7 +88,7 @@ res <- ELEFAN_GA(
   popSize = 40,
   maxiter = 50,
   run = 20,
-  k = 11, addl.sqrt = FALSE,
+  MA = 11, addl.sqrt = FALSE,
   flagging.out = FALSE,
   plot = TRUE,
   seed = 1111

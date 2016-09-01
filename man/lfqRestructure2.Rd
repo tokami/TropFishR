@@ -48,7 +48,7 @@ data(synLFQ4)
 plot(synLFQ4, Fname="catch")
 
 # restructuring and calculation of ASP
-synLFQ4 <- lfqRestructure2(lfq = synLFQ4, k=11)
+synLFQ4 <- lfqRestructure2(lfq = synLFQ4, MA=11)
 synLFQ4$ASP
 
 # plot of restructured scores and fit of soVBGF growth curves
