@@ -4,7 +4,7 @@
 \alias{lfqRestructure2}
 \title{Restructuring of length frequency data (ELEFAN 0) (alternate approach)}
 \usage{
-lfqRestructure2(lfq, k = 5, addl.sqrt = FALSE)
+lfqRestructure2(lfq, MA = 5, addl.sqrt = FALSE)
 }
 \arguments{
 \item{lfq}{a list consisting of following parameters:
@@ -15,7 +15,7 @@ lfqRestructure2(lfq, k = 5, addl.sqrt = FALSE)
   sampling date (column)
 }}
 
-\item{k}{number indicating over how many length classes the moving average
+\item{MA}{number indicating over how many length classes the moving average
 should be performed (default: 5)}
 
 \item{addl.sqrt}{additional squareroot transformation of positive values
