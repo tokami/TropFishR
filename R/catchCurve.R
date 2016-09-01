@@ -1,10 +1,10 @@
 #' @title Catch curve
 #'
-#' @description  This function applies the linearized catch curve or the
-#'    length converted catch curve to age composition or length-frequency data,
-#'    respectively, to estimate the instantaneous total mortality rate (Z). The
-#'    estimation of gear selectivity is optional. Further, it allows for applying
-#'    the cumulative catch curve.
+#' @description  This function applies the (length-converted) linearised catch
+#'    curve to age composition and length-frequency data,
+#'    respectively. It allows to estimate the instantaneous total mortality rate (Z).
+#'    Optionally, the gear selectivity can be estimated and the cumulative catch
+#'    curve cna be applied.
 #'
 #' @param param a list consisting of following parameters:
 #' \itemize{

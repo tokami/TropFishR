@@ -129,6 +129,7 @@ lfqFitCurves2 <- function(lfq, par = list(Linf = 100, K = 0.1, C = 0, WP = 0),
   tmax <-  log(1-(Lmax/Linfi)) / - Ki
 
 
+
   # lookup table for soVBGF
   if(C != 0 | WP != 0){
     lookup_age <- seq(0,(tmax+30),0.01)  # initial tmax guess (without soVBGF) plus 10 to be on the save side!

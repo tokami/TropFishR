@@ -1,6 +1,7 @@
-#' @title Estimation from growth parameter using length-at-age data
+#' @title Estimation of growth parameter using length-at-age data
 #'
-#' @description  This function estimates growth parameters from length-at-age data. It
+#' @description  This function estimates growth parameters from
+#'    length-at-age data. It
 #'    allows to perform different methods: Gulland and Holt, Ford Walford plot,
 #'    Chapman's method, Bertalanffy plot, or non linear least squares method (LSM).
 #'
@@ -21,21 +22,26 @@
 #' @param CI logical; Should confidence intervals be calculated? This option only
 #'    works for the LSM method. Default is FALSE.
 #' @param ci.level required confidence level (for LSM method only)
+#' @param age_plot sequence with ages used for plotting (LSM method only). By default
+#'      age_plot = seq(min(param$age),max(param$age),0.1)
+#' @param do.sim logical. Should Monte Carlo simulation be applied? Default = FALSE
+#' @param nsim the number of Monte Carlo simulations to be performed,
+#'    minimum is 10000 (default).
 #'
 #' @examples
 #' # synthetical length at age data
-#' dat <- list(age = 1:7, length = c(25.7,36,42.9,47.5,50.7,52.8,54.2))
+#' dat <- list(age = rep(1:7,each = 5),
+#'    length = c(rnorm(5,25.7,0.9),rnorm(5,36,1.2),rnorm(5,42.9,1.5),rnorm(5,47.5,2),
+#'    rnorm(5,50.7,0.4),rnorm(5,52.8,0.5),rnorm(5,54.2,0.7)))
 #' growth_length_age(dat, method = "GullandHolt")
 #'
-#' output <- growth_length_age(dat, method = "LSM", Linf_init = 30, CI = TRUE)
-#' summary(output$mod)
-#'
-#'
 #' # Bertalaffy plot
-#' dat <- list(age = c(0.64,1.16,1.65,2.1,2.64,3.21),
-#'    length = c(17.3,27.9,35.3,40.2,43.3,45.5))
 #' growth_length_age(dat, method = "BertalanffyPlot", Linf_est = 50)
 #'
+#' # non linear least squares method
+#' output <- growth_length_age(param = dat, method = "LSM",
+#'      Linf_init = 30, CI = TRUE, age_plot=NULL)
+#' summary(output$mod)
 #'
 #' @details
 #' Gulland and Holt plot assumes
@@ -48,7 +54,10 @@
 #' used for a small or large sample, respectively. All lengths have to be smaller than
 #' Linf as otherwise the logarithm is not defined. Oldest fish (if larger than Linf) have
 #' to be omitted. Non-linear least squares fitting is the preferred method to estimate
-#' growth parameters according to Sparre and Venema (1998).
+#' growth parameters according to Sparre and Venema (1998). If \code{CI = TRUE} the
+#' confidence interval of parameters is calculated and plotted. For plotting the
+#' confidence interval the \code{\link{predictNLS}} from the \link{propagate} package
+#' is applied.
 #'
 #' @return A list with the input parameters and following parameters:
 #' \itemize{
@@ -63,8 +72,10 @@
 #'      (only if LSM method was applied).
 #' }
 #'
+#' @importFrom propagate predictNLS
 #' @importFrom graphics abline lines plot segments
-#' @importFrom stats lm nls predict
+#' @importFrom stats lm nls predict aggregate confint
+#' @importFrom grDevices adjustcolor
 #' @import MASS
 #'
 #' @references
@@ -75,16 +86,25 @@
 
 growth_length_age <- function(param, method, Linf_est = NA,
                               Linf_init = 10, K_init = 0.1, t0_init = 0,
-                              CI = FALSE, ci.level = 0.95){
+                              CI = FALSE, ci.level = 0.95,
+                              age_plot = NULL,
+                              do.sim = FALSE,
+                              nsim = 10000){
 
   res <- param
   t <- res$age
   Lt <- res$length
 
-  delta_t <- diff(t)
-
   switch(method,
          "GullandHolt"={
+           # Can not deal with multiple observations (lengths) per age
+           if(length(unique(t)) == length(t)){
+             delta_t <- diff(t)
+           }else{
+             delta_t <- diff(unique(t))
+             Lt <- aggregate(Lt,list(t = t),mean,na.rm= TRUE)$x
+           }
+
            # growth rate
            y <- rep(NA,length(delta_t))
            for(i in 1:length(delta_t)){
@@ -112,10 +132,18 @@ growth_length_age <- function(param, method, Linf_est = NA,
                 main = "Gulland and Holt")
            abline(a,b)
 
-           tmp <- list(x=x,y=y,R2=R2)
+           tmp <- list(delta_t=delta_t,x=x,y=y,R2=R2)
 
          },
          "FordWalford"={
+           # Can not deal with multiple observations (lengths) per age
+           if(length(unique(t)) == length(t)){
+             delta_t <- diff(t)
+           }else{
+             delta_t <- diff(unique(t))
+             Lt <- aggregate(Lt,list(t = t),mean,na.rm= TRUE)$x
+           }
+
            if(!all(delta_t == 1)) stop("The Ford Walford method assumes constant time intervals!")
 
            delta_t <- delta_t[1]
@@ -141,9 +169,17 @@ growth_length_age <- function(param, method, Linf_est = NA,
            segments(x0 = 0, y0 = Linf, x1 = Linf, y1 = Linf, lty=2)
            segments(x0 = Linf, y0 = 0, x1 = Linf, y1 = Linf, lty=2)
 
-           tmp <- list(x=x,y=y,R2=R2)
+           tmp <- list(delta_t=delta_t,x=x,y=y,R2=R2)
          },
          "Chapman"={
+           # Can not deal with multiple observations (lengths) per age
+           if(length(unique(t)) == length(t)){
+             delta_t <- diff(t)
+           }else{
+             delta_t <- diff(unique(t))
+             Lt <- aggregate(Lt,list(t = t),mean,na.rm= TRUE)$x
+           }
+
            if(!all(delta_t == 1)) stop("The Chapman method assumes constant time intervals!")
 
            delta_t <- delta_t[1]
@@ -169,9 +205,11 @@ growth_length_age <- function(param, method, Linf_est = NA,
                 main = "Chapman")
            abline(a,b)
 
-           tmp <- list(x=x,y=y,R2=R2)
+           tmp <- list(delta_t=delta_t,x=x,y=y,R2=R2)
          },
          "BertalanffyPlot"={
+
+           delta_t <- diff(t)
 
            #Linf should be given: otherwise using optim?
            if(is.na(Linf_est)) stop("For the Bertalanffy plot you have to provide an estimate for Linf_est!")
@@ -204,11 +242,13 @@ growth_length_age <- function(param, method, Linf_est = NA,
            nls_mod <- nls(Lt ~ (Linf * (1 - exp(-K * (t - t0)))),
                       start = list(Linf = Linf_init, K = K_init, t0 = t0_init))
 
-           plot(Lt ~ t,
-                ylab = "L(t)",
-                xlab = "t(age)",
-                main = "Non-linear least squares method")
-           lines(t, predict(nls_mod))
+           if(!CI){
+             plot(Lt ~ t,
+                  ylab = "L(t)",
+                  xlab = "t(age)",
+                  main = "Non-linear least squares method")
+             lines(t, predict(nls_mod))
+           }
            sum_mod <- summary(nls_mod)
            Linf <- sum_mod$coefficients[1]
            K <- sum_mod$coefficients[2]
@@ -230,10 +270,44 @@ growth_length_age <- function(param, method, Linf_est = NA,
                                                 round(cis[2,2],2),
                                                 round(cis[3,2],2)))
              tmp$nls_res = nls_res
-           }
-         })
 
-  res2 <- c(res,list(delta_t = delta_t))
+             # plot with confidence interval
+             if(is.null(age_plot)){
+               age_plot <- seq(min(floor(t)),max(ceiling(t)),0.1)
+             }else age_plot <- age_plot
+             # Taylor error propagation and Monte Carlo simulation for confidence interval
+             sink(tempfile())
+             pred_L <- suppressMessages(propagate::predictNLS(nls_mod,
+                                                              do.sim = do.sim,
+                                                              nsim = nsim,
+                                             newdata = data.frame(t = age_plot)))
+             sink()
+             # Taylor propagation
+             if(!do.sim){
+               predVals <- cbind(age_plot,as.data.frame(pred_L$summary[,c(1,5,6)]))
+             }
+             # Monte Carlo simulation
+             if(do.sim){
+               predVals <- cbind(age_plot,as.data.frame(pred_L$summary[,c(7,11,12)]))
+             }
+             names(predVals) <- c("age_plot","fit","lower","upper")
+             plot(Lt ~ t, type = "n", ylab = "L(t)", xlab = "t(age)", xlim=c(min(age_plot),max(age_plot)),
+                  main = "Non-linear least squares method")
+             polygon(c(age_plot,rev(age_plot)),
+                     c(predVals$lower,rev(predVals$upper)),
+                     border = FALSE, col = adjustcolor("dodgerblue", alpha.f = 0.4))
+             points(t, Lt)
+             lines(age_plot, predict(nls_mod,newdata = data.frame(t=age_plot)))
+           }
+         },
+
+         stop(paste("\n",method, "not recognised, possible options are \n",
+                    "\"GullandHolt\", \"FordWalford\", \"Chapman\" \n",
+                    "\"BertalanffyPlot\", and \"LSM\""))
+         )
+
+  res2 <- res
+  if(exists("delta_t", where = tmp)) res2$delta_t <- delta_t
   if(exists("x", where = tmp)) res2$x <- x
   if(exists("y", where = tmp)) res2$y <- y
   if(exists("R2", where = tmp)) res2$r2 <- R2

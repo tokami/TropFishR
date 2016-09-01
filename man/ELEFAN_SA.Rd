@@ -6,7 +6,7 @@
 \usage{
 ELEFAN_SA(x, seasonalised = FALSE, init_par = list(Linf = 50, K = 0.5,
   t_anchor = 0.5, C = 0, ts = 0), low_par = NULL, up_par = NULL,
-  SA_time = 60 * 3, SA_temp = 1e+05, verbose = TRUE, MA = 5,
+  SA_time = 60 * 1, SA_temp = 1e+05, verbose = TRUE, MA = 5,
   addl.sqrt = FALSE, flagging.out = TRUE, plot = FALSE)
 }
 \arguments{

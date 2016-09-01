@@ -46,8 +46,8 @@ and/or following objects when applying the Powell and Wetherall method:
 }
 \description{
 A method to estimate the instantaneous total mortality rate (Z) and
-   the infinite length of the logistic growth function according to the
-   Powell and Wetherall method (Powell, 1979; Wetherall et al., 1987).
+   the infinite length of the von Bertalanffy growth equation
+   (Powell, 1979; Wetherall et al., 1987).
 }
 \details{
 The first length group or age class within the list object \code{midLengths} or

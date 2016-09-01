@@ -81,7 +81,8 @@
 #'
 #' }
 #'
-#'
+
+
 ELEFAN_GA <- function(
   lfq,
   seasonalised = FALSE,

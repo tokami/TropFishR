@@ -1,7 +1,7 @@
 #' @title Prediction models
 #'
-#' @description  This function applies the Beverton & Holt's yield per recruit model
-#'    as well as the Thompson & Bell model. These model predict catch, yield, biomass
+#' @description  This function applies Beverton & Holt's yield per recruit model
+#'    as well as the Thompson & Bell model. These models predict catch, yield, biomass
 #'    and economic values for different
 #'    fishing mortality scenarions (in combination with gear changes).
 #'
@@ -49,7 +49,6 @@
 #' @keywords function prediction ypr
 #'
 #' @examples
-#' \dontrun{
 #' #______________________________________
 #' # Yiel Per Recruit (YPR) / Beverton and Holt's model
 #' #______________________________________
@@ -58,12 +57,12 @@
 #' threadfin <- list(Winf = 286, K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4)
 #'
 #' predict_mod(threadfin, FM_change = seq(0,6,0.1),
-#'    Lc_tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
+#'    tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
 #'
 #' # Leiognathus spendens (Pauly, 1980)
 #' ponyfish <- list(Winf = 64, K = 1, t0 = -0.2, M = 1.8, tr = 0.2)
 #'
-#' predict_mod(ponyfish, Lc_tc_change = c(0.2,0.3,1.0), type = 'ypr', plot=TRUE)
+#' predict_mod(ponyfish, tc_change = c(0.2,0.3,1.0), type = 'ypr', plot=TRUE)
 #'
 #' #______________________________________
 #' # length structured data
@@ -74,20 +73,21 @@
 #' select.list <- list(selecType = 'trawl_ogive', L50 = 120, L75 = 132)
 #' #swordfish$midLengths <- seq(60,300,5)
 #'
-#' output <- predict_mod(param = swordfish, Lc_tc_change = c(100,118,150,180),
+#' output <- predict_mod(param = swordfish, Lc_change = c(100,118,150,180),
 #'             s_list = select.list, type = 'ypr', Lmin = 90, Lincr = 8)
 #' plot(output)
 #'
 #' data(hake)
+#' hake$Lr <- 35
 #' select.list <- list(selecType = 'trawl_ogive', L50 = 20, L75 = 24)
 #' output <- predict_mod(param = hake, E_change = seq(0,1,0.05),
-#'                       Lc_tc_change = seq(5,80,1), s_list = select.list,
+#'                       Lc_change = seq(5,80,1), s_list = select.list,
 #'                       type = 'ypr', plot = FALSE)
 #' plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "Y_R.rel", identify = FALSE)
 #'
 #' select.list <- list(selecType = 'knife_edge', L50 = 20, L75 = 24)
 #' output <- predict_mod(param = hake, FM_change = seq(0,3,0.01),
-#'                       Lc_tc_change = seq(5,80,1), s_list = select.list,
+#'                       Lc_change = seq(5,80,1), s_list = select.list,
 #'                       type = 'ypr', plot = FALSE)
 #' plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "B_R.rel")
 #'
@@ -100,7 +100,6 @@
 #' output <- predict_mod(param = shrimps, FM_change = seq(0.1,3,0.1),
 #'      type = "ThompBell", age_unit = "month", plot = TRUE)
 #'
-#'
 #' # create list with selectivity information
 #' select.list <- list(selecType = 'trawl_ogive',
 #'    L50 = 34, L75 = 36)
@@ -109,7 +108,7 @@
 #' shrimps <- c(shrimps,  list(Linf = 50, K = 0.3, t0 = 0.01))
 #'
 #' output <- predict_mod(param = shrimps, E_change = seq(0,1,0.01),
-#'    Lc_tc_change = seq(10,44,2),
+#'    Lc_change = seq(10,44,2),
 #'    type = 'ThompBell', s_list = select.list,  age_unit = 'month')
 #' plot(output, xaxis = "E")
 #'
@@ -117,7 +116,7 @@
 #' # with length structured data
 #' data(hake)
 #' predict_mod(hake,FM_change = seq(0.1,3,0.1), type = 'ThompBell', plot = TRUE)
-#' }
+#'
 #' @details The Thompson and Bell model incorporates an iteration step simulating the
 #'    stock by means
 #'    of the \code{\link{stock_sim}} function. In case changes in gear
@@ -186,10 +185,10 @@
 #'      \item \strong{meanB}: average biomasses for different x factors,
 #'      \item \strong{Xfact}: fishing mortality changes;
 #'   }
-#'   \item \code{type = 'ThomBell'} and \code{Lc_tc_change} provided
+#'   \item \code{type = 'ThomBell'} and \code{Lc_change} provided
 #'   \itemize{
 #'      \item \strong{FM_change}: fishing mortality changes,
-#'      \item \strong{Lc_tc_change}: changes in length or age at first capture,
+#'      \item \strong{Lc_change}: changes in length at first capture,
 #'      \item \strong{Lt}: lengths at age,
 #'      \item \strong{sel}: probability of capture,
 #'      \item \strong{mat_FM_Lc_com.C}: catch matrix for all fishing mortality and Lc/tc combinations,
@@ -262,7 +261,8 @@
 #'
 #' @export
 
-predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = NULL,
+predict_mod <- function(param, type, FM_change = NA,
+                        E_change = NA, Lc_change = NULL,
                         tc_change = NULL,
                         s_list = NA,
                         stock_size_1 = NA, age_unit = 'year', curr.E = NA,
@@ -278,13 +278,13 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
     a <- res$a  # might be NULL
     b <- res$b  # might be NULL
     Winf <- res$Winf  # might be NULL
-    Linf <- ifelse(!is.null(res$Linf),res$Linf, exp(log(Winf/a)/b))
+    Linf <- res$Linf # might be NULL
+
+    #Linf <- ifelse(!is.null(res$Linf),res$Linf, exp(log(Winf/a)/b))
     # REALLY ? maybe without Linf: then message that Winf has to exist
-    if(is.null(Linf) | is.na(Linf)) stop("Either Linf or Winf with a and b has to be provided!")
-    if(is.null(Winf)) Winf <-  a * Linf ^ b###exp((log(Linf) - a)/b) # might still be NULL
+    #if(is.null(Linf) | is.na(Linf)) stop("Either Linf or Winf with a and b has to be provided!")
+    #if(is.null(Winf)) Winf <-  a * Linf ^ b  ###exp((log(Linf) - a)/b) # might still be NULL
     # or              Winf <- exp(log(Linf-a)/b)
-
-
 
     if(length(FM_change) == 1 & is.na(FM_change[1]) & length(E_change) == 1 & is.na(E_change[1])){
       FM_change <- seq(0,10,0.1)
@@ -301,8 +301,10 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
     tr <- res$tr   # might be NULL
     Lr <- res$Lr   # might be NULL
     if(is.null(tr) & is.null(Lr)) stop("Either the age or the length at recruitment (tr or Lr) has to be provided in param!")
-    if(is.null(tr)) tr <- VBGF(L=Lr,param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lr,Linf=Linf,K=K,t0=t0)
-    if(is.null(Lr)) Lr <- VBGF(t=tr,param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tr,Linf=Linf,K=K,t0=t0)
+    if(!is.null(Linf)){
+      if(is.null(tr)) tr <- VBGF(L=Lr,param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lr,Linf=Linf,K=K,t0=t0)
+      if(is.null(Lr)) Lr <- VBGF(t=tr,param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tr,Linf=Linf,K=K,t0=t0)
+    }
 
 
     # Selectivity - knife edge or with selctivtiy ogive
@@ -311,12 +313,14 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
     if(is.null(tc) & is.null(Lc)){
       if("L50" %in% s_list) Lc <- s_list$L50
       if("Lc" %in% s_list) Lc <- s_list$Lc
-      if(!("Lc" %in% s_list) & !("L50" %in% s_list))stop("Either the age or the length at first capture (tc or Lc) has to be provided in param! \n Or provide a Lc value in s_list!")
+      #if(!("Lc" %in% s_list) & !("L50" %in% s_list))stop("Either the age or the length at first capture (tc or Lc) has to be provided in param! \n Or provide a Lc value in s_list!")
     }
-    if(is.null(tc)) tc <- VBGF(L=Lc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc,Linf=Linf,K=K,t0=t0)
-    if(is.null(Lc)) Lc <- VBGF(t=tc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tc,Linf=Linf,K=K,t0=t0)
-    if(is.null(tc_change) & !is.null(Lc_change)) tc_change <- VBGF(L=Lc_change, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc_change,Linf=Linf,K=K,t0=t0)
-    if(is.null(Lc_change) & !is.null(tc_change)) Lc_change <- VBGF(t=tc_change, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tc_change,Linf=Linf,K=K,t0=t0)
+    if(!is.null(Linf)){
+      if(is.null(tc) & !is.null(Lc)) tc <- VBGF(L=Lc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc,Linf=Linf,K=K,t0=t0)
+      if(is.null(Lc) & !is.null(tc)) Lc <- VBGF(t=tc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tc,Linf=Linf,K=K,t0=t0)
+      if(is.null(tc_change) & !is.null(Lc_change)) tc_change <- VBGF(L=Lc_change, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc_change,Linf=Linf,K=K,t0=t0)
+      if(is.null(Lc_change) & !is.null(tc_change)) Lc_change <- VBGF(t=tc_change, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tc_change,Linf=Linf,K=K,t0=t0)
+    }
     tc <- c(tc,tc_change)
     Lc <- c(Lc,Lc_change)
 
@@ -338,7 +342,8 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
       counter <- 1
     }
 
-    for(i in 1:length(Lc)){
+    if(is.null(Lc)) Lc_tc <- tc else Lc_tc <- Lc
+    for(i in 1:length(Lc_tc)){
 
       Lci <- Lc[i]
       tci <- tc[i]
@@ -385,8 +390,8 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
         # selectivity
         P <- select_ogive(s_list, Lt =  Lt, Lc = Lci)
 
-        input <- list(Linf=Linf,
-                      Winf = Winf,
+        input <- list(Linf = ifelse(length(Linf) > 0, Linf, NA),
+                      Winf = ifelse(length(Winf) > 0, Winf, NA),
                       K = K,
                       M = M,
                       t0 = t0,
@@ -435,12 +440,14 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
 
 
       results.PBH <- data.frame(FM = FM_change,
-                                E = E,
-                                Ty = Ty,
-                                Ly = Ly,
-                                Wy = Wy,
-                                Y_R.rel = Y_R.rel,
-                                B_R.rel = B_R.rel)
+                                E = E)
+      if(length(Ty) > 0) results.PBH$Ty <- Ty
+      if(length(Ly) > 0) results.PBH$Ly <- Ly
+      if(length(Wy) > 0) results.PBH$Wy <- Wy
+
+      results.PBH$Y_R.rel <- Y_R.rel
+      results.PBH$B_R.rel <- B_R.rel
+
       # WHY NECESSARY???
       if(length(Y_R) > 0) results.PBH$Y_R = Y_R
       if(length(B_R) > 0) results.PBH$B_R = B_R
@@ -455,8 +462,8 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
       N01 <- which.min(abs(deri_pot - (deri[1] * 0.1)))
       N05 <- which.min(abs(B_R.percent - 50))  #which.min(abs(deri - (deri[1] * 0.5)))
 
-      df_loop_Es <- data.frame(Lc = Lci,
-                               tc = tci,
+      df_loop_Es <- data.frame(Lc = ifelse(!is.null(Lci),Lci,NA),
+                               tc = ifelse(!is.null(tci),tci,NA),
                                F01 = FM_change[N01],
                                Fmsy = FM_change[Nmsy])
       if(length(B_R.percent) > 0) df_loop_Es$F05 <- FM_change[N05]   # WHY NECESSARY????
@@ -477,7 +484,7 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
 
     df_Es <- do.call(rbind,list_Es)
 
-    names(list_Lc_runs) <- paste0("Lc_",Lc)   # names(list_tc_runs) <- tc
+    names(list_Lc_runs) <- paste0("Lc_", Lc_tc)   # names(list_tc_runs) <- tc
     ret <- c(res,list(FM = FM_change,
                       Lc = Lc,           #   tc = tc,
                       list_Lc_runs = list_Lc_runs,   #   list_tc_runs = list_tc_runs,
@@ -487,12 +494,20 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
     if(!is.na(curr.E) & !is.na(curr.Lc_tc)){
       # current exploitation rate
       curr.F = (M * curr.E)/(1-curr.E)  # curr.F <- (M * curr.E)/(1-curr.E)
+      tmpList <- list(Linf=Linf,
+                      Winf = Winf,
+                      K = K,
+                      M = M,
+                      t0 = t0,
+                      tr = tr,
+                      tc = curr.Lc_tc)
+      tmpRES <- ypr(param = tmpList, FM_change = curr.F)
       df_currents <- data.frame(curr.E = curr.E,
                                 curr.F = curr.F,
-                                curr.YPR = ypr(curr.F, curr.Lc_tc),           #, type = "length"),           # curr.YPR = ypr(curr.F, curr.Lc_tc, type = "age"),
-                                curr.YPR.rel = ypr.rel(curr.F, curr.Lc_tc),   #, type = "length"),   # curr.YPR.rel = ypr.rel(curr.F, curr.Lc_tc, type = "age"),
-                                curr.BPR = bpr(curr.F, curr.Lc_tc),           #, type = "length"),           # curr.BPR = bpr(curr.F, curr.Lc_tc, type = "age"),
-                                curr.BPR.rel = bpr.rel(curr.F, curr.Lc_tc))   #, type = "length"))   # curr.BPR.rel = bpr.rel(curr.F, curr.Lc_tc, type = "age"))
+                                curr.YPR = tmpRES$yr,        #ypr(curr.F, curr.Lc_tc)       #, type = "length"),           # curr.YPR = ypr(curr.F, curr.Lc_tc, type = "age"),
+                                curr.YPR.rel = tmpRES$ryr,     #ypr.rel(curr.F, curr.Lc_tc),   #, type = "length"),   # curr.YPR.rel = ypr.rel(curr.F, curr.Lc_tc, type = "age"),
+                                curr.BPR = tmpRES$br,         #bpr(curr.F, curr.Lc_tc),           #, type = "length"),           # curr.BPR = bpr(curr.F, curr.Lc_tc, type = "age"),
+                                curr.BPR.rel = tmpRES$rbr)     #bpr.rel(curr.F, curr.Lc_tc))   #, type = "length"))   # curr.BPR.rel = bpr.rel(curr.F, curr.Lc_tc, type = "age"))
       ret$currents <- df_currents
     }
   }
@@ -533,7 +548,7 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
     }
 
     # Only FM change provided without Lc_tc change
-    if(is.null(Lc_tc_change) | length(s_list) == 1){
+    if((is.null(tc_change) & is.null(Lc_change)) | length(s_list) == 1){
       #prediction based on f_change
       pred_mat <- as.matrix(FM) %*% FM_change
 
@@ -553,7 +568,7 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
     }
 
     # FM and Lc_tc change provided
-    if(!is.null(Lc_tc_change) & length(s_list) > 1){
+    if((!is.null(tc_change) | !is.null(Lc_change)) & length(s_list) > 1){
       # instead of s_list the outcome of one of the other select functions?
 
 
@@ -562,11 +577,11 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
       sel <- select_ogive(s_list,Lt = Lt) #classes.num
 
       sel.list <- list()
-      for(x19 in 1:length(Lc_tc_change)){
-        sel.list[[x19]] <- select_ogive(s_list, Lt = Lt, Lc = Lc_tc_change[x19]) #classes.num
+      for(x19 in 1:length(Lc_change)){
+        sel.list[[x19]] <- select_ogive(s_list, Lt = Lt, Lc = Lc_change[x19]) #classes.num
       }
       Lc_mat <- do.call(cbind,sel.list)
-      colnames(Lc_mat) <- Lc_tc_change
+      colnames(Lc_mat) <- Lc_change
 
       Lc_mat_FM <- Lc_mat * max(FM, na.rm=TRUE)
 
@@ -618,22 +633,22 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
 
       #for catch
       mat_FM_Lc_com.C <- do.call(rbind, pred.FM_Lc_com_res_loopC_list)
-      rownames(mat_FM_Lc_com.C) <- Lc_tc_change
+      rownames(mat_FM_Lc_com.C) <- Lc_change
       colnames(mat_FM_Lc_com.C) <- FM_change
 
       #for yield
       mat_FM_Lc_com.Y <- do.call(rbind, pred.FM_Lc_com_res_loopY_list)
-      rownames(mat_FM_Lc_com.Y) <- Lc_tc_change
+      rownames(mat_FM_Lc_com.Y) <- Lc_change
       colnames(mat_FM_Lc_com.Y) <- FM_change
 
       #for biomass
       mat_FM_Lc_com.B <- do.call(rbind, pred.FM_Lc_com_res_loopB_list)
-      rownames(mat_FM_Lc_com.B) <- Lc_tc_change
+      rownames(mat_FM_Lc_com.B) <- Lc_change
       colnames(mat_FM_Lc_com.B) <- FM_change
 
       #for value
       mat_FM_Lc_com.V <- do.call(rbind, pred.FM_Lc_com_res_loopV_list)
-      rownames(mat_FM_Lc_com.V) <- Lc_tc_change
+      rownames(mat_FM_Lc_com.V) <- Lc_change
       colnames(mat_FM_Lc_com.V) <- FM_change
 
       # transvers matrices for plotting (the opposite arrangement from book)
@@ -644,7 +659,7 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
 
       ret <- c(res,
                list(FM_change = FM_change,
-                    Lc_tc_change = Lc_tc_change,
+                    Lc_change = Lc_change,
                     Lt=Lt,
                     sel=sel,
                     mat_FM_Lc_com.C=mat_FM_Lc_com.C,
@@ -654,8 +669,6 @@ predict_mod <- function(param, type, FM_change = NA, E_change = NA, Lc_change = 
 
     }
   }
-
-
 
   # return results and plot
   class(ret) <- "predict_mod"
