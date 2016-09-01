@@ -13,7 +13,7 @@
 #'   \item \strong{catch} matrix with catches/counts per length class (row) and
 #'   sampling date (column)
 #' }
-#' @param k number indicating over how many length classes the moving average
+#' @param MA number indicating over how many length classes the moving average
 #' should be performed (default: 5)
 #' @param addl.sqrt additional squareroot transformation of positive values
 #' according to Brey et al. (1988) (default: FALSE).
@@ -89,22 +89,22 @@
 #'
 #'
 #' @export
-
-lfqRestructure2 <- function(lfq, k=5, addl.sqrt=FALSE){
-  if(k%%2 == 0) stop("k must be an odd integer")
+#'
+lfqRestructure2 <- function(lfq, MA=5, addl.sqrt=FALSE){
+  if(MA%%2 == 0) stop("MA must be an odd integer")
   rcounts <- NaN*lfq$catch
   for(i in seq(ncol(lfq$catch))){
-    pm <- (k-1)/2 # plus minus
+    pm <- (MA-1)/2 # plus minus
     n <- length(lfq$catch[,i])
     AF <- NaN*seq(lfq$catch[,i])
     nz <- NaN*seq(lfq$catch[,i])
     for(j in seq(lfq$catch[,i])){
       idx <- (j-pm):(j+pm)
       idx <- idx[which(idx %in% seq(lfq$catch[,i]))]
-      nz[j] <- sum(lfq$catch[idx,i] == 0) + (k-length(idx)) # number of adjacent zeros
-      MA <- sum(lfq$catch[idx,i])/k
+      nz[j] <- sum(lfq$catch[idx,i] == 0) + (MA-length(idx)) # number of adjacent zeros
+      MA.j <- sum(lfq$catch[idx,i])/MA
       # print(MA)
-      AF[j] <- lfq$catch[j,i]/MA
+      AF[j] <- lfq$catch[j,i]/MA.j
     }
     AF <- replace(AF, which(AF==Inf), 0)
     Fs <- AF/mean(AF, na.rm=TRUE)-1 # restructured frequencies
@@ -130,6 +130,21 @@ lfqRestructure2 <- function(lfq, k=5, addl.sqrt=FALSE){
     rcounts[,i] <- Fs
   }
   lfq$rcounts <- rcounts
+
+  # create peak matrix
+  prep_mat <- lfq$rcounts
+  prep_mat <- ifelse(prep_mat > 0,1,0)
+  peaks_mat <- NA*prep_mat
+  for(i in seq(ncol(peaks_mat))){
+    vec_peaki <- prep_mat[,i]
+    runs <- rle(vec_peaki)
+    rle_val <- runs$values
+    rle_val[which(rle_val == 1)] <- 1:length(rle_val[which(rle_val == 1)])
+    peaks_mat[,i] <- rep(rle_val, runs$lengths)
+  }
+  maxn.peaks <- max(peaks_mat, na.rm=TRUE)
+  peaks_mat <- peaks_mat + (prep_mat * maxn.peaks * col(peaks_mat))
+  lfq$peaks_mat <- peaks_mat
 
   # ASP calc
   sampASP <- NaN*seq(ncol(rcounts))
