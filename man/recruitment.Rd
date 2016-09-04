@@ -80,16 +80,22 @@ recruitment(param = dat, tsample = 0.25)
 
 
 # several samples
-data(trout)
+data(synLFQ4)
 
 # add growth parameters
-trout$Linf <- 16
-trout$K <- 0.4
+synLFQ4$Linf <- 80
+synLFQ4$K <- 0.5
+synLFQ4$t0 <- 0.25
 
 # retrieve sampling times from catch matrix
-s_dates <- as.POSIXlt(trout$dates, format="\%d.\%m.\%Y")
+s_dates <- as.POSIXlt(synLFQ4$dates, format="\%d.\%m.\%Y")
 
-recruitment(param = trout, tsample = s_dates$yday/365, plot = TRUE)
+recruitment(param = synLFQ4, tsample = s_dates$yday/365, plot = TRUE)
+
+
+plot(synLFQ4, Fname = "catch",
+   par = list(Linf = 80, K = 0.5, t_anchor = 0.25, C = 0.75, ts = 0),
+   ylim = c(0,80))
 
 }
 \references{

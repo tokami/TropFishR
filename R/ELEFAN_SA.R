@@ -9,67 +9,82 @@
 #'   \item \strong{dates} dates of sampling times (class Date),
 #'   \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column);
 #' }
-#' @param seasonalised logical; FALSE
-#' @param init_par default: list(Linf = 50, K = 0.5, t_anchor = 0.5, C = 0, ts = 0)
-#' @param low_par list, default NULL, e.g. list(Linf = 1, K = 0.01, t_anchor = 0, C = 0, ts = 0)
-#' @param up_par list, default NULL, e.g. list(Linf = 1000, K = 10, t_anchor = 1, C = 1, ts = 1)
-#' @param SA_time default = 60 * 1
-#' @param SA_temp default = 100000
-#' @param verbose default   = TRUE
+#' @param seasonalised logical; indicating if the seasonalised von Bertalanffy
+#'    growth function should be applied (default: FALSE).
+#' @param init_par a list providing the Initial values for the components to be
+#' optimized. When set to NULL the following default values are used:
+#'  \itemize{
+#'   \item \strong{Linf} length infinity in cm (default is the maximum
+#'   length class in the data),
+#'   \item \strong{K} curving coefficient (default: 0.5),
+#'   \item \strong{t_anchor} time point anchoring growth curves in year-length
+#'   coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0.5),
+#'   \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 0),
+#'   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 0);
+#' }
+#' @param low_par a list providing the lower bounds for components. When set to
+#' NULL the following default values are used:
+#'  \itemize{
+#'   \item \strong{Linf} length infinity in cm (default is calculated from maximum
+#'   length class in the data),
+#'   \item \strong{K} curving coefficient (default: 0.01),
+#'   \item \strong{t_anchor} time point anchoring growth curves in year-length
+#'   coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0),
+#'   \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 0),
+#'   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 0);
+#' }
+#' @param up_par a list providing the upper bounds for components. When set to
+#' NULL the following default values are used:
+#'  \itemize{
+#'   \item \strong{Linf} length infinity in cm (default is calculated from maximum
+#'   length class in the data),
+#'   \item \strong{K} curving coefficient (default: 0.01),
+#'   \item \strong{t_anchor} time point anchoring growth curves in year-length
+#'   coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0),
+#'   \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 0),
+#'   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 0);
+#' }
+#' @param SA_time numeric; Maximum running time in seconds (default : 60 * 1).
+#' @param SA_temp numeric; Initial value for temperature (default : 1e5).
+#' @param verbose logical; TRUE means that messages from the algorithm
+#'    are shown (default : TRUE).
 #' @param MA number indicating over how many length classes the moving average should be performed (defalut: 5, for
 #'    more information see \link{lfqRestructure}).
 #' @param addl.sqrt Passed to \link{lfqRestructure}. Applied an additional square-root transformation of positive values according to Brey et al. (1988).
 #'    (default: FALSE, for more information see \link{lfqRestructure}).
-#' @param flagging.out logical; passed to \link{calcLt}. Default is TRUE
-#' @param plot logical; indicating if plot with restrucutred frequencies and growth curves should
-#'    be displayed
+#' @param agemax maximum age of species; default NULL, then estimated from Linf
+#' @param flagging.out logical; passed to \link{lfqFitCurves}. Default is TRUE
+#' @param plot logical; Plot restructured counts with fitted lines using
+#' \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).
 #'
 #' @examples
-#' \dontrun{
-#'
-#' ## trout example
-#' data(trout)
-#'
-#' # ELEFAN_SA (takes approximately 10 seconds)
-#' output <- ELEFAN_SA(trout, SA_time = 30)
-#' output$par
-#' output$Rn_max
-#'
-#' # view fit
-#' plot(output, ylim = c(0,15))
-#' calcLt(output, col=1, par=output$par, draw=TRUE)$ESP
-#'
-#'
-#'
-#' ## synthetic lfq example
+#' ## synthetic lfq data example
 #' data(synLFQ4)
 #'
 #' # ELEFAN_SA (takes approximately 2 minutes)
 #' output <- ELEFAN_SA(synLFQ4, SA_time = 60*2, seasonalised = TRUE, MA = 15,
 #'   init_par = list(Linf = 75, K = 0.5, t_anchor = 0.5, C = 0.5, ts = 0.5),
 #'   low_par = list(Linf = 70, K = 0.3, t_anchor = 0, C = 0, ts = 0),
-#'   up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1),
-#' )
+#'   up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1))
 #' output$par
-#' output$Rn_max
+#' output$cost_value
 #'
 #' # view fit
 #' plot(output)
-#' calcLt(output, col=1, par=output$par, draw=TRUE)$ESP
+#'
+#' # or
+#' plot(output, draw = FALSE)
+#' lfqFitCurves(output, col=1, par=output$par, draw=TRUE)$ESP
 #'
 #' # compare to original parameters
-#' tmp <- calcLt(
-#'   output, col=4, lty=1,
-#'   par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0),
-#'   draw=TRUE
-#' )
+#' tmp <- lfqFitCurves(output, col=4, lty=1,
+#'    par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0), draw=TRUE)
 #' tmp$ESP
-#' output$Rn_max
+#' output$cost_value
 #'
-#' }
-#'
-#'
-#' @details This is cool function
+#' @details A more detailed description of the simulated annealing (SA) can be found in
+#'    Xiang et al. (2013). The score value \code{cost_value} is not comparable with
+#'    the score value of the other ELEFAN functions.
 #'
 #' @return A list with the input parameters and following list objects:
 #' \itemize{
@@ -81,10 +96,20 @@
 #'   \item \strong{peaks_mat}: matrix with positive peaks with distinct values,
 #'   \item \strong{ASP}: available sum of peaks, sum of posititve peaks which could be potential be hit by
 #'      growth curves,
-#'   \item \strong{C}: amplitude of growth oscillation,
-#'   \item \strong{ts}: winter point winter point (WP = ts + 0.5);
-#' when the K-Scan method is applied (fixed Linf) in addition following parameters:
-#'   \item \strong{Rn_max}: highest score value,
+#'   \item \strong{agemax}: maximum age of species,
+#'   \item \strong{par}: a list with the parameters of the von Bertalanffy growth
+#'      function:
+#'      \itemize{
+#'        \item \strong{Linf}: length infinity in cm,
+#'        \item \strong{K}: curving coefficient;
+#'        \item \strong{t_anchor}: time point anchoring growth curves in year-length
+#'          coordinate system, corrsponds to peak spawning month,
+#'        \item \strong{C}: amplitude of growth oscillation
+#'          (if \code{seasonalised} = TRUE),
+#'        \item \strong{ts}: summer point of oscillation
+#'          (if \code{seasonalised} = TRUE);
+#'      }
+#'   \item \strong{cost_value}: score value, lowest value of cost function.
 #' }
 #'
 #' @importFrom graphics par plot title lines grid
@@ -92,9 +117,14 @@
 #' @importFrom stats median
 #'
 #' @references
+#' Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and expanded
+#' user's guide to ELEFAN 0, 1 and 2.
+#'
 #' Pauly, D. and N. David, 1981. ELEFAN I, a BASIC program for the objective extraction of
 #' growth parameters from length-frequency data. \emph{Meeresforschung}, 28(4):205-211
 #'
+#' Xiang, Y., Gubian, S., Suomela, B., & Hoeng, J. (2013). Generalized simulated
+#' annealing for global optimization: the GenSA Package. R Journal, 5(1), 13-28.
 #' @export
 
 ELEFAN_SA <- function(x,
@@ -106,6 +136,7 @@ ELEFAN_SA <- function(x,
                       SA_temp = 1e5,
                       verbose = TRUE,
                       MA = 5, addl.sqrt = FALSE,
+                      agemax = NULL,
                       flagging.out = TRUE,
                       plot = FALSE){
 
@@ -186,21 +217,19 @@ ELEFAN_SA <- function(x,
   ASP <- res$ASP
 
   # seasonalised cost function
-  soSAfun <- function(par=c(init_Linf, init_K, init_tanc, init_C, init_ts), lfq){
-    Lt <- calcLt(
-      lfq,
-      par=list(Linf=par[1], K=par[2], t_anchor=par[3], C=par[4], ts=par[5]),
-      flagging.out = flagging.out
-    )
+  soSAfun <- function(lfq, par=c(init_Linf, init_K, init_tanc, init_C, init_ts),
+                      agemax, flagging.out){
+    Lt <- lfqFitCurves(lfq,
+                 par=list(Linf=par[1], K=par[2], t_anchor=par[3], C=par[4], ts=par[5]),
+                 flagging.out = flagging.out, agemax = agemax)
     return(-Lt$ESP)
   }
   # cost function
-  SAfun <- function(par=c(init_Linf, init_K, init_tanc), lfq){
-    Lt <- calcLt(
-      lfq,
-      par=list(Linf=par[1], K=par[2], t_anchor=par[3], C = 0, ts = 0),
-      flagging.out = flagging.out
-    )
+  SAfun <- function(lfq, par=c(init_Linf, init_K, init_tanc),
+                    agemax, flagging.out){
+    Lt <- lfqFitCurves(lfq,
+                 par=list(Linf=par[1], K=par[2], t_anchor=par[3], C = 0, ts = 0),
+                 flagging.out = flagging.out, agemax = agemax)
     return(-Lt$ESP)
   }
 
@@ -211,6 +240,8 @@ ELEFAN_SA <- function(x,
       fn = soSAfun,
       lower = c(low_Linf, low_K, low_tanc, low_C, low_ts),
       upper = c(up_Linf, up_K, up_tanc, up_C, up_ts),
+      agemax = agemax,
+      flagging.out = flagging.out,
       control = list(
         max.time = SA_time,
         temperature = SA_temp,
@@ -227,6 +258,8 @@ ELEFAN_SA <- function(x,
       fn = SAfun,
       lower = c(low_Linf, low_K, low_tanc),
       upper = c(up_Linf, up_K, up_tanc),
+      agemax = agemax,
+      flagging.out = flagging.out,
       control = list(
         max.time = SA_time,
         temperature = SA_temp,
@@ -266,15 +299,19 @@ ELEFAN_SA <- function(x,
   # notify completion
   beepr::beep(10); beepr::beep(1) # beepr::beep(2)
 
+
+  final_res <- lfqFitCurves(lfq = res,par=pars,flagging.out = flagging.out,
+                            agemax = agemax)
+
   # Results
-  ret <- c(
-    res, list(par = pars,
-    Rn_max = abs(SAfit$value))
-  )
+  ret <- c(res, list(ncohort = final_res$ncohort,
+                     agemax = final_res$agemax,
+                     par = pars,
+                     cost_value = SAfit$value))
   class(ret) <- "lfq"
   if(plot){
     plot(ret, Fname = "rcounts")
-    Lt <- calcLt(ret, par = pars, draw=TRUE)
+    Lt <- lfqFitCurves(ret, par = pars, draw=TRUE)
   }
   return(ret)
 }
