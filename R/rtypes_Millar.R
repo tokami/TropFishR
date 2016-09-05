@@ -13,9 +13,6 @@
 #'    \code{"tt.logistic"} for control and logistic method,
 #'    \code{"gamma"} for gamma method.
 #'
-#' @examples
-#' rtypes_Millar(rtype = 'lognorm')
-#'
 #' @source https://www.stat.auckland.ac.nz/~millar/selectware/
 #'
 #' @details Function adapted from the selectivity functions provided by
@@ -32,9 +29,6 @@
 #'  Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
 #'  using log-linear models. \emph{ICES Journal of Marine Science: Journal du Conseil},
 #'  54(3), 471-477.
-#'
-#'
-#' @export
 
 rtypes_Millar <- function(rtype) {
 # Adapted R code from Russell Millar (https://www.stat.auckland.ac.nz/~millar/selectware/)

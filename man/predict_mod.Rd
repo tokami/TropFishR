@@ -4,10 +4,10 @@
 \alias{predict_mod}
 \title{Prediction models}
 \usage{
-predict_mod(param, FM_change = NA, E_change = NA, Lc_tc_change = NULL,
-  type, s_list = NA, stock_size_1 = NA, age_unit = "year", curr.E = NA,
-  curr.Lc_tc = NA, plus_group = NA, Lmin = NA, Lincr = NA,
-  plot = FALSE)
+predict_mod(param, type, FM_change = NA, E_change = NA, Lc_change = NULL,
+  tc_change = NULL, s_list = NA, stock_size_1 = NA, age_unit = "year",
+  curr.E = NA, curr.Lc_tc = NA, plus_group = NA, Lmin = NA,
+  Lincr = NA, plot = FALSE)
 }
 \arguments{
 \item{param}{a list consisting of following parameters (not all are required):
@@ -31,14 +31,16 @@ additional list objects for the Thompson and Bell model:
   \item \strong{meanValue}: vector with mean value per length group or age class,
 }}
 
+\item{type}{indicating which model should be applied: \code{"ypr"} for Beverton
+and Holt's yield per recruit model and \code{"ThompBell"} for the Thompson and Bell model}
+
 \item{FM_change}{vector with ascending fishing mortalities, or}
 
 \item{E_change}{vector with ascending exploitation rates}
 
-\item{Lc_tc_change}{vector with ascending lengths or ages at first capture (Lc/tc)}
+\item{Lc_change}{vector with ascending lengths at first capture (Lc), or}
 
-\item{type}{indicating which model should be applied: \code{"ypr"} for Beverton
-and Holt's yield per recruit model and \code{"ThompBell"} for the Thompson and Bell model}
+\item{tc_change}{vector with ascending ages at first capture (tc)}
 
 \item{s_list}{list with selectivity parameters}
 
@@ -71,18 +73,26 @@ A list with the input parameters and dependent on the model type following
   \itemize{
      \item \strong{FM}: fishing mortalities,
      \item \strong{Lc} or \strong{tc}: lengths or ages at first capture,
-     \item \strong{list_Lc_runs} or \strong{list_tc_runs}: a list with the dataframes for each Lc or tc value:
+     \item \strong{list_Lc_runs}: a list with dataframes for each Lc value:
      \itemize{
-       \item \strong{FM_change}: fishing mortality
-       \item \strong{Y_R}: yield per recurit (catch in weight per recruit)
+       \item \strong{FM_change}: fishing mortalities
+       \item \strong{E}: expoitation rates
+       \item \strong{Ty}: mean age in annual yield
+       \item \strong{LY}: mean length in annual yield
+       \item \strong{Wy}: mean weight in annual yield
        \item \strong{Y_R.rel}: relative yield per recruit (change in catch in
            weigth per recruit relative to initial Y/R value)
+       \item \strong{B_R.rel}: relative biomass per recruit
+       \item \strong{Y_R}: yield per recurit (catch in weight per recruit)
        \item \strong{B_R}: biomass per recruit
        \item \strong{B_R.percent}: percentage biomass per recurit in relation to virgin
            biomass per recruit
-       \item \strong{Ty} or \strong{LY}: mean age or mean length in annual yield
-       \item \strong{Wy}: mean weight in annual yield
      }
+     \item \strong{df_Es}: a dataframe with references points (columns) for
+         different Lc values (rows)
+     \item \strong{df_current}: a dataframe with the exploitation status, yield
+         and biomass values of current exploitation or selectivity (if E_curr or
+         Lc_tc_curr provided).
   }
   \item \code{type = 'ThomBell'}
   \itemize{
@@ -100,10 +110,10 @@ A list with the input parameters and dependent on the model type following
      \item \strong{meanB}: average biomasses for different x factors,
      \item \strong{Xfact}: fishing mortality changes;
   }
-  \item \code{type = 'ThomBell'} and \code{Lc_tc_change} provided
+  \item \code{type = 'ThomBell'} and \code{Lc_change} provided
   \itemize{
      \item \strong{FM_change}: fishing mortality changes,
-     \item \strong{Lc_tc_change}: changes in length or age at first capture,
+     \item \strong{Lc_change}: changes in length at first capture,
      \item \strong{Lt}: lengths at age,
      \item \strong{sel}: probability of capture,
      \item \strong{mat_FM_Lc_com.C}: catch matrix for all fishing mortality and Lc/tc combinations,
@@ -114,8 +124,8 @@ A list with the input parameters and dependent on the model type following
 }
 }
 \description{
-This function applies the Beverton & Holt's yield per recruit model
-   as well as the Thompson & Bell model. These model predict catch, yield, biomass
+This function applies Beverton & Holt's yield per recruit model
+   as well as the Thompson & Bell model. These models predict catch, yield, biomass
    and economic values for different
    fishing mortality scenarions (in combination with gear changes).
 }
@@ -152,12 +162,12 @@ The Thompson and Bell model incorporates an iteration step simulating the
 threadfin <- list(Winf = 286, K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4)
 
 predict_mod(threadfin, FM_change = seq(0,6,0.1),
-   Lc_tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
+   tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
 
 # Leiognathus spendens (Pauly, 1980)
 ponyfish <- list(Winf = 64, K = 1, t0 = -0.2, M = 1.8, tr = 0.2)
 
-predict_mod(ponyfish, Lc_tc_change = c(0.2,0.3,1.0), type = 'ypr', plot=TRUE)
+predict_mod(ponyfish, tc_change = c(0.2,0.3,1.0), type = 'ypr', plot=TRUE)
 
 #______________________________________
 # length structured data
@@ -168,20 +178,21 @@ swordfish <- list(Linf = 309, K = 0.0949, M = 0.18,
 select.list <- list(selecType = 'trawl_ogive', L50 = 120, L75 = 132)
 #swordfish$midLengths <- seq(60,300,5)
 
-output <- predict_mod(param = swordfish, Lc_tc_change = c(100,118,150,180),
+output <- predict_mod(param = swordfish, Lc_change = c(100,118,150,180),
             s_list = select.list, type = 'ypr', Lmin = 90, Lincr = 8)
 plot(output)
 
 data(hake)
+hake$Lr <- 35
 select.list <- list(selecType = 'trawl_ogive', L50 = 20, L75 = 24)
 output <- predict_mod(param = hake, E_change = seq(0,1,0.05),
-                      Lc_tc_change = seq(5,80,1), s_list = select.list,
+                      Lc_change = seq(5,80,1), s_list = select.list,
                       type = 'ypr', plot = FALSE)
 plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "Y_R.rel", identify = FALSE)
 
 select.list <- list(selecType = 'knife_edge', L50 = 20, L75 = 24)
 output <- predict_mod(param = hake, FM_change = seq(0,3,0.01),
-                      Lc_tc_change = seq(5,80,1), s_list = select.list,
+                      Lc_change = seq(5,80,1), s_list = select.list,
                       type = 'ypr', plot = FALSE)
 plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "B_R.rel")
 
@@ -194,7 +205,6 @@ data(shrimps)
 output <- predict_mod(param = shrimps, FM_change = seq(0.1,3,0.1),
      type = "ThompBell", age_unit = "month", plot = TRUE)
 
-
 # create list with selectivity information
 select.list <- list(selecType = 'trawl_ogive',
    L50 = 34, L75 = 36)
@@ -203,7 +213,7 @@ select.list <- list(selecType = 'trawl_ogive',
 shrimps <- c(shrimps,  list(Linf = 50, K = 0.3, t0 = 0.01))
 
 output <- predict_mod(param = shrimps, E_change = seq(0,1,0.01),
-   Lc_tc_change = seq(10,44,2),
+   Lc_change = seq(10,44,2),
    type = 'ThompBell', s_list = select.list,  age_unit = 'month')
 plot(output, xaxis = "E")
 

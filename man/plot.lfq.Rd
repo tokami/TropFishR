@@ -4,8 +4,12 @@
 \alias{plot.lfq}
 \title{Plotting of length frequency data (with VBGF curves)}
 \usage{
-\method{plot}{lfq}(x, Fname = "rcounts", par = NULL,
-  multiple_best_fits = 1, col = "blue", ...)
+\method{plot}{lfq}(x, Fname = "rcounts", par = NULL, agemax = NULL,
+  flagging.out = TRUE, col = "blue", add.image = TRUE, col.image = NULL,
+  zlim = NULL, zlimtype = "balanced", date.axis = "traditional",
+  date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by = "months"),
+  date.format = "'\%y-\%b", xlab = "", ylab = "Length classes",
+  draw = TRUE, ...)
 }
 \arguments{
 \item{x}{a list of the class "lfq" consisting of following parameters:
@@ -26,10 +30,47 @@ displayed (default: "rcounts")}
   \item \strong{WP} winter point (WP = ts + 0.5) (optional);
 }}
 
-\item{multiple_best_fits}{numeric; indicating which startingPoints should be used in case there are more
-than one (default: 1)}
+\item{agemax}{maximum age of species; default NULL, then estimated from Linf}
 
-\item{col}{colour of growth curves (default: "blue")}
+\item{flagging.out}{logical; should positive peaks be flagged out?
+(Default : TRUE)}
+
+\item{col}{colour of growth curves (default: 1)}
+
+\item{add.image}{logical; should and image be added to the lfq plot
+(default : TRUE)}
+
+\item{col.image}{colour of image, by default (NULL) red and blue colours
+are used}
+
+\item{zlim}{the minimum and maximum z values for which colors should be
+plotted (default : NULL).}
+
+\item{zlimtype}{indicating if zlim should be based on the range of
+the catch ("range") or based on the maximum catch ("balanced", default). This parameter is only
+considered if zlim is NULL.}
+
+\item{date.axis}{the style of the x axis. By default the "traditional"
+approach is used with years under the months. Alternatively, by using
+"modern" the date is plotted in one line according to the chosen
+ format \code{date.format}.}
+
+\item{date.at}{the points at which tick-marks are to be drawn. Non-finite
+(infinite, NaN or NA) values are omitted. By default it is
+seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by="months")}
+
+<<<<<<< HEAD
+\item{date.format}{format of date}
+=======
+\item{date.format}{format of date  (default : "\%y-\%b")}
+>>>>>>> e8e5350b22a730931097ffe5b64656d2cd7cba4a
+
+\item{xlab}{label of x axis (default : "")}
+
+\item{ylab}{label of y axis (default : "Length classes")}
+
+\item{draw}{logical; indicating whether growth curves should be added to
+lfq plot if parameters are provided (default : TRUE)}
 
 \item{...}{additional options of the plot function}
 }
@@ -44,15 +85,16 @@ This function runs \code{\link{lfqFitCurves}} when growth parameters are provide
    \code{multiple_best_fits} the preferred starting point can be chosen.
 }
 \examples{
-data(trout)
-res <- lfqRestructure(trout)
+data(synLFQ4)
+res <- lfqRestructure(synLFQ4)
 plot(x = res, Fname = "rcounts")
-plot(res, Fname = "rcounts", par = list(Linf = 16, K = 0.77))
-plot(res, Fname = "catch", par = list(Linf = 16, K = 0.77, C= 0.5, WP = 0.6))
+plot(res, Fname = "rcounts", par = list(Linf = 80, K = 0.5, t_anchor = 0.25))
+plot(res, Fname = "catch", par = list(Linf = 80, K = 0.5,
+   t_anchor = 0.25, C= 0.75, WP = -0.5))
 
 # plot length frequency data without restructuring
-class(trout) <- "lfq"
-plot(trout, Fname = "catch")
+class(synLFQ4) <- "lfq"
+plot(synLFQ4, Fname = "catch")
 
 }
 \references{

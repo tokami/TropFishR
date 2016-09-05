@@ -6,19 +6,23 @@
 #'
 #' @param t ages for which to calculate corresponding lengths, or
 #' @param L lengths for which to calculate corresponding ages
-#' @param Linf infinite length for investigated species in cm, or
-#' @param Winf infinite weight for investigated species in gramm
-#' @param K growth coefficent for investigated species per year
-#' @param t0 theoretical time zero, at which individuals of this species hatch (default: 0)
-#' @param b exponent of weight length relationship (default: 3)
-#' @param D surface factor (default: 1)
-#' @param L0 length at hatching for VBGF with L0
-#' @param ts onset of the first oscillation relative to t0
-#' @param C intensity of (sinusoid) growth oscillations. Default is no oscillation (C = 0).
+#' @param param a list with following potential objects:
+#' \itemize{
+#'   \item \code{Linf}: infinite length for investigated species in cm, or
+#'   \item \code{Winf}: infinite weight for investigated species in gramm
+#'   \item \code{K}: growth coefficent for investigated species per year
+#'   \item \code{t0}: theoretical time zero, at which individuals of this species hatch (default: 0)
+#'   \item \code{b}: exponent of weight length relationship (default: 3)
+#'   \item \code{D}: surface factor (default: 1)
+#'   \item \code{L0}: length at hatching for VBGF with L0
+#'   \item \code{ts}: onset of the first oscillation relative to t0
+#'   \item \code{C}: intensity of (sinusoid) growth oscillations. Default is no oscillation (C = 0)
+#' }
 #'
 #' @keywords function growth VBGF
 #'
 #' @examples
+#' \dontrun{
 #' # calculation of lengths
 #' # with t0
 #' t <- seq(0,6,0.1)
@@ -46,7 +50,7 @@
 #' t <- VBGF(L = L, Linf=210, K=0.8, C= 0.75)
 #' plot(t, L, t="l")
 #'
-#'
+#'}
 #' @details
 #' Based upon which input parameters are given one of the following
 #' VBGF types is applied: "special", "generalised", or "seasonalised" VBGF.
@@ -62,9 +66,22 @@
 #'
 #' @export
 
-VBGF <- function(t = NA, L = NA, Linf = NA, Winf = NA, K, t0 = 0,
-                 b = 3, D = 1,
-                 L0 = NA, ts = 0, C = 0){
+VBGF <- function(param, t = NA, L = NA){
+  res <- param
+  if(is.na(t[1]) & is.na(L[1])) stop("Either length L or age t has to be provided to calculate the corresponding.")
+  Linf <- ifelse("Linf" %in% names(res),res$Linf, NA)
+  Winf <- ifelse("Winf" %in% names(res),res$Winf, NA)
+  if("K" %in% names(res)){
+    K <- res$K
+  }else stop("Please provide a K parameter in 'param'.")
+  t0 <- ifelse("t0" %in% names(res),res$t0, 0)
+  b <- ifelse("b" %in% names(res),res$b, 3)
+  D <- ifelse("D" %in% names(res),res$D, 1)
+  L0 <- ifelse("L0" %in% names(res),res$L0, NA)
+  ts <- ifelse("ts" %in% names(res),res$ts, 0)
+  C <- ifelse("C" %in% names(res),res$C, 0)
+  if("t_anchor" %in% names(res)) t0 <- res$t_anchor
+
 
   if(is.na(Linf) & is.na(Winf)) stop("You have to provide either Linf or Winf.")
   if(is.na(L[1]) & is.na(t[1])) stop("Please provide a vector with either potential ages or lengths.")
@@ -74,28 +91,32 @@ VBGF <- function(t = NA, L = NA, Linf = NA, Winf = NA, K, t0 = 0,
     if(is.na(Winf) & is.na(L[1])) res <- Linf * (1 - exp(-K * D * (t - t0) + (((C*K*D)/(2*pi)) * sin(2*pi*(t-ts))) - (((C*K*D)/(2*pi)) * sin(2*pi*(t0-ts))))) ^ (1/D)
 
     # OLD:
-      # res <- Linf * (1 - exp(-K * D * (t - t0) -
-      #                                       ((C*K*D)/(2*pi)) *
-      #                                       ((sin(2*pi*(t-ts))) +
-      #                                          (sin(2*pi*(t0-ts))))))^ (1/D)
+    # res <- Linf * (1 - exp(-K * D * (t - t0) -
+    #                                       ((C*K*D)/(2*pi)) *
+    #                                       ((sin(2*pi*(t-ts))) +
+    #                                          (sin(2*pi*(t0-ts))))))^ (1/D)
 
 
     if(is.na(Winf) & is.na(t[1])){
+      if(D == 1 & C == 0) res <- t0 - (log(1-L/Linf)/K)
       # lookup table for soVBGF
-      tmax <- (t0 * K * D - log(1 - exp(D*log(L[length(L)]/Linf)))) / (K*D)
-      lookup_age <- seq(0,(tmax+10),0.01)
-      lookup_length <-  Linf * (1 - exp(-K * D * (lookup_age - t0) + (((C*K*D)/(2*pi)) *
-                                                                        sin(2*pi*(lookup_age-ts))) -
-                                          (((C*K*D)/(2*pi)) * sin(2*pi*(t0-ts))))) ^ (1/D)
+      if(D != 1 | C != 0){
+        tmax <- (t0 * K * D - log(1 - exp(D*log(L[length(L)]/Linf)))) / (K*D)
+        if(is.na(tmax)) tmax <- 40
+        lookup_age <- seq((t0 - 1),(tmax+10),0.001)
+        lookup_length <-  Linf * (1 - exp(-K * D * (lookup_age - t0) + (((C*K*D)/(2*pi)) *
+                                                                          sin(2*pi*(lookup_age-ts))) -
+                                            (((C*K*D)/(2*pi)) * sin(2*pi*(t0-ts))))) ^ (1/D)
 
-      # OLD:
-      # lookup_length <-  Linf * (1 - exp(-K * D * (lookup_age - t0) -
-      #                                     ((C*K*D)/(2*pi)) *
-      #                                     ((sin(2*pi*(lookup_age-ts))) +
-      #                                        (sin(2*pi*(t0-ts))))))^ (1/D)
+        # OLD:
+        # lookup_length <-  Linf * (1 - exp(-K * D * (lookup_age - t0) -
+        #                                     ((C*K*D)/(2*pi)) *
+        #                                     ((sin(2*pi*(lookup_age-ts))) +
+        #                                        (sin(2*pi*(t0-ts))))))^ (1/D)
 
-      lookup_ind <- lapply(X = L, FUN = function(x) which.min((lookup_length - x)^2))
-      res <- lookup_age[unlist(lookup_ind)]
+        lookup_ind <- lapply(X = L, FUN = function(x) which.min((lookup_length - x)^2))
+        res <- lookup_age[unlist(lookup_ind)]
+      }
     }
 
 

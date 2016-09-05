@@ -4,8 +4,8 @@
 \alias{catchCurve}
 \title{Catch curve}
 \usage{
-catchCurve(param, catch_column = NA, cumulative = FALSE,
-  calc_ogive = FALSE)
+catchCurve(param, catch_columns = NA, cumulative = FALSE,
+  calc_ogive = FALSE, reg_int = NULL)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -19,7 +19,7 @@ catchCurve(param, catch_column = NA, cumulative = FALSE,
   the catch curve with constat time intervals should be applied;
 }}
 
-\item{catch_column}{numerical; indicating the column of the catch matrix which should be
+\item{catch_columns}{numerical; indicating the column of the catch matrix which should be
 used for the analysis.}
 
 \item{cumulative}{logical; if TRUE the cumulative
@@ -27,6 +27,10 @@ catch curve is applied (Jones and van Zalinge method)}
 
 \item{calc_ogive}{logical; if TRUE the selection ogive is additionally
 calculated from the catch curve (only if \code{cumulative = FALSE})}
+
+\item{reg_int}{instead of using the identity method a range can be determined,
+which is to be used for the regression analysis. If equal to NULL identity method
+is applied (default).}
 }
 \value{
 A list with the input parameters and following list objects:
@@ -56,11 +60,11 @@ in case calc_ogive == TRUE, additionally:
 }
 }
 \description{
-This function applies the linearized catch curve or the
-   length converted catch curve to age composition or length-frequency data,
-   respectively, to estimate the instantaneous total mortality rate (Z). The
-   estimation of gear selectivity is optional. Further, it allows for applying
-   the cumulative catch curve.
+This function applies the (length-converted) linearised catch
+   curve to age composition and length-frequency data,
+   respectively. It allows to estimate the instantaneous total mortality rate (Z).
+   Optionally, the gear selectivity can be estimated and the cumulative catch
+   curve cna be applied.
 }
 \details{
 This function includes the \link{identify} function, which asks you to
@@ -76,10 +80,11 @@ This function includes the \link{identify} function, which asks you to
   for not fully exploited old fish (e.g. due to gillnet fishery) can not be calculated yet
   by use of the catch curve.
   Based on the format of the list argument \code{catch} and whether the argument
-  \code{catch_column} is defined, the function automatically
+  \code{catch_columns} is defined, the function automatically
   distinguishes between the catch curve with variable parameter system (if catch is a
   vector) and the one with constant parameter system (if catch is a matrix or a
-  data.frame and \code{catch_column = NA}). In the case of the variable parameter system the catches of one year are
+  data.frame and \code{catch_columns = NA}). In the case of the variable parameter
+  system the catches of one year are
   assumed to represent the catches during the entire life span of a so called
   pseudo-cohort.
   The cumulative catch curve does not allow for the estimation of the selectivity
@@ -96,7 +101,7 @@ summary(output$linear_mod)
 
 # based on age composition data
 data(whiting)
-catchCurve(whiting, catch_column = 1)
+catchCurve(whiting, catch_columns = 1)
 
 #_______________________________________________
 # Constant parameter system based on age composition data (with catch matrix)

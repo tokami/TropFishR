@@ -9,42 +9,54 @@ lfqRestructure(param, MA = 5, addl.sqrt = FALSE)
 \arguments{
 \item{param}{a list consisting of following parameters:
 \itemize{
-  \item \strong{midLengths} midpoints of the length classes,
-  \item \strong{dates} dates of sampling times (class Date),
-  \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column);
+  \item \strong{midLengths} midpoints of the length classes
+  \item \strong{dates} dates of sampling times (class Date)
+  \item \strong{catch} matrix with catches/counts per length class (row) and
+  sampling date (column)
 }}
 
-\item{MA}{number indicating over how many length classes the moving average should be performed (default: 5)}
+\item{MA}{number indicating over how many length classes the moving average
+should be performed (default: 5)}
 
-\item{addl.sqrt}{additional squareroot transformation of positive values according to Brey et al. (1988)
-(default: FALSE).
-Particularly useful if many observations have a low frequency (<10).}
+\item{addl.sqrt}{additional squareroot transformation of positive values
+according to Brey et al. (1988) (default: FALSE).
+Particularly useful if many observations have a low frequency (<10)}
 }
 \value{
 A list with the input parameters and following list objects:
 \itemize{
-  \item \strong{samplingPeriod}: length of sampling period in years,
-  \item \strong{samplingDays}: time of sampling times in relation to first sampling time,
-  \item \strong{delta_t}: array with time differences between relative sampling time set to zero and
-     other sampling times,
-  \item \strong{rcounts}: restructured frequencies,
-  \item \strong{peaks_mat}: matrix with positive peaks with distinct values,
-  \item \strong{ASP}: available sum of peaks, sum of posititve peaks which could be potential be hit by
-     growth curves;
+  \item \strong{rcounts}: restructured frequencies
+  \item \strong{ASP}: available sum of peaks, sum of posititve peaks which
+  could be potential be hit by growth curves. This is calculated as the sum of
+  maximum values from each run of posive restructured scores.
 }
 }
 \description{
-First step of the Electronic LEngth Frequency ANalysis (ELEFAN), which is restructuring
-   length-frequency data (lfq). This is done according to a certain protocol, described by many authors (see
-   References for more information).
+First step of the Electronic LEngth Frequency ANalysis (ELEFAN),
+which is restructuring length-frequency data (lfq).
+This is done according to a certain protocol, described by many authors (see
+References for more information).
 }
 \details{
-This function is used in the analysis of growth parameters with the \code{\link{ELEFAN}} function. It is often
-   referred to as ELEFAN 0.
+This function is used prior to fitting of growth curves (e.g. in
+\code{\link{ELEFAN}}, \code{\link{ELEFAN_SA}} functions).
 }
 \examples{
-data(trout)
-lfqRestructure(param = trout)
+# data and plot of catch frequencies
+data(synLFQ4)
+plot(synLFQ4, Fname="catch")
+
+# restructuring and calculation of ASP
+synLFQ4 <- lfqRestructure(synLFQ4, MA=11)
+synLFQ4$ASP
+
+# plot of restructured scores and fit of soVBGF growth curves
+plot(synLFQ4)
+lfqFitCurves(synLFQ4,
+ par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0),
+ draw=TRUE
+)$fASP
+
 
 }
 \references{

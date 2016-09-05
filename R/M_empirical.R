@@ -20,7 +20,7 @@
 #' @param Wwet total wet weight at mean length in grams.
 #' @param Bl body length in cm.
 #' @param schooling logical; if TRUE it is accounted for the schooling behaviour of
-#'      the species. Default is FALSE.
+#'      the species, only for Pauly's methods. Default is FALSE.
 #' @param method vector of method names. Any combination of following methods can
 #'    be employed: "AlversonCarney", "Gislason", "GundersonDygert", "Hoenig",
 #'    "Lorenzen", "Pauly_Linf", "Pauly_Winf", "PetersonWroblewski",
@@ -168,7 +168,7 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
     M_mat[ind, 1]  <- round(10^(-0.0066 - 0.279 * log10(Linf) + 0.6543 * log10(K_l) + 0.4634 * log10(temp)), 3)  #exp( -0.0152 - 0.279 * log(Linf) + 0.6543 * log(K) + 0.463 * log(temp))
     dimnames(M_mat)[[1]][ind] <- list("Pauly (1980) - Length Equation")
     if(schooling == TRUE){
-      M <- 0.8 * M
+      M_mat[ind, 1] <- 0.8 * M_mat[ind, 1]
     }
   }
   if(any(method == "Pauly_Winf")){
@@ -176,7 +176,7 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
     M_mat[ind, 1]  <- round(10^(-0.2107 - 0.0824 * log10(Winf) + 0.6757 * log10(K_w) + 0.4627 * log10(temp)), 3)  #exp( -0.2107 - 0.0824 * log(Winf) + 0.6757 * log(K) + 0.4627 * log(temp))
     dimnames(M_mat)[[1]][ind] <- list("Pauly (1980) - Weight Equation")
     if(schooling == TRUE){
-      M <- 0.8 * M
+      M_mat[ind, 1] <- 0.8 * M_mat[ind, 1]
     }
   }
   if(any(method == "PetersonWroblewski")){

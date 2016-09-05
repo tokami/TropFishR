@@ -4,7 +4,8 @@
 \alias{powell_wetherall}
 \title{Powell-Wetherall method}
 \usage{
-powell_wetherall(param, catch_column = NA, savePlots = FALSE)
+powell_wetherall(param, catch_columns = NA, savePlots = FALSE,
+  reg_int = NULL)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -16,10 +17,14 @@ powell_wetherall(param, catch_column = NA, savePlots = FALSE)
   \item \code{catch}: catch as vector, or a matrix with catches of subsequent years;
 }}
 
-\item{catch_column}{optional; in case catch is a matrix or data.frame, a number
+\item{catch_columns}{optional; in case catch is a matrix or data.frame, a number
 indicating which column of the matrix should be analysed (Default: \code{NA}).}
 
 \item{savePlots}{logical; if TRUE the plot is recorded. Default is FALSE.}
+
+\item{reg_int}{instead of using the identity method a range can be determined,
+which is to be used for the regression analysis. If equal to NULL identity method
+is applied (default).}
 }
 \value{
 A list with the input parameters and follwing objects:
@@ -41,8 +46,8 @@ and/or following objects when applying the Powell and Wetherall method:
 }
 \description{
 A method to estimate the instantaneous total mortality rate (Z) and
-   the infinite length of the logistic growth function according to the
-   Powell and Wetherall method (Powell, 1979; Wetherall et al., 1987).
+   the infinite length of the von Bertalanffy growth equation
+   (Powell, 1979; Wetherall et al., 1987).
 }
 \details{
 The first length group or age class within the list object \code{midLengths} or

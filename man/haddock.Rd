@@ -4,7 +4,7 @@
 \name{haddock}
 \alias{haddock}
 \title{Haddock data}
-\format{A list consiting of:
+\format{A list consisting of:
 \itemize{
   \item \code{midLengths}  the midlengths of size classes,
   \item \code{numCodend}  the number of fish retained in codend,

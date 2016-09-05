@@ -1,10 +1,10 @@
 #' @title Catch curve
 #'
-#' @description  This function applies the linearized catch curve or the
-#'    length converted catch curve to age composition or length-frequency data,
-#'    respectively, to estimate the instantaneous total mortality rate (Z). The
-#'    estimation of gear selectivity is optional. Further, it allows for applying
-#'    the cumulative catch curve.
+#' @description  This function applies the (length-converted) linearised catch
+#'    curve to age composition and length-frequency data,
+#'    respectively. It allows to estimate the instantaneous total mortality rate (Z).
+#'    Optionally, the gear selectivity can be estimated and the cumulative catch
+#'    curve cna be applied.
 #'
 #' @param param a list consisting of following parameters:
 #' \itemize{
@@ -16,12 +16,15 @@
 #'   \item \code{catch}: catches, vector or matrix with catches of subsequent years if
 #'   the catch curve with constat time intervals should be applied;
 #' }
-#' @param catch_column numerical; indicating the column of the catch matrix which should be
+#' @param catch_columns numerical; indicating the column of the catch matrix which should be
 #'   used for the analysis.
 #' @param cumulative logical; if TRUE the cumulative
 #'   catch curve is applied (Jones and van Zalinge method)
 #' @param calc_ogive logical; if TRUE the selection ogive is additionally
 #'   calculated from the catch curve (only if \code{cumulative = FALSE})
+#' @param reg_int instead of using the identity method a range can be determined,
+#'    which is to be used for the regression analysis. If equal to NULL identity method
+#'    is applied (default).
 #'
 #' @keywords function mortality Z catchCurve
 #'
@@ -36,7 +39,7 @@
 #'
 #' # based on age composition data
 #' data(whiting)
-#' catchCurve(whiting, catch_column = 1)
+#' catchCurve(whiting, catch_columns = 1)
 #'
 #' #_______________________________________________
 #' # Constant parameter system based on age composition data (with catch matrix)
@@ -72,10 +75,11 @@
 #'   for not fully exploited old fish (e.g. due to gillnet fishery) can not be calculated yet
 #'   by use of the catch curve.
 #'   Based on the format of the list argument \code{catch} and whether the argument
-#'   \code{catch_column} is defined, the function automatically
+#'   \code{catch_columns} is defined, the function automatically
 #'   distinguishes between the catch curve with variable parameter system (if catch is a
 #'   vector) and the one with constant parameter system (if catch is a matrix or a
-#'   data.frame and \code{catch_column = NA}). In the case of the variable parameter system the catches of one year are
+#'   data.frame and \code{catch_columns = NA}). In the case of the variable parameter
+#'   system the catches of one year are
 #'   assumed to represent the catches during the entire life span of a so called
 #'   pseudo-cohort.
 #'   The cumulative catch curve does not allow for the estimation of the selectivity
@@ -158,8 +162,8 @@
 #'
 #' @export
 
-catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
-                       calc_ogive = FALSE){
+catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
+                       calc_ogive = FALSE, reg_int = NULL){
 
   res <- param
 
@@ -170,21 +174,34 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
   classes.num <- as.numeric(classes.num[,1])
 
   constant_dt <- FALSE
-  if(is.na(catch_column) & (class(res$catch) == 'matrix' |
+  if(is.na(catch_columns[1]) & (class(res$catch) == 'matrix' |
      class(res$catch) == 'data.frame')){
+    writeLines("Please be aware that you provided the catch as a matrix without specifiying any columns for \n the analysis. In this case the methods applies by default the catch curve with constant \n parameter system (refer to the help file for more information).")
     constant_dt <- TRUE
     catch <- res$catch
   }
 
   # non cumulative catch curve
   if(cumulative == FALSE){
-    if(is.na(catch_column) & constant_dt == FALSE) catch <- res$catch
-    if(!is.na(catch_column)) catch <- res$catch[,catch_column]
+    if(is.na(catch_columns[1]) & constant_dt == FALSE) catch <- res$catch
+    if(!is.na(catch_columns[1])){
+      catchmat <- res$catch[,(catch_columns)]
+      if(length(catch_columns) > 1){
+        catch <- rowSums(catchmat, na.rm = TRUE)
+      }else catch <- catchmat
+    }
   }
   #  cumulative catch curve
   if(cumulative){
-    if(is.na(catch_column)) catch <- rev(cumsum(rev(res$catch)))
-    if(!is.na(catch_column)) catch <- rev(cumsum(rev(res$catch[,catch_column])))
+    if(is.na(catch_columns[1])) catch <- rev(cumsum(rev(res$catch)))
+    if(!is.na(catch_columns[1])){
+      catchmat <- res$catch[,(catch_columns)]
+      if(length(catch_columns) > 1){
+        catchpre <- rowSums(catchmat, na.rm = TRUE)
+      }else catchpre <- catchmat
+      catch <- rev(cumsum(rev(catchpre)))
+      #catch <- rev(cumsum(rev(res$catch[,(catch_columns)])))
+    }
   }
 
   # Error message if catch and age do not have same length
@@ -321,20 +338,26 @@ catchCurve <- function(param, catch_column = NA, cumulative = FALSE,
   maxY <- max(yvar,na.rm=TRUE) + 1
 
   #identify plot
-  writeLines("Please choose the minimum and maximum point in the graph \nto include for the regression line!")
-  dev.new(noRStudioGD = TRUE)
-  op <- par(mfrow = c(1,1),
-            c(5, 4, 4, 2) + 0.1,
-            oma = c(2, 1, 0, 1) + 0.1)
-  plot(x = xvar,y = yvar, ylim = c(minY,maxY),
-       xlab = xlabel, ylab = ylabel)
-  cutter <- identify(x = xvar, y = yvar,
-                     labels = order(xvar), n=2)
-  par(op)
+  if(is.null(reg_int)){
+    writeLines("Please choose the minimum and maximum point in the graph \nto include for the regression line!")
+    dev.new(noRStudioGD = TRUE)
+    op <- par(mfrow = c(1,1),
+              c(5, 4, 4, 2) + 0.1,
+              oma = c(2, 1, 0, 1) + 0.1)
+    plot(x = xvar,y = yvar, ylim = c(minY,maxY),
+         xlab = xlabel, ylab = ylabel)
+    text(xvar+0.5, yvar+0.5, labels=as.character(order(xvar)), cex= 0.7)
+    cutter <- identify(x = xvar, y = yvar,
+                       labels = order(xvar), n=2)
+    par(op)
 
-  if(is.na(cutter[1]) | is.nan(cutter[1]) |
-     is.na(cutter[2]) | is.nan(cutter[2]) ) stop(noquote("You did not choose any points in the graph. Please re-run the function and choose points in the graph!"))
-
+    if(is.na(cutter[1]) | is.nan(cutter[1]) |
+       is.na(cutter[2]) | is.nan(cutter[2]) ) stop(noquote("You did not choose any points in the graph. Please re-run the function and choose points in the graph!"))
+  }
+  if(!is.null(reg_int)){
+    cutter <- reg_int
+  }
+  if(length(cutter) != 2) stop("You have to provide 2 numbers in reg_int.")
 
   #calculations + model
   df.CC <- as.data.frame(cbind(xvar,yvar))

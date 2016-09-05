@@ -5,7 +5,10 @@
 \title{Millar's selectivity plot}
 \usage{
 \method{plot}{select_Millar}(x, plotlens = NULL, standardise = TRUE,
-  deviance_plot = TRUE, ...)
+  deviance_plot = TRUE, selectivity_plot = TRUE, xlab_dev = "Length [cm]",
+  xlab_sel = "Length [cm]", ylab_dev = "Mesh size [cm]",
+  ylab_sel = "Relative retention", title_dev = "Deviance residuals",
+  title_sel = NULL, ...)
 }
 \arguments{
 \item{x}{a list of the class \code{"select_Millar"} containing the results of
@@ -17,8 +20,24 @@ selection curves}
 \item{standardise}{A parameter indicating if the retention should be realtive
 to the maximum value (Default: TRUE).}
 
-\item{deviance_plot}{logical; indicating whether a plot of deviance residuals should
+\item{deviance_plot}{logical (Default: TRUE); indicating whether a plot of deviance residuals should
 be displayed}
+
+\item{selectivity_plot}{logical (Default: TRUE); indicating whether a plot of relative retention selectivities
+should be displayed}
+
+\item{xlab_dev}{character string. Label for x axis of deviance plot. Default: "Length [cm]"}
+
+\item{xlab_sel}{character string. Label for x axis of selectivity plot. Default: "Length [cm]"}
+
+\item{ylab_dev}{character string. Label for y axis of deviance plot. Default: "Mesh size [cm]"}
+
+\item{ylab_sel}{character string. Label for y axis of selectivity plot. Default: "Relative retention".}
+
+\item{title_dev}{character string. Label for main title of deviance plot. Default: "Deviance residuals".}
+
+\item{title_sel}{character string. Label for main title of selectivity plot. Default is
+taken from the results of the select_Millar (e.g. res$rtype).}
 
 \item{...}{additional parameter options from plot function}
 }
