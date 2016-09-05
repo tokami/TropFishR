@@ -6,15 +6,20 @@
 #' \itemize{
 #'   \item \strong{midLengths} midpoints of the length classes,
 #'   \item \strong{dates} dates of sampling times (class Date),
-#'   \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column);
+#'   \item \strong{catch} matrix with catches/counts per length class (row)
+#'      and sampling date (column);
 #' }
-#' @param Linf_fix numeric; if used the K-Scan method is applied with a fixed Linf value (i.e. varying K only).
-#' @param Linf_range numeric vector with potential Linf values. Default is the last length class plus/minus 5 cm
-#' @param K_range K values for which the score of growth functions should be calculated
+#' @param Linf_fix numeric; if used the K-Scan method is applied with a fixed
+#'    Linf value (i.e. varying K only).
+#' @param Linf_range numeric vector with potential Linf values. Default is the
+#'    last length class plus/minus 5 cm
+#' @param K_range K values for which the score of growth functions should be
+#'    calculated
 #'    (by default: exp(seq(log(0.1),log(10),length.out = 100)))
 #' @param C growth oscillation amplitude (default: 0)
 #' @param WP winter point (default: 0)
-#' @param MA number indicating over how many length classes the moving average should be performed (defalut: 5, for
+#' @param MA number indicating over how many length classes the moving average
+#'    should be performed (defalut: 5, for
 #'    more information see \link{lfqRestructure}).
 #' @param addl.sqrt Passed to \link{lfqRestructure}. Applied an additional square-root transformation of positive values according to Brey et al. (1988).
 #'    (default: FALSE, for more information see \link{lfqRestructure}).
@@ -25,6 +30,7 @@
 #'    be displayed
 #'
 #' @examples
+#' \donttest{
 #' data(synLFQ4)
 #'
 #' # K-Scan
@@ -36,7 +42,7 @@
 #' output2 <- ELEFAN(synLFQ4, Linf_range = seq(78,82,1),
 #'    K_range = seq(0.3,0.7,0.1),C = 0.75, WP = 0.5, MA = 11)
 #' plot(output2)
-#'
+#'}
 #' @details This functions allows to perform the K-Scan and Response surface analysis to estimate growth parameters.
 #'    It combines the step of restructuring length-frequency data (\link{lfqRestructure}) followed by the fitting of VBGF
 #'    curves through the restructured data (\link{lfqFitCurves}). K-Scan is a method used to search for the K

@@ -113,6 +113,7 @@ A more detailed description of the simulated annealing (SA) can be found in
    the score value of the other ELEFAN functions.
 }
 \examples{
+\donttest{
 ## synthetic lfq data example
 data(synLFQ4)
 
@@ -136,7 +137,7 @@ tmp <- lfqFitCurves(output, col=4, lty=1,
    par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0), draw=TRUE)
 tmp$ESP
 output$cost_value
-
+}
 }
 \references{
 Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and expanded

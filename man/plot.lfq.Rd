@@ -43,19 +43,27 @@ displayed (default: "rcounts")}
 \item{col.image}{colour of image, by default (NULL) red and blue colours
 are used}
 
-\item{zlim}{default NULL}
+\item{zlim}{the minimum and maximum z values for which colors should be
+plotted (default : NULL).}
 
-\item{zlimtype}{default "balanced", alternative : "range"}
+\item{zlimtype}{indicating if zlim should be based on the range of
+the catch ("range") or based on the maximum catch ("balanced", default). This parameter is only
+considered if zlim is NULL.}
 
-\item{date.axis}{default "traditional", alternative : "modern"}
+\item{date.axis}{the style of the x axis. By default the "traditional"
+approach is used with years under the months. Alternatively, by using
+"modern" the date is plotted in one line according to the chosen
+ format \code{date.format}.}
 
-\item{date.at}{date scale}
+\item{date.at}{the points at which tick-marks are to be drawn. Non-finite
+(infinite, NaN or NA) values are omitted. By default it is
+seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by="months")}
 
-\item{date.format}{date format}
+\item{date.format}{format of date}
 
-\item{xlab}{Label of x axis.}
+\item{xlab}{label of x axis (default : "")}
 
-\item{ylab}{Label of y axis.}
+\item{ylab}{label of y axis (default : "Length classes")}
 
 \item{draw}{logical; indicating whether growth curves should be added to
 lfq plot if parameters are provided (default : TRUE)}

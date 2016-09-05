@@ -58,6 +58,7 @@
 #' \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).
 #'
 #' @examples
+#' \donttest{
 #' ## synthetic lfq data example
 #' data(synLFQ4)
 #'
@@ -81,7 +82,7 @@
 #'    par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0), draw=TRUE)
 #' tmp$ESP
 #' output$cost_value
-#'
+#'}
 #' @details A more detailed description of the simulated annealing (SA) can be found in
 #'    Xiang et al. (2013). The score value \code{cost_value} is not comparable with
 #'    the score value of the other ELEFAN functions.
@@ -115,6 +116,7 @@
 #' @importFrom graphics par plot title lines grid
 #' @importFrom grDevices adjustcolor
 #' @importFrom stats median
+#' @importFrom GenSA GenSA
 #'
 #' @references
 #' Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and expanded

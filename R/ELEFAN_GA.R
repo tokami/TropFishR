@@ -94,6 +94,7 @@
 #' }
 #'
 #' @examples
+#' \donttest{
 #' # load data and view catch length frequencies
 #' data(synLFQ4)
 #' plot(synLFQ4, Fname="catch")
@@ -102,7 +103,7 @@
 #' output <- ELEFAN_GA(synLFQ4, seasonalised = TRUE,
 #'    low_par = list(Linf = 70, K = 0.25,t_anchor =  0,C= 0,ts= 0),
 #'    up_par = list(Linf = 90,K = 0.7,t_anchor = 1,C =1,ts = 1),
-#'    parallel = TRUE, popSize = 40, maxiter = 50, run = 20,
+#'    parallel = FALSE, popSize = 40, maxiter = 50, run = 20,
 #'    MA = 11, addl.sqrt = FALSE, flagging.out = FALSE,
 #'    plot = TRUE, seed = 1111)
 #' output$par
@@ -116,7 +117,10 @@
 #'        draw = TRUE, col=1, flagging.out = FALSE)$ESP
 #' lfqFitCurves(output, par=output$par, draw = TRUE, col=2, flagging.out = FALSE)$ESP
 #' legend("top", legend=c("orig.", "GA"), lty=2, col=1:2, ncol=2)
-#'
+#'}
+#' @import parallel
+#' @import doParallel
+#' @importFrom GA ga
 #'
 #' @references
 #' Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and expanded
