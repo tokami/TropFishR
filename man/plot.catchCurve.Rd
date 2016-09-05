@@ -4,8 +4,7 @@
 \alias{plot.catchCurve}
 \title{Plotting catch curve}
 \usage{
-\method{plot}{catchCurve}(x, plot_selec = FALSE, col = "blue", cex = 1.5,
-  ...)
+plot.catchCurve(x, plot_selec = FALSE, col = "blue", cex = 1.5, ...)
 }
 \arguments{
 \item{x}{A list of the class \code{"catchCurve"} containing the results of the

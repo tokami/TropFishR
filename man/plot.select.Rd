@@ -4,8 +4,7 @@
 \alias{plot.select}
 \title{Selectivity plot}
 \usage{
-\method{plot}{select}(x, regression_fit = TRUE, cols = c("darkgreen",
-  "orange"), ...)
+plot.select(x, regression_fit = TRUE, cols = c("darkgreen", "orange"), ...)
 }
 \arguments{
 \item{x}{a list of the class \code{"select"} containing the results of the
