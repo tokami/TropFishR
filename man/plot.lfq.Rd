@@ -4,20 +4,12 @@
 \alias{plot.lfq}
 \title{Plotting of length frequency data (with VBGF curves)}
 \usage{
-<<<<<<< HEAD
-plot.lfq(x, Fname = "rcounts", par = NULL, multiple_best_fits = 1,
-  col = "blue", add.image = TRUE, col.image = NULL, zlim = NULL,
-  zlimtype = "balanced", date.axis = "traditional",
-  date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by = "months"),
-  date.format = "'\%y-\%b", xlab = "", ylab = "Length classes", ...)
-=======
 \method{plot}{lfq}(x, Fname = "rcounts", par = NULL, agemax = NULL,
   flagging.out = TRUE, col = "blue", add.image = TRUE, col.image = NULL,
   zlim = NULL, zlimtype = "balanced", date.axis = "traditional",
   date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by = "months"),
   date.format = "'\%y-\%b", xlab = "", ylab = "Length classes",
   draw = TRUE, ...)
->>>>>>> 2f6bf3e48c7898cd17be486b45a2b631e3e9eeb1
 }
 \arguments{
 \item{x}{a list of the class "lfq" consisting of following parameters:
@@ -51,19 +43,27 @@ displayed (default: "rcounts")}
 \item{col.image}{colour of image, by default (NULL) red and blue colours
 are used}
 
-\item{zlim}{default NULL}
+\item{zlim}{the minimum and maximum z values for which colors should be
+plotted (default : NULL).}
 
-\item{zlimtype}{default "balanced", alternative : "range"}
+\item{zlimtype}{indicating if zlim should be based on the range of
+the catch ("range") or based on the maximum catch ("balanced", default). This parameter is only
+considered if zlim is NULL.}
 
-\item{date.axis}{default "traditional", alternative : "modern"}
+\item{date.axis}{the style of the x axis. By default the "traditional"
+approach is used with years under the months. Alternatively, by using
+"modern" the date is plotted in one line according to the chosen
+ format \code{date.format}.}
 
-\item{date.at}{date scale}
+\item{date.at}{the points at which tick-marks are to be drawn. Non-finite
+(infinite, NaN or NA) values are omitted. By default it is
+seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by="months")}
 
-\item{date.format}{date format}
+\item{date.format}{format of date  (default : "\%y-\%b")}
 
-\item{xlab}{Label of x axis.}
+\item{xlab}{label of x axis (default : "")}
 
-\item{ylab}{Label of y axis.}
+\item{ylab}{label of y axis (default : "Length classes")}
 
 \item{draw}{logical; indicating whether growth curves should be added to
 lfq plot if parameters are provided (default : TRUE)}

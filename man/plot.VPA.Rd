@@ -4,7 +4,7 @@
 \alias{plot.VPA}
 \title{VPA plot}
 \usage{
-plot.VPA(x, display_last_class = TRUE, ...)
+\method{plot}{VPA}(x, display_last_class = TRUE, ...)
 }
 \arguments{
 \item{x}{list of the class \code{"VPA"} containing the results of the VPA model.}

@@ -4,7 +4,7 @@
 \alias{plot.prod_mod}
 \title{Plotting production models}
 \usage{
-plot.prod_mod(x, display_MSY = TRUE, ...)
+\method{plot}{prod_mod}(x, display_MSY = TRUE, ...)
 }
 \arguments{
 \item{x}{a object of the class \code{"prod_mod"}}

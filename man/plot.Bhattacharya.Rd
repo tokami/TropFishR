@@ -4,7 +4,7 @@
 \alias{plot.Bhattacharya}
 \title{Bhattacharya plot}
 \usage{
-plot.Bhattacharya(x, analysisPlot = TRUE, ...)
+\method{plot}{Bhattacharya}(x, analysisPlot = TRUE, ...)
 }
 \arguments{
 \item{x}{a list of the class \code{"Bhattacharya"} containing the results of

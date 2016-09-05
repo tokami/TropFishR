@@ -58,11 +58,12 @@
 #' \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).
 #'
 #' @examples
+#' \donttest{
 #' ## synthetic lfq data example
 #' data(synLFQ4)
 #'
 #' # ELEFAN_SA (takes approximately 2 minutes)
-#' output <- ELEFAN_SA(synLFQ4, SA_time = 60*2, seasonalised = TRUE, MA = 15,
+#' output <- ELEFAN_SA(synLFQ4, SA_time = 60*2, seasonalised = TRUE, MA = 11,
 #'   init_par = list(Linf = 75, K = 0.5, t_anchor = 0.5, C = 0.5, ts = 0.5),
 #'   low_par = list(Linf = 70, K = 0.3, t_anchor = 0, C = 0, ts = 0),
 #'   up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1))
@@ -81,6 +82,7 @@
 #'    par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0), draw=TRUE)
 #' tmp$ESP
 #' output$cost_value
+#' }
 #'
 #' @details A more detailed description of the simulated annealing (SA) can be found in
 #'    Xiang et al. (2013). The score value \code{cost_value} is not comparable with
@@ -279,6 +281,7 @@ ELEFAN_SA <- function(x,
   medi <- aggregate(tmp$function.value, list(step = tmp$nb.steps),median, na.rm = TRUE)
   ylim <- c(min(range(exe$x,na.rm = TRUE, finite = TRUE)),
             max(range(meani$x, na.rm = TRUE, finite = TRUE)))
+  op <- par(mar=c(5.1, 4.1, 1, 4.1))
   plot(tmp$nb.steps, tmp$function.value, type = "n", ylim = ylim, xlab = "Iteration",
        ylab = "Cost value")
   graphics::grid(equilogs = FALSE)
@@ -289,12 +292,15 @@ ELEFAN_SA <- function(x,
   polygon(c(meani$step, rev(meani$step)),
           c(exe$x, rev(medi$x)),
           border = FALSE, col = adjustcolor("green3", alpha.f = 0.1))
-  legend("topright", legend = c("Best", "Mean", "Median"),
-         col = c("green3", "dodgerblue3",
-                 adjustcolor("green3", alpha.f = 0.1)),
-         pch = c(16,1, NA), lty = c(1,2,1),
-         lwd = c(1, 1, 10), pt.cex = c(rep(0.7,2), 2),
+  par(new=TRUE)
+  plot(tmp$nb.steps, tmp$temperature, t="l", col=2, lty=2, log="y", axes = FALSE, xlab = "", ylab = "")
+  axis(4, col=2, col.axis=2); mtext(text = "Temperature", side = 4, line = par()$mgp[1], col=2)
+  legend("topright", legend = c("Best", "Mean", "Median", "Temperature"),
+         col = c("green3", "dodgerblue3", adjustcolor("green3", alpha.f = 0.1), 2),
+         pch = c(16, 1, NA, NA), lty = c(1,2,1,2),
+         lwd = c(1, 1, 10, 1), pt.cex = c(rep(0.7,2), 2, NA),
          inset = 0.02)
+  par(op)
 
   # notify completion
   beepr::beep(10); beepr::beep(1) # beepr::beep(2)
