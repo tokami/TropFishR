@@ -4,12 +4,13 @@
 \alias{ELEFAN}
 \title{ELEFAN}
 \usage{
-ELEFAN(param, Linf_fix = NA, Linf_range = NA, K_range = exp(seq(log(0.1),
+ELEFAN(x, Linf_fix = NA, Linf_range = NA, K_range = exp(seq(log(0.1),
   log(10), length.out = 100)), C = 0, WP = 0, MA = 5, addl.sqrt = FALSE,
-  hide.progressbar = FALSE, plot = FALSE)
+  agemax = NULL, flagging.out = TRUE, hide.progressbar = FALSE,
+  plot = FALSE)
 }
 \arguments{
-\item{param}{a list consisting of following parameters:
+\item{x}{a list consisting of following parameters:
 \itemize{
   \item \strong{midLengths} midpoints of the length classes,
   \item \strong{dates} dates of sampling times (class Date),
@@ -32,6 +33,10 @@ more information see \link{lfqRestructure}).}
 
 \item{addl.sqrt}{Passed to \link{lfqRestructure}. Applied an additional square-root transformation of positive values according to Brey et al. (1988).
 (default: FALSE, for more information see \link{lfqRestructure}).}
+
+\item{agemax}{maximum age of species; default NULL, then estimated from Linf}
+
+\item{flagging.out}{logical; should positive peaks be flagged out? (Default : TRUE)}
 
 \item{hide.progressbar}{logical; should the progress bar be hidden? (default: FALSE)}
 
@@ -72,16 +77,17 @@ This functions allows to perform the K-Scan and Response surface analysis to est
    both parameters are estimated and the fits are displayed in a heatmap.
 }
 \examples{
-data(trout)
+data(synLFQ4)
 
 # K-Scan
-output2 <- ELEFAN(trout, Linf_fix = 14.37)
-plot(output2, ylim=c(0,18))
+output <- ELEFAN(x = synLFQ4, Linf_fix = 80,
+   K_range = seq(0.3,0.7,0.1),C = 0.75, WP = 0.5, MA = 11)
+plot(output)
 
 # Surface response analysis
-ELEFAN(trout, K_range = seq(0.1,2,0.1), Linf_range = seq(12,17,1))
-
-# ELEFAN(trout) # default settings using fine-resolution intervals
+output2 <- ELEFAN(synLFQ4, Linf_range = seq(78,82,1),
+   K_range = seq(0.3,0.7,0.1),C = 0.75, WP = 0.5, MA = 11)
+plot(output2)
 
 }
 \references{

@@ -2,67 +2,88 @@
 % Please edit documentation in R/lfqFitCurves.R
 \name{lfqFitCurves}
 \alias{lfqFitCurves}
-\title{Fitting of VBGF curves through length frequency data (ELEFAN 1)}
+\title{Fitting VBGF growth curves through lfq data}
 \usage{
-lfqFitCurves(lfq, par = list(Linf = 100, K = 0.1, C = 0, WP = 0),
-  draw = FALSE, col = "blue")
+lfqFitCurves(lfq, par = list(Linf = 100, K = 0.1, t_anchor = 0.25, C = 0, ts =
+  0), agemax = NULL, flagging.out = TRUE, lty = 2, lwd = 1, col = 1,
+  draw = FALSE, tincr = 0.05)
 }
 \arguments{
 \item{lfq}{a list of the class "lfq" consisting of following parameters:
 \itemize{
   \item \strong{midLengths} midpoints of the length classes,
   \item \strong{dates} dates of sampling times (class Date),
-  \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column),
+  \item \strong{catch} matrix with catches/counts per length class (row)
+     and sampling date (column),
   \item \strong{samplingPeriod} length of sampling period in years,
-  \item \strong{samplingDays} time of sampling times in relation to first sampling time,
-  \item \strong{delta_t} array with time differences between relative sampling time set to zero and
-     other sampling times,
+  \item \strong{samplingDays} time of sampling times in relation to first
+     sampling time,
+  \item \strong{delta_t} array with time differences between relative
+     sampling time set to zero and other sampling times,
   \item \strong{rcounts} restructured frequencies,
   \item \strong{peaks_mat} matrix with positive peaks with distinct values,
-  \item \strong{ASP} available sum of peaks, sum of posititve peaks which could be potential be hit by
-     growth curves;
+  \item \strong{ASP} available sum of peaks, sum of posititve peaks which
+     could be potential be hit by growth curves;
 }}
 
 \item{par}{a list with following growth parameters:
  \itemize{
   \item \strong{Linf} length infinity in cm (default: 100),
   \item \strong{K} curving coefficient (default: 0.1),
-  \item \strong{C} amplitude of growth oscillation (default: 0),
-  \item \strong{WP} winter point (WP = ts + 0.5) (default: 0);
+  \item \strong{t_anchor} time point anchoring growth curves in year-length
+  coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0.25),
+  \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 0),
+  \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 0);
 }}
+
+\item{agemax}{maximum age of species; default NULL, then estimated from Linf}
+
+\item{flagging.out}{logical; should positive peaks be flagged out?
+(Default : TRUE)}
+
+\item{lty}{The line type. Line types can either be specified as an integer
+(0=blank, 1=solid, 2=dashed (default), 3=dotted, 4=dotdash, 5=longdash,
+6=twodash) or as one of the character strings "blank", "solid", "dashed",
+"dotted", "dotdash", "longdash", or "twodash", where "blank" uses 'invisible
+lines' (i.e., does not draw them).}
+
+\item{lwd}{The line width, a positive number, defaulting to 2. The interpretation
+is device-specific, and some devices do not implement line widths less
+than one. (See the help on the device for details of the interpretation.)}
+
+\item{col}{A specification for the default plotting color. See section
+'Color Specification'.}
 
 \item{draw}{logical; indicating whether growth curves should be added to
 existing lfq plot}
 
-\item{col}{A specification for the default plotting color. See section
-'Color Specification'.}
+\item{tincr}{step for plotting}
 }
 \value{
-A list with following list objects:
+A list with the input parameters and following list objects:
 \itemize{
-  \item \strong{max_ESP}: maximum explained sum of peaks,
-  \item \strong{startingSample}: sample number which yield in best ESP value,
-  \item \strong{startingLength}: length (in cm) which yield in best ESP value;
+  \item \strong{Lt}: dataframe with ages and lengths of the cohorts,
+  \item \strong{agemax}: maximum age of species.
+  \item \strong{ncohort}: number of cohorts,
+  \item \strong{ASP}: available sum of peaks, sum of posititve peaks which
+  could be potential be hit by growth curves. This is calculated as the sum of
+  maximum values from each run of posive restructured scores.
+  \item \strong{ESP}: available sum of peaks,
+  \item \strong{fASP}: available sum of peaks,
+  \item \strong{fESP}: available sum of peaks,
 }
 }
 \description{
-Second step of the Electronic LEngth Frequency ANalysis (ELEFAN), which fits von Bertalanffy
-   growth curves through restructured length-frequency data.
+estimates VBGF growth curves for a set of growth parameters
 }
 \details{
-This function is used in the analysis of growth parameters with the \code{\link{ELEFAN}} function. It is often
-   referred to as ELEFAN 1. C expresses the amplitude of growth oscillations and
-   should be between 0 (no oscillation) and 1 (oscillation with period of zero growth), values above 1 suggest
-   a period of negative growth, and thus are unlikely. Winter point (WP) designates the period of the year when
-   growth is slowest, which
-   in the northern hemisphere is often found around 0.2 (February) and in the southern
-   hemisphere aorund 0.7 (October) (Pauly and Morgan, 1987).
+Anchoring time point t_anchor 0.25 for example peak spawning in April or something
 }
 \examples{
-data(trout)
-res <- lfqRestructure(trout)
+data(synLFQ4)
+res <- lfqRestructure(synLFQ4)
 plot(res)
-lfqFitCurves(res, par=list(Linf=16,K=0.7), draw = TRUE)
+lfqFitCurves(res, par=list(Linf=80,K=0.5,t_anchor=0.75), draw=TRUE)
 
 }
 \references{

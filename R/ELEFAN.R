@@ -2,7 +2,7 @@
 #'
 #' @description Electronic LEngth Frequency ANalysis for estimating growth parameter.
 #'
-#' @param param a list consisting of following parameters:
+#' @param x a list consisting of following parameters:
 #' \itemize{
 #'   \item \strong{midLengths} midpoints of the length classes,
 #'   \item \strong{dates} dates of sampling times (class Date),
@@ -18,21 +18,24 @@
 #'    more information see \link{lfqRestructure}).
 #' @param addl.sqrt Passed to \link{lfqRestructure}. Applied an additional square-root transformation of positive values according to Brey et al. (1988).
 #'    (default: FALSE, for more information see \link{lfqRestructure}).
+#' @param agemax maximum age of species; default NULL, then estimated from Linf
+#' @param flagging.out logical; should positive peaks be flagged out? (Default : TRUE)
 #' @param hide.progressbar logical; should the progress bar be hidden? (default: FALSE)
 #' @param plot logical; indicating if plot with restructured frequencies and growth curves should
 #'    be displayed
 #'
 #' @examples
-#' data(trout)
+#' data(synLFQ4)
 #'
 #' # K-Scan
-#' output2 <- ELEFAN(trout, Linf_fix = 14.37)
-#' plot(output2, ylim=c(0,18))
+#' output <- ELEFAN(x = synLFQ4, Linf_fix = 80,
+#'    K_range = seq(0.3,0.7,0.1),C = 0.75, WP = 0.5, MA = 11)
+#' plot(output)
 #'
 #' # Surface response analysis
-#' ELEFAN(trout, K_range = seq(0.1,2,0.1), Linf_range = seq(12,17,1))
-#'
-#' # ELEFAN(trout) # default settings using fine-resolution intervals
+#' output2 <- ELEFAN(synLFQ4, Linf_range = seq(78,82,1),
+#'    K_range = seq(0.3,0.7,0.1),C = 0.75, WP = 0.5, MA = 11)
+#' plot(output2)
 #'
 #' @details This functions allows to perform the K-Scan and Response surface analysis to estimate growth parameters.
 #'    It combines the step of restructuring length-frequency data (\link{lfqRestructure}) followed by the fitting of VBGF
@@ -65,6 +68,7 @@
 #' @importFrom grDevices colorRampPalette
 #' @importFrom graphics abline axis grid image mtext par plot text title
 #' @importFrom utils setTxtProgressBar txtProgressBar
+#' @importFrom stats optimise
 #'
 #' @references
 #' Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and expanded
@@ -107,14 +111,15 @@
 #'
 #' @export
 
-ELEFAN <- function(param, Linf_fix = NA, Linf_range = NA,
-                   K_range = exp(seq(log(0.1),log(10),length.out=100)),
+ELEFAN <- function(x, Linf_fix = NA, Linf_range = NA,
+                   K_range = exp(seq(log(0.1), log(10), length.out=100)),
                    C = 0, WP = 0,
                    MA = 5, addl.sqrt = FALSE,
+                   agemax = NULL, flagging.out = TRUE,
                    hide.progressbar = FALSE,
                    plot = FALSE){
 
-  res <- param
+  res <- x
   classes <- res$midLengths
   catch <- res$catch
   dates <- res$dates
@@ -123,9 +128,7 @@ ELEFAN <- function(param, Linf_fix = NA, Linf_range = NA,
   n_samples <- dim(catch)[2]
   n_classes <- length(classes)
 
-  # if(is.na(tmax)) tmax <- n_classes - 1   # minus 1 because one cohort is start cohort, the others are cohorts which are added to the start cohort and together they should not exceed n_classes
-  # n_cohorts <- tmax # + 1 cohort for each year of sampling period (e.g. if firs and last sampling 1.5 years = + 1 cohort) # a combination of: length of sampling period (per year one new cohort), and tmax (surviving cohorts from last years)
-  # n_cohorts <- 3
+  ts <- WP - 0.5
 
   if(is.na(Linf_fix) & is.na(Linf_range[1])) Linf_range <- seq(classes[n_classes]-5,classes[n_classes]+5,1) ### OLD: c(classes[n_classes]-5,classes[n_classes]+5)
 
@@ -137,10 +140,19 @@ ELEFAN <- function(param, Linf_fix = NA, Linf_range = NA,
 
   if(!is.na(Linf_fix)){
     Linfs <- Linf_fix
-  }else Linfs <-  Linf_range ## OLD: seq(Linf_range[1],Linf_range[2],Linf_step)
-  Ks <- K_range #OLD: seq(K_range[1],K_range[2],K_step)
+  }else Linfs <-  Linf_range
+  Ks <- K_range
 
-  ESP_starting_point_L <- array(NA,dim=c(length(Ks),2,length(Linfs)))
+  # optimisation function
+  sofun <- function(tanch, lfq, par, agemax, flagging.out){
+    Lt <- lfqFitCurves(lfq,
+                       par=list(Linf=par[1], K=par[2], t_anchor=tanch,
+                                C=par[4], ts=par[5]),
+                       flagging.out = flagging.out, agemax = agemax)
+    return(Lt$ESP)
+  }
+
+  ESP_tanch_L <- matrix(NA,nrow=length(Ks),ncol=length(Linfs))
   ESP_list_L <- matrix(NA,nrow=length(Ks),ncol=length(Linfs))
   if(!hide.progressbar){
     nlk <- prod(dim(ESP_list_L))
@@ -149,21 +161,22 @@ ELEFAN <- function(param, Linf_fix = NA, Linf_range = NA,
   }
   for(li in 1:length(Linfs)){
 
-    ESP_starting_point_K <- matrix(NA,nrow=length(Ks),ncol=2)
+    ESP_tanch_K <- rep(NA,length(Ks))
     ESP_list_K <- rep(NA,length(Ks))
     for(ki in 1:length(Ks)){
 
       # ELEFAN 1
-      paras <- list(Linf=Linfs[li],K = Ks[ki], C=C, WP=WP)
-      ele1_res <- lfqFitCurves(lfq = res, par = paras)
-
-      max_ESP <- ele1_res$max_ESP
-      startingSample <- ele1_res$startingSample
-      startingLength <- ele1_res$startingLength
-
-      # export max_ESP, startingSample, startingClass
-      ESP_list_K[ki] <- max_ESP
-      ESP_starting_point_K[ki,] <- c(startingSample,startingLength)
+      resis <- optimise(f = sofun,
+                        lower = 0,
+                        upper = 1,
+                        lfq = res,
+                        par = c(Linfs[li], Ks[ki], NA, C, ts),
+                        agemax = agemax,
+                        flagging.out = flagging.out,
+                        tol = 0.001,
+                        maximum = TRUE)
+      ESP_list_K[ki] <- resis$objective
+      ESP_tanch_K[ki] <- resis$maximum
 
       # update counter and progress bar
       if(!hide.progressbar){
@@ -172,14 +185,15 @@ ELEFAN <- function(param, Linf_fix = NA, Linf_range = NA,
       }
     }
     ESP_list_L[,li] <- ESP_list_K
-    ESP_starting_point_L[,,li] <- ESP_starting_point_K
+    ESP_tanch_L[,li] <- ESP_tanch_K
   }
 
   dimnames(ESP_list_L) <- list(Ks,Linfs)
   score_mat <- round((10^(ESP_list_L/ASP)) /10,digits = 3)
   rownames(score_mat) <- round(as.numeric(rownames(score_mat)), digits = 2)
+  dimnames(ESP_tanch_L) <- list(Ks,Linfs)
 
-  colnames(ESP_starting_point_L) <- c("startingSample","startingLength")
+
 
   # Graphs
   if(is.na(Linf_fix)){
@@ -215,25 +229,33 @@ ELEFAN <- function(param, Linf_fix = NA, Linf_range = NA,
     par(op)
   }
 
-  if(!is.na(Linf_fix)){
-    Rn_max <- max(score_mat, na.rm = TRUE)
-    K_max <- as.numeric(dimnames(score_mat)[[1]][which(score_mat[,1] == Rn_max)])
-    startingPoints <- ESP_starting_point_L[which(score_mat == Rn_max),,1]
-  }
+  Rn_max <- max(score_mat, na.rm = TRUE)
+  idxs <- which(score_mat == Rn_max, arr.ind = TRUE)
+  Linfest <- as.numeric(as.character(colnames(score_mat)[idxs[2]]))
+  Kest <- as.numeric(as.character(rownames(score_mat)[idxs[1]]))
+  tanchest <- as.numeric(as.character(ESP_tanch_L[idxs[1],idxs[2]]))
 
+  pars <- list(Linf = Linfest,
+               K = Kest,
+               t_anchor = tanchest,
+               C = C,
+               ts = ts)
+
+  final_res <- lfqFitCurves(lfq = res, par=pars,
+                            flagging.out = flagging.out,
+                            agemax = agemax)
 
   ret <- c(res,list(score_mat = score_mat,
-                    ESP_starting_point_L=ESP_starting_point_L,
-                    C = C,
-                    WP = WP))
-  if(!is.na(Linf_fix)){
-    ret$Rn_max <- Rn_max
-    ret$Linf_fix <- Linf_fix
-    ret$K_opt <- K_max
-    ret$startingPoints <- startingPoints
-  }
+                    t_anchor_mat = ESP_tanch_L,
+                    ncohort = final_res$ncohort,
+                    agemax = final_res$agemax,
+                    Rn_max = Rn_max,
+                    par = pars))
   class(ret) <- "lfq"
-  if(plot) plot(ret, Fname = "rcounts")
+  if(plot){
+    plot(ret, Fname = "rcounts")
+    Lt <- lfqFitCurves(ret, par = pars, draw=TRUE)
+  }
   return(ret)
 }
 

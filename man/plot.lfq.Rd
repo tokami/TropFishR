@@ -4,11 +4,20 @@
 \alias{plot.lfq}
 \title{Plotting of length frequency data (with VBGF curves)}
 \usage{
+<<<<<<< HEAD
 plot.lfq(x, Fname = "rcounts", par = NULL, multiple_best_fits = 1,
   col = "blue", add.image = TRUE, col.image = NULL, zlim = NULL,
   zlimtype = "balanced", date.axis = "traditional",
   date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by = "months"),
   date.format = "'\%y-\%b", xlab = "", ylab = "Length classes", ...)
+=======
+\method{plot}{lfq}(x, Fname = "rcounts", par = NULL, agemax = NULL,
+  flagging.out = TRUE, col = "blue", add.image = TRUE, col.image = NULL,
+  zlim = NULL, zlimtype = "balanced", date.axis = "traditional",
+  date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by = "months"),
+  date.format = "'\%y-\%b", xlab = "", ylab = "Length classes",
+  draw = TRUE, ...)
+>>>>>>> 2f6bf3e48c7898cd17be486b45a2b631e3e9eeb1
 }
 \arguments{
 \item{x}{a list of the class "lfq" consisting of following parameters:
@@ -29,14 +38,18 @@ displayed (default: "rcounts")}
   \item \strong{WP} winter point (WP = ts + 0.5) (optional);
 }}
 
-\item{multiple_best_fits}{numeric; indicating which startingPoints should be used in case there are more
-than one (default: 1)}
+\item{agemax}{maximum age of species; default NULL, then estimated from Linf}
 
-\item{col}{colour of growth curves (default: "blue")}
+\item{flagging.out}{logical; should positive peaks be flagged out?
+(Default : TRUE)}
 
-\item{add.image}{default TRUE}
+\item{col}{colour of growth curves (default: 1)}
 
-\item{col.image}{default NULL}
+\item{add.image}{logical; should and image be added to the lfq plot
+(default : TRUE)}
+
+\item{col.image}{colour of image, by default (NULL) red and blue colours
+are used}
 
 \item{zlim}{default NULL}
 
@@ -52,6 +65,9 @@ than one (default: 1)}
 
 \item{ylab}{Label of y axis.}
 
+\item{draw}{logical; indicating whether growth curves should be added to
+lfq plot if parameters are provided (default : TRUE)}
+
 \item{...}{additional options of the plot function}
 }
 \description{
@@ -65,15 +81,16 @@ This function runs \code{\link{lfqFitCurves}} when growth parameters are provide
    \code{multiple_best_fits} the preferred starting point can be chosen.
 }
 \examples{
-data(trout)
-res <- lfqRestructure(trout)
+data(synLFQ4)
+res <- lfqRestructure(synLFQ4)
 plot(x = res, Fname = "rcounts")
-plot(res, Fname = "rcounts", par = list(Linf = 16, K = 0.77))
-plot(res, Fname = "catch", par = list(Linf = 16, K = 0.77, C= 0.5, WP = 0.6))
+plot(res, Fname = "rcounts", par = list(Linf = 80, K = 0.5, t_anchor = 0.25))
+plot(res, Fname = "catch", par = list(Linf = 80, K = 0.5,
+   t_anchor = 0.25, C= 0.75, WP = -0.5))
 
 # plot length frequency data without restructuring
-class(trout) <- "lfq"
-plot(trout, Fname = "catch")
+class(synLFQ4) <- "lfq"
+plot(synLFQ4, Fname = "catch")
 
 }
 \references{

@@ -4,28 +4,48 @@
 \alias{ELEFAN_GA}
 \title{ELEFAN_GA}
 \usage{
-ELEFAN_GA(lfq, seasonalised = FALSE, min = NULL, max = NULL,
+ELEFAN_GA(x, seasonalised = FALSE, low_par = NULL, up_par = NULL,
   popSize = 100, maxiter = 100, run = 20, parallel = FALSE,
   pmutation = 0.3, pcrossover = 0.8, elitism = 10, MA = 5,
-  addl.sqrt = FALSE, flagging.out = TRUE, plot = FALSE, ...)
+  addl.sqrt = FALSE, agemax = NULL, flagging.out = TRUE, plot = FALSE,
+  ...)
 }
 \arguments{
-\item{lfq}{a list consisting of following parameters:
+\item{x}{a list consisting of following parameters:
 \itemize{
   \item \strong{midLengths} midpoints of the length classes,
   \item \strong{dates} dates of sampling times (class Date),
   \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column);
 }}
 
-\item{seasonalised}{logical. Default:FALSE}
+\item{seasonalised}{logical; indicating if the seasonalised von Bertalanffy
+growth function should be applied (default: FALSE).}
 
-\item{min}{a vector of length equal to the decision variables
-providing the minimum of the search space in case of real-valued
-or permutation encoded optimizations.}
+\item{low_par}{a list providing the minimum of the search space in case
+of real-valued or permutation encoded optimizations. When set to NULL the
+following default values are used:
+ \itemize{
+  \item \strong{Linf} length infinity in cm (default is calculated from maximum
+  length class in the data),
+  \item \strong{K} curving coefficient (default: 0.01),
+  \item \strong{t_anchor} time point anchoring growth curves in year-length
+  coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0),
+  \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 0),
+  \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 0);
+}}
 
-\item{max}{a vector of length equal to the decision variables
-providing the maximum of the search space in case of real-valued
-or permutation encoded optimizations.}
+\item{up_par}{a list providing the maximum of the search space in case of
+real-valued or permutation encoded optimizations. When set to NULL the
+following default values are used:
+ \itemize{
+  \item \strong{Linf} length infinity in cm (default is calculated from maximum
+  length class in the data),
+  \item \strong{K} curving coefficient (default: 1),
+  \item \strong{t_anchor} time point anchoring growth curves in year-length
+  coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 1),
+  \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 1),
+  \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 1);
+}}
 
 \item{popSize}{the population size.}
 
@@ -56,56 +76,86 @@ should be performed (default: 5)}
 \item{addl.sqrt}{additional squareroot transformation of positive values
 according to Brey et al. (1988) (default: FALSE).}
 
+\item{agemax}{maximum age of species; default NULL, then estimated from Linf}
+
 \item{flagging.out}{logical; should positive peaks be flagged out? Original setting of
 ELEFAN in TRUE. Default:TRUE}
 
-\item{plot}{logical. Plot restructured counts with fitted lines using
-\code{\link{plot.lfq}} and \code{\link{calcLt}}}
+\item{plot}{logical; Plot restructured counts with fitted lines using
+\code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).}
 
 \item{...}{additional parameters to pass to \code{\link[GA]{ga}}}
 }
 \value{
-lfq with restructured counts, fitted parameters, and fitness score
+A list with the input parameters and following list objects:
+\itemize{
+  \item \strong{samplingPeriod}: length of sampling period in years,
+  \item \strong{samplingDays}: time of sampling times in relation to first sampling time,
+  \item \strong{delta_t}: array with time differences between relative sampling time set to zero and
+     other sampling times,
+  \item \strong{rcounts}: restructured frequencies,
+  \item \strong{peaks_mat}: matrix with positive peaks with distinct values,
+  \item \strong{ASP}: available sum of peaks, sum of posititve peaks which could be potential be hit by
+     growth curves,
+  \item \strong{agemax}: maximum age of species,
+  \item \strong{par}: a list with the parameters of the von Bertalanffy growth
+     function:
+     \itemize{
+       \item \strong{Linf}: length infinity in cm,
+       \item \strong{K}: curving coefficient;
+       \item \strong{t_anchor}: time point anchoring growth curves in year-length
+         coordinate system, corrsponds to peak spawning month,
+       \item \strong{C}: amplitude of growth oscillation
+         (if \code{seasonalised} = TRUE),
+       \item \strong{ts}: summer point of oscillation
+         (if \code{seasonalised} = TRUE);
+     }
+  \item \strong{fitnessValue}: score value, highest value of fitness function.
+}
 }
 \description{
 Electronic LEngth Frequency ANalysis with genetic algorithm
 used for estimating growth parameters.
 }
+\details{
+A more detailed description of the generic algorithm (GA) can be found in
+   Scrucca (2013). The score value \code{fitnessValue} is not comparable with
+   the score value of the other ELEFAN functions.
+}
 \examples{
-\dontrun{
-
 # load data and view catch length frequencies
 data(synLFQ4)
 plot(synLFQ4, Fname="catch")
 
 # Genetic algorithm
-res <- ELEFAN_GA(
-  synLFQ4,
-  seasonalised = TRUE,
-  min = c(70, 0.25, 0, 0, 0),
-  max = c(90, 0.7, 1, 1, 1),
-  parallel = TRUE,
-  popSize = 40,
-  maxiter = 50,
-  run = 20,
-  MA = 11, addl.sqrt = FALSE,
-  flagging.out = FALSE,
-  plot = TRUE,
-  seed = 1111
-)
-res$par
-res$ASP
-res$fitnessValue
+output <- ELEFAN_GA(synLFQ4, seasonalised = TRUE,
+   low_par = list(Linf = 70, K = 0.25,t_anchor =  0,C= 0,ts= 0),
+   up_par = list(Linf = 90,K = 0.7,t_anchor = 1,C =1,ts = 1),
+   parallel = TRUE, popSize = 40, maxiter = 50, run = 20,
+   MA = 11, addl.sqrt = FALSE, flagging.out = FALSE,
+   plot = TRUE, seed = 1111)
+output$par
+output$ASP
+output$fitnessValue
 
 # compare fitness score (ESP) to
 # that calculated with "true" growth parameter values
-plot(res)
-calcLt(res, par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0),
+plot(output, draw = FALSE)
+lfqFitCurves(output, par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0),
        draw = TRUE, col=1, flagging.out = FALSE)$ESP
-calcLt(res, par=res$par, draw = TRUE, col=2, flagging.out = FALSE)$ESP
+lfqFitCurves(output, par=output$par, draw = TRUE, col=2, flagging.out = FALSE)$ESP
 legend("top", legend=c("orig.", "GA"), lty=2, col=1:2, ncol=2)
 
-}
 
+}
+\references{
+Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and expanded
+user's guide to ELEFAN 0, 1 and 2.
+
+Pauly, D. and N. David, 1981. ELEFAN I, a BASIC program for the objective extraction of
+growth parameters from length-frequency data. \emph{Meeresforschung}, 28(4):205-211
+
+Scrucca, L. (2013). GA: a package for genetic algorithms in R. Journal of
+Statistical Software, 53(4), 1-37.
 }
 

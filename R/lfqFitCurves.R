@@ -1,56 +1,70 @@
-#' @title Fitting of VBGF curves through length frequency data (ELEFAN 1)
+#' @title Fitting VBGF growth curves through lfq data
 #'
-#' @description Second step of the Electronic LEngth Frequency ANalysis (ELEFAN), which fits von Bertalanffy
-#'    growth curves through restructured length-frequency data.
+#' @description estimates VBGF growth curves for a set of growth parameters
 #'
 #' @param lfq a list of the class "lfq" consisting of following parameters:
 #' \itemize{
 #'   \item \strong{midLengths} midpoints of the length classes,
 #'   \item \strong{dates} dates of sampling times (class Date),
-#'   \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column),
+#'   \item \strong{catch} matrix with catches/counts per length class (row)
+#'      and sampling date (column),
 #'   \item \strong{samplingPeriod} length of sampling period in years,
-#'   \item \strong{samplingDays} time of sampling times in relation to first sampling time,
-#'   \item \strong{delta_t} array with time differences between relative sampling time set to zero and
-#'      other sampling times,
+#'   \item \strong{samplingDays} time of sampling times in relation to first
+#'      sampling time,
+#'   \item \strong{delta_t} array with time differences between relative
+#'      sampling time set to zero and other sampling times,
 #'   \item \strong{rcounts} restructured frequencies,
 #'   \item \strong{peaks_mat} matrix with positive peaks with distinct values,
-#'   \item \strong{ASP} available sum of peaks, sum of posititve peaks which could be potential be hit by
-#'      growth curves;
+#'   \item \strong{ASP} available sum of peaks, sum of posititve peaks which
+#'      could be potential be hit by growth curves;
 #' }
 #' @param par a list with following growth parameters:
 #'  \itemize{
 #'   \item \strong{Linf} length infinity in cm (default: 100),
 #'   \item \strong{K} curving coefficient (default: 0.1),
-#'   \item \strong{C} amplitude of growth oscillation (default: 0),
-#'   \item \strong{WP} winter point (WP = ts + 0.5) (default: 0);
+#'   \item \strong{t_anchor} time point anchoring growth curves in year-length
+#'   coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0.25),
+#'   \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 0),
+#'   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 0);
 #' }
-#' @param draw logical; indicating whether growth curves should be added to
-#'    existing lfq plot
+#' @param agemax maximum age of species; default NULL, then estimated from Linf
+#' @param flagging.out logical; should positive peaks be flagged out?
+#'    (Default : TRUE)
+#' @param lty The line type. Line types can either be specified as an integer
+#'    (0=blank, 1=solid, 2=dashed (default), 3=dotted, 4=dotdash, 5=longdash,
+#'    6=twodash) or as one of the character strings "blank", "solid", "dashed",
+#'    "dotted", "dotdash", "longdash", or "twodash", where "blank" uses 'invisible
+#'    lines' (i.e., does not draw them).
+#' @param lwd The line width, a positive number, defaulting to 2. The interpretation
+#'    is device-specific, and some devices do not implement line widths less
+#'    than one. (See the help on the device for details of the interpretation.)
 #' @param col A specification for the default plotting color. See section
 #'    'Color Specification'.
+#' @param draw logical; indicating whether growth curves should be added to
+#'    existing lfq plot
+#' @param tincr step for plotting
 #'
 #' @examples
-#' data(trout)
-#' res <- lfqRestructure(trout)
+#' data(synLFQ4)
+#' res <- lfqRestructure(synLFQ4)
 #' plot(res)
-#' lfqFitCurves(res, par=list(Linf=16,K=0.7), draw = TRUE)
+#' lfqFitCurves(res, par=list(Linf=80,K=0.5,t_anchor=0.75), draw=TRUE)
 #'
-#' @details This function is used in the analysis of growth parameters with the \code{\link{ELEFAN}} function. It is often
-#'    referred to as ELEFAN 1. C expresses the amplitude of growth oscillations and
-#'    should be between 0 (no oscillation) and 1 (oscillation with period of zero growth), values above 1 suggest
-#'    a period of negative growth, and thus are unlikely. Winter point (WP) designates the period of the year when
-#'    growth is slowest, which
-#'    in the northern hemisphere is often found around 0.2 (February) and in the southern
-#'    hemisphere aorund 0.7 (October) (Pauly and Morgan, 1987).
+#' @details Anchoring time point t_anchor 0.25 for example peak spawning in April or something
 #'
-#' @return A list with following list objects:
+#' @return A list with the input parameters and following list objects:
 #' \itemize{
-#'   \item \strong{max_ESP}: maximum explained sum of peaks,
-#'   \item \strong{startingSample}: sample number which yield in best ESP value,
-#'   \item \strong{startingLength}: length (in cm) which yield in best ESP value;
+#'   \item \strong{Lt}: dataframe with ages and lengths of the cohorts,
+#'   \item \strong{agemax}: maximum age of species.
+#'   \item \strong{ncohort}: number of cohorts,
+#'   \item \strong{ASP}: available sum of peaks, sum of posititve peaks which
+#'   could be potential be hit by growth curves. This is calculated as the sum of
+#'   maximum values from each run of posive restructured scores.
+#'   \item \strong{ESP}: available sum of peaks,
+#'   \item \strong{fASP}: available sum of peaks,
+#'   \item \strong{fESP}: available sum of peaks,
 #' }
 #'
-#' @importFrom stats na.omit
 #'
 #' @references
 #' Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and expanded
@@ -93,271 +107,94 @@
 #'
 #' @export
 
-lfqFitCurves <- function(lfq, par = list(Linf = 100, K = 0.1, C = 0, WP = 0),
-                         draw = FALSE, col = "blue"){
+lfqFitCurves <- function(lfq,
+                         par = list(Linf = 100, K = 0.1, t_anchor = 0.25, C = 0, ts = 0),
+                         agemax = NULL, flagging.out = TRUE,
+                         lty = 2, lwd = 1, col = 1,
+                         draw = FALSE, tincr = 0.05){
 
-  classes <- lfq$midLengths
-  interval <- (classes[2] - classes[1])/2
-  n_classes <- length(classes)
-  catch <- lfq$catch
-  n_samples <- dim(catch)[2]
-  peaks_mat <- lfq$peaks_mat
-  catch_aAF_F <- lfq$rcounts
-  sp.years <- lfq$samplingPeriod
-  days.years <- lfq$samplingDays
-  delta_list <- lfq$delta_t[,,1]
-  dates <- lfq$dates
+  if(is.null(par$Linf) | is.null(par$K) | is.null(par$t_anchor)) stop("Linf, K and t_anchor have to provided in par.")
 
-
-  # Linf and K for this run
-  if(!("Linf" %in% names(par)) | !("K" %in% names(par))) stop("At least 'Linf' and 'K' have to be defined in par!")
-  Linfi <- get("Linf",par)
-  Ki <- get("K",par)
-  if("C" %in% names(par)){
-    C <- get("C",par)
-  }else C <- 0
-  if("WP" %in% names(par)){
-    WP <- get("WP",par)
-  }else WP <- 0
-  if("ts" %in% names(par)) WP <- 0.5 + get("ts",par)
-
-
-  # maximum length
-  Lmax <-  Linfi * 0.98
-
-  # maximum age
-  tmax <-  log(1-(Lmax/Linfi)) / - Ki
-
-
-  # lookup table for soVBGF
-  if(C != 0 | WP != 0){
-    lookup_age <- seq(0,(tmax+30),0.01)  # initial tmax guess (without soVBGF) plus 10 to be on the save side!
-    ## OLD: lookup_length <- Linfi * (1 - exp(-Ki * (lookup_age) - ((C*Ki)/(2*pi)) *((sin(2*pi*(lookup_age-(WP-0.5)))) - (sin(2*pi*(-(WP-0.5)))))))
-    lookup_length <- Linfi * (1 - exp(-Ki * (lookup_age-0) +
-                                        (((C*Ki)/(2*pi)) * sin(2*pi*(lookup_age-(WP-0.5)))) -
-                                        (((C*Ki)/(2*pi)) * sin(2*pi*(0-(WP-0.5))))))
-
-  }
-  #plot(lookup_age,lookup_length,type = 'l')
-
-  # in case of soVBGF
-  if(C != 0 | WP != 0){
-    lookup_ind <- which.min(abs(lookup_length - Lmax))
-    tmax <- lookup_age[lookup_ind][1]
+  # ISSUE: if seasonalised max age can be different and 0.95 very coarse
+  if(is.null(agemax)){
+    agemax <- ceiling((1/-par$K)*log(1-((par$Linf*0.95)/par$Linf)))
   }
 
+  yeardec <- date2yeardec(lfq$dates)
 
-  lower_classes <- classes - interval
-  upper_classes <- classes + interval
+  tmax <- max(yeardec, na.rm = TRUE) # maximum sample date
+  ncohort <- agemax + ceiling(diff(range(yeardec))) # number of cohorts
+  tA.use <- par$t_anchor # VBGF anchor time in year
+  tAs <- seq(floor(tmax-ncohort), floor(tmax), by=1) + (tA.use+1e6)%%1   # anchor times
+  ncohort <- length(tAs)
 
 
-  # starting points meaning combination of sampling time and lengths (in Fisat by 0.5 cm)
-  starting_lengths <- seq((classes[1]-interval),(classes[n_classes]+interval),0.5)
-  n_startlengths <- length(starting_lengths)
+  par2 <- par
+  t <- yeardec
+  Lt <- vector(mode="list", ncohort)
+  for(ct in seq(ncohort)){
+    par2$t_anchor <- tAs[ct]
+    rel.age <- t-tAs[ct] # relative age to anchor time
+    t.ct <- t[which(rel.age <= agemax & rel.age > 0)]
+    if(length(t.ct) > 0){
+      Lt.ct <- VBGF(param = par2, t = t.ct) ## do.call(what = VBGF,  par2)    # Lt.ct <- VBGF(lfq = par2, t = yeardec)   #
+      Lt[[ct]] <- data.frame(t=t.ct, Lt=Lt.ct)
+      if(draw){
+        tmp <- par2
+        t_tmp <- seq(tAs[ct], max(t.ct)+tincr, by=tincr)
+        tmp$L <- VBGF(tmp, t = t_tmp) ## do.call(what = VBGF,  tmp)
+        tmp$t <- yeardec2date(t_tmp)
+        lines(L ~ t, tmp, lty=lty, lwd=lwd, col=col)
+      }
+    }
+  }
+  Lt <- do.call(rbind, Lt)
+  Lt <- Lt[which(Lt$Lt>=0),]# trim negative lengths
 
 
-  pot_ages <- log(1-starting_lengths/Linfi) / -Ki
-  # delete everything what is exceeding max age (tmax)
-  pot_ages[which(pot_ages > tmax)] <- NA
-  pot_birthdays <- -pot_ages
+  # calc scores
+  grd <- expand.grid(Lt=lfq$midLengths, t=date2yeardec(lfq$dates))
+  grd$Fs <- c(lfq$rcounts)  # turn matrix into 1-D vector
+  grd$cohort_peaks <- c(lfq$peaks_mat) # turn matrix into 1-D vector
+  grd$hit <- 0 # empty vector to record bins that are "hit" by a growth curve
+  bin.width <- diff(lfq$midLengths) # bin width (should allow for uneven bin sizes)
+  grd$bin.lower <- lfq$midLengths - (c(bin.width[1], bin.width)/2) # upper bin limit
+  grd$bin.upper <- lfq$midLengths + (c(bin.width, bin.width[length(bin.width)])/2) # lower bin limit
 
-  # how many cohorts? and how many older how many younger? depends on starting sample (and class?)
-  # the oldest cohort is always the one dying at upper boundary of largest length class (or Linf at sampling time s1)
-  # or which has Lmax or tmax at s1
-  # youngest cohort is always the one which is born at last sampling time
-  # cohort number should always be the same no matter the starting point because the samples stay the same
-  ##### OLD:  n_cohorts <- length(-tmax : sp.years)
-  # how many cohorts are younger how many older?
-  delta_mat <- do.call(rbind,delta_list)
-  birthday_actual_cohort <- matrix(rep(delta_mat[1,],each = n_startlengths),ncol=n_samples,nrow=n_startlengths) + pot_birthdays  #### OLD: birthday_actual_cohort <- pot_birthdays[1,]
-  birthday_oldest_cohort <- matrix(rep(-tmax + delta_mat[,1],each = n_startlengths),ncol=n_samples,nrow=n_startlengths) # for later if starting samples are added: + delta_list[[first element of each list element]]
-  birthday_youngest_cohort <-  matrix(rep(delta_mat[,n_samples],each = n_startlengths),ncol=n_samples,nrow=n_startlengths) # delta_list[[1]][n_samples]  # for later when different starting samples are added: delta_list[[last element of each list element]]
+  # mark all length classes (in all sampling times) which are hit
+  for(h in seq(nrow(grd))){
+    tmp <- grd$t[h] == Lt$t & grd$bin.lower[h] <= Lt$Lt & grd$bin.upper[h] > Lt$Lt
+    if(sum(tmp, na.rm = TRUE) > 0){
+      if(!flagging.out) grd$hit[h] <-  1
+      if(flagging.out) grd$hit[h] <- 1 + grd$hit[h]
+    }
+  }
 
-  older_cohorts <- floor(abs(birthday_oldest_cohort - birthday_actual_cohort))   # to account that the variation potentially creates older cohorts
-  younger_cohorts <- floor(abs(birthday_actual_cohort - birthday_youngest_cohort))  # to account that the variation potentially creates younger cohorts
-
-  n_cohorts_pre <- older_cohorts + younger_cohorts
-  n_cohorts_cor <- max(n_cohorts_pre, na.rm = TRUE)     # for array n_cohorts cant have different length -> no problem to have more cohorts then necessary just more calculation
-  older_cohorts <- n_cohorts_cor - younger_cohorts   # add more older cohorts, because there more younger ones any way
-  n_cohorts <- n_cohorts_cor + 1 # plus 1 for the actual cohort (which is 0 in -older_cohorts:younger_cohorts)
-
-  # save the dimensions for creation of all arrays later
-  dimensions = c(n_samples, n_cohorts, n_startlengths, n_samples)
-
-  # create array with the younger (+) and older (-) cohorts to add later to the ages
-  # in two loops because for each starting point (sampling time and class) there is a different amount of
-  # younger and older cohorts
-  add_cohort_array <- array(0, dim = dimensions)
-  for(sampli in 1:n_samples){
-    older_cohorts_i <- older_cohorts[,sampli]
-    younger_cohorts_i <- younger_cohorts[,sampli]
-    for(classi in 1:n_startlengths){
-      if(!is.na(older_cohorts_i[classi]) & !is.na(younger_cohorts_i[classi])){
-        temp_vec <- rep(-older_cohorts_i[classi]:younger_cohorts_i[classi], each=n_samples)
-        temp_array <- array(temp_vec, dim = c(n_samples, n_cohorts))
-        add_cohort_array[,,classi,sampli] <- add_cohort_array[,,classi,sampli] + temp_array
+  # remove marks of positive peaks within one cohort peak
+  if(flagging.out){
+    ch <- unique(grd$cohort_peaks)
+    if(0 %in% ch) ch <- ch[-which(0 %in% ch)]
+    for(ci in seq(length(ch))){
+      chi <- ch[ci]
+      peaki <- which(grd$cohort_peaks == chi)
+      dpch <- grd$hit[peaki]
+      if(sum(dpch, na.rm = TRUE) > 1){
+        grd$hit[peaki] <- 0
+        maxi <- max(grd$Fs[peaki], na.rm = TRUE)
+        grd$hit[((peaki[1]-1) + which(grd$Fs[peaki] == maxi))] <- 1
       }
     }
   }
 
-  # VBGF
-  if(C == 0 | WP == 0) pot_ages_pre <- (log(1-starting_lengths/Linfi) / -Ki)
-  # in case of soVBGF
-  if(C != 0 | WP != 0){
-    lookup_ind_pre <- lapply(starting_lengths, FUN = function(x) which.min(abs(lookup_length - x))[1])
-    lookup_ind_pre <- unlist(lookup_ind_pre)
-    pot_ages_pre <- lookup_age[lookup_ind_pre]
-  }
 
-  pot_ages_array <- array(rep(rep(pot_ages_pre,each=n_samples*n_cohorts),n_startlengths),
-                          dim = dimensions)
+  ESP <- sum(grd$Fs * grd$hit, na.rm = TRUE)
+  fASP <- ESP/lfq$ASP
+  fESP <- round((10^(ESP/lfq$ASP)) /10, digits = 3)
 
-  pot_ages_array <- pot_ages_array - add_cohort_array
-  pot_birthdays <- -pot_ages_array
-
-  # delete all individuals which would be above tmax
-  pot_ages_array[which(pot_ages_array > tmax)] <- NA
-
-
-  delta_array <- array(NA,dim=dimensions)
-  for(sampli in 1:n_samples){
-    temp_array <- array(rep(delta_list[[sampli]],n_cohorts*n_startlengths),
-                        dim = c(n_samples, n_cohorts, n_startlengths))
-    delta_array[,,,sampli] <- temp_array
-  }
-
-  ages_all_cohorts <- pot_ages_array + delta_array
-
-  # translate into lenth
-  # OLD: length_array <- Linfi * (1 - exp(-Ki * ages_all_cohorts) - ((C*Ki)/(2*pi)) *((sin(2*pi*(ages_all_cohorts-(WP-0.5)))) - (sin(2*pi*(-(WP-0.5))))))
-  length_array <- Linfi * (1 - exp(-Ki * ages_all_cohorts + (((C*Ki)/(2*pi)) * sin(2*pi*(ages_all_cohorts-(WP-0.5)))) - (((C*Ki)/(2*pi))*sin(2*pi*(-(WP-0.5))))))
-
-  length_array[which(length_array > Lmax)] <- NA
-
-
-  # LAST STEP! WORKS VERY FAST AND WORKS ALSO IF ALL COHORTS ARE ESTIMATED
-  # which classes are hit?
-
-  length_array[length_array < (lower_classes[1]-0.00001)] <- NA     # plus and minus very small number is necessary because length_mat is calculated at 14 digits
-  length_array[length_array > (upper_classes[n_classes]+0.00001)] <- NA
-
-  lower_classes_X <- lower_classes-0.00001
-  class_vec <- findInterval(length_array, lower_classes_X)  # right open intervals! left open? also
-  class_array <- array(class_vec, dim = dimensions)
-
-
-  # get from class_array to esp_array
-  # get indicator_array which contains numbers which refer to specific position within loop_mat
-  indicator_array <- array(rep(seq(0,n_classes*(n_samples-1),n_classes),
-                               n_cohorts*n_startlengths*n_samples),
-                           dim = dimensions)
-  indicator_array <- class_array + indicator_array
-
-  cohort_all_sampling_times_array <- apply(indicator_array, MARGIN = c(3,4), FUN = function(x) na.omit(as.vector(x))) #c(na.omit(c(x))))
-
-  # get asp_mat
-  loop_mat <- as.matrix(catch_aAF_F)
-
-  # two rounds? or all in one? but save variation, meaning row number!
-  #vary_vec[XXXX] # is the best shift within the class of best smapling time
-
-  #cohort_all_sampling_times_array
-
-
-  get.best.ESP <- function(x){
-    x_vec <- x[[1]] ##  unlist(x)      # unlist x
-    ## peaks_unique <- (!duplicated(peaks_mat[x_vec]) & peaks_mat[x_vec] > 0)  | peaks_mat[x_vec] <= 0
-    pmx <- peaks_mat[x_vec]
-    scoremx <- loop_mat[x_vec]
-
-    # deal with positive ones
-    uni <- unique(pmx)
-    positives <- rep(NA,length(uni))
-    for(i in 1:length(uni)){
-      loopi <- uni[i]
-      indi <- which(pmx == loopi)
-      positives[i] <- max(scoremx[indi])
-    }
-
-    # sum up all negative ones
-    neg_indi <- which(pmx == 0)
-    negatives <- scoremx[neg_indi]
-
-    # combine
-    ESP <- c(positives,negatives)
-
-    # OLD : wrong because chooses always the first score value of a cohort peak which is hit more often, should choose the highest
-    # peaks_unique <- (!duplicated(pmx) & pmx > 0) | pmx <= 0
-    # hits_whole_peaks <- x_vec[peaks_unique]
-    # ESP <- loop_mat[hits_whole_peaks]                                      # get negative and unique positive scores from score matrix
-
-    # and add up
-    if(length(ESP) > 0){
-      ESP_sum <- sum(ESP,na.rm=TRUE)                             # take the sum
-    }else ESP_sum <- -Inf                    # if startingLength exceeds Linf it is numeric(0) then fit is 0 but should be smaller tthan this
-    return(ESP_sum)
-  }
-
-
-  ESP_mat <- apply(cohort_all_sampling_times_array, MARGIN = c(1,2), FUN = get.best.ESP)
-
-
-  max_ESP <- max(ESP_mat,na.rm=TRUE)
-  position_best_ESP <- which(ESP_mat == max_ESP,arr.ind = T)[1,]   # [1,] in case there are more than one maxima
-  startingSample <- as.numeric(position_best_ESP[2])
-  startingLength <- starting_lengths[as.numeric(position_best_ESP[1])]
-
-  decdates <- date2yeardec(dates)
-  t_anchor <- (decdates[startingSample] - VBGF(par, L=startingLength)) %% 1
-
-
-  if(draw){
-    decdates <- date2yeardec(dates)
-    rel_time_startingSample <- decdates[as.numeric(startingSample)] # several best fits ?
-
-    tsample_t0 <- log(1-startingLength/Linfi) / -Ki
-    if(C != 0 | WP != 0){
-      lookup_ind <- which.min(abs(lookup_length - startingLength))
-      tsample_t0 <- lookup_age[lookup_ind]
-    }
-    tstart <- -tsample_t0 + rel_time_startingSample
-
-    # maximum age to be displayed - end of growth curve - get more exact value if seasonalised
-    if(C != 0 | WP != 0){
-      lookup_ind <- which.min(abs(lookup_length - Lmax))
-      tmax <- lookup_age[lookup_ind]
-    }
-
-    # x axis intercept of growth curves in comparison to:  days.years to get this sequence
-    # negative tstart is intercept with x axis of starting cohort
-    younger_cohorts <- floor(abs(tstart - decdates[length(decdates)]))
-    older_cohorts <- floor((decdates[1] - tmax) - tstart)
-    add_t_plot_seq <- seq(older_cohorts,younger_cohorts,1)
-
-    births_cohorts <- tstart + add_t_plot_seq
-    deaths_cohorts <- births_cohorts + tmax
-
-    for(cohorti in 1:length(add_t_plot_seq)){
-      addi <- add_t_plot_seq[cohorti]
-      t_cohorti <- seq(births_cohorts[cohorti], deaths_cohorts[cohorti],0.005)
-      Lt <- Linfi * (1 - exp(-Ki * (t_cohorti - tstart - addi) +
-                               (((C*Ki)/(2*pi)) * sin(2*pi*((t_cohorti - tstart - addi)-(WP-0.5)))) -
-                               (((C*Ki)/(2*pi)) * sin(2*pi*(0-(WP-0.5))))))
-      date_cohorti <- yeardec2date(t_cohorti)
-      lines(y = Lt, x = date_cohorti, lty=2, col=col)
-    }
-  }
-
-  ret <- list(max_ESP = max_ESP,
-              startingSample = startingSample,
-              startingLength = startingLength,
-              t_anchor = t_anchor)
+  ret <- c(lfq, list(Lt = Lt,
+                     agemax = agemax,
+                     ncohort = ncohort,
+                     ASP = lfq$ASP, ESP = ESP,
+                     fASP = fASP, fESP = fESP))
   return(ret)
 }
-
-
-# questions:
-
-# why not always several best fits for starting points? one growth curve could be associated to several starting points, for each sample one
-
-
