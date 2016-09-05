@@ -39,7 +39,7 @@
 #' @param date.at the points at which tick-marks are to be drawn. Non-finite
 #'    (infinite, NaN or NA) values are omitted. By default it is
 #'    seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by="months")
-#' @param date.format format of date
+#' @param date.format format of date  (default : "\%y-\%b")
 #' @param xlab label of x axis (default : "")
 #' @param ylab label of y axis (default : "Length classes")
 #' @param draw logical; indicating whether growth curves should be added to

@@ -118,7 +118,7 @@ A more detailed description of the simulated annealing (SA) can be found in
 data(synLFQ4)
 
 # ELEFAN_SA (takes approximately 2 minutes)
-output <- ELEFAN_SA(synLFQ4, SA_time = 60*2, seasonalised = TRUE, MA = 15,
+output <- ELEFAN_SA(synLFQ4, SA_time = 60*2, seasonalised = TRUE, MA = 11,
   init_par = list(Linf = 75, K = 0.5, t_anchor = 0.5, C = 0.5, ts = 0.5),
   low_par = list(Linf = 70, K = 0.3, t_anchor = 0, C = 0, ts = 0),
   up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1))
@@ -138,6 +138,10 @@ tmp <- lfqFitCurves(output, col=4, lty=1,
 tmp$ESP
 output$cost_value
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> e8e5350b22a730931097ffe5b64656d2cd7cba4a
 }
 \references{
 Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and expanded

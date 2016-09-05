@@ -35,11 +35,11 @@
 #'   \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 1),
 #'   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 1);
 #' }
-#' @param popSize the population size.
+#' @param popSize the population size. Default: 50
 #' @param maxiter the maximum number of iterations to run before the
 #' GA search is halted. default:100
 #' @param run the number of consecutive generations without any improvement
-#' in the best fitness value before the GA is stopped. Default:20
+#' in the best fitness value before the GA is stopped. Default: equals maxiter
 #' @param parallel a logical argument specifying if parallel computing
 #' should be used (TRUE) or not (FALSE, default) for evaluating the
 #' fitness function. See \code{\link[GA]{ga}} for details. Default:FALSE, but
@@ -101,11 +101,10 @@
 #'
 #' # Genetic algorithm
 #' output <- ELEFAN_GA(synLFQ4, seasonalised = TRUE,
-#'    low_par = list(Linf = 70, K = 0.25,t_anchor =  0,C= 0,ts= 0),
-#'    up_par = list(Linf = 90,K = 0.7,t_anchor = 1,C =1,ts = 1),
-#'    parallel = FALSE, popSize = 40, maxiter = 50, run = 20,
-#'    MA = 11, addl.sqrt = FALSE, flagging.out = FALSE,
-#'    plot = TRUE, seed = 1111)
+#'    low_par = list(Linf = 70, K = 0.25, t_anchor = 0, C = 0, ts= 0),
+#'    up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1),
+#'    popSize = 40, maxiter = 50, run = 20
+#'    MA = 11, plot = TRUE, seed = 1111)
 #' output$par
 #' output$ASP
 #' output$fitnessValue
@@ -118,6 +117,7 @@
 #' lfqFitCurves(output, par=output$par, draw = TRUE, col=2, flagging.out = FALSE)$ESP
 #' legend("top", legend=c("orig.", "GA"), lty=2, col=1:2, ncol=2)
 #'}
+#'
 #' @import parallel
 #' @import doParallel
 #' @importFrom GA ga
@@ -134,11 +134,25 @@
 #'
 #' @export
 
-ELEFAN_GA <- function(x, seasonalised = FALSE, low_par = NULL, up_par = NULL,
-                      popSize = 100, maxiter = 100, run = 20, parallel = FALSE,
-                      pmutation = 0.3, pcrossover = 0.8, elitism = 10,
-                      MA = 5, addl.sqrt = FALSE, agemax = NULL, flagging.out = TRUE,
-                      plot = FALSE,...){
+ELEFAN_GA <- function(
+  x,
+  seasonalised = FALSE,
+  low_par = NULL,
+  up_par = NULL,
+  popSize = 50,
+  maxiter = 100,
+  run = maxiter,
+  parallel = FALSE,
+  pmutation = 0.1,
+  pcrossover = 0.8,
+  elitism = base::max(1, round(popSize*0.05)),
+  MA = 5,
+  addl.sqrt = FALSE,
+  agemax = NULL,
+  flagging.out = TRUE,
+  plot = FALSE,
+  ...
+){
 
   lfq <- x
   classes <- lfq$midLengths
