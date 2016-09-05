@@ -103,7 +103,7 @@
 #' output <- ELEFAN_GA(synLFQ4, seasonalised = TRUE,
 #'    low_par = list(Linf = 70, K = 0.25, t_anchor = 0, C = 0, ts= 0),
 #'    up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1),
-#'    popSize = 40, maxiter = 50, run = 20
+#'    popSize = 40, maxiter = 50, run = 20,
 #'    MA = 11, plot = TRUE, seed = 1111)
 #' output$par
 #' output$ASP

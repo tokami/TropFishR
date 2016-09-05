@@ -59,11 +59,7 @@ approach is used with years under the months. Alternatively, by using
 (infinite, NaN or NA) values are omitted. By default it is
 seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by="months")}
 
-<<<<<<< HEAD
-\item{date.format}{format of date}
-=======
 \item{date.format}{format of date  (default : "\%y-\%b")}
->>>>>>> e8e5350b22a730931097ffe5b64656d2cd7cba4a
 
 \item{xlab}{label of x axis (default : "")}
 
