@@ -130,19 +130,10 @@ plot(synLFQ4, Fname="catch")
 
 # Genetic algorithm
 output <- ELEFAN_GA(synLFQ4, seasonalised = TRUE,
-<<<<<<< HEAD
-   low_par = list(Linf = 70, K = 0.25,t_anchor =  0,C= 0,ts= 0),
-   up_par = list(Linf = 90,K = 0.7,t_anchor = 1,C =1,ts = 1),
-   parallel = FALSE, popSize = 40, maxiter = 50, run = 20,
-   MA = 11, addl.sqrt = FALSE, flagging.out = FALSE,
-   plot = TRUE, seed = 1111)
-=======
    low_par = list(Linf = 70, K = 0.25, t_anchor = 0, C = 0, ts= 0),
    up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1),
    popSize = 40, maxiter = 50, run = 20
-   MA = 11, plot = TRUE, seed = 1111
-)
->>>>>>> e8e5350b22a730931097ffe5b64656d2cd7cba4a
+   MA = 11, plot = TRUE, seed = 1111)
 output$par
 output$ASP
 output$fitnessValue
@@ -155,11 +146,7 @@ lfqFitCurves(output, par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0),
 lfqFitCurves(output, par=output$par, draw = TRUE, col=2, flagging.out = FALSE)$ESP
 legend("top", legend=c("orig.", "GA"), lty=2, col=1:2, ncol=2)
 }
-<<<<<<< HEAD
-=======
 
-
->>>>>>> e8e5350b22a730931097ffe5b64656d2cd7cba4a
 }
 \references{
 Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and expanded

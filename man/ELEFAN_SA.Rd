@@ -138,10 +138,7 @@ tmp <- lfqFitCurves(output, col=4, lty=1,
 tmp$ESP
 output$cost_value
 }
-<<<<<<< HEAD
-=======
 
->>>>>>> e8e5350b22a730931097ffe5b64656d2cd7cba4a
 }
 \references{
 Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and expanded
