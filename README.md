@@ -5,12 +5,11 @@ Tropical Fisheries Analysis with R
 
 ### Released version
 [![CRAN version](http://www.r-pkg.org/badges/version/TropFishR)](https://cran.r-project.org/web/packages/TropFishR/index.html) [![](http://cranlogs.r-pkg.org/badges/grand-total/TropFishR)](https://cran.r-project.org/web/packages/TropFishR/index.html)
-[![Build Status](https://travis-ci.org/tokami/TropFishR.svg?branch=dev_v0.1.10)](https://travis-ci.org/tokami/TropFishR)
-[![codecov.io](https://codecov.io/github/tokami/TropFishR/coverage.svg?branch=dev_v0.1.10)](https://codecov.io/github/tokami/TropFishR/coverage.svg?branch=dev_v0.1.10)
+[![Build Status](https://api.travis-ci.org/tokami/TropFishR.svg?branch=master)](https://travis-ci.org/tokami/TropFishR)
 
 
 ### Introduction
-A collection of fisheries models based on the FAO Manual "Introduction to tropical fish stock assessment" by Sparre and Venema (1998, 1999). Not only scientists working in the tropics will benefit from this new toolbox. The methods work with age based or length-frequency data and assist in the assessment of data poor fish stocks. Overall, the package comes with 22 functions, 18 data sets and ten s3 methods. All objects are documented and provide examples that allow reproducing the examples from the FAO manual. 
+A collection of fisheries models based on the FAO Manual "Introduction to tropical fish stock assessment" by Sparre and Venema (1998, 1999). Not only scientists working in the tropics will benefit from this new toolbox. The methods work with age based or length-frequency data and assist in the assessment of data poor fish stocks. Overall, the package comes with 30 functions, 19 data sets and 10 s3 methods. All objects are documented and provide examples that allow reproducing the examples from the FAO manual. 
 
 
 ### Installation
@@ -20,11 +19,11 @@ The package ***TropFishR*** is on CRAN, to download use:
 install.packages(“TropFishR”)
 ```
 
-To install the development version of ***TropFishR***, use
+To install the newest version of ***TropFishR***, use
 
 ```r
 require(devtools)
-install_github(“tokami/TropFishR”, ref = “dev_v0.1.10”)
+install_github(“tokami/TropFishR”, ref = “master”)
 ```
 
 ### Questions / Issues
