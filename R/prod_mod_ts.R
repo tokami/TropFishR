@@ -29,7 +29,6 @@
 #' prod_mod_ts(emperor, method = "Schaefer")
 #' prod_mod_ts(emperor, method = "Fox")
 #'
-#'
 #' @return A list with the input parameters and following list objects:
 #' \itemize{
 #'   \item \strong{Bvec}: biomass vector,

@@ -38,7 +38,7 @@ plot.prod_mod_ts <- function(x, correlation_plots = FALSE, ...){
   method <- pes$method
 
   # plotting
-  dev.new()
+  #dev.new()
   op <- par(mfrow=c(2,2), xpd = FALSE,
             mar = c(4, 4, 3, 1) + 0.1,
             oma = c(4, 0.5, 1, 2) + 0.1)

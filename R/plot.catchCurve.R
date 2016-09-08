@@ -70,6 +70,8 @@ plot.catchCurve <- function(x, plot_selec = FALSE, col='blue', cex = 1.5, ...){
   if(plot_selec & any(names(pes) == "Sest")){
     maxyplot <- ceiling(pes$intercept)
 
+    dev.off()
+
     op <- par(mfrow=c(2,1), xpd = FALSE,
               mar = c(1.2, 4, 1, 1) + 0.1,
               oma = c(6, 0.5, 1, 2) + 0.1)
@@ -105,6 +107,9 @@ plot.catchCurve <- function(x, plot_selec = FALSE, col='blue', cex = 1.5, ...){
 
 
   }else {
+
+    dev.off()
+
     par(mfrow = c(1,1), mar = c(7, 5, 4, 5) + 0.3)
     #final plot
     plot(x = xplot, y = yplot, ylim = c(minyplot,maxyplot),
