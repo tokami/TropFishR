@@ -18,9 +18,9 @@
 #'
 #' Further settings include:
 #' \itemize{
-#'   \item L50 = 20 (length at 50% prob. of capture via trawl net)
-#'   \item wqs = 0 (width between 25% and 75% prob. of capture quantiles;
-#'   i.e. knife-edge selection)
+#'   \item L50 = 20 (length at 50\% prob. of capture via trawl net)
+#'   \item wqs = 0 (width between 25\% and 75\% prob. of capture quantiles;
+#'   i.e. wqs = 0 is knife-edge selection)
 #'   \item M = 0.5 (Natural mortality rate)
 #'   \item harvest_rate = 0.5 (Fishing mortality rate)
 #' }
