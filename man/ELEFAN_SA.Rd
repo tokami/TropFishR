@@ -14,7 +14,8 @@ ELEFAN_SA(x, seasonalised = FALSE, init_par = list(Linf = 50, K = 0.5,
 \itemize{
   \item \strong{midLengths} midpoints of the length classes,
   \item \strong{dates} dates of sampling times (class Date),
-  \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column);
+  \item \strong{catch} matrix with catches/counts per length class (row)
+     and sampling date (column);
 }}
 
 \item{seasonalised}{logical; indicating if the seasonalised von Bertalanffy
@@ -63,10 +64,12 @@ NULL the following default values are used:
 \item{verbose}{logical; TRUE means that messages from the algorithm
 are shown (default : TRUE).}
 
-\item{MA}{number indicating over how many length classes the moving average should be performed (defalut: 5, for
-more information see \link{lfqRestructure}).}
+\item{MA}{number indicating over how many length classes the moving average
+should be performed (defalut: 5, for
+  more information see \link{lfqRestructure}).}
 
-\item{addl.sqrt}{Passed to \link{lfqRestructure}. Applied an additional square-root transformation of positive values according to Brey et al. (1988).
+\item{addl.sqrt}{Passed to \link{lfqRestructure}. Applied an additional
+square-root transformation of positive values according to Brey et al. (1988).
 (default: FALSE, for more information see \link{lfqRestructure}).}
 
 \item{agemax}{maximum age of species; default NULL, then estimated from Linf}
@@ -79,14 +82,12 @@ more information see \link{lfqRestructure}).}
 \value{
 A list with the input parameters and following list objects:
 \itemize{
-  \item \strong{samplingPeriod}: length of sampling period in years,
-  \item \strong{samplingDays}: time of sampling times in relation to first sampling time,
-  \item \strong{delta_t}: array with time differences between relative sampling time set to zero and
-     other sampling times,
   \item \strong{rcounts}: restructured frequencies,
   \item \strong{peaks_mat}: matrix with positive peaks with distinct values,
-  \item \strong{ASP}: available sum of peaks, sum of posititve peaks which could be potential be hit by
+  \item \strong{ASP}: available sum of peaks, sum of posititve peaks which
+     could be potential be hit by
      growth curves,
+  \item \strong{ncohort}: maximum age of species,
   \item \strong{agemax}: maximum age of species,
   \item \strong{par}: a list with the parameters of the von Bertalanffy growth
      function:
@@ -97,7 +98,7 @@ A list with the input parameters and following list objects:
          coordinate system, corrsponds to peak spawning month,
        \item \strong{C}: amplitude of growth oscillation
          (if \code{seasonalised} = TRUE),
-       \item \strong{ts}: summer point of oscillation
+       \item \strong{ts}: summer point of oscillation (ts = WP - 0.5)
          (if \code{seasonalised} = TRUE);
      }
   \item \strong{cost_value}: score value, lowest value of cost function.
@@ -110,7 +111,8 @@ Electronic LEngth Frequency ANalysis with simulated annealing
 \details{
 A more detailed description of the simulated annealing (SA) can be found in
    Xiang et al. (2013). The score value \code{cost_value} is not comparable with
-   the score value of the other ELEFAN functions.
+   the score value of the other ELEFAN functions (\code{\link{ELEFAN}} or
+   \code{\link{ELEFAN_GA}}).
 }
 \examples{
 \donttest{
@@ -141,7 +143,8 @@ output$cost_value
 
 }
 \references{
-Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and expanded
+Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and
+expanded
 user's guide to ELEFAN 0, 1 and 2.
 
 Pauly, D. and N. David, 1981. ELEFAN I, a BASIC program for the objective extraction of

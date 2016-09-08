@@ -1,9 +1,9 @@
-#' @title Restructuring of length frequency data (ELEFAN 0)
+#' @title Restructuring of length frequency data
 #'
 #' @description First step of the Electronic LEngth Frequency ANalysis (ELEFAN),
 #' which is restructuring length-frequency data (lfq).
 #' This is done according to a certain protocol, described by many authors (see
-#' References for more information).
+#' Details or References for more information).
 #'
 #' @param param a list consisting of following parameters:
 #' \itemize{
@@ -36,11 +36,15 @@
 #'
 #'
 #' @details This function is used prior to fitting of growth curves (e.g. in
-#' \code{\link{ELEFAN}}, \code{\link{ELEFAN_SA}} functions).
+#' \code{\link{ELEFAN}}, \code{\link{ELEFAN_SA}} functions). It restructures a length
+#' frequency data set according to a list of steps to emphasise cohorts in the data.
+#' The steps can be found in various publications, see e.g. Brey et al. (1988) or
+#'  Pauly and David (1981).
 #'
 #' @return A list with the input parameters and following list objects:
 #' \itemize{
 #'   \item \strong{rcounts}: restructured frequencies
+#'   \item \strong{peaks_mat}: matrix with uniquely numbered positive peaks
 #'   \item \strong{ASP}: available sum of peaks, sum of posititve peaks which
 #'   could be potential be hit by growth curves. This is calculated as the sum of
 #'   maximum values from each run of posive restructured scores.
@@ -93,31 +97,31 @@ lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE){
   lfq <- param
   if(MA%%2 == 0) stop("MA must be an odd integer")
 
-  if("dates" %in% names(lfq)){
-    dates.all <- as.Date(lfq$dates)
-    # get length of smapling period
-    # continuous time in years
-    julian_days <- as.numeric(format(dates.all, format="%Y")) + as.numeric(format(dates.all, format="%j"))/366
-    days.years <- julian_days - julian_days[1]  # OLD: #days <- as.numeric(dates.all - as.Date((dates.all[1]))) #days.years <- days/365
-
-    # sampling period # OLD: sample.period.days <- days[length(days)] - days[1]  sp.years <- sample.period.days/365
-    sp.years <- days.years[length(days.years)] - days.years[1]
-
-    # OLD: time_diff_year <- as.numeric(diff(dates.all)/365)   # cum_diff_year <- cumsum(time_diff_year)
-    time_diff_year <- as.numeric(diff(julian_days))
-    cum_diff_year <- cumsum(time_diff_year)
-
-    # from dates of sampling times to relative delta ts
-    delta_t1 <- c(0,cum_diff_year)
-    delta_list <- vector("list",dim(lfq$catch)[2])
-    delta_list[[1]] <- delta_t1
-    for(i in 1:(dim(lfq$catch)[2]-1)){
-      delta_list[[i+1]] <- delta_t1 - cum_diff_year[i]
-    }
-    lfq$samplingPeriod <- sp.years
-    lfq$samplingDays <- days.years
-    lfq$delta_t <- array(delta_list,dim = c(1,length(delta_list),1))
-  }
+  # if("dates" %in% names(lfq)){
+  #   dates.all <- as.Date(lfq$dates)
+  #   # get length of smapling period
+  #   # continuous time in years
+  #   julian_days <- as.numeric(format(dates.all, format="%Y")) + as.numeric(format(dates.all, format="%j"))/366
+  #   days.years <- julian_days - julian_days[1]  # OLD: #days <- as.numeric(dates.all - as.Date((dates.all[1]))) #days.years <- days/365
+  #
+  #   # sampling period # OLD: sample.period.days <- days[length(days)] - days[1]  sp.years <- sample.period.days/365
+  #   sp.years <- days.years[length(days.years)] - days.years[1]
+  #
+  #   # OLD: time_diff_year <- as.numeric(diff(dates.all)/365)   # cum_diff_year <- cumsum(time_diff_year)
+  #   time_diff_year <- as.numeric(diff(julian_days))
+  #   cum_diff_year <- cumsum(time_diff_year)
+  #
+  #   # from dates of sampling times to relative delta ts
+  #   delta_t1 <- c(0,cum_diff_year)
+  #   delta_list <- vector("list",dim(lfq$catch)[2])
+  #   delta_list[[1]] <- delta_t1
+  #   for(i in 1:(dim(lfq$catch)[2]-1)){
+  #     delta_list[[i+1]] <- delta_t1 - cum_diff_year[i]
+  #   }
+  #   lfq$samplingPeriod <- sp.years
+  #   lfq$samplingDays <- days.years
+  #   lfq$delta_t <- array(delta_list,dim = c(1,length(delta_list),1))
+  # }
 
   rcounts <- NaN*lfq$catch
   for(i in seq(ncol(lfq$catch))){

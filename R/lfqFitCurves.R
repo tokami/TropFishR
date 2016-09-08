@@ -1,6 +1,7 @@
 #' @title Fitting VBGF growth curves through lfq data
 #'
-#' @description estimates VBGF growth curves for a set of growth parameters
+#' @description Thsi function estimates von Bertalanffy growth function (VBGF)
+#'    curves for a set of growth parameters.
 #'
 #' @param lfq a list of the class "lfq" consisting of following parameters:
 #' \itemize{
@@ -8,11 +9,6 @@
 #'   \item \strong{dates} dates of sampling times (class Date),
 #'   \item \strong{catch} matrix with catches/counts per length class (row)
 #'      and sampling date (column),
-#'   \item \strong{samplingPeriod} length of sampling period in years,
-#'   \item \strong{samplingDays} time of sampling times in relation to first
-#'      sampling time,
-#'   \item \strong{delta_t} array with time differences between relative
-#'      sampling time set to zero and other sampling times,
 #'   \item \strong{rcounts} restructured frequencies,
 #'   \item \strong{peaks_mat} matrix with positive peaks with distinct values,
 #'   \item \strong{ASP} available sum of peaks, sum of posititve peaks which
@@ -50,7 +46,13 @@
 #' plot(res)
 #' lfqFitCurves(res, par=list(Linf=80,K=0.5,t_anchor=0.75), draw=TRUE)
 #'
-#' @details Anchoring time point t_anchor 0.25 for example peak spawning in April or something
+#' @details \code{t_anchor} subsitutes the starting point from known from Fisat 2.
+#'    This parameter is necessary for anchoring the growth curves on the time axis.
+#'    It does not subsitute \code{t0}. However, it corresponds to the peak spawning
+#'    of the species (x intercept of growth curve) and has values between 0 and 1,
+#'    where 0 corresponds to spawning at the 1st of January and 0.999 corresponds to the
+#'    31st of December. The default value of 0.25 or 3/12 corresponds the third month
+#'    of the year, March.
 #'
 #' @return A list with the input parameters and following list objects:
 #' \itemize{

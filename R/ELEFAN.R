@@ -17,7 +17,7 @@
 #'    calculated
 #'    (by default: exp(seq(log(0.1),log(10),length.out = 100)))
 #' @param C growth oscillation amplitude (default: 0)
-#' @param WP winter point (default: 0)
+#' @param WP onset of the first oscillation relative to t0 (winter point, default: 0)
 #' @param MA number indicating over how many length classes the moving average
 #'    should be performed (defalut: 5, for
 #'    more information see \link{lfqRestructure}).
@@ -43,32 +43,48 @@
 #'    K_range = seq(0.3,0.7,0.1),C = 0.75, WP = 0.5, MA = 11)
 #' plot(output2)
 #'}
-#' @details This functions allows to perform the K-Scan and Response surface analysis to estimate growth parameters.
-#'    It combines the step of restructuring length-frequency data (\link{lfqRestructure}) followed by the fitting of VBGF
-#'    curves through the restructured data (\link{lfqFitCurves}). K-Scan is a method used to search for the K
-#'    parameter with the best fit while keeping the Linf fixed. In contrast, with response surface analysis
+#'
+#' @details This functions allows to perform the K-Scan and Response surface
+#'    analysis to estimate growth parameters.
+#'    It combines the step of restructuring length-frequency data
+#'    (\link{lfqRestructure}) followed by the fitting of VBGF
+#'    curves through the restructured data (\link{lfqFitCurves}). K-Scan is a
+#'    method used to search for the K
+#'    parameter with the best fit while keeping the Linf fixed. In contrast,
+#'    with response surface analysis
 #'    both parameters are estimated and the fits are displayed in a heatmap.
+#'    Both methods use \code{\link[stats]{optimise}} to find the best \code{t_anchor} value
+#'    for each combination of \code{K} and \code{Linf}. To find out more about
+#'    \code{t_anchor}, please refer to the Details description of
+#'    \code{\link{lfqFitCurves}}. The score value \code{Rn_max} is not comparable with
+#'    the score value of the other ELEFAN functions (\code{\link{ELEFAN_SA}} or
+#'    \code{\link{ELEFAN_GA}}).
 #'
 #' @return A list with the input parameters and following list objects:
 #' \itemize{
-#'   \item \strong{samplingPeriod}: length of sampling period in years,
-#'   \item \strong{samplingDays}: time of sampling times in relation to first sampling time,
-#'   \item \strong{delta_t}: array with time differences between relative sampling time set to zero and
-#'      other sampling times,
 #'   \item \strong{rcounts}: restructured frequencies,
 #'   \item \strong{peaks_mat}: matrix with positive peaks with distinct values,
-#'   \item \strong{ASP}: available sum of peaks, sum of posititve peaks which could be potential be hit by
+#'   \item \strong{ASP}: available sum of peaks, sum of posititve peaks which
+#'      could be potential be hit by
 #'      growth curves,
-#'   \item \strong{score_mat}: matrix with scores for each Linf (only Linf_fix) and K combination,
-#'   \item \strong{ESP_starting_point_L}: array with best starting points for each Linf
-#'      (only Linf_fix) and K combination,
-#'   \item \strong{C}: amplitude of growth oscillation,
-#'   \item \strong{WP}: winter point winter point (WP = ts + 0.5);
-#' when the K-Scan method is applied (fixed Linf) in addition following parameters:
-#'   \item \strong{Rn_max}: highest score value,
-#'   \item \strong{Linf_fix}: fixed Linf (asymptotic length of VBGF),
-#'   \item \strong{K_opt}: curving factor (of VBGF, K) which returns best score,
-#'   \item \strong{startingPoints}: starting sample and starting length yielding in best fit;
+#'   \item \strong{score_mat}: matrix with scores for each Linf (only Linf_fix)
+#'    and K combination,
+#'   \item \strong{t_anchor_mat}: maximum age of species,
+#'   \item \strong{ncohort}: number of cohorts used for estimation,
+#'   \item \strong{agemax}: maximum age of species,
+#'   \item \strong{par}: a list with the parameters of the von Bertalanffy growth
+#'      function:
+#'      \itemize{
+#'        \item \strong{Linf}: length infinity in cm,
+#'        \item \strong{K}: curving coefficient;
+#'        \item \strong{t_anchor}: time point anchoring growth curves in year-length
+#'          coordinate system, corrsponds to peak spawning month,
+#'        \item \strong{C}: amplitude of growth oscillation
+#'          (if \code{seasonalised} = TRUE),
+#'        \item \strong{ts}: summer point of oscillation (ts = WP - 0.5)
+#'          (if \code{seasonalised} = TRUE);
+#'      }
+#'   \item \strong{Rn_max}: highest score value
 #' }
 #'
 #' @importFrom grDevices colorRampPalette
@@ -255,8 +271,8 @@ ELEFAN <- function(x, Linf_fix = NA, Linf_range = NA,
                     t_anchor_mat = ESP_tanch_L,
                     ncohort = final_res$ncohort,
                     agemax = final_res$agemax,
-                    Rn_max = Rn_max,
-                    par = pars))
+                    par = pars,
+                    Rn_max = Rn_max))
   class(ret) <- "lfq"
   if(plot){
     plot(ret, Fname = "rcounts")

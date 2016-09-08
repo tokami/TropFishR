@@ -2,7 +2,7 @@
 % Please edit documentation in R/lfqRestructure.R
 \name{lfqRestructure}
 \alias{lfqRestructure}
-\title{Restructuring of length frequency data (ELEFAN 0)}
+\title{Restructuring of length frequency data}
 \usage{
 lfqRestructure(param, MA = 5, addl.sqrt = FALSE)
 }
@@ -26,6 +26,7 @@ Particularly useful if many observations have a low frequency (<10)}
 A list with the input parameters and following list objects:
 \itemize{
   \item \strong{rcounts}: restructured frequencies
+  \item \strong{peaks_mat}: matrix with uniquely numbered positive peaks
   \item \strong{ASP}: available sum of peaks, sum of posititve peaks which
   could be potential be hit by growth curves. This is calculated as the sum of
   maximum values from each run of posive restructured scores.
@@ -35,11 +36,14 @@ A list with the input parameters and following list objects:
 First step of the Electronic LEngth Frequency ANalysis (ELEFAN),
 which is restructuring length-frequency data (lfq).
 This is done according to a certain protocol, described by many authors (see
-References for more information).
+Details or References for more information).
 }
 \details{
 This function is used prior to fitting of growth curves (e.g. in
-\code{\link{ELEFAN}}, \code{\link{ELEFAN_SA}} functions).
+\code{\link{ELEFAN}}, \code{\link{ELEFAN_SA}} functions). It restructures a length
+frequency data set according to a list of steps to emphasise cohorts in the data.
+The steps can be found in various publications, see e.g. Brey et al. (1988) or
+ Pauly and David (1981).
 }
 \examples{
 # data and plot of catch frequencies

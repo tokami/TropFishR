@@ -15,7 +15,8 @@ ELEFAN_GA(x, seasonalised = FALSE, low_par = NULL, up_par = NULL,
 \itemize{
   \item \strong{midLengths} midpoints of the length classes,
   \item \strong{dates} dates of sampling times (class Date),
-  \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column);
+  \item \strong{catch} matrix with catches/counts per length class (row)
+     and sampling date (column);
 }}
 
 \item{seasonalised}{logical; indicating if the seasonalised von Bertalanffy
@@ -71,10 +72,12 @@ Typically this is a large value and by default is set to 0.8.}
 By default the top 5\% individuals will survive at each iteration.}
 
 \item{MA}{number indicating over how many length classes the moving average
-should be performed (default: 5)}
+should be performed (default: 5, for
+   more information see \link{lfqRestructure})}
 
 \item{addl.sqrt}{additional squareroot transformation of positive values
-according to Brey et al. (1988) (default: FALSE).}
+according to Brey et al. (1988) (default: FALSE, for
+   more information see \link{lfqRestructure})}
 
 \item{agemax}{maximum age of species; default NULL, then estimated from Linf}
 
@@ -95,8 +98,10 @@ A list with the input parameters and following list objects:
      other sampling times,
   \item \strong{rcounts}: restructured frequencies,
   \item \strong{peaks_mat}: matrix with positive peaks with distinct values,
-  \item \strong{ASP}: available sum of peaks, sum of posititve peaks which could be potential be hit by
+  \item \strong{ASP}: available sum of peaks, sum of posititve peaks which could be
+     potential be hit by
      growth curves,
+  \item \strong{ncohort}: maximum age of species,
   \item \strong{agemax}: maximum age of species,
   \item \strong{par}: a list with the parameters of the von Bertalanffy growth
      function:
@@ -107,7 +112,7 @@ A list with the input parameters and following list objects:
          coordinate system, corrsponds to peak spawning month,
        \item \strong{C}: amplitude of growth oscillation
          (if \code{seasonalised} = TRUE),
-       \item \strong{ts}: summer point of oscillation
+       \item \strong{ts}: summer point of oscillation (ts = WP - 0.5)
          (if \code{seasonalised} = TRUE);
      }
   \item \strong{fitnessValue}: score value, highest value of fitness function.
@@ -120,7 +125,8 @@ used for estimating growth parameters.
 \details{
 A more detailed description of the generic algorithm (GA) can be found in
    Scrucca (2013). The score value \code{fitnessValue} is not comparable with
-   the score value of the other ELEFAN functions.
+   the score value of the other ELEFAN functions (\code{\link{ELEFAN}} or
+   \code{\link{ELEFAN_SA}}).
 }
 \examples{
 \donttest{
@@ -149,7 +155,8 @@ legend("top", legend=c("orig.", "GA"), lty=2, col=1:2, ncol=2)
 
 }
 \references{
-Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and expanded
+Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a
+   revised and expanded
 user's guide to ELEFAN 0, 1 and 2.
 
 Pauly, D. and N. David, 1981. ELEFAN I, a BASIC program for the objective extraction of
