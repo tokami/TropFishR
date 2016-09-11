@@ -251,8 +251,8 @@ ELEFAN <- function(x, Linf_fix = NA, Linf_range = NA,
     par(op)
   }
 
-  Rn_max <- max(score_mat, na.rm = TRUE)
-  idxs <- which(score_mat == Rn_max, arr.ind = TRUE)
+  Rn_max <- max(score_mat, na.rm = TRUE)[1]
+  idxs <- which(score_mat == Rn_max, arr.ind = TRUE)[1,]
   Linfest <- as.numeric(as.character(colnames(score_mat)[idxs[2]]))
   Kest <- as.numeric(as.character(rownames(score_mat)[idxs[1]]))
   tanchest <- as.numeric(as.character(ESP_tanch_L[idxs[1],idxs[2]]))
