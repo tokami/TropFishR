@@ -218,14 +218,14 @@ ELEFAN_GA <- function(
     Lt <- lfqFitCurves(lfq,
                        par=list(Linf=par[1], K=par[2], t_anchor=par[3], C=par[4], ts=par[5]),
                        agemax = agemax, flagging.out = flagging.out)
-    return(Lt$ESP)
+    return(Lt$fESP)
   }
   # non-seasonalised fitness function
   fun <- function(lfq, par, agemax, flagging.out){
     Lt <- lfqFitCurves(lfq,
                        par=list(Linf=par[1], K=par[2], t_anchor=par[3], C = 0, ts = 0),
                        agemax = agemax, flagging.out = flagging.out)
-    return(Lt$ESP)
+    return(Lt$fESP)
   }
 
 
