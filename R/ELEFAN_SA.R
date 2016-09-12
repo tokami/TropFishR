@@ -228,7 +228,7 @@ ELEFAN_SA <- function(x,
     Lt <- lfqFitCurves(lfq,
                  par=list(Linf=par[1], K=par[2], t_anchor=par[3], C=par[4], ts=par[5]),
                  flagging.out = flagging.out, agemax = agemax)
-    return(-Lt$ESP)
+    return(-Lt$fESP)
   }
   # cost function
   SAfun <- function(lfq, par=c(init_Linf, init_K, init_tanc),
@@ -236,7 +236,7 @@ ELEFAN_SA <- function(x,
     Lt <- lfqFitCurves(lfq,
                  par=list(Linf=par[1], K=par[2], t_anchor=par[3], C = 0, ts = 0),
                  flagging.out = flagging.out, agemax = agemax)
-    return(-Lt$ESP)
+    return(-Lt$fESP)
   }
 
   if(seasonalised){
