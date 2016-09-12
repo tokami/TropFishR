@@ -1,7 +1,7 @@
 TropFishR
 =====
 
-[![CRAN version](http://www.r-pkg.org/badges/version/TropFishR)](https://cran.r-project.org/web/packages/TropFishR/index.html) [![](http://cranlogs.r-pkg.org/badges/grand-total/TropFishR)](https://cran.r-project.org/web/packages/TropFishR/index.html)
+[![CRAN version](http://www.r-pkg.org/badges/version/TropFishR)](https://cran.r-project.org/package=TropFishR) [![](http://cranlogs.r-pkg.org/badges/grand-total/TropFishR)](https://cran.r-project.org/package=TropFishR)
 [![Build Status](https://api.travis-ci.org/tokami/TropFishR.svg?branch=master)](https://travis-ci.org/tokami/TropFishR)
 
 
