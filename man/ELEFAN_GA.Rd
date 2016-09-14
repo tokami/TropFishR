@@ -8,7 +8,7 @@ ELEFAN_GA(x, seasonalised = FALSE, low_par = NULL, up_par = NULL,
   popSize = 50, maxiter = 100, run = maxiter, parallel = FALSE,
   pmutation = 0.1, pcrossover = 0.8, elitism = base::max(1, round(popSize
   * 0.05)), MA = 5, addl.sqrt = FALSE, agemax = NULL,
-  flagging.out = TRUE, plot = FALSE, ...)
+  flagging.out = TRUE, plot = FALSE, plot.score = TRUE, ...)
 }
 \arguments{
 \item{x}{a list consisting of following parameters:
@@ -86,6 +86,8 @@ ELEFAN in TRUE. Default:TRUE}
 
 \item{plot}{logical; Plot restructured counts with fitted lines using
 \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).}
+
+\item{plot.score}{logical; Plot genetic algorithm fitness progression}
 
 \item{...}{additional parameters to pass to \code{\link[GA]{ga}}}
 }

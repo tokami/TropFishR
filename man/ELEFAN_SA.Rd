@@ -7,7 +7,8 @@
 ELEFAN_SA(x, seasonalised = FALSE, init_par = list(Linf = 50, K = 0.5,
   t_anchor = 0.5, C = 0, ts = 0), low_par = NULL, up_par = NULL,
   SA_time = 60 * 1, SA_temp = 1e+05, verbose = TRUE, MA = 5,
-  addl.sqrt = FALSE, agemax = NULL, flagging.out = TRUE, plot = FALSE)
+  addl.sqrt = FALSE, agemax = NULL, flagging.out = TRUE, plot = FALSE,
+  plot.score = TRUE)
 }
 \arguments{
 \item{x}{a list consisting of following parameters:
@@ -78,6 +79,8 @@ square-root transformation of positive values according to Brey et al. (1988).
 
 \item{plot}{logical; Plot restructured counts with fitted lines using
 \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).}
+
+\item{plot.score}{logical; Plot simulated annealing score progression.}
 }
 \value{
 A list with the input parameters and following list objects:

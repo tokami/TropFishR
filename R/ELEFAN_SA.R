@@ -59,6 +59,7 @@
 #' @param flagging.out logical; passed to \link{lfqFitCurves}. Default is TRUE
 #' @param plot logical; Plot restructured counts with fitted lines using
 #' \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).
+#' @param plot.score logical; Plot simulated annealing score progression.
 #'
 #' @examples
 #' \donttest{
@@ -144,7 +145,8 @@ ELEFAN_SA <- function(x,
                       MA = 5, addl.sqrt = FALSE,
                       agemax = NULL,
                       flagging.out = TRUE,
-                      plot = FALSE){
+                      plot = FALSE,
+                      plot.score = TRUE){
 
   res <- x
   classes <- res$midLengths
@@ -285,26 +287,28 @@ ELEFAN_SA <- function(x,
   medi <- aggregate(tmp$function.value, list(step = tmp$nb.steps),median, na.rm = TRUE)
   ylim <- c(min(range(exe$x,na.rm = TRUE, finite = TRUE)),
             max(range(meani$x, na.rm = TRUE, finite = TRUE)))
-  op <- par(mar=c(5.1, 4.1, 1, 4.1))
-  plot(tmp$nb.steps, tmp$function.value, type = "n", ylim = ylim, xlab = "Iteration",
-       ylab = "Cost value")
-  graphics::grid(equilogs = FALSE)
-  points(tmp$nb.steps, tmp$current.minimum, type = "o", pch = 16, lty = 1,
-         col = "green3", cex = 0.7)
-  points(meani$step, meani$x, type = "o", pch = 1, lty = 2,
-         col = "dodgerblue3", cex = 0.7)
-  polygon(c(meani$step, rev(meani$step)),
-          c(exe$x, rev(medi$x)),
-          border = FALSE, col = adjustcolor("green3", alpha.f = 0.1))
-  par(new=TRUE)
-  plot(tmp$nb.steps, tmp$temperature, t="l", col=2, lty=2, log="y", axes = FALSE, xlab = "", ylab = "")
-  axis(4, col=2, col.axis=2); mtext(text = "Temperature", side = 4, line = par()$mgp[1], col=2)
-  legend("topright", legend = c("Best", "Mean", "Median", "Temperature"),
-         col = c("green3", "dodgerblue3", adjustcolor("green3", alpha.f = 0.1), 2),
-         pch = c(16, 1, NA, NA), lty = c(1,2,1,2),
-         lwd = c(1, 1, 10, 1), pt.cex = c(rep(0.7,2), 2, NA),
-         inset = 0.02)
-  par(op)
+  if(plot.score){
+      op <- par(mar=c(5.1, 4.1, 1, 4.1))
+    plot(tmp$nb.steps, tmp$function.value, type = "n", ylim = ylim, xlab = "Iteration",
+         ylab = "Cost value")
+    graphics::grid(equilogs = FALSE)
+    points(tmp$nb.steps, tmp$current.minimum, type = "o", pch = 16, lty = 1,
+           col = "green3", cex = 0.7)
+    points(meani$step, meani$x, type = "o", pch = 1, lty = 2,
+           col = "dodgerblue3", cex = 0.7)
+    polygon(c(meani$step, rev(meani$step)),
+            c(exe$x, rev(medi$x)),
+            border = FALSE, col = adjustcolor("green3", alpha.f = 0.1))
+    par(new=TRUE)
+    plot(tmp$nb.steps, tmp$temperature, t="l", col=2, lty=2, log="y", axes = FALSE, xlab = "", ylab = "")
+    axis(4, col=2, col.axis=2); mtext(text = "Temperature", side = 4, line = par()$mgp[1], col=2)
+    legend("topright", legend = c("Best", "Mean", "Median", "Temperature"),
+           col = c("green3", "dodgerblue3", adjustcolor("green3", alpha.f = 0.1), 2),
+           pch = c(16, 1, NA, NA), lty = c(1,2,1,2),
+           lwd = c(1, 1, 10, 1), pt.cex = c(rep(0.7,2), 2, NA),
+           inset = 0.02)
+    par(op)
+  }
 
   # notify completion
   beepr::beep(10); beepr::beep(1) # beepr::beep(2)

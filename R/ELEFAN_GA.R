@@ -63,6 +63,7 @@
 #' ELEFAN in TRUE. Default:TRUE
 #' @param plot logical; Plot restructured counts with fitted lines using
 #' \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).
+#' @param plot.score logical; Plot genetic algorithm fitness progression
 #' @param ... additional parameters to pass to \code{\link[GA]{ga}}
 #'
 #'
@@ -158,6 +159,7 @@ ELEFAN_GA <- function(
   agemax = NULL,
   flagging.out = TRUE,
   plot = FALSE,
+  plot.score = TRUE,
   ...
 ){
 
@@ -267,7 +269,9 @@ ELEFAN_GA <- function(
   }
 
   # Fitness graph
-  GA::plot(fit)
+  if(plot.score){
+    GA::plot(fit)
+  }
 
   # notify completion
   beepr::beep(10); beepr::beep(1)
