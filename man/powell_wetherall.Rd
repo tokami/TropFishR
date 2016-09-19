@@ -63,6 +63,9 @@ The first length group or age class within the list object \code{midLengths} or
 \donttest{
 data(synLFQ3)
 powell_wetherall(synLFQ3)
+
+data(synLFQ5)
+powell_wetherall(synLFQ5, catch_columns = 1:12)
 }
 
 }
