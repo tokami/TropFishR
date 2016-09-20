@@ -18,11 +18,11 @@
 #' @param GSI gonadosomatic index (wet ovary weight over wet body weight).
 #' @param Wdry total dry weight in grams.
 #' @param Wwet total wet weight at mean length in grams.
-#' @param Bl body length in cm.
+#' @param Bl vector with body lengths in cm for size dependent mortality estimates (method = "Gislason")
 #' @param schooling logical; if TRUE it is accounted for the schooling behaviour of
 #'      the species, only for Pauly's methods. Default is FALSE.
 #' @param method vector of method names. Any combination of following methods can
-#'    be employed: "AlversonCarney", "Gislason", "GundersonDygert", "Hoenig",
+#'    be employed: "AlversonCarney", "Gislason" (size dependent mortality estimates), "GundersonDygert", "Hoenig",
 #'    "Lorenzen", "Pauly_Linf", "Pauly_Winf", "PetersonWroblewski",
 #'    "RikhterEfanov", "Roff". Please refer to Details to see which input parameters
 #'    are required by each method.
@@ -134,12 +134,12 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
     M_mat[ind, 1]  <- round((3 * K_l)/(exp(K_l * (0.38 * tmax)) - 1), 3)
     dimnames(M_mat)[[1]][ind] <- list("Alverson and Carney (1975)")
   }
-  if(any(method == "Gislason")){
-    ind <- ind + 1
-    # Gislason et al. (2010)
-    M_mat[ind, 1]  <- round(exp(0.55 - 1.61 * log(Bl) + 1.44 * log(Linf) + log(K_l)), 3)
-    dimnames(M_mat)[[1]][ind] <- list("Gislason et al. (2010)")
-  }
+  #if(any(method == "Gislason")){
+  #  ind <- ind + 1
+  #  # Gislason et al. (2010)
+  #  M_mat[ind, 1]  <- round(exp(0.55 - 1.61 * log(Bl) + 1.44 * log(Linf) + log(K_l)), 3)
+  #  dimnames(M_mat)[[1]][ind] <- list("Gislason et al. (2010)")
+  #}
   if(any(method == "GundersonDygert")){
     ind <- ind + 1
     # Gunderson and Dygert (1988)
@@ -195,6 +195,12 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
     # Roff (1984)
     M_mat[ind, 1]  <- round((3 * K_l)/(exp(K_l * tm50) - 1), 3)
     dimnames(M_mat)[[1]][ind] <- list("Roff (1984)")
+  }
+  if (any(method == "Gislason")) {
+    Ml <- round(exp(0.55 - 1.61 * log(Bl) + 1.44 * 
+                                 log(Linf) + log(K_l)), 3)
+    M_mat <- as.data.frame(matrix(c(Bl,Ml),byrow = FALSE,ncol=2))
+    colnames(M_mat) <- c("Bl","Ml")
   }
 
   return(M_mat)
