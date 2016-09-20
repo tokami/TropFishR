@@ -345,8 +345,8 @@ catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
               c(5, 4, 4, 2) + 0.1,
               oma = c(2, 1, 0, 1) + 0.1)
     plot(x = xvar,y = yvar, ylim = c(minY,maxY),
-         xlab = xlabel, ylab = ylabel)
-    text(xvar+0.5, yvar+0.5, labels=as.character(order(xvar)), cex= 0.7)
+         xlab = xlabel, ylab = ylabel, type = "n")
+    text(xvar, yvar, labels=as.character(order(xvar)), cex= 0.7)
     cutter <- identify(x = xvar, y = yvar,
                        labels = order(xvar), n=2)
     par(op)
