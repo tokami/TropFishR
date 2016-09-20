@@ -132,7 +132,7 @@ lfqFitCurves <- function(lfq,
 
 
   par2 <- par
-  t <- yeardec
+  t <- c(yeardec,max(yeardec)+0.2)  # for plotting, otherwise growth curves are cut at last sampling time
   Lt <- vector(mode="list", ncohort)
   for(ct in seq(ncohort)){
     par2$t_anchor <- tAs[ct]
