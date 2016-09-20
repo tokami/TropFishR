@@ -45,6 +45,7 @@
 #'    selection ogive. The smaller the higher the resolution but the slower the model
 #'    run. Not required for "knife_edge" selection type
 #' @param plot logical; if TRUE results are displayed graphically
+#' @param hide.progressbar logical; should progressbar be displayed or hidden? (Default: FALSE)
 #'
 #' @keywords function prediction ypr
 #'
@@ -267,7 +268,7 @@ predict_mod <- function(param, type, FM_change = NA,
                         s_list = NA,
                         stock_size_1 = NA, age_unit = 'year', curr.E = NA,
                         curr.Lc_tc = NA,
-                        plus_group = NA, Lmin = NA, Lincr = NA, plot = FALSE){
+                        plus_group = NA, Lmin = NA, Lincr = NA, plot = FALSE, hide.progressbar = FALSE){
   res <- param
 
   # Beverton and Holt's ypr
@@ -336,10 +337,12 @@ predict_mod <- function(param, type, FM_change = NA,
     list_Es <- vector("list", length(Lc))
 
     # show progress bar only if the loop has more than 1 runs
-    nlk <- length(Lc)
-    if(nlk > 1){
-      pb <- txtProgressBar(min=1, max=nlk, style=3)
-      counter <- 1
+    if (!hide.progressbar) {
+     nlk <- length(Lc)
+     if(nlk > 1){
+       pb <- txtProgressBar(min=1, max=nlk, style=3)
+       counter <- 1
+     }
     }
 
     if(is.null(Lc)) Lc_tc <- tc else Lc_tc <- Lc
@@ -476,9 +479,11 @@ predict_mod <- function(param, type, FM_change = NA,
       list_Es[[i]] <- df_loop_Es
 
       # update counter and progress bar
-      if(nlk > 1){
+      if (!hide.progressbar) {
+       if(nlk > 1){
         setTxtProgressBar(pb, counter)
         counter <- counter + 1
+       }
       }
     }
 
@@ -599,9 +604,11 @@ predict_mod <- function(param, type, FM_change = NA,
       pred.FM_Lc_com_res_loopB_list <- vector("list",length(FM_Lc_com_mat.list))
       pred.FM_Lc_com_res_loopV_list <- vector("list",length(FM_Lc_com_mat.list))
 
-      nlk <- prod(length(FM_Lc_com_mat.list),dim(FM_Lc_com_mat.list[[1]])[2])
-      pb <- txtProgressBar(min=1, max=nlk, style=3)
-      counter <- 1
+      if (!hide.progressbar) {
+        nlk <- prod(length(FM_Lc_com_mat.list),dim(FM_Lc_com_mat.list[[1]])[2])
+        pb <- txtProgressBar(min=1, max=nlk, style=3)
+        counter <- 1
+      }
 
       for(x21 in 1:length(FM_Lc_com_mat.list)){  #loop for length of list == Lc changes
         mati <- FM_Lc_com_mat.list[[x21]]
@@ -616,8 +623,10 @@ predict_mod <- function(param, type, FM_change = NA,
           pred.FM_Lc_com_res_loop1_list[[x22]] <- res2$totals
 
           # update counter and progress bar
+          if (!hide.progressbar) {
           setTxtProgressBar(pb, counter)
           counter <- counter + 1
+          }
         }
         prev_mat <- do.call(rbind, pred.FM_Lc_com_res_loop1_list)
         prev_matC <- prev_mat[,'totC']
