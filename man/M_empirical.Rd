@@ -37,13 +37,13 @@ curve for weight.}
 
 \item{Wwet}{total wet weight at mean length in grams.}
 
-\item{Bl}{body length in cm.}
+\item{Bl}{vector with body lengths in cm for size dependent mortality estimates (method = "Gislason")}
 
 \item{schooling}{logical; if TRUE it is accounted for the schooling behaviour of
 the species, only for Pauly's methods. Default is FALSE.}
 
 \item{method}{vector of method names. Any combination of following methods can
-be employed: "AlversonCarney", "Gislason", "GundersonDygert", "Hoenig",
+be employed: "AlversonCarney", "Gislason" (size dependent mortality estimates), "GundersonDygert", "Hoenig",
 "Lorenzen", "Pauly_Linf", "Pauly_Winf", "PetersonWroblewski",
 "RikhterEfanov", "Roff". Please refer to Details to see which input parameters
 are required by each method.}
