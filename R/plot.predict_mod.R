@@ -85,7 +85,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     #   max_val <- round(max(pes$totV,na.rm=TRUE),digits=0)
     #   dim_val <- 10 ^ (nchar(max_val)-1)
 
-    op <- par(oma = c(1, 1, 1.5, 1),new=FALSE,mar = c(5, 4, 4, 6) + 0.3)
+    #op <- par(oma = c(1, 1, 1.5, 1),new=FALSE,mar = c(5, 4, 4, 6) + 0.3)
     plot(pes$Xfact,pes$totV, type ='o',ylab='Value',xlab='F-factor X',
          col ='darkorange', ylim = c(0,ceiling(max_val/dim_val)*dim_val),
          lwd=1.6)
@@ -102,12 +102,12 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     axis(4,at=pretty(c(0,pes$meanB)),line = 3)
     mtext("Biomass", side=4, line=5)
 
-    par(oma = c(0, 0, 0, 0), new = TRUE)
+    #par(oma = c(0, 0, 0, 0), new = TRUE)
     legend("top", c("value", "yield", "biomass"), xpd = TRUE,
            horiz = TRUE, inset = c(0, -0.1), bty = "n",lty = 1,seg.len = 0.7,
            col = c('darkorange','dodgerblue','darkgreen'), cex = 0.8,lwd=2,
            text.width=0.3,x.intersp=0.3)
-    par(op)
+    #par(op)
 
   }
 
@@ -192,7 +192,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     #standard plot (ypr vs. E or FM)
     if(type == 'ypr'){
       #Plot
-      op <- par(mfrow=c(1,1),new=F, mar = c(5, 4, 4, 4) + 0.3)
+      #op <- par(mfrow=c(1,1),new=F, mar = c(5, 4, 4, 4) + 0.3)
 
       #plot Y/R & B/R
       label <- ifelse("tc" %in% names(pes), "tc", "Lc")
@@ -288,7 +288,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
         segments(x0 = N05, x1 = N05, y0 = -1, y1 = py2[which(px == N05)],
                  col= 'red',lty = 2, lwd=1.5)
       }
-      par(op)
+      #par(op)
     }
 
     #Isopleths
