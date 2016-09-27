@@ -39,7 +39,8 @@
 #' \code{\link{ELEFAN}}, \code{\link{ELEFAN_SA}} functions). It restructures a length
 #' frequency data set according to a list of steps to emphasise cohorts in the data.
 #' The steps can be found in various publications, see e.g. Brey et al. (1988) or
-#'  Pauly and David (1981).
+#'  Pauly and David (1981). Here, the most recent steps documented in Gayanilo (1997)
+#'  are followed.
 #'
 #' @return A list with the input parameters and following list objects:
 #' \itemize{
@@ -52,8 +53,11 @@
 #'
 #'
 #' @references
-#' Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and expanded
-#' user's guide to ELEFAN 0, 1 and 2.
+#' Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis:
+#' a revised and expanded user's guide to ELEFAN 0, 1 and 2.
+#'
+#' Gayanilo, Felimon C. FAO-ICLARM stock assessment tools: reference manual.
+#' No. 8. Food & Agriculture Org., 1997.
 #'
 #' Pauly, D. 1981. The relationship between gill surface area and growth performance in fish:
 #' a generalization of von Bertalanffy's theory of growth. \emph{Meeresforsch}. 28:205-211
@@ -70,15 +74,17 @@
 #' Pauly, D. and G. R. Morgan (Eds.), 1987. Length-based methods in fisheries research.
 #' (No. 13). WorldFish
 #'
-#' Pauly, D. and G. Gaschuetz. 1979. A simple method for fitting oscillating length growth data, with a
-#' program for pocket calculators. I.C.E.S. CM 1979/6:24. Demersal Fish Cttee, 26 p.
+#' Pauly, D. and G. Gaschuetz. 1979. A simple method for fitting oscillating length
+#' growth data, with a program for pocket calculators. I.C.E.S. CM 1979/6:24.
+#' Demersal Fish Cttee, 26 p.
 #'
-#' Pauly, D. 1984. Fish population dynamics in tropical waters: a manual for use with programmable
-#' calculators (Vol. 8). WorldFish.
+#' Pauly, D. 1984. Fish population dynamics in tropical waters: a manual for use
+#' with programmable calculators (Vol. 8). WorldFish.
 #'
 #' Quenouille, M. H., 1956. Notes on bias in estimation. \emph{Biometrika}, 43:353-360
 #'
-#' Somers, I. F., 1988. On a seasonally oscillating growth function. ICLARM Fishbyte 6(1): 8-11.
+#' Somers, I. F., 1988. On a seasonally oscillating growth function.
+#' ICLARM Fishbyte 6(1): 8-11.
 #'
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 #' Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2): 407 p.
@@ -97,70 +103,54 @@ lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE){
   lfq <- param
   if(MA%%2 == 0) stop("MA must be an odd integer")
 
-  # if("dates" %in% names(lfq)){
-  #   dates.all <- as.Date(lfq$dates)
-  #   # get length of smapling period
-  #   # continuous time in years
-  #   julian_days <- as.numeric(format(dates.all, format="%Y")) + as.numeric(format(dates.all, format="%j"))/366
-  #   days.years <- julian_days - julian_days[1]  # OLD: #days <- as.numeric(dates.all - as.Date((dates.all[1]))) #days.years <- days/365
-  #
-  #   # sampling period # OLD: sample.period.days <- days[length(days)] - days[1]  sp.years <- sample.period.days/365
-  #   sp.years <- days.years[length(days.years)] - days.years[1]
-  #
-  #   # OLD: time_diff_year <- as.numeric(diff(dates.all)/365)   # cum_diff_year <- cumsum(time_diff_year)
-  #   time_diff_year <- as.numeric(diff(julian_days))
-  #   cum_diff_year <- cumsum(time_diff_year)
-  #
-  #   # from dates of sampling times to relative delta ts
-  #   delta_t1 <- c(0,cum_diff_year)
-  #   delta_list <- vector("list",dim(lfq$catch)[2])
-  #   delta_list[[1]] <- delta_t1
-  #   for(i in 1:(dim(lfq$catch)[2]-1)){
-  #     delta_list[[i+1]] <- delta_t1 - cum_diff_year[i]
-  #   }
-  #   lfq$samplingPeriod <- sp.years
-  #   lfq$samplingDays <- days.years
-  #   lfq$delta_t <- array(delta_list,dim = c(1,length(delta_list),1))
-  # }
-
+  # Steps refer to Gayanilo (1997) FAO-ICLARM stock assessment tools: reference manual
   rcounts <- NaN*lfq$catch
   for(i in seq(ncol(lfq$catch))){
     pm <- (MA-1)/2 # plus minus
     n <- length(lfq$catch[,i])
     AF <- NaN*seq(lfq$catch[,i])
     nz <- NaN*seq(lfq$catch[,i])
+
+    # Step A & B
     for(j in seq(lfq$catch[,i])){
       idx <- (j-pm):(j+pm)
       idx <- idx[which(idx %in% seq(lfq$catch[,i]))]
-      nz[j] <- sum(lfq$catch[idx,i] == 0) + (MA-length(idx)) # number of adjacent zeros
+      idxn <- idx[-which(idx==j)] # neighbors only
+      nz[j] <- sum(lfq$catch[idxn,i] == 0) + (MA-length(idx)) # number of adjacent zeros
       MA.j <- sum(lfq$catch[idx,i])/MA
       # print(MA)
       AF[j] <- lfq$catch[j,i]/MA.j
     }
-    AF <- replace(AF, which(AF==Inf), 0)
+    # intermediate step to remove Inf an NA
+    AF <- replace(AF, which(AF==Inf | is.na(AF)), 0)
+
+    # Step C
     Fs <- AF/mean(AF, na.rm=TRUE)-1 # restructured frequencies
+
+    # Steps D & E - Adjust for zero frequency
     posFs <- which(Fs > 0)
-    if(length(posFs)>0) {Fs[posFs] <- Fs[posFs] * 1/2^nz[posFs]}
+    if(length(posFs)>0) {Fs[posFs] <- (Fs * 1/2^nz)[posFs]}
+    # replace ultimate length bin with zero if negative
+    if(sign(Fs[length(Fs)]) == -1){Fs[length(Fs)] <- 0}
+    # divide penultimate length bin by 2 if negative
+    if(sign(Fs[length(Fs)-1]) == -1){Fs[length(Fs)-1] <- Fs[length(Fs)-1]/2}
+
+    # Step F - Adjust for Fi
+    SPV <- sum(Fs[which(Fs > 0)])
+    SNV <- sum(Fs[which(Fs < 0)])
+    # set -1 to 0
     minus1 <- which((1+Fs) < 1e-8 | is.na(Fs))
     if(length(minus1)>0) {Fs[minus1] <- 0}
+    # adjust negative numbers
+    isneg <- which(Fs < 0)
+    Fs[isneg] <- Fs[isneg] * (SPV/-SNV)
 
+    # optional square-root adjustment to emphasize larger length bins with lower counts
     if(addl.sqrt){
       posFs <- which(Fs > 0)
       if(length(posFs)>0) {Fs[posFs] <- Fs[posFs] / sqrt(1+2/lfq$catch[posFs,i])} #Fs[posFs] / sqrt(1+2/Fs[posFs])}
     }
 
-    SUMplus <- abs(sum(Fs[which(Fs > 0)]))
-    SUMminus <- abs(sum(Fs[which(Fs < 0)])) # according to Brey -1 are excluded here
-    # ISSUE: exclude -1 values? according to Gayanilo 97 CHECK
-    #Fs[which(Fs < 0)] <- Fs[which(Fs < 0)] * (SUMplus/SUMminus)
-    Fs[which(Fs < 0 & Fs != -1)] <- Fs[which(Fs < 0 & Fs != -1)] * (SUMplus/SUMminus)
-    Fs[which(Fs == -1)] <- 0
-
-    # replace ultimate length bin with zero if negative
-    if(sign(Fs[length(Fs)]) == -1){Fs[length(Fs)] <- 0}
-    # divide penultimate length bin by 2 if negative
-    if(sign(Fs[length(Fs)-1]) == -1){Fs[length(Fs)-1] <- Fs[length(Fs)-1]/2}
-    # return results to rcounts object
     rcounts[,i] <- Fs
   }
   lfq$rcounts <- rcounts

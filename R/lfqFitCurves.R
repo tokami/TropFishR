@@ -191,7 +191,7 @@ lfqFitCurves <- function(lfq,
 
   ESP <- sum(grd$Fs * grd$hit, na.rm = TRUE)
   fASP <- ESP/lfq$ASP
-  fESP <- round((10^(ESP/lfq$ASP)) /10, digits = 3)
+  fESP <- (10^(ESP/lfq$ASP)) /10
 
   lfq$Lt <- Lt
   lfq$agemax <- agemax
