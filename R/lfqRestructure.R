@@ -186,6 +186,7 @@ lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE){
   }
   ASP <- sum(sampASP)
   lfq$ASP <- ASP
+  lfq$MA <- MA
 
   class(lfq) <- "lfq"
   return(lfq)
