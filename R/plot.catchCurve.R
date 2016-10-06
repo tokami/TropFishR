@@ -11,6 +11,8 @@
 #' @param col a specification for colour of regression points, line and annotation
 #' @param cex a numerical value giving the amount by which plotting text and
 #'      symbols should be magnified relative to the default.
+#' @param xlim limits of x axis
+#' @param ylim limits of y axis
 #' @param ... standard parameters of plot function
 #'
 #' @examples
@@ -30,7 +32,8 @@
 #'
 #' @export
 
-plot.catchCurve <- function(x, plot_selec = FALSE, col='blue', cex = 1.5, ...){
+plot.catchCurve <- function(x, plot_selec = FALSE, col='blue',
+                            cex = 1.5, xlim = NULL, ylim = NULL, ...){
   pes <- x
 
   xlabel <- "Age [yrs]"
@@ -62,9 +65,19 @@ plot.catchCurve <- function(x, plot_selec = FALSE, col='blue', cex = 1.5, ...){
   reg_int <- pes$reg_int
 
 
-  #for plot
+  #for final plot
   minyplot <- ifelse(min(yplot,na.rm=TRUE) < 0, min(yplot,na.rm=TRUE),0)
   maxyplot <- max(yplot,na.rm=TRUE) + 1
+
+  if(is.null(ylim)){
+    ylims <- c(minyplot, maxyplot)
+  }else ylims <- ylim
+
+  if(is.null(xlim)){
+    xlims <- c(min(xplot[which(yplot > 0)], na.rm = TRUE)-0.5,
+             max(xplot[which(yplot > 0)], na.rm = TRUE)+0.5)
+  }else xlims <- xlim
+
 
   if(plot_selec & any(names(pes) != "Sest")) writeLines("Please run the catchCurve with calc_ogive == TRUE \nin order to show selectivity plot!")
   if(plot_selec & any(names(pes) == "Sest")){
@@ -76,8 +89,8 @@ plot.catchCurve <- function(x, plot_selec = FALSE, col='blue', cex = 1.5, ...){
               mar = c(1.2, 4, 1, 1) + 0.1,
               oma = c(6, 0.5, 1, 2) + 0.1)
     #final plot
-    plot(x = xplot, y = yplot, ylim = c(minyplot,maxyplot),
-         xlab = '', xaxt = 'n', ylab = ylabel,
+    plot(x = xplot, y = yplot, ylim = ylims,
+         xlab = '', xaxt = 'n', ylab = ylabel, xlim = xlims,
          cex = cex)
     #par(new=T)
     points(x = xplot[reg_int[1]:reg_int[2]], y = yplot[reg_int[1]:reg_int[2]],
@@ -95,7 +108,7 @@ plot.catchCurve <- function(x, plot_selec = FALSE, col='blue', cex = 1.5, ...){
     mtext(side = 3, line = 0.3,  text = paste("Z =",round(Z_lm1,2),"+/-",
                                  round(SE_Z_lm1,2)), col = col)
 
-    plot(pes$Sest ~ xplot, type ='o', xlab = xlabel,
+    plot(pes$Sest ~ xplot, type ='o', xlab = xlabel, xlim = xlims,
          ylab = "Probability of capture")
     points(y = 0.5, x=pes$t50,col='red',pch=16)
     segments(x0 = pes$t50, y0 = 0.5, x1 = pes$t50, y1 = 0, col='red',lty=2)
@@ -112,8 +125,8 @@ plot.catchCurve <- function(x, plot_selec = FALSE, col='blue', cex = 1.5, ...){
 
     par(mfrow = c(1,1), mar = c(7, 5, 4, 5) + 0.3)
     #final plot
-    plot(x = xplot, y = yplot, ylim = c(minyplot,maxyplot),
-         xlab = xlabel, ylab = ylabel,
+    plot(x = xplot, y = yplot, ylim = ylims,
+         xlab = xlabel, ylab = ylabel, xlim = xlims,
          cex = cex)
     par(new=T)
     points(x = xplot[reg_int[1]:reg_int[2]], y = yplot[reg_int[1]:reg_int[2]],

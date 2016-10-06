@@ -14,7 +14,7 @@
 #'    default is 1000.
 #' @param savePlots logical; indicating whether the analyis graphs should be recorded
 #'
-#' @keywords function Bhattacharya length-frequency
+#' @keywords function Bhattacharya length-frequency lfq
 #'
 #' @examples
 #' # The following example requires to choose certain values for the regression analyses:

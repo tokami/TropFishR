@@ -5,7 +5,7 @@
 \title{Plotting of length frequency data (with VBGF curves)}
 \usage{
 \method{plot}{lfq}(x, Fname = "rcounts", par = NULL, agemax = NULL,
-  flagging.out = TRUE, col = "blue", xlim = NA, ylim = NA,
+  flagging.out = TRUE, col = "blue", xlim = NULL, ylim = NULL,
   add.image = TRUE, col.image = NULL, zlim = NULL,
   zlimtype = "balanced", date.axis = "traditional",
   date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by = "months"),

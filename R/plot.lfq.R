@@ -117,8 +117,8 @@ plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
                      agemax = NULL,
                      flagging.out = TRUE,
                      col = "blue",
-                     xlim = NA,
-                     ylim = NA,
+                     xlim = NULL,
+                     ylim = NULL,
                      add.image = TRUE,
                      col.image = NULL,
                      zlim = NULL,
@@ -137,10 +137,10 @@ plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
   bin.lower <- classes - c(bin.width[1], bin.width)/2
   bin.upper <- classes + c(bin.width, bin.width[length(bin.width)])/2
 
-  if(is.na(xlim)){
+  if(is.null(xlim)){
     xlims <- c(min(dates) - min(diff(dates)), max(dates) + min(diff(dates)))
   }else xlims <- xlim
-  if(is.na(ylim)){
+  if(is.null(ylim)){
     ylims <- c(min(classes)-1, max(classes)+1)
   }else ylims <- ylim
 

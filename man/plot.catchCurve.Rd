@@ -5,7 +5,7 @@
 \title{Plotting catch curve}
 \usage{
 \method{plot}{catchCurve}(x, plot_selec = FALSE, col = "blue", cex = 1.5,
-  ...)
+  xlim = NULL, ylim = NULL, ...)
 }
 \arguments{
 \item{x}{A list of the class \code{"catchCurve"} containing the results of the
@@ -20,6 +20,10 @@ only works if the \link{catchCurve} was applied with
 
 \item{cex}{a numerical value giving the amount by which plotting text and
 symbols should be magnified relative to the default.}
+
+\item{xlim}{limits of x axis}
+
+\item{ylim}{limits of y axis}
 
 \item{...}{standard parameters of plot function}
 }

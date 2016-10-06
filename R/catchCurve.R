@@ -334,8 +334,10 @@ catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
   }
 
   #for plot
-  minY <- ifelse(min(yvar,na.rm=TRUE) < 0, min(yvar,na.rm=TRUE),0)
+  #minY <- ifelse(min(yvar,na.rm=TRUE) < 0, min(yvar,na.rm=TRUE),0)
+  minY <- min(yvar,na.rm=TRUE)
   maxY <- max(yvar,na.rm=TRUE) + 1
+  xlims <- c(0, max(xvar,na.rm=TRUE))
 
   #identify plot
   if(is.null(reg_int)){
@@ -344,7 +346,7 @@ catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
     op <- par(mfrow = c(1,1),
               c(5, 4, 4, 2) + 0.1,
               oma = c(2, 1, 0, 1) + 0.1)
-    plot(x = xvar,y = yvar, ylim = c(minY,maxY),
+    plot(x = xvar,y = yvar, ylim = c(minY,maxY), xlim = xlims,
          xlab = xlabel, ylab = ylabel, type = "n")
     text(xvar, yvar, labels=as.character(order(xvar)), cex= 0.7)
     cutter <- identify(x = xvar, y = yvar,

@@ -25,11 +25,12 @@ Particularly useful if many observations have a low frequency (<10)}
 \value{
 A list with the input parameters and following list objects:
 \itemize{
-  \item \strong{rcounts}: restructured frequencies
-  \item \strong{peaks_mat}: matrix with uniquely numbered positive peaks
+  \item \strong{rcounts}: restructured frequencies,
+  \item \strong{peaks_mat}: matrix with uniquely numbered positive peaks,
   \item \strong{ASP}: available sum of peaks, sum of posititve peaks which
   could be potential be hit by growth curves. This is calculated as the sum of
-  maximum values from each run of posive restructured scores.
+  maximum values from each run of posive restructured scores,
+  \item \strong{MA}: moving average used for restructuring.
 }
 }
 \description{
