@@ -117,7 +117,7 @@ A list with the input parameters and following list objects:
        \item \strong{ts}: summer point of oscillation (ts = WP - 0.5)
          (if \code{seasonalised} = TRUE);
      }
-  \item \strong{fitnessValue}: score value, highest value of fitness function.
+  \item \strong{Rn_max}: highest value of fitness function, (comparable with ELEFAN and ELEFAN_SA).
 }
 }
 \description{
@@ -144,14 +144,14 @@ output <- ELEFAN_GA(synLFQ4, seasonalised = TRUE,
    MA = 11, plot = TRUE, seed = 1111)
 output$par
 output$ASP
-output$fitnessValue
+output$Rn_max
 
-# compare fitness score (ESP) to
+# compare fitness score (fESP) to
 # that calculated with "true" growth parameter values
 plot(output, draw = FALSE)
 lfqFitCurves(output, par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0),
-       draw = TRUE, col=1, flagging.out = FALSE)$ESP
-lfqFitCurves(output, par=output$par, draw = TRUE, col=2, flagging.out = FALSE)$ESP
+       draw = TRUE, col=1, flagging.out = FALSE)$fESP
+lfqFitCurves(output, par=output$par, draw = TRUE, col=2, flagging.out = FALSE)$fESP
 legend("top", legend=c("orig.", "GA"), lty=2, col=1:2, ncol=2)
 }
 

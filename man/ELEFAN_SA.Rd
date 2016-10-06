@@ -104,7 +104,8 @@ A list with the input parameters and following list objects:
        \item \strong{ts}: summer point of oscillation (ts = WP - 0.5)
          (if \code{seasonalised} = TRUE);
      }
-  \item \strong{cost_value}: score value, lowest value of cost function.
+  \item \strong{Rn_max}:  highest score value (absolute value of cost function,
+  comparable with ELEFAN and ELEFAN_GA).
 }
 }
 \description{
@@ -128,7 +129,7 @@ output <- ELEFAN_SA(synLFQ4, SA_time = 60*2, seasonalised = TRUE, MA = 11,
   low_par = list(Linf = 70, K = 0.3, t_anchor = 0, C = 0, ts = 0),
   up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1))
 output$par
-output$cost_value
+output$Rn_max
 
 # view fit
 plot(output)
@@ -140,8 +141,8 @@ lfqFitCurves(output, col=1, par=output$par, draw=TRUE)$ESP
 # compare to original parameters
 tmp <- lfqFitCurves(output, col=4, lty=1,
    par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0), draw=TRUE)
-tmp$ESP
-output$cost_value
+tmp$fESP
+output$Rn_max
 }
 
 }

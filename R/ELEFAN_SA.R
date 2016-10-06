@@ -72,7 +72,7 @@
 #'   low_par = list(Linf = 70, K = 0.3, t_anchor = 0, C = 0, ts = 0),
 #'   up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1))
 #' output$par
-#' output$cost_value
+#' output$Rn_max
 #'
 #' # view fit
 #' plot(output)
@@ -84,8 +84,8 @@
 #' # compare to original parameters
 #' tmp <- lfqFitCurves(output, col=4, lty=1,
 #'    par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0), draw=TRUE)
-#' tmp$ESP
-#' output$cost_value
+#' tmp$fESP
+#' output$Rn_max
 #' }
 #'
 #' @details A more detailed description of the simulated annealing (SA) can be found in
@@ -114,7 +114,8 @@
 #'        \item \strong{ts}: summer point of oscillation (ts = WP - 0.5)
 #'          (if \code{seasonalised} = TRUE);
 #'      }
-#'   \item \strong{cost_value}: score value, lowest value of cost function.
+#'   \item \strong{Rn_max}:  highest score value (absolute value of cost function,
+#'   comparable with ELEFAN and ELEFAN_GA).
 #' }
 #'
 #' @importFrom graphics par plot title lines grid
@@ -321,7 +322,8 @@ ELEFAN_SA <- function(x,
   ret <- c(res, list(ncohort = final_res$ncohort,
                      agemax = final_res$agemax,
                      par = pars,
-                     cost_value = SAfit$value))
+                     #cost_value = SAfit$value,
+                     Rn_max = abs(SAfit$value)))
   class(ret) <- "lfq"
   if(plot){
     plot(ret, Fname = "rcounts")
