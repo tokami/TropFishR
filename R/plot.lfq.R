@@ -25,6 +25,8 @@
 #' @param flagging.out logical; should positive peaks be flagged out?
 #'    (Default : TRUE)
 #' @param col colour of growth curves (default: 1)
+#' @param xlim limits of x axis
+#' @param ylim limits of y axis
 #' @param add.image logical; should and image be added to the lfq plot
 #'    (default : TRUE)
 #' @param col.image colour of image, by default (NULL) red and blue colours
@@ -115,6 +117,8 @@ plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
                      agemax = NULL,
                      flagging.out = TRUE,
                      col = "blue",
+                     xlim = NA,
+                     ylim = NA,
                      add.image = TRUE,
                      col.image = NULL,
                      zlim = NULL,
@@ -133,9 +137,16 @@ plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
   bin.lower <- classes - c(bin.width[1], bin.width)/2
   bin.upper <- classes + c(bin.width, bin.width[length(bin.width)])/2
 
+  if(is.na(xlim)){
+    xlims <- c(min(dates) - min(diff(dates)), max(dates) + min(diff(dates)))
+  }else xlims <- xlim
+  if(is.na(ylim)){
+    ylims <- c(min(classes)-1, max(classes)+1)
+  }else ylims <- ylim
+
   # bin height scaling
   if(Fname == "catch"){
-    sc <- min(diff(dates)) * 0.8 / max(abs(catch))
+    sc <- (min(diff(unclass(dates)))-0.5) / max(abs(catch))  #min(diff(dates)) * 0.7 / max(abs(catch))
   }
   if(Fname == "rcounts"){
     sc <- min(diff(dates)) * 0.5 / max(abs(catch))
@@ -160,12 +171,12 @@ plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
   if(add.image){
     #par(mar = c(5, 5, 1, 1) + .1)
     image(x=dates, y=classes, z=t(catch), col=col.image, zlim=zlim,
-          xaxt="n",  xlab = xlab, ylab = ylab, ...)
+          xaxt="n",  xlab = xlab, ylab = ylab, xlim = xlims, ylim = ylims, ...)
   }
   # without image
   if(add.image == FALSE){
     image(x=dates, y=classes, z=t(catch), col=NA, zlim=zlim,
-          xaxt="n",  xlab = xlab, ylab = ylab, ...)
+          xaxt="n",  xlab = xlab, ylab = ylab, xlim = xlims, ylim = ylims, ...)
   }
 
   # add time axis
@@ -185,6 +196,9 @@ plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
 
   # frame
   box(col = "gray40") #bty = "L"
+
+  # vertical lines
+  abline(v= dates, col = "gray40")
 
   #Histograms
   for(i in seq(length(dates))){

@@ -5,8 +5,9 @@
 \title{Plotting of length frequency data (with VBGF curves)}
 \usage{
 \method{plot}{lfq}(x, Fname = "rcounts", par = NULL, agemax = NULL,
-  flagging.out = TRUE, col = "blue", add.image = TRUE, col.image = NULL,
-  zlim = NULL, zlimtype = "balanced", date.axis = "traditional",
+  flagging.out = TRUE, col = "blue", xlim = NA, ylim = NA,
+  add.image = TRUE, col.image = NULL, zlim = NULL,
+  zlimtype = "balanced", date.axis = "traditional",
   date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by = "months"),
   date.format = "'\%y-\%b", xlab = "", ylab = "Length classes",
   draw = TRUE, ...)
@@ -36,6 +37,10 @@ displayed (default: "rcounts")}
 (Default : TRUE)}
 
 \item{col}{colour of growth curves (default: 1)}
+
+\item{xlim}{limits of x axis}
+
+\item{ylim}{limits of y axis}
 
 \item{add.image}{logical; should and image be added to the lfq plot
 (default : TRUE)}
