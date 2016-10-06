@@ -43,7 +43,8 @@ This function is used prior to fitting of growth curves (e.g. in
 \code{\link{ELEFAN}}, \code{\link{ELEFAN_SA}} functions). It restructures a length
 frequency data set according to a list of steps to emphasise cohorts in the data.
 The steps can be found in various publications, see e.g. Brey et al. (1988) or
- Pauly and David (1981).
+ Pauly and David (1981). Here, the most recent steps documented in Gayanilo (1997)
+ are followed.
 }
 \examples{
 # data and plot of catch frequencies
@@ -64,8 +65,11 @@ lfqFitCurves(synLFQ4,
 
 }
 \references{
-Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and expanded
-user's guide to ELEFAN 0, 1 and 2.
+Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis:
+a revised and expanded user's guide to ELEFAN 0, 1 and 2.
+
+Gayanilo, Felimon C. FAO-ICLARM stock assessment tools: reference manual.
+No. 8. Food & Agriculture Org., 1997.
 
 Pauly, D. 1981. The relationship between gill surface area and growth performance in fish:
 a generalization of von Bertalanffy's theory of growth. \emph{Meeresforsch}. 28:205-211
@@ -82,15 +86,17 @@ fish and aquatic invertebrates. \emph{ICLARM Conf. Proc.}, (13):7-34
 Pauly, D. and G. R. Morgan (Eds.), 1987. Length-based methods in fisheries research.
 (No. 13). WorldFish
 
-Pauly, D. and G. Gaschuetz. 1979. A simple method for fitting oscillating length growth data, with a
-program for pocket calculators. I.C.E.S. CM 1979/6:24. Demersal Fish Cttee, 26 p.
+Pauly, D. and G. Gaschuetz. 1979. A simple method for fitting oscillating length
+growth data, with a program for pocket calculators. I.C.E.S. CM 1979/6:24.
+Demersal Fish Cttee, 26 p.
 
-Pauly, D. 1984. Fish population dynamics in tropical waters: a manual for use with programmable
-calculators (Vol. 8). WorldFish.
+Pauly, D. 1984. Fish population dynamics in tropical waters: a manual for use
+with programmable calculators (Vol. 8). WorldFish.
 
 Quenouille, M. H., 1956. Notes on bias in estimation. \emph{Biometrika}, 43:353-360
 
-Somers, I. F., 1988. On a seasonally oscillating growth function. ICLARM Fishbyte 6(1): 8-11.
+Somers, I. F., 1988. On a seasonally oscillating growth function.
+ICLARM Fishbyte 6(1): 8-11.
 
 Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2): 407 p.

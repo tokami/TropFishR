@@ -38,49 +38,49 @@ plot.prod_mod_ts <- function(x, correlation_plots = FALSE, ...){
   method <- pes$method
 
   # plotting
-  #dev.new()
-  op <- par(mfrow=c(2,2), xpd = FALSE,
-            mar = c(4, 4, 3, 1) + 0.1,
-            oma = c(4, 0.5, 1, 2) + 0.1)
-  layout(matrix(c(1,2,3,4), nrow = 2, byrow=TRUE))
+  if(!correlation_plots){
+    op <- par(mfrow=c(2,2), xpd = FALSE,
+              mar = c(4, 4, 3, 1) + 0.1,
+              oma = c(4, 0.5, 1, 2) + 0.1)
+    layout(matrix(c(1,2,3,4), nrow = 2, byrow=TRUE))
 
-  # Yiel trajectory
-  plot(yrs, Y, type="b", xlab="", ylab="Yield",
-       main="Yield Trajectory",
-       ylim=c(0, max(Y, na.rm = TRUE)*1.05))
+    # Yield trajectory
+    plot(yrs, Y, type="b", xlab="", ylab="Yield",
+         main="Yield Trajectory",
+         ylim=c(0, max(Y, na.rm = TRUE)*1.05))
 
-  # Biomass trajectory
-  plot(yrs, Bvec, type="b", xlab="", ylab="Biomass",
-       main="Biomass Trajectory", ylim=c(0, max(Bvec, na.rm = TRUE)*1.05))
+    # Biomass trajectory
+    plot(yrs, Bvec, type="b", xlab="", ylab="Biomass",
+         main="Biomass Trajectory", ylim=c(0, max(Bvec, na.rm = TRUE)*1.05))
 
-  # CPUE trajectory
-  plot(yrs, CPUE, xlab="", ylab="CPUE",
-       ylim=c(0, max(CPUE, na.rm = TRUE)*1.05), type="b",
-       main = "CPUE Trajectory")
-  lines(yrs, CPUE_hat, col=2, type="b")
-  legend(x="bottomright",legend = c("observed", "predicted"),lty = 1, pch = 1,xpd = TRUE,
-         col = c(1,2), cex = 0.8, bty = 'n', y.intersp = 0.8, x.intersp = 0.5)
+    # CPUE trajectory
+    plot(yrs, CPUE, xlab="", ylab="CPUE",
+         ylim=c(0, max(CPUE, na.rm = TRUE)*1.05), type="b",
+         main = "CPUE Trajectory")
+    lines(yrs, CPUE_hat, col=2, type="b")
+    legend(x="bottomright",legend = c("observed", "predicted"),lty = 1, pch = 1,xpd = TRUE,
+           col = c(1,2), cex = 0.8, bty = 'n', y.intersp = 0.8, x.intersp = 0.5)
 
 
-  ## the equilibrium yield
-  Blevels <- seq(0,ceiling(K),10)
-  if(method == "Schaefer") EYlevels <- r*Blevels*(1-Blevels/K)
-  if(method == "Fox") EYlevels <- r*Blevels*log(K/Blevels)
-  EYlevels <- ifelse(EYlevels<0, 0, EYlevels)
-  plot(Blevels, EYlevels, type="l" , xlab="Biomass",
-       ylab="Yield", main="Yield Curve",
-       xlim = c(0,max(c(Blevels,Bvec), na.rm = TRUE)),
-       ylim = c(0,max(c(EYlevels,Y), na.rm = TRUE)))
-  lines(Bvec,Y,type="b", col=2)
-  abline(h=MSY,col=2)
-  abline(v=Bmsy, col=2)
+    ## the equilibrium yield
+    Blevels <- seq(0,ceiling(K),10)
+    if(method == "Schaefer") EYlevels <- r*Blevels*(1-Blevels/K)
+    if(method == "Fox") EYlevels <- r*Blevels*log(K/Blevels)
+    EYlevels <- ifelse(EYlevels<0, 0, EYlevels)
+    plot(Blevels, EYlevels, type="l" , xlab="Biomass",
+         ylab="Yield", main="Yield Curve",
+         xlim = c(0,max(c(Blevels,Bvec), na.rm = TRUE)),
+         ylim = c(0,max(c(EYlevels,Y), na.rm = TRUE)))
+    lines(Bvec,Y,type="b", col=2)
+    abline(h=MSY,col=2)
+    abline(v=Bmsy, col=2)
 
-  par(op)
+    par(op)
+  }
 
   # Validating Fit
   if(correlation_plots){
     # plotting
-    dev.new()
     op <- par(mfrow=c(2,2), xpd = FALSE,
               mar = c(4, 4, 4, 1) + 0.1,
               oma = c(4, 0.5, 1, 2) + 0.1)
