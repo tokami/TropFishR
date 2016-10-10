@@ -225,6 +225,7 @@ ELEFAN <- function(x, Linf_fix = NA, Linf_range = NA,
           z = t(score_mat), col=colorRampPalette(c("yellow","red"), space="Lab")(5),
           main = 'Response surface analysis', ylab = 'K', xlab='Linf')
     #grid (NULL,NULL, lty = 6, col = "cornsilk2")
+    #contour(x = Linfs, y = Ks, z = t(score_mat),add = TRUE)
     text(x=plot_dat$Var2,y=plot_dat$Var1,round(as.numeric(plot_dat$value),digits = 2),cex = 0.6)
   }else{
     if(all(Ks %in% exp(seq(log(0.1),log(10),length.out=100)))){
