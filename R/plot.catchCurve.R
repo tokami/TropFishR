@@ -69,10 +69,6 @@ plot.catchCurve <- function(x, plot_selec = FALSE, col='blue',
   minyplot <- ifelse(min(yplot,na.rm=TRUE) < 0, min(yplot,na.rm=TRUE),0)
   maxyplot <- max(yplot,na.rm=TRUE) + 1
 
-  if(is.null(ylim)){
-    ylims <- c(minyplot, maxyplot)
-  }else ylims <- ylim
-
   if(is.null(xlim)){
     xlims <- c(min(xplot[which(yplot > 0)], na.rm = TRUE)-0.5,
              max(xplot[which(yplot > 0)], na.rm = TRUE)+0.5)
@@ -82,6 +78,10 @@ plot.catchCurve <- function(x, plot_selec = FALSE, col='blue',
   if(plot_selec & any(names(pes) != "Sest")) writeLines("Please run the catchCurve with calc_ogive == TRUE \nin order to show selectivity plot!")
   if(plot_selec & any(names(pes) == "Sest")){
     maxyplot <- ceiling(pes$intercept)
+
+    if(is.null(ylim)){
+      ylims <- c(minyplot, maxyplot)
+    }else ylims <- ylim
 
     dev.off()
 
@@ -120,6 +120,10 @@ plot.catchCurve <- function(x, plot_selec = FALSE, col='blue',
 
 
   }else {
+
+    if(is.null(ylim)){
+      ylims <- c(minyplot, maxyplot)
+    }else ylims <- ylim
 
     dev.off()
 

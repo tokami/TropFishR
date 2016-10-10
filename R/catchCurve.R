@@ -418,6 +418,10 @@ catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
     # dependent vairable in following regression analysis
     ln_1_S_1 <- log((1/Sobs) - 1)
 
+    # get rid of Inf
+    ln_1_S_1[which(ln_1_S_1 == Inf)] <- NA
+    t_ogive[which(t_ogive == Inf)] <- NA
+
     #regression analysis to caluclate T1 and T2
     mod_ogive <- lm(ln_1_S_1 ~ t_ogive, na.action = na.omit)
     sum_lm_ogive <- summary(mod_ogive)
