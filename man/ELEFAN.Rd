@@ -7,7 +7,7 @@
 ELEFAN(x, Linf_fix = NA, Linf_range = NA, K_range = exp(seq(log(0.1),
   log(10), length.out = 100)), C = 0, WP = 0, MA = 5, addl.sqrt = FALSE,
   agemax = NULL, flagging.out = TRUE, hide.progressbar = FALSE,
-  plot = FALSE)
+  plot = FALSE, contour = FALSE)
 }
 \arguments{
 \item{x}{a list consisting of following parameters:
@@ -47,6 +47,11 @@ more information see \link{lfqRestructure}).}
 
 \item{plot}{logical; indicating if plot with restructured frequencies and growth curves should
 be displayed}
+
+\item{contour}{if used in combination with response surface analysis, contour lines
+are displayed rather than the score as text in each field of the score plot. Usage
+can be logical (e.g. TRUE) or by providing a numeric which indicates the
+number of levels (\code{nlevels} in \code{\link{contour}}). By default FALSE.}
 }
 \value{
 A list with the input parameters and following list objects:
@@ -107,7 +112,7 @@ plot(output)
 
 # Surface response analysis
 output2 <- ELEFAN(synLFQ4, Linf_range = seq(78,82,1),
-   K_range = seq(0.3,0.7,0.1),C = 0.75, WP = 0.5, MA = 11)
+   K_range = seq(0.3,0.7,0.1),C = 0.75, WP = 0.5, MA = 11, contour = 3)
 plot(output2)
 }
 
