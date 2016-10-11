@@ -28,6 +28,10 @@
 #' @param hide.progressbar logical; should the progress bar be hidden? (default: FALSE)
 #' @param plot logical; indicating if plot with restructured frequencies and growth curves should
 #'    be displayed
+#' @param contour if used in combination with response surface analysis, contour lines
+#'    are displayed rather than the score as text in each field of the score plot. Usage
+#'    can be logical (e.g. TRUE) or by providing a numeric which indicates the
+#'    number of levels (\code{nlevels} in \code{\link{contour}}). By default FALSE.
 #'
 #' @examples
 #' \donttest{
@@ -40,7 +44,7 @@
 #'
 #' # Surface response analysis
 #' output2 <- ELEFAN(synLFQ4, Linf_range = seq(78,82,1),
-#'    K_range = seq(0.3,0.7,0.1),C = 0.75, WP = 0.5, MA = 11)
+#'    K_range = seq(0.3,0.7,0.1),C = 0.75, WP = 0.5, MA = 11, contour = 3)
 #' plot(output2)
 #'}
 #'
@@ -139,7 +143,7 @@ ELEFAN <- function(x, Linf_fix = NA, Linf_range = NA,
                    MA = 5, addl.sqrt = FALSE,
                    agemax = NULL, flagging.out = TRUE,
                    hide.progressbar = FALSE,
-                   plot = FALSE){
+                   plot = FALSE, contour = FALSE){
 
   res <- x
   classes <- res$midLengths
@@ -225,8 +229,11 @@ ELEFAN <- function(x, Linf_fix = NA, Linf_range = NA,
           z = t(score_mat), col=colorRampPalette(c("yellow","red"), space="Lab")(5),
           main = 'Response surface analysis', ylab = 'K', xlab='Linf')
     #grid (NULL,NULL, lty = 6, col = "cornsilk2")
-    #contour(x = Linfs, y = Ks, z = t(score_mat),add = TRUE)
-    text(x=plot_dat$Var2,y=plot_dat$Var1,round(as.numeric(plot_dat$value),digits = 2),cex = 0.6)
+    if(contour){
+      contour(x = Linfs, y = Ks, z = t(score_mat), add = TRUE)
+    }else if(is.numeric(contour)){
+      contour(x = Linfs, y = Ks, z = t(score_mat), add = TRUE, nlevels = contour)
+    }else text(x=plot_dat$Var2,y=plot_dat$Var1,round(as.numeric(plot_dat$value),digits = 2),cex = 0.6)
   }else{
     if(all(Ks %in% exp(seq(log(0.1),log(10),length.out=100)))){
       K_labels <- c(seq(0.1,1,0.1),2:10)
