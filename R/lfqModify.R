@@ -98,7 +98,7 @@ lfqModify <- function(lfq, par = NULL, plus_group = FALSE){
               midLengths = midLengths,
               catch = catches)
 
-  # add growth parameter if knowm
+  # add growth parameter if known
   if(!is.null(par)){
     res$Linf <- par$Linf
     res$K <- par$K
