@@ -57,7 +57,9 @@ lfqModify <- function(lfq, par = NULL, plus_group = FALSE){
   # plus group
   if(plus_group[1]){
     if(length(plus_group) == 1){
-      print(data.frame(midLengths = midLengths, frequency = rowSums(catch)))
+      if(is.vector(catch)){
+        print(data.frame(midLengths = midLengths, frequency = catch))
+      }else print(data.frame(midLengths = midLengths, frequency = rowSums(catch)))
       writeLines("Check the table above and insert the length of the plus group.")
       pg = -1
       while(pg > max(midLengths) | pg < min(midLengths)){
@@ -66,8 +68,8 @@ lfqModify <- function(lfq, par = NULL, plus_group = FALSE){
         if(!(pg %in% midLengths)){
           writeLines(paste0(pg, " is not an element of midLengths (see table)."))
           pg = -1
-        #pg <- ifelse(grepl("\\D",pg),-1,as.integer(pg))
-        if(is.na(pg)){break}  # breaks when hit enter
+          #pg <- ifelse(grepl("\\D",pg),-1,as.integer(pg))
+          if(is.na(pg)){break}  # breaks when hit enter
         }
       }
     }else if(length(plus_group) == 2){
@@ -75,14 +77,21 @@ lfqModify <- function(lfq, par = NULL, plus_group = FALSE){
     }
 
     midLengths <- midLengths[1:which(midLengths == pg)]
-    addplus <- colSums(catch[(which(midLengths == pg):nrow(catch)),])
-    catch <- catch[1:which(midLengths == pg),]
-    catch[which(midLengths == pg),] <-
-      catch[which(midLengths == pg),] + addplus
+    if(is.vector(catch)){
+      addplus <- sum(catch[(which(midLengths == pg):length(catch))])
+      catch <- catch[1:which(midLengths == pg)]
+      catch[which(midLengths == pg)] <-
+        catch[which(midLengths == pg)] + addplus
+    }else{
+      addplus <- colSums(catch[(which(midLengths == pg):nrow(catch)),])
+      catch <- catch[1:which(midLengths == pg),]
+      catch[which(midLengths == pg),] <-
+        catch[which(midLengths == pg),] + addplus
+    }
   }
 
   # combine results
-  if(ncol(catch) == 1){
+  if(is.vector(catch)){
     catches <- as.vector(catch)
   }else catches <- as.matrix(catch)
   res <- list(dates = dates,
@@ -96,6 +105,11 @@ lfqModify <- function(lfq, par = NULL, plus_group = FALSE){
     res$t_anchor <- par$t_anchor
   }
 
+  if("M" %in% names(lfq)) res$M <- lfq$M
+  if("Z" %in% names(lfq)) res$Z <- lfq$Z
+  if("FM" %in% names(lfq)) res$FM <- lfq$FM
+  if("a" %in% names(lfq)) res$a <- lfq$a
+  if("b" %in% names(lfq)) res$b <- lfq$b
+
   return(res)
 }
-
