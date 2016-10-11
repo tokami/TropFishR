@@ -4,8 +4,8 @@
 \alias{VPA}
 \title{Virtual Population Analysis (VPA)}
 \usage{
-VPA(param, terminalF, analysis_type, catch_corFac = NA, algorithm = "new",
-  plus_group = FALSE, plot = FALSE)
+VPA(param, terminalF, analysis_type, catch_corFac = NA, catch_columns = NA,
+  algorithm = "new", plus_group = FALSE, plot = FALSE)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -32,6 +32,9 @@ Cohort analysis}
 \item{catch_corFac}{optional; correction factor for catch, in case provided
 catch does spatially or temporarily not reflect catch for fishing ground of
 a whole year.}
+
+\item{catch_columns}{numerical; indicating the column of the catch matrix which should be
+used for the analysis.}
 
 \item{algorithm}{an Algorithm to use to solve for fishing mortality. The default
 setting \code{"new"} uses \code{\link[stats]{optimise}},

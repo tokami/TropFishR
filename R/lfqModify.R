@@ -7,19 +7,21 @@
 #' @param lfq lfq object with dates, midLengths, and catch
 #' @param par growth parameter as resulting from e.g. \code{\link{ELEFAN}}
 #' @param plus_group logical; should a plus group be created? If yes you will be
-#'    asked to insert the length for the plus group in the console. (Default: FALSE)
+#'    asked to insert the length for the plus group in the console (default: FALSE).
+#'    Instead of inserting the length of the plus group via the console, the value
+#'    can be incorporated in a vector, e.g. plus_group = c(TRUE, 30).
 #'
 #' @keywords function lfq length-frequency
 #'
 #' @examples
 #' data(synLFQ4)
-#' newlfq <- lfqModify(synLFQ4, plus_group = TRUE)
+#' newlfq <- lfqModify(synLFQ4)
 #'
 #' @return lfq object with rearranged catch matrix (yearly sums) and growth parameters
 #'    if provided.
 #'
 #' @export
-lfq= synLFQ4
+
 lfqModify <- function(lfq, par = NULL, plus_group = FALSE){
 
   dates <- lfq$dates
@@ -53,20 +55,25 @@ lfqModify <- function(lfq, par = NULL, plus_group = FALSE){
   midLengths <- midLengths[lowRow:upRow]
 
   # plus group
-  if(plus_group){
-    print(data.frame(midLengths = midLengths, frequency = rowSums(catch)))
-    writeLines("Check the table above and insert the length of the plus group.")
-    pg = -1
-    while(pg > max(midLengths) | pg < min(midLengths)){
-      pg <- readline(paste0("Enter a length group between ", min(midLengths)," and ",
-                            max(midLengths),":"))
-      if(!(pg %in% midLengths)){
-        writeLines(paste0(pg, " is not an element of midLengths (see table)."))
-        pg = -1
+  if(plus_group[1]){
+    if(length(plus_group) == 1){
+      print(data.frame(midLengths = midLengths, frequency = rowSums(catch)))
+      writeLines("Check the table above and insert the length of the plus group.")
+      pg = -1
+      while(pg > max(midLengths) | pg < min(midLengths)){
+        pg <- readline(paste0("Enter a length group between ", min(midLengths)," and ",
+                              max(midLengths),":"))
+        if(!(pg %in% midLengths)){
+          writeLines(paste0(pg, " is not an element of midLengths (see table)."))
+          pg = -1
+        #pg <- ifelse(grepl("\\D",pg),-1,as.integer(pg))
+        if(is.na(pg)){break}  # breaks when hit enter
+        }
       }
-      #pg <- ifelse(grepl("\\D",pg),-1,as.integer(pg))
-      if(is.na(pg)){break}  # breaks when hit enter
+    }else if(length(plus_group) == 2){
+      pg = as.numeric(as.character(plus_group[2]))
     }
+
     midLengths <- midLengths[1:which(midLengths == pg)]
     addplus <- colSums(catch[(which(midLengths == pg):nrow(catch)),])
     catch <- catch[1:which(midLengths == pg),]

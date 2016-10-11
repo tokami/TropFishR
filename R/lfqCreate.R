@@ -38,7 +38,6 @@
 #'   sampling date (column).
 #'    }
 #'
-#'
 #' @export
 
 lfqCreate <- function(data, Lname, Dname, bin_size = 2,
