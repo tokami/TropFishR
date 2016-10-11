@@ -13,13 +13,13 @@
 #'
 #' @examples
 #' data(synLFQ4)
-#' newlfq <- prepLFQ(synLFQ4)
+#' newlfq <- lfqModify(synLFQ4, plus_group = TRUE)
 #'
 #' @return lfq object with rearranged catch matrix (yearly sums) and growth parameters
 #'    if provided.
 #'
 #' @export
-
+lfq= synLFQ4
 lfqModify <- function(lfq, par = NULL, plus_group = FALSE){
 
   dates <- lfq$dates
@@ -27,7 +27,7 @@ lfqModify <- function(lfq, par = NULL, plus_group = FALSE){
   catch <- lfq$catch
 
   # sum numbers per year
-  c_sum <- by(t(catch),format(dates,"%Y"),FUN = colSums)
+  c_sum <- by(t(catch),format(dates,"%Y"), FUN = colSums)
 
   # rearrange in data frame
   c_list <- lapply(as.list(c_sum), c)
@@ -54,7 +54,7 @@ lfqModify <- function(lfq, par = NULL, plus_group = FALSE){
 
   # plus group
   if(plus_group){
-    data.frame(midLengths = midLengths, frequency = rowSums(catch))
+    print(data.frame(midLengths = midLengths, frequency = rowSums(catch)))
     writeLines("Check the table above and insert the length of the plus group.")
     pg = -1
     while(pg > max(midLengths) | pg < min(midLengths)){
@@ -64,7 +64,7 @@ lfqModify <- function(lfq, par = NULL, plus_group = FALSE){
         writeLines(paste0(pg, " is not an element of midLengths (see table)."))
         pg = -1
       }
-      pg <- ifelse(grepl("\\D",pg),-1,as.integer(pg))
+      #pg <- ifelse(grepl("\\D",pg),-1,as.integer(pg))
       if(is.na(pg)){break}  # breaks when hit enter
     }
     midLengths <- midLengths[1:which(midLengths == pg)]
@@ -75,9 +75,12 @@ lfqModify <- function(lfq, par = NULL, plus_group = FALSE){
   }
 
   # combine results
+  if(ncol(catch) == 1){
+    catches <- as.vector(catch)
+  }else catches <- as.matrix(catch)
   res <- list(dates = dates,
               midLengths = midLengths,
-              catch = as.matrix(catch))
+              catch = catches)
 
   # add growth parameter if knowm
   if(!is.null(par)){
