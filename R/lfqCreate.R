@@ -1,4 +1,4 @@
-#' @title Make lfq data
+#' @title Create lfq data from length measurements
 #'
 #' @description Convert raw length measurements to length frequency data (lfq class).
 #'
@@ -27,7 +27,7 @@
 #'            dates = seq.Date(as.Date("2015-10-02"),as.Date("2016-08-28"),
 #'            length.out = 1000))
 #' # create lfq data
-#' lfq_dat <- makeLFQ(data,Lname = "length.mm.", Dname = "dates", aggregate_dates = TRUE,
+#' lfq_dat <- lfqCreate(data,Lname = "length.mm.", Dname = "dates", aggregate_dates = TRUE,
 #'    length_unit = "mm", bin_size = 0.5, plot=TRUE)
 #'
 #' @return A list of "lfq" class with
@@ -38,10 +38,9 @@
 #'   sampling date (column).
 #'    }
 #'
-#'
 #' @export
 
-makeLFQ <- function(data, Lname, Dname, bin_size = 2,
+lfqCreate <- function(data, Lname, Dname, bin_size = 2,
                     length_unit = "cm", plus_group = FALSE,
                     aggregate_dates = FALSE,
                     plot = FALSE){
@@ -91,7 +90,7 @@ makeLFQ <- function(data, Lname, Dname, bin_size = 2,
 
   # plus group
   if(plus_group){
-    data.frame(midLengths = midLengths, frequency = rowSums(catch_mat))
+    print(data.frame(midLengths = midLengths, frequency = rowSums(catch_mat)))
     writeLines("Check the table above and insert the length of the plus group.")
     pg = -1
     while(pg > max(midLengths) | pg < min(midLengths)){
@@ -101,7 +100,7 @@ makeLFQ <- function(data, Lname, Dname, bin_size = 2,
         writeLines(paste0(pg, " is not an element of midLengths (see table)."))
         pg = -1
       }
-      pg <- ifelse(grepl("\\D",pg),-1,as.integer(pg))
+      #pg <- ifelse(grepl("\\D",pg),-1,as.integer(pg))
       if(is.na(pg)){break}  # breaks when hit enter
     }
     midLengths <- midLengths[1:which(midLengths == pg)]

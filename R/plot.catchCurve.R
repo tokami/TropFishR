@@ -83,7 +83,7 @@ plot.catchCurve <- function(x, plot_selec = FALSE, col='blue',
       ylims <- c(minyplot, maxyplot)
     }else ylims <- ylim
 
-    dev.off()
+    #dev.off()
 
     op <- par(mfrow=c(2,1), xpd = FALSE,
               mar = c(1.2, 4, 1, 1) + 0.1,
@@ -125,7 +125,7 @@ plot.catchCurve <- function(x, plot_selec = FALSE, col='blue',
       ylims <- c(minyplot, maxyplot)
     }else ylims <- ylim
 
-    dev.off()
+    #dev.off()
 
     par(mfrow = c(1,1), mar = c(7, 5, 4, 5) + 0.3)
     #final plot
