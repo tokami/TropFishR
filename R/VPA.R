@@ -25,6 +25,8 @@
 #' @param catch_corFac optional; correction factor for catch, in case provided
 #'   catch does spatially or temporarily not reflect catch for fishing ground of
 #'   a whole year.
+#' @param catch_columns numerical; indicating the column of the catch matrix which should be
+#'   used for the analysis.
 #' @param algorithm an Algorithm to use to solve for fishing mortality. The default
 #'   setting \code{"new"} uses \code{\link[stats]{optimise}},
 #'   while \code{"old"} uses the algorithm described by Sparre and Venema (1998).
@@ -114,10 +116,14 @@
 #' @export
 
 VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
+                catch_columns = NA,
                 algorithm = "new", plus_group = FALSE, plot = FALSE){
 
   res <- param
-  catch <- res$catch
+  if(is.na(catch_columns)){
+    catch <- res$catch
+  }else catch <- res$catch[,(catch_columns)]
+
 
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   #           AGE BASED VPA AND COHORT ANALYSIS              #
