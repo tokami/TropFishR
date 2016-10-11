@@ -355,6 +355,9 @@ catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
 
     if(is.na(cutter[1]) | is.nan(cutter[1]) |
        is.na(cutter[2]) | is.nan(cutter[2]) ) stop(noquote("You did not choose any points in the graph. Please re-run the function and choose points in the graph!"))
+
+    dev.off()
+
   }
   if(!is.null(reg_int)){
     cutter <- reg_int
