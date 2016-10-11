@@ -105,6 +105,9 @@ lfqModify <- function(lfq, par = NULL, plus_group = FALSE){
     res$t_anchor <- par$t_anchor
   }
 
+  if("Linf" %in% names(lfq)) res$Linf <- lfq$Linf
+  if("K" %in% names(lfq)) res$K <- lfq$K
+  if("t_anchor" %in% names(lfq)) res$t_anchor <- lfq$t_anchor
   if("M" %in% names(lfq)) res$M <- lfq$M
   if("Z" %in% names(lfq)) res$Z <- lfq$Z
   if("FM" %in% names(lfq)) res$FM <- lfq$FM
