@@ -85,7 +85,7 @@ plot.catchCurve <- function(x, plot_selec = FALSE, col='blue',
 
     #dev.off()
 
-    op <- par(mfrow=c(2,1), xpd = FALSE,
+    par(mfrow=c(2,1), xpd = FALSE,
               mar = c(1.2, 4, 1, 1) + 0.1,
               oma = c(6, 0.5, 1, 2) + 0.1)
     #final plot
@@ -112,11 +112,10 @@ plot.catchCurve <- function(x, plot_selec = FALSE, col='blue',
          ylab = "Probability of capture")
     points(y = 0.5, x=pes$t50,col='red',pch=16)
     segments(x0 = pes$t50, y0 = 0.5, x1 = pes$t50, y1 = 0, col='red',lty=2)
-    op1 <- par(xpd=TRUE)
+    par(xpd=TRUE)
     text(y=-0.05, x=pes$t50, labels = "t50", col = 'red')
     title(xlab = xlabel, outer = TRUE, line = 2)
-    par(op)
-    par(op1)
+
 
 
   }else {
