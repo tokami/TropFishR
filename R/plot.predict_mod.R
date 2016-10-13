@@ -182,12 +182,17 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
       N01 <- df_Es$F01
       N05 <- df_Es$F05
       Nmax <- df_Es$Fmsy
-      legend.lab <- c("F0.1","F0.5","Fmsy")
+      if(length(N05) == 1){
+        legend.lab <- c("F0.1","F0.5","Fmsy")
+      }else legend.lab <- c("F0.1","Fmsy")
+
     }else{
       N01 <- df_Es$E01
       N05 <- df_Es$E05
       Nmax <- df_Es$Emsy
-      legend.lab <- c("E0.1","E0.5","Emsy")
+      if(length(N05) == 1){
+        legend.lab <- c("E0.1","E0.5","Emsy")
+      }else legend.lab <- c("E0.1","Emsy")
     }
 
     #standard plot (ypr vs. E or FM)
@@ -241,14 +246,22 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
         # F or E max
         segments(x0 = -1, x1 = Nmax, y0 = py[which(px == Nmax)]*add_shift,
                  y1 = py[which(px == Nmax)]*add_shift,
-                 col= 'goldenrod1',lty = 3, lwd=1.5)
+                 col= 'goldenrod1',lty = 2, lwd=1.5)
         segments(x0 = Nmax*add_shift, x1 = Nmax*add_shift, y0 = -1, y1 = py[which(px == Nmax)],
-                 col= 'goldenrod1',lty = 3, lwd=1.5)
+                 col= 'goldenrod1',lty = 2, lwd=1.5)
         # Legend
-        legend("top", legend = legend.lab, xpd = TRUE, horiz = TRUE,
-               inset = c(0,0), bty = "n", lty = 2, col = c("darkgreen","red","goldenrod1"),
-               seg.len = 1,pt.cex = 2, x.intersp = c(0.7,0.7,0.7),merge=TRUE,
-               y.intersp = -2, box.lty=0,cex=0.8, lwd =2)
+        if(length(N05) == 1){
+          legend("top", legend = legend.lab, xpd = TRUE, horiz = TRUE,
+                 inset = c(0,0), bty = "n", lty = c(1,3,2), col = c("darkgreen","red","goldenrod1"),
+                 seg.len = 1,pt.cex = 2, x.intersp = c(0.7,0.7,0.7),merge=TRUE,
+                 y.intersp = -2, box.lty=0,cex=0.8, lwd =2)
+        }else{
+          legend("top", legend = legend.lab, xpd = TRUE, horiz = TRUE,
+                 inset = c(0,0), bty = "n", lty = c(1,2), col = c("darkgreen","goldenrod1"),
+                 seg.len = 1,pt.cex = 2, x.intersp = c(0.7,0.7,0.7),merge=TRUE,
+                 y.intersp = -2, box.lty=0,cex=0.8, lwd =2)
+        }
+
 
         # current Exploitation rate or fishing mortality
         if(!is.null(pes$currents)){
@@ -285,9 +298,9 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
         py2 <- p.dat[,which(names(p.dat) == p.B)]
         # F or E 0.5
         segments(x0 = -1, x1 = N05, y0 = py2[which(px == N05)], y1 = py2[which(px == N05)],
-                 col= 'red',lty = 2, lwd=1.5)
+                 col= 'red',lty = 3, lwd=1.5)
         segments(x0 = N05, x1 = N05, y0 = -1, y1 = py2[which(px == N05)],
-                 col= 'red',lty = 2, lwd=1.5)
+                 col= 'red',lty = 3, lwd=1.5)
       }
       #par(op)
     }
