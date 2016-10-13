@@ -206,7 +206,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
       p.dat <- list_tc_Lc_runs[[tc_Lc_start]]
       py <- p.dat[,which(names(p.dat) == p.yield)]
       px <- p.dat[,which(names(p.dat) == p.FE)]
-      offset_text <- py[length(py)] * 0.02
+      offset_text <- py[length(py)] * 0.05
       offset_x <- py[length(px)] * 0.1
       runs <- sapply(strsplit(names(list_tc_Lc_runs),split = "_"), "[[",2)
 
@@ -227,7 +227,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
         text(x = px[length(px)],
              y = (py[length(py)] +
                     offset_text),
-             labels = bquote(.(label)[.(names(list_tc_Lc_runs)[j])]))
+             labels = bquote(.(label)[.(runs[j])]))
       } # only works with plotting whole graph if values are not getting bigger right? because otherwise graphs is not insed plotting area
 
       # reference points
