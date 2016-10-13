@@ -86,7 +86,8 @@ VBGF <- function(param, t = NA, L = NA){
 
   if(is.na(L0)){
     # generalised seasonalised VBGF for length
-    if(is.na(Winf) & is.na(L[1])) res <- Linf * (1 - exp(-K * D * (t - t0) + (((C*K*D)/(2*pi)) * sin(2*pi*(t-ts))) - (((C*K*D)/(2*pi)) * sin(2*pi*(t0-ts))))) ^ (1/D)
+    if((is.na(Winf) & is.na(L[1])) |
+       (!is.na(Winf) & !is.na(Linf) & is.na(L[1]))) res <- Linf * (1 - exp(-K * D * (t - t0) + (((C*K*D)/(2*pi)) * sin(2*pi*(t-ts))) - (((C*K*D)/(2*pi)) * sin(2*pi*(t0-ts))))) ^ (1/D)
 
     # OLD:
     # res <- Linf * (1 - exp(-K * D * (t - t0) -
@@ -95,7 +96,8 @@ VBGF <- function(param, t = NA, L = NA){
     #                                          (sin(2*pi*(t0-ts))))))^ (1/D)
 
 
-    if(is.na(Winf) & is.na(t[1])){
+    if((is.na(Winf) & is.na(t[1])) |
+       (!is.na(Winf) & !is.na(Linf) & is.na(t[1]))){
       if(D == 1 & C == 0) res <- t0 - (log(1-L/Linf)/K)
       # lookup table for soVBGF
       if(D != 1 | C != 0){

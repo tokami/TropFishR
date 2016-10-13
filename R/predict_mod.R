@@ -280,7 +280,9 @@ predict_mod <- function(param, type, FM_change = NA,
     b <- res$b  # might be NULL
     Winf <- res$Winf  # might be NULL
     Linf <- res$Linf # might be NULL
-
+    if("Linf" %in% names(res) & "a" %in% names(res) & "b" %in% names(res)){
+      Winf <- a * (Linf ^ b)
+    }
     #Linf <- ifelse(!is.null(res$Linf),res$Linf, exp(log(Winf/a)/b))
     # REALLY ? maybe without Linf: then message that Winf has to exist
     #if(is.null(Linf) | is.na(Linf)) stop("Either Linf or Winf with a and b has to be provided!")

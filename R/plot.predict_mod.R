@@ -207,13 +207,14 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
       py <- p.dat[,which(names(p.dat) == p.yield)]
       px <- p.dat[,which(names(p.dat) == p.FE)]
       offset_text <- py[length(py)] * 0.02
+      offset_x <- py[length(px)] * 0.1
+      runs <- sapply(strsplit(names(list_tc_Lc_runs),split = "_"), "[[",2)
 
       plot(px, py, type = 'l', ylim =c(0,max(py, na.rm = TRUE)*1.2),
            ylab = ylabel1, xlab = xlabel1, lty=tc_Lc_start)  #,...
-      text(x = px[length(px)],
-           y = (py[length(py)] +
-                  offset_text),
-           labels = bquote(.(label)[.(names(list_tc_Lc_runs)[tc_Lc_start])]))
+      text(x = px[length(px)] - offset_x,
+           y = py[length(py)] + offset_text,
+           labels = bquote(.(label)[.(runs[tc_Lc_start])]))
       seq_tc_Lc <- 1:length(list_tc_Lc_runs)
       seq_tc_Lc <- seq_tc_Lc[-tc_Lc_start]
       for(j in seq_tc_Lc){
