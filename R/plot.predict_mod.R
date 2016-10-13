@@ -27,10 +27,11 @@
 #' # YPR
 #' # age structured data
 #' # Nemipterus marginatus
-#' # threadfin <- list(Winf = 286,K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4)
+#' threadfin <- list(Winf = 286,K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4)
 #'
-#' # predict_mod(threadfin, FM_change = seq(0,6,0.1),
-#' #    tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
+#' output <- predict_mod(threadfin, FM_change = seq(0,6,0.1),
+#'    tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
+#' plot(output)
 #'}
 #' @importFrom grDevices colorRampPalette dev.new rgb
 #' @importFrom graphics mtext par plot axis contour identify image legend lines locator points rect segments text
@@ -234,15 +235,15 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
         }else  add_shift <- 1
         segments(x0 = -1, x1 = N01, y0 = py[which(px == N01)],
                  y1 = py[which(px == N01)],
-                 col= 'darkgreen',lty = 2, lwd=1.5)
+                 col= 'darkgreen',lty = 1, lwd=1.5)
         segments(x0 = N01, x1 = N01, y0 = -1, y1 = py[which(px == N01)],
-                 col= 'darkgreen',lty = 2, lwd=1.5)
+                 col= 'darkgreen',lty = 1, lwd=1.5)
         # F or E max
         segments(x0 = -1, x1 = Nmax, y0 = py[which(px == Nmax)]*add_shift,
                  y1 = py[which(px == Nmax)]*add_shift,
-                 col= 'goldenrod1',lty = 2, lwd=1.5)
+                 col= 'goldenrod1',lty = 3, lwd=1.5)
         segments(x0 = Nmax*add_shift, x1 = Nmax*add_shift, y0 = -1, y1 = py[which(px == Nmax)],
-                 col= 'goldenrod1',lty = 2, lwd=1.5)
+                 col= 'goldenrod1',lty = 3, lwd=1.5)
         # Legend
         legend("top", legend = legend.lab, xpd = TRUE, horiz = TRUE,
                inset = c(0,0), bty = "n", lty = 2, col = c("darkgreen","red","goldenrod1"),
