@@ -42,6 +42,10 @@
 #' select_Millar(gillnet, x0 = NULL, rtype = "norm.sca")$value
 #' select_Millar(gillnet, x0 = NULL, rtype = "lognorm")$value
 #'
+#' # Two rtypes which require starting values
+#' select_Millar(gillnet, x0 = c(55,4,65,4,3), rtype="binorm.sca")
+#' select_Millar(gillnet, x0 = c(4,0.2,4.2,0.1,2), rtype="bilognorm")
+#'
 #' # Calculation with finer length resolution
 #' output <- select_Millar(gillnet, x0 = NULL, rtype = "lognorm")
 #' plot(output, plotlens=seq(40,90,0.1))
@@ -149,6 +153,8 @@ select_Millar <- function(param,
     if(rtype %in% c("lognorm")){
       x0 <- unname(gillnetfit.res$gear.pars[1:2,1])
     }
+  }else if(is.null(x0) & !(rtype %in% c("norm.loc", "norm.sca", "lognorm"))){
+    stop(paste0("You have to provide starting values for ",rtype))
   }
 
   res2 <- optim(x0, nllhood, classes = classes, CatchPerNet_mat = CatchPerNet_mat,
