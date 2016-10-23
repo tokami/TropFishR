@@ -1,18 +1,39 @@
-#' Millar's original gillnet selectivity fitting function
+#' @title Millar's original gillnet selectivity fitting function
 #'
-#' @param data a matrix
-#' @param meshsizes meshsizes
-#' @param type type of dist
-#' @param rel relative power
-#' @param plots include plots
-#' @param plotlens plot lengths
-#' @param details include details in output
+#' @description Function to estimate selectivity parameters from experimental data.
+#'    This function is applied within \code{\link{select_Millar}} to derive starting
+#'    parameters. \code{\link{select_Millar}} is the recommended function for
+#'    selectivity estimation.
+#'
+#' @param data matrix with the number of individuals caught with each sized mesh
+#'    (\code{CatchPerNet_mat}).
+#' @param meshsizes vector with meshSizes in increasing order (\code{meshSizes}),
+#' @param rtype A character string indicating which method for estimating selection curves
+#'    should be used:
+#'    \code{"norm.loc"} for a normal curve with common spread,
+#'    \code{"norm.sca"} for a normal curve with variable spread,
+#'    \code{"lognorm"} for a lognormal curve,
+#'    \code{"gamma"} for a gamma curve.
+#' @param rel.power A string indicating the relative power of different meshSizes,
+#'    must have same length as \code{meshSizes} (Default: \code{rel.power = NULL}).
+#' @param plotlens lengths which should be used for graphical output,
+#'    for more detailed curves. Default : NULL
+#' @param details logical; should details be included in the output?
 #'
 #' @source https://www.stat.auckland.ac.nz/~millar/selectware/
 #'
-#' @return list of fitted arameters
+#' @return list of fitted parameters
 #'
 #' @importFrom stats as.formula coef confint glm poisson resid
+#'
+#' @examples
+#' data(gillnet)
+#'
+#' dat <- matrix(c(gillnet$midLengths, gillnet$CatchPerNet_mat),
+#'          byrow = FALSE, ncol=(dim(gillnet$CatchPerNet_mat)[2]+1))
+#'
+#' gillnetfit(data = dat, meshsizes = gillnet$meshSizes)
+#'
 #'
 #' @references
 #' Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
@@ -22,11 +43,10 @@
 #' @export
 
 gillnetfit <- function(data, meshsizes,
-                       type="norm.loc",
-                       rel=NULL,
-                    plots=c(FALSE, FALSE),
-                    plotlens=NULL,
-                    details=FALSE){
+                       rtype="norm.loc",
+                       rel.power=NULL,
+                       plotlens=NULL,
+                       details=FALSE){
   # Adapted R code from Russell Millar (https://www.stat.auckland.ac.nz/~millar/selectware/)
 
 
@@ -42,11 +62,11 @@ gillnetfit <- function(data, meshsizes,
  var9=msizes/lens
 
  if(is.null(plotlens)) plotlens=data[,1]
- if(is.null(rel)) os=0
-  else os=rep(log(rel),rep(nrow(data),ncol(data[,-1])))
- switch(type,
+ if(is.null(rel.power)) os=0
+  else os=rep(log(rel.power),rep(nrow(data),ncol(data[,-1])))
+ switch(rtype,
   "norm.loc"={
-  if(missing(rel))
+  if(missing(rel.power))
    fit=glm(dat ~ -1 + var1 + var2 + as.factor(lens),family=poisson)
   else
    fit=glm(dat ~ -1 + var1 + var2 + as.factor(lens) + offset(os),family=poisson)
@@ -60,7 +80,7 @@ gillnetfit <- function(data, meshsizes,
   gear.pars=cbind(estimate=pars,s.e.=sqrt(diag(varpars)))
   rownames(gear.pars)=c("k","sigma","mode(mesh1)","std_dev(all meshes)") },
   "norm.sca"={
-  if(missing(rel))
+  if(missing(rel.power))
    fit=glm(dat ~ -1 + var3 + var4 + as.factor(lens),family=poisson)
   else
    fit=glm(dat ~ -1 + var3 + var4 + as.factor(lens) + offset(os),family=poisson)
@@ -75,7 +95,7 @@ gillnetfit <- function(data, meshsizes,
   gear.pars=cbind(estimate=pars,s.e.=sqrt(diag(varpars)))
   rownames(gear.pars)=c("k1","k2","mode(mesh1)","std_dev(mesh1)") },
   "gamma"={
-  if(missing(rel))
+  if(missing(rel.power))
    fit=glm(dat ~ -1 + var4 + var5 + as.factor(lens),family=poisson)
   else
    fit=glm(dat ~ -1 + var4 + var5 + as.factor(lens) + offset(os),family=poisson)
@@ -90,7 +110,7 @@ gillnetfit <- function(data, meshsizes,
   gear.pars=cbind(estimate=pars,s.e.=sqrt(diag(varpars)))
   rownames(gear.pars)=c("alpha","k","mode(mesh1)","std_dev(mesh1)")  },
   "lognorm"={
-  if(missing(rel))
+  if(missing(rel.power))
    fit=glm(dat ~ -1 + var6 + var7 + as.factor(lens),family=poisson)
   else
    fit=glm(dat ~ -1 + var6 + var7 + as.factor(lens) + offset(os),family=poisson)
@@ -104,15 +124,15 @@ gillnetfit <- function(data, meshsizes,
   gear.pars=cbind(estimate=pars,s.e.=sqrt(diag(varpars)))
   rownames(gear.pars)=c("mu1(mode log-scale, mesh1)","sigma(std_dev log scale)",
                 "mode(mesh1)","std_dev(mesh1)")  },
- stop(paste("\n",type, "not recognised, possible curve types are ",
+ stop(paste("\n",rtype, "not recognised, possible curve types are ",
         "\"norm.loc\", \"norm.sca\", \"gamma\", and \"lognorm\"")))
- rselect=rcurves_Millar(type,meshsizes,rel,pars,plotlens)
+ rselect=rcurves_Millar(rtype,meshsizes,rel.power,pars,plotlens)
  devres=matrix(resid(fit,type="deviance"),nrow(data),ncol(data[,-1]))
  # if(plots[1]) plot.curves(type,plotlens,rselect)
  # if(plots[2]) plot.resids(devres,meshsizes,data[,1])
  g.o.f=c(deviance(fit),sum(resid(fit,type="pearson")^2),fit$df.res,fit$null)
  names(g.o.f)=c("model_dev","Pearson chi-sq","dof","null_dev")
- fit.type=paste(paste(type,ifelse(is.null(rel),"",": with unequal mesh efficiencies")))
+ fit.type=paste(paste(rtype,ifelse(is.null(rel.power),"",": with unequal mesh efficiencies")))
  if(details==FALSE)
   return(list(fit.type=fit.type,gear.pars=gear.pars,fit.stats=g.o.f))
  else

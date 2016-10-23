@@ -7,29 +7,48 @@
 https://www.stat.auckland.ac.nz/~millar/selectware/
 }
 \usage{
-gillnetfit(data, meshsizes, type = "norm.loc", rel = NULL,
-  plots = c(FALSE, FALSE), plotlens = NULL, details = FALSE)
+gillnetfit(data, meshsizes, rtype = "norm.loc", rel.power = NULL,
+  plotlens = NULL, details = FALSE)
 }
 \arguments{
-\item{data}{a matrix}
+\item{data}{matrix with the number of individuals caught with each sized mesh
+(\code{CatchPerNet_mat}).}
 
-\item{meshsizes}{meshsizes}
+\item{meshsizes}{vector with meshSizes in increasing order (\code{meshSizes}),}
 
-\item{type}{type of dist}
+\item{rtype}{A character string indicating which method for estimating selection curves
+should be used:
+\code{"norm.loc"} for a normal curve with common spread,
+\code{"norm.sca"} for a normal curve with variable spread,
+\code{"lognorm"} for a lognormal curve,
+\code{"gamma"} for a gamma curve.}
 
-\item{rel}{relative power}
+\item{rel.power}{A string indicating the relative power of different meshSizes,
+must have same length as \code{meshSizes} (Default: \code{rel.power = NULL}).}
 
-\item{plots}{include plots}
+\item{plotlens}{lengths which should be used for graphical output,
+for more detailed curves. Default : NULL}
 
-\item{plotlens}{plot lengths}
-
-\item{details}{include details in output}
+\item{details}{logical; should details be included in the output?}
 }
 \value{
-list of fitted arameters
+list of fitted parameters
 }
 \description{
-Millar's original gillnet selectivity fitting function
+Function to estimate selectivity parameters from experimental data.
+   This function is applied within \code{\link{select_Millar}} to derive starting
+   parameters. \code{\link{select_Millar}} is the recommended function for
+   selectivity estimation.
+}
+\examples{
+data(gillnet)
+
+dat <- matrix(c(gillnet$midLengths, gillnet$CatchPerNet_mat),
+         byrow = FALSE, ncol=(dim(gillnet$CatchPerNet_mat)[2]+1))
+
+gillnetfit(data = dat, meshsizes = gillnet$meshSizes)
+
+
 }
 \references{
 Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
