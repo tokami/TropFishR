@@ -75,7 +75,7 @@ plot.catchCurve <- function(x, plot_selec = FALSE, col='blue',
   }else xlims <- xlim
 
 
-  if(plot_selec & any(names(pes) != "Sest")) writeLines("Please run the catchCurve with calc_ogive == TRUE \nin order to show selectivity plot!")
+  #if(plot_selec & any(names(pes) != "Sest")) writeLines("Please run the catchCurve with calc_ogive == TRUE \nin order to show selectivity plot!")
   if(plot_selec & any(names(pes) == "Sest")){
     maxyplot <- ceiling(pes$intercept)
 
