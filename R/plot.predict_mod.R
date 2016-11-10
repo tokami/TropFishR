@@ -24,14 +24,23 @@
 #'
 #' @examples
 #' \dontrun{
-#' # YPR
-#' # age structured data
-#' # Nemipterus marginatus
+#' # Nemipterus marginatus - age structured data
 #' threadfin <- list(Winf = 286,K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4)
 #'
 #' output <- predict_mod(threadfin, FM_change = seq(0,6,0.1),
 #'    tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
 #' plot(output)
+#'
+#' hake - length structured data
+#' data(hake)
+#' hake$Lr <- 35
+#' select.list <- list(selecType = 'trawl_ogive', L50 = 20, L75 = 24)
+#' output <- predict_mod(param = hake, E_change = seq(0,1,0.05), curr.E = 0.4, curr.Lc = 40,
+#'                       Lc_change = seq(5,80,1), #s_list = select.list,
+#'                       type = 'ypr', plot = FALSE)
+#' plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "Y_R.rel",
+#'    identify = FALSE)
+#'
 #'}
 #' @importFrom grDevices colorRampPalette dev.new rgb
 #' @importFrom graphics mtext par plot axis contour identify image legend lines locator points rect segments text
@@ -44,33 +53,38 @@
 
 plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
                              yaxis1 = "Y_R.rel", yaxis2 = "B_R.rel",
-                             identify = FALSE, mark = TRUE,...){
+                             identify = FALSE, mark = FALSE, ...){
   pes <- x
 
   # function for identifying Lc and yield/biomass values in plot
-  image.identifier <- function(xyz, mark=mark, digits=3){
+  image.identifier <- function(xyz, markII=TRUE, digits=2){
     intiX <- (xyz$x[2]-xyz$x[1])/2
     intiY <- (xyz$y[2]-xyz$y[1])/2
     newX <- c(xyz$x - intiX,xyz$x[length(xyz$x)]+intiX)
     newY <- c(xyz$y - intiY,xyz$y[length(xyz$y)]+intiY)
     nx <- length(xyz$x)
     ny <- length(xyz$y)
-    res <- data.frame()
+    mesi <- data.frame()
     xy <- locator(1)
     while(!is.null(xy)){
       xbin <- as.numeric(cut(xy$x,newX))
       ybin <- as.numeric(cut(xy$y,newY))
-      if(mark){
-        points(xy$x,xy$y,pch=19,cex=.5,col="blue")
-        text(xy$x,xy$y,format(xyz$z[xbin,ybin],digits=digits),adj=-.2,col="blue")
-      }
       cat("[",xbin,",",ybin,"] = ",xyz$z[xbin,ybin],"\n",sep='')
       lcc <- xy$y * pes$Linf
-      res <- rbind(res,data.frame(i=xbin,j=ybin,x=xy$x,y=xy$y,z=xyz$z[xbin,ybin],Lc=lcc))
+      mesi <- rbind(mesi,data.frame(i=xbin,j=ybin,x=xy$x,y=xy$y,z=xyz$z[xbin,ybin],Lc=lcc))
+      rm(xy)
       xy <- locator(1)
     }
-    colnames(res) <- c("i","j",p.FE,"Lc/Linf",p.yield,"Lc")
-    res
+    if(markII){
+      points(mesi$x,mesi$y,pch=19,cex=.5,col="blue")
+      text(mesi$x,mesi$y,format(mesi$z,digits=digits),adj=-.2,col="blue")
+    }
+    colnames(mesi) <- c("i","j",p.FE,"Lc/Linf",p.yield,"Lc")
+    # if(mark){
+    #   points(xy$x,xy$y,pch=19,cex=.5,col="blue")
+    #   text(xy$x,xy$y,format(xyz$z[xbin,ybin],digits=digits),adj=-.2,col="blue")
+    # }
+    mesi
   }
 
   #THOMPBELL
@@ -185,7 +199,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
       if(length(N05) == 1){
         legend.lab <- c("F0.1","F0.5","Fmsy")
       }else legend.lab <- c("F0.1","Fmsy")
-
+      if("currents" %in% names(pes)) curr_markX <- pes$currents$curr.F
     }else{
       N01 <- df_Es$E01
       N05 <- df_Es$E05
@@ -193,6 +207,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
       if(length(N05) == 1){
         legend.lab <- c("E0.1","E0.5","Emsy")
       }else legend.lab <- c("E0.1","Emsy")
+      if("currents" %in% names(pes)) curr_markX <- pes$currents$curr.E
     }
 
     #standard plot (ypr vs. E or FM)
@@ -227,7 +242,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
         text(x = px[length(px)],
              y = (py[length(py)] +
                     offset_text),
-             labels = bquote(.(label)[.(runs[j])]))
+             labels = bquote(.(label)[.(round(as.numeric(as.character(runs[j])),2))]))
       } # only works with plotting whole graph if values are not getting bigger right? because otherwise graphs is not insed plotting area
 
       # reference points
@@ -343,12 +358,12 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
               xlab = xlabel1, ylab = 'Lc / Linf')
         contour(m, add=TRUE)
         #mtext("Yield", line=0.5, side=3)
+        if("currents" %in% names(pes) & mark){
+          abline(v=curr_markX, col="grey30",lty=2)
+          abline(h=pes$currents$curr.Lc/pes$Linf, col="grey30",lty=2)
+        }
         if(identify == TRUE) image.identifier(m)
       }
     }
   }
 }
-
-
-
-

@@ -37,7 +37,7 @@
 #' @param age_unit in which time unit the data is provided? "month" or "year"
 #' @param plus_group if a value is provided, a plus group is created comprising this
 #'    size class and all above
-#' @param curr.Lc_tc current Lc (length at first capture) if available
+#' @param curr.Lc current Lc (length at first capture) if available
 #' @param curr.E current exploitation rate if available
 #' @param Lmin smallest length group where to start with selection ogive. Not required
 #'    for "knife_edge" selection type
@@ -267,7 +267,7 @@ predict_mod <- function(param, type, FM_change = NA,
                         tc_change = NULL,
                         s_list = NA,
                         stock_size_1 = NA, age_unit = 'year', curr.E = NA,
-                        curr.Lc_tc = NA,
+                        curr.Lc = NA,
                         plus_group = NA, Lmin = NA, Lincr = NA, plot = FALSE, hide.progressbar = FALSE){
   res <- param
 
@@ -498,7 +498,8 @@ predict_mod <- function(param, type, FM_change = NA,
                       df_Es = df_Es))   #   df_Es = df_Es,
 
 
-    if(!is.na(curr.E) & !is.na(curr.Lc_tc)){
+    if(!is.na(curr.E) & !is.na(curr.Lc)){
+      curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf,K=K,t0=t0))
       # current exploitation rate
       curr.F = (M * curr.E)/(1-curr.E)  # curr.F <- (M * curr.E)/(1-curr.E)
       tmpList <- list(Linf=Linf,
@@ -507,9 +508,18 @@ predict_mod <- function(param, type, FM_change = NA,
                       M = M,
                       t0 = t0,
                       tr = tr,
-                      tc = curr.Lc_tc)
-      tmpRES <- ypr(param = tmpList, FM_change = curr.F)
-      df_currents <- data.frame(curr.E = curr.E,
+                      tc = curr.tc)
+      if(length(s_list) == 1 | selecType == "knife_edge"){
+        tmpRES <- ypr(param = tmpList, FM_change = curr.F)
+      }
+      if(length(s_list) > 1 & selecType != "knife_edge"){
+        P <- select_ogive(s_list, Lt =  Lt, Lc = curr.Lc)
+        tmpRES <- ypr_sel(param = tmpList, FM_change = curr.F, Lt, P = P)
+      }
+
+      df_currents <- data.frame(curr.Lc = curr.Lc,
+                                curr.tc = curr.tc,
+                                curr.E = curr.E,
                                 curr.F = curr.F,
                                 curr.YPR = tmpRES$yr,        #ypr(curr.F, curr.Lc_tc)       #, type = "length"),           # curr.YPR = ypr(curr.F, curr.Lc_tc, type = "age"),
                                 curr.YPR.rel = tmpRES$ryr,     #ypr.rel(curr.F, curr.Lc_tc),   #, type = "length"),   # curr.YPR.rel = ypr.rel(curr.F, curr.Lc_tc, type = "age"),
