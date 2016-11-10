@@ -82,7 +82,7 @@
 #' hake$Lr <- 35
 #' select.list <- list(selecType = 'trawl_ogive', L50 = 20, L75 = 24)
 #' output <- predict_mod(param = hake, E_change = seq(0,1,0.05),
-#'                       Lc_change = seq(5,80,1), s_list = select.list,
+#'                       Lc_change = seq(5,80,1), #s_list = select.list,
 #'                       type = 'ypr', plot = FALSE)
 #' plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "Y_R.rel", identify = FALSE)
 #'

@@ -277,11 +277,17 @@ ELEFAN_GA <- function(
   # notify completion
   beepr::beep(10); beepr::beep(1)
 
+  final_res <- lfqFitCurves(lfq = lfq, par=pars,
+                            flagging.out = flagging.out,
+                            agemax = agemax)
+
   # Results
-  ret <- c(lfq, list(agemax = agemax,
+  ret <- c(lfq, list(ncohort = final_res$ncohort,
+                     agemax = final_res$agemax,
                      par = pars,
                      #fitnessValue = fit@fitnessValue,
                      Rn_max = fit@fitnessValue))
+
   class(ret) <- "lfq"
   if(plot){
     plot(ret, Fname = "rcounts")

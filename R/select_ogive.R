@@ -100,7 +100,7 @@ select_ogive <- function(s_list, Lt, Lc = NA){
              L75old <- s_list$L75
              L50 <- Lc
              # new L75 based on relation of L50 values
-             L75 <- L75old * (L50/L50old)
+              L75 <- L75old * (L50/L50old)
            }
 
            sel <- 1 / (1 + exp(- (Lt - L50)/
