@@ -1,7 +1,7 @@
 #' @title Empirical formulas for the estimation of natural mortality
 #
 #' @description Functions to calculate the instantaneous natural mortality rate (M)
-#'      according to 10 different empirical formulas.
+#'      according to 12 different empirical formulas.
 #'
 #' @param Linf infinite total length (TL) from a von Bertalanffy
 #'    growth curve in cm.
@@ -50,7 +50,9 @@
 #'    \item \code{"Pauly_Winf"} requires \code{Winf}, \code{K_w} and \code{temp},
 #'    \item \code{"PetersonWroblewski"} requires \code{Wdry},
 #'    \item \code{"RikhterEfanov"} requires \code{tm50},
-#'    \item \code{"Roff"} requires \code{K_l} and \code{tm50}.
+#'    \item \code{"Roff"} requires \code{K_l} and \code{tm50},
+#'    \item \code{"Then_tmax"} requires \code{tmax},
+#'    \item \code{"Then_growth"} requires \code{Linf} and \code{K_l}.
 #' }
 #' If accounting for schooling behaviour M is multiplied by 0.8 according to
 #'    Pauly (1983).
@@ -93,6 +95,10 @@
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 #' Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.
 #'
+#' Then, A. Y., J. M. Hoenig, N. G. Hall, D. A. Hewitt. 2015. Evaluating the predictive 
+#' performance of empirical estimators of natural mortality rate using information on over 
+#' 200 fish species. ICES J. Mar. Sci. 72: 82-92.
+#'
 #' @export
 
 M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
@@ -120,6 +126,10 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
     stop("RikhterEfanov requires K_l and tm50")
   if (any(method == "Roff") & any(is.null(tm50), is.null(K_l)))
     stop("Roff requires K_l and tm50")
+  if (any(method == "Then_tmax") & any(is.null(tmax)))
+    stop("Then_max requires tmax")
+  if (any(method == "Then_growth") & any(is.null(Linf), is.null(K_l)))
+    stop("Then_growth requires Linf and K_l")
 
   n <- length(method)
   if (any(method == "Hoenig"))
@@ -196,12 +206,23 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
     M_mat[ind, 1]  <- round((3 * K_l)/(exp(K_l * tm50) - 1), 3)
     dimnames(M_mat)[[1]][ind] <- list("Roff (1984)")
   }
+  if (any(method == "Then_tmax")) {
+    ind <- ind + 1
+    M_mat[ind, 1]  <- round(4.899 * tmax^-0.916, 3)
+    dimnames(M_mat)[[1]][ind] <- list("Then (2015) - tmax")
+  }
+  if (any(method == "Then_growth")) {
+    ind <- ind + 1
+    M_mat[ind, 1]  <- round(4.118 * (K_l^0.73) * (Linf^-0.33), 3)
+    dimnames(M_mat)[[1]][ind] <- list("Then (2015) - growth")
+  }
   if (any(method == "Gislason")) {
     Ml <- round(exp(0.55 - 1.61 * log(Bl) + 1.44 * 
                                  log(Linf) + log(K_l)), 3)
     M_mat <- as.data.frame(matrix(c(Bl,Ml),byrow = FALSE,ncol=2))
     colnames(M_mat) <- c("Bl","Ml")
   }
+  
 
   return(M_mat)
 }

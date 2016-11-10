@@ -1,12 +1,12 @@
 Package: TropFishR
 Type: Package
 Title: Tropical Fisheries Analysis with R
-Version: 1.0.0
-Date: 2016-09-01
+Version: 1.0.1
+Date: 2016-11-08
 Author: Tobias K. Mildenberger, Marc H. Taylor, Matthias Wolff
 Maintainer: Tobias K. Mildenberger <t.k.mildenberger@gmail.com>
 Depends: R (>= 3.0.0), Rcpp (>= 0.10.1)
-Imports: msm, reshape2, MASS, GenSA, GA, beepr, propagate, 
+Imports: msm, reshape2, MASS, GenSA, GA, beepr, propagate,
 	parallel, doParallel, Rcpp
 LazyData: TRUE
 Description: Fish stock assessment methods and fisheries models based on the FAO

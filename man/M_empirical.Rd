@@ -53,7 +53,7 @@ A matrix of M estimates.
 }
 \description{
 Functions to calculate the instantaneous natural mortality rate (M)
-     according to 10 different empirical formulas.
+     according to 12 different empirical formulas.
 }
 \details{
 Function adapted from the mortality function of the fishmethods package
@@ -71,7 +71,9 @@ Depending on the method different input parameters are required:
    \item \code{"Pauly_Winf"} requires \code{Winf}, \code{K_w} and \code{temp},
    \item \code{"PetersonWroblewski"} requires \code{Wdry},
    \item \code{"RikhterEfanov"} requires \code{tm50},
-   \item \code{"Roff"} requires \code{K_l} and \code{tm50}.
+   \item \code{"Roff"} requires \code{K_l} and \code{tm50},
+   \item \code{"Then_tmax"} requires \code{tmax},
+   \item \code{"Then_growth"} requires \code{Linf} and \code{K_l}.
 }
 If accounting for schooling behaviour M is multiplied by 0.8 according to
    Pauly (1983).
@@ -116,6 +118,10 @@ Can. J. Fish. Aquat. Sci. 41: 989-1000.
 
 Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.
+
+Then, A. Y., J. M. Hoenig, N. G. Hall, D. A. Hewitt. 2015. Evaluating the predictive 
+performance of empirical estimators of natural mortality rate using information on over 
+200 fish species. ICES J. Mar. Sci. 72: 82-92.
 }
 \keyword{M}
 \keyword{function}
