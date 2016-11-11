@@ -32,6 +32,7 @@
 #'    are displayed rather than the score as text in each field of the score plot. Usage
 #'    can be logical (e.g. TRUE) or by providing a numeric which indicates the
 #'    number of levels (\code{nlevels} in \code{\link{contour}}). By default FALSE.
+#' @param plot_title logical; indicating whether title to score plots should be displayed
 #'
 #' @examples
 #' \donttest{
@@ -143,7 +144,8 @@ ELEFAN <- function(x, Linf_fix = NA, Linf_range = NA,
                    MA = 5, addl.sqrt = FALSE,
                    agemax = NULL, flagging.out = TRUE,
                    hide.progressbar = FALSE,
-                   plot = FALSE, contour = FALSE){
+                   plot = FALSE, contour = FALSE,
+                   plot_title = TRUE){
 
   res <- x
   classes <- res$midLengths
@@ -223,11 +225,13 @@ ELEFAN <- function(x, Linf_fix = NA, Linf_range = NA,
 
   # Graphs
   if(is.na(Linf_fix)){
+    if(plot_title) main <- 'Response surface analysis'
+
     plot_dat <- reshape2::melt(score_mat)
     image(x = Linfs,
           y = Ks,
           z = t(score_mat), col=colorRampPalette(c("yellow","red"), space="Lab")(5),
-          main = 'Response surface analysis', ylab = 'K', xlab='Linf')
+          main = main, ylab = 'K', xlab='Linf')
     #grid (NULL,NULL, lty = 6, col = "cornsilk2")
     if(contour){
       contour(x = Linfs, y = Ks, z = t(score_mat), add = TRUE)
@@ -255,7 +259,7 @@ ELEFAN <- function(x, Linf_fix = NA, Linf_range = NA,
     mtext(text = expression(paste("Growth performance index (",phi,"')")),side = 1,line = 8.5)
     grid(nx = 0, NULL, lty = 6, col = "gray40")
     abline(v = K_ats, lty = 6, col = "gray40")
-    title("K-Scan", line = 2)
+    if(plot_title) title("K-Scan", line = 2)
     par(op)
   }
 

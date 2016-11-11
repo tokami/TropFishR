@@ -113,7 +113,7 @@ plot.catchCurve <- function(x, plot_selec = FALSE, col='blue',
     points(y = 0.5, x=pes$t50,col='red',pch=16)
     segments(x0 = pes$t50, y0 = 0.5, x1 = pes$t50, y1 = 0, col='red',lty=2)
     par(xpd=TRUE)
-    text(y=-0.05, x=pes$t50, labels = "t50", col = 'red')
+    text(y=-0.08, x=pes$t50, labels = "t50", col = 'red')
     title(xlab = xlabel, outer = TRUE, line = 2)
 
 
