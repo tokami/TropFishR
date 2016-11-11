@@ -140,6 +140,8 @@
 #'    over a wide range of fishing mortalities or exploitation values,
 #'    respectively, is also said to be untrue. By default, the functions assume
 #'    knife-edge recruitment and selection of gears (Sparre and Venema, 1998).
+#'    If E_change instead of FM_change is used the range is cut at E=0.9, because
+#'    higher values of E correspond to unrealistic high values of fishing mortality.
 #'
 #'
 #' @return A list with the input parameters and dependent on the model type following
@@ -364,7 +366,7 @@ predict_mod <- function(param, type, FM_change = NA,
       E <- FM_change/Z
 
       # KNIFE EDGE
-      if(length(s_list) == 1 | selecType == "knife_edge"){
+      if(length(s_list) == 1 ){#| selecType == "knife_edge"){
         input <- list(Linf=Linf,
                       Winf = Winf,
                       K = K,
@@ -381,7 +383,7 @@ predict_mod <- function(param, type, FM_change = NA,
       }
 
       # SELECTION OGIVE
-      if(length(s_list) > 1 & selecType != "knife_edge"){
+      if(length(s_list) > 1 ){#& selecType != "knife_edge"){
         if("midLengths" %in% names(res)){
           classes <- as.character(res$midLengths)
           # create column without plus group (sign) if present

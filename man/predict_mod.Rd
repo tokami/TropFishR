@@ -154,6 +154,8 @@ The Thompson and Bell model incorporates an iteration step simulating the
    over a wide range of fishing mortalities or exploitation values,
    respectively, is also said to be untrue. By default, the functions assume
    knife-edge recruitment and selection of gears (Sparre and Venema, 1998).
+   If E_change instead of FM_change is used the range is cut at E=0.9, because
+   higher values of E correspond to unrealistic high values of fishing mortality.
 }
 \examples{
 #______________________________________

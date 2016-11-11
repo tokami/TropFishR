@@ -365,7 +365,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
         colnames(mat_FM_Lc_com.Y) <- round(Lc_change/pes$Linf,digits = 2)
 
         m <- list(x = px,
-                  y = Lc_change/pes$Linf,
+                  y = Lc_change,
                   z = mat_FM_Lc_com.Y)
 
         if("currents" %in% names(pes)) curr_markY <- pes$currents$curr.Lc
@@ -385,7 +385,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
           dev.new(noRStudioGD = TRUE)
         }
         image(m, col=pal(100),
-              xlab = xlabel1, ylab = 'Lc / Linf')
+              xlab = xlabel1, ylab = ylabel_iso)
         contour(m, add=TRUE)
         #mtext("Yield", line=0.5, side=3)
         if("currents" %in% names(pes) & mark){
