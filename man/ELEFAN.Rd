@@ -7,7 +7,7 @@
 ELEFAN(x, Linf_fix = NA, Linf_range = NA, K_range = exp(seq(log(0.1),
   log(10), length.out = 100)), C = 0, ts = 0, MA = 5, addl.sqrt = FALSE,
   agemax = NULL, flagging.out = TRUE, hide.progressbar = FALSE,
-  plot = FALSE, contour = FALSE)
+  plot = FALSE, contour = FALSE, plot_title = TRUE)
 }
 \arguments{
 \item{x}{a list consisting of following parameters:
@@ -52,6 +52,8 @@ be displayed}
 are displayed rather than the score as text in each field of the score plot. Usage
 can be logical (e.g. TRUE) or by providing a numeric which indicates the
 number of levels (\code{nlevels} in \code{\link{contour}}). By default FALSE.}
+
+\item{plot_title}{logical; indicating whether title to score plots should be displayed}
 }
 \value{
 A list with the input parameters and following list objects:

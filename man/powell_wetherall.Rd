@@ -5,7 +5,7 @@
 \title{Powell-Wetherall method}
 \usage{
 powell_wetherall(param, catch_columns = NA, savePlots = FALSE,
-  reg_int = NULL)
+  reg_int = NULL, main = "Powell-Wetherall plot")
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -25,6 +25,8 @@ indicating which column of the matrix should be analysed (Default: \code{NA}).}
 \item{reg_int}{instead of using the identity method a range can be determined,
 which is to be used for the regression analysis. If equal to NULL identity method
 is applied (default).}
+
+\item{main}{title of plot (Default is "Powell-Wetherall plot")}
 }
 \value{
 A list with the input parameters and follwing objects:
