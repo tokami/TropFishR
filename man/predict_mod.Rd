@@ -6,8 +6,8 @@
 \usage{
 predict_mod(param, type, FM_change = NA, E_change = NA, Lc_change = NULL,
   tc_change = NULL, s_list = NA, stock_size_1 = NA, age_unit = "year",
-  curr.E = NA, curr.Lc_tc = NA, plus_group = NA, Lmin = NA,
-  Lincr = NA, plot = FALSE, hide.progressbar = FALSE)
+  curr.E = NA, curr.Lc = NA, plus_group = NA, Lmin = NA, Lincr = NA,
+  plot = FALSE, hide.progressbar = FALSE)
 }
 \arguments{
 \item{param}{a list consisting of following parameters (not all are required):
@@ -51,7 +51,7 @@ relative to a stock size of 1000 individuals}
 
 \item{curr.E}{current exploitation rate if available}
 
-\item{curr.Lc_tc}{current Lc (length at first capture) if available}
+\item{curr.Lc}{current Lc (length at first capture) if available}
 
 \item{plus_group}{if a value is provided, a plus group is created comprising this
 size class and all above}
@@ -188,7 +188,7 @@ data(hake)
 hake$Lr <- 35
 select.list <- list(selecType = 'trawl_ogive', L50 = 20, L75 = 24)
 output <- predict_mod(param = hake, E_change = seq(0,1,0.05),
-                      Lc_change = seq(5,80,1), s_list = select.list,
+                      Lc_change = seq(5,80,1), #s_list = select.list,
                       type = 'ypr', plot = FALSE)
 plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "Y_R.rel", identify = FALSE)
 

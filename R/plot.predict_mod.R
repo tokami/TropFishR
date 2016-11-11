@@ -16,6 +16,9 @@
 #' @param yaxis2 which second y-axis should be plotted for type = "ypr"? Either "B_R" (biomass
 #'    per recruit; default), "B_R.rel" (relative biomass per recruit), or "B_R.percent"
 #'    (percentage biomass per recruit)
+#' @param yaxis_iso determines label and scale of y axis of Isopleth graph. Either "Lc"
+#'    (default) for length at first capture or "Lc/Linf" for the relation of length
+#'    at first capture to the infinite length
 #' @param identify logical; indicating whether points in the graph are supposed to be identified by
 #'    clicking on them (uses \code{\link{locator}} function). To stop press right mouse click.
 #'    (default: TRUE).
@@ -35,8 +38,9 @@
 #' data(hake)
 #' hake$Lr <- 35
 #' select.list <- list(selecType = 'trawl_ogive', L50 = 20, L75 = 24)
-#' output <- predict_mod(param = hake, E_change = seq(0,1,0.05), curr.E = 0.4, curr.Lc = 40,
-#'                       Lc_change = seq(5,80,1), #s_list = select.list,
+#' output <- predict_mod(param = hake, E_change = seq(0,1,0.05),
+#'                       curr.E = 0.4, curr.Lc = 40,
+#'                       Lc_change = seq(5,80,1), s_list = select.list,
 #'                       type = 'ypr', plot = FALSE)
 #' plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "Y_R.rel",
 #'    identify = FALSE)
@@ -53,6 +57,7 @@
 
 plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
                              yaxis1 = "Y_R.rel", yaxis2 = "B_R.rel",
+                             yaxis_iso = "Lc",
                              identify = FALSE, mark = FALSE, ...){
   pes <- x
 
@@ -132,14 +137,17 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     p.FE <- xaxis1
     p.B <- yaxis2
     xlabel1 <- ifelse(xaxis1 == "FM", "Fishing mortality", "Exploitation rate")
-    ylabel1 <- ifelse(yaxis1 == "Y_R", "Y/R", "rel. Y/R")
+    #ylabel1 <- ifelse(yaxis1 == "Y_R", "Y/R", "rel. Y/R")
+    ylabel_iso <- ifelse(yaxis_iso == "Lc", "Lc", "Lc / Linf")
 
     Lc_change <- pes$Lc_change
     FM_change <- pes$FM_change
     if(p.FE == "FM"){
       px <- FM_change
+      if("currents" %in% names(pes)) curr_markX <- pes$currents$curr.F
     }else{
       px <- FM_change/(FM_change + pes$M)
+      if("currents" %in% names(pes)) curr_markX <- pes$currents$curr.E
     }
 
     if(p.yield == "Y_R.rel" | p.yield == "Y_R"){
@@ -160,16 +168,30 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
               y = Lc_change,
               z = pz)
 
+    if("currents" %in% names(pes)) curr_markY <- pes$currents$curr.Lc
+
+    if(yaxis_iso != "Lc" & "Linf" %in% names(pes)){
+      m$y <- Lc_change/pes$Linf
+      if("currents" %in% names(pes)) curr_markY <- pes$currents$curr.Lc/pes$Linf
+    }
+
     #plot
     if(identify == TRUE){
       dev.new(noRStudioGD = TRUE)
     }
     image(m, col=pal(100),
-          xlab = xlabel1, ylab = 'Lc')
+          xlab = xlabel1, ylab = ylabel_iso)
     contour(m, add=TRUE)
+
+    if("currents" %in% names(pes) & mark){
+      abline(v=curr_markX, col="grey30",lty=2)
+      abline(h=curr_markY, col="grey30",lty=2)
+    }
     #mtext("Yield", line=0.5, side=3)
     if(identify == TRUE) image.identifier(m)
   }
+
+
 
   # YPR
   if("list_Lc_runs" %in% names(pes) |
@@ -189,6 +211,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     xlabel1 <- ifelse(xaxis1 == "FM", "Fishing mortality", "Exploitation rate")
     ylabel1 <- ifelse(yaxis1 == "Y_R", "Y/R", "rel. Y/R")
     ylabel2 <- ifelse(yaxis2 == "B_R", "B/R", "B/R [%]")
+    ylabel_iso <- ifelse(yaxis_iso == "Lc", "Lc", "Lc / Linf")
 
 
     df_Es <- pes$df_Es
@@ -344,6 +367,13 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
         m <- list(x = px,
                   y = Lc_change/pes$Linf,
                   z = mat_FM_Lc_com.Y)
+
+        if("currents" %in% names(pes)) curr_markY <- pes$currents$curr.Lc
+
+        if(yaxis_iso != "Lc" & "Linf" %in% names(pes)){
+          m$y <- Lc_change/pes$Linf
+          if("currents" %in% names(pes)) curr_markY <- pes$currents$curr.Lc/pes$Linf
+        }
 
         # colours for plot
         pal <- colorRampPalette(rev(c(

@@ -207,7 +207,7 @@ ypr_sel <- function(param, FM_change, Lt, P){
     des[FMi] <- sum(dev.tot, na.rm=TRUE)
 
     # total biomass
-    srbr[FMi] <- B_R.rel.tot[length(B_R.rel.tot)]
+    srbr[FMi] <- B_R.rel.tot[!is.na(B_R.rel.tot)][length(B_R.rel.tot[!is.na(B_R.rel.tot)])]
 
   }
 

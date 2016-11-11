@@ -5,8 +5,8 @@
 \title{Plotting prediction models yield per recruit and Thompson & Bell}
 \usage{
 \method{plot}{predict_mod}(x, type = "ypr", xaxis1 = "FM",
-  yaxis1 = "Y_R.rel", yaxis2 = "B_R.rel", identify = FALSE, mark = TRUE,
-  ...)
+  yaxis1 = "Y_R.rel", yaxis2 = "B_R.rel", yaxis_iso = "Lc",
+  identify = FALSE, mark = FALSE, ...)
 }
 \arguments{
 \item{x}{a object of the class 'predict_mod'}
@@ -27,6 +27,10 @@ in addition also "value" or "catch" possible.}
 per recruit; default), "B_R.rel" (relative biomass per recruit), or "B_R.percent"
 (percentage biomass per recruit)}
 
+\item{yaxis_iso}{determines label and scale of y axis of Isopleth graph. Either "Lc"
+(default) for length at first capture or "Lc/Linf" for the relation of length
+at first capture to the infinite length}
+
 \item{identify}{logical; indicating whether points in the graph are supposed to be identified by
 clicking on them (uses \code{\link{locator}} function). To stop press right mouse click.
 (default: TRUE).}
@@ -41,14 +45,24 @@ This function plots objects of the class "predict_mod", which are results
 }
 \examples{
 \dontrun{
-# YPR
-# age structured data
-# Nemipterus marginatus
+# Nemipterus marginatus - age structured data
 threadfin <- list(Winf = 286,K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4)
 
 output <- predict_mod(threadfin, FM_change = seq(0,6,0.1),
    tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
 plot(output)
+
+hake - length structured data
+data(hake)
+hake$Lr <- 35
+select.list <- list(selecType = 'trawl_ogive', L50 = 20, L75 = 24)
+output <- predict_mod(param = hake, E_change = seq(0,1,0.05),
+                      curr.E = 0.4, curr.Lc = 40,
+                      Lc_change = seq(5,80,1), s_list = select.list,
+                      type = 'ypr', plot = FALSE)
+plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "Y_R.rel",
+   identify = FALSE)
+
 }
 }
 \references{

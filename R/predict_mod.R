@@ -268,7 +268,8 @@ predict_mod <- function(param, type, FM_change = NA,
                         s_list = NA,
                         stock_size_1 = NA, age_unit = 'year', curr.E = NA,
                         curr.Lc = NA,
-                        plus_group = NA, Lmin = NA, Lincr = NA, plot = FALSE, hide.progressbar = FALSE){
+                        plus_group = NA, Lmin = NA, Lincr = NA, plot = FALSE,
+                        hide.progressbar = FALSE){
   res <- param
 
   # Beverton and Holt's ypr
@@ -289,15 +290,21 @@ predict_mod <- function(param, type, FM_change = NA,
     #if(is.null(Winf)) Winf <-  a * Linf ^ b  ###exp((log(Linf) - a)/b) # might still be NULL
     # or              Winf <- exp(log(Linf-a)/b)
 
-    if(length(FM_change) == 1 & is.na(FM_change[1]) & length(E_change) == 1 & is.na(E_change[1])){
+    if(length(FM_change) == 1 & is.na(FM_change[1]) &
+       length(E_change) == 1 & is.na(E_change[1])){
       FM_change <- seq(0,10,0.1)
       print(noquote("No fishing mortality (FM_change) or exploitation rate (E_change) was provided, a default range for fishing mortality of 0 to 10 is used."))
     }
 
     # transfer E_change into F_change if provided
-    if(length(FM_change) == 1 & is.na(FM_change[1]) & length(E_change) != 1 & !is.na(E_change[1])){
+    # if(length(FM_change) == 1 & is.na(FM_change[1]) & length(E_change) != 1 & !is.na(E_change[1])){
+    #   FM_change <- (E_change * M) / (1 - E_change)
+    #   FM_change[FM_change == Inf] <- (0.9999 * M) / (1 - 0.9999)
+    # }
+    if(length(FM_change) == 1 & is.na(FM_change[1]) &
+       length(E_change) != 1 & !is.na(E_change[1])){
+      E_change <- E_change[E_change <= 0.9]
       FM_change <- (E_change * M) / (1 - E_change)
-      FM_change[FM_change == Inf] <- (0.9999 * M) / (1 - 0.9999)
     }
 
     # Recruitment  - knife edge
@@ -514,7 +521,9 @@ predict_mod <- function(param, type, FM_change = NA,
       }
       if(length(s_list) > 1 & selecType != "knife_edge"){
         P <- select_ogive(s_list, Lt =  Lt, Lc = curr.Lc)
-        tmpRES <- ypr_sel(param = tmpList, FM_change = curr.F, Lt, P = P)
+        tmpRES <- ypr_sel(param = tmpList, FM_change = curr.F, Lt, P)
+        tmpRES$yr <- tmpRES$ryr * Winf * exp(M * (tr - t0))
+        tmpRES$br <- tmpRES$rbr * Winf * exp(M * (tr - t0))
       }
 
       df_currents <- data.frame(curr.Lc = curr.Lc,
@@ -535,6 +544,7 @@ predict_mod <- function(param, type, FM_change = NA,
     meanValue <- res$meanValue
 
     #mortalities
+    if(is.null(res$FM) | length(res$FM) == 1) stop(noquote("Please provide fishing mortality FM (in 'param') as a vector per size class!"))
     FM <- res$FM
     if(is.null(res$M) & is.null(res$Z)) stop(noquote("Either M or Z (in 'param') has to be provided!"))
     if(!is.null(res$M)){
@@ -558,10 +568,17 @@ predict_mod <- function(param, type, FM_change = NA,
     classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
     classes.num <- as.numeric(classes.num[,1])
 
+    if(length(FM_change) == 1 & is.na(FM_change[1]) &
+       length(E_change) == 1 & is.na(E_change[1])){
+      FM_change <- seq(0,10,0.1)
+      print(noquote("No fishing mortality (FM_change) or exploitation rate (E_change) was provided, a default range for fishing mortality of 0 to 10 is used."))
+    }
+
     # transfer E_change into F_change if provided
-    if(length(FM_change) == 1 & is.na(FM_change[1]) & length(E_change) != 1 & !is.na(E_change[1])){
+    if(length(FM_change) == 1 & is.na(FM_change[1]) &
+       length(E_change) != 1 & !is.na(E_change[1])){
+      E_change <- E_change[E_change <= 0.9]
       FM_change <- (E_change * nM) / (1 - E_change)
-      FM_change[FM_change == Inf] <- (0.9999 * nM) / (1 - 0.9999)
     }
 
     # Only FM change provided without Lc_tc change
@@ -585,13 +602,19 @@ predict_mod <- function(param, type, FM_change = NA,
     }
 
     # FM and Lc_tc change provided
-    if((!is.null(tc_change) | !is.null(Lc_change)) & length(s_list) > 1){
+    if(!is.null(tc_change) | !is.null(Lc_change)){
       # instead of s_list the outcome of one of the other select functions?
 
+      if('midLengths' %in% names(res)) Lt <- classes.num
+      if('age' %in% names(res)) Lt <- VBGF(param = list(Linf = Linf,
+                                                        K = K,
+                                                        t0 = t0), t = classes.num)
+      #Lt <-  Linf * (1- exp(-K * (classes.num - t0)))
 
-      Lt <- Linf * (1- exp(-K * (classes.num - t0)))
-
-      sel <- select_ogive(s_list,Lt = Lt) #classes.num
+      if(length(s_list) == 1){
+        s_list <- list(selectType = "trawl_ogive", L50 = Lc_change[1])
+      }
+      sel <- select_ogive(s_list, Lt = Lt) #classes.num
 
       sel.list <- list()
       for(x19 in 1:length(Lc_change)){
@@ -688,6 +711,36 @@ predict_mod <- function(param, type, FM_change = NA,
                     mat_FM_Lc_com.V=mat_FM_Lc_com.V,
                     mat_FM_Lc_com.B=mat_FM_Lc_com.B))
 
+
+      if(!is.na(curr.E) & !is.na(curr.Lc)){
+        curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf, K=K, t0=t0))
+        # current exploitation rate
+        curr.F = (nM * curr.E)/(1-curr.E)
+
+        if(length(s_list) == 1){
+          s_list <- list(selectType = "trawl_ogive", L50 = curr.Lc)
+        }
+        sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
+
+        Lc_mat_FM <- sel * max(FM, na.rm=TRUE)
+        mati <- Lc_mat_FM * curr.F
+        param.loop <- res
+        param.loop$FM <- mati
+        param.loop$Z <- mati + nM
+        res2 <- stock_sim(param.loop, age_unit,
+                          stock_size_1, plus_group=plus_group)
+        mati2 <- res2$totals
+
+        df_currents <- data.frame(curr.Lc = curr.Lc,
+                                  curr.tc = curr.tc,
+                                  curr.E = curr.E,
+                                  curr.F = curr.F,
+                                  curr.C = mati2$totC,
+                                  curr.Y = mati2$totY,
+                                  curr.V = mati2$totV,
+                                  curr.B = mati2$meanB)
+        ret$currents <- df_currents
+      }
     }
   }
 

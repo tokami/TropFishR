@@ -5,7 +5,7 @@
 \title{ELEFAN}
 \usage{
 ELEFAN(x, Linf_fix = NA, Linf_range = NA, K_range = exp(seq(log(0.1),
-  log(10), length.out = 100)), C = 0, WP = 0, MA = 5, addl.sqrt = FALSE,
+  log(10), length.out = 100)), C = 0, ts = 0, MA = 5, addl.sqrt = FALSE,
   agemax = NULL, flagging.out = TRUE, hide.progressbar = FALSE,
   plot = FALSE, contour = FALSE)
 }
@@ -30,7 +30,7 @@ calculated
 
 \item{C}{growth oscillation amplitude (default: 0)}
 
-\item{WP}{onset of the first oscillation relative to t0 (winter point, default: 0)}
+\item{ts}{onset of the first oscillation relative to t0 (summer point, default: 0)}
 
 \item{MA}{number indicating over how many length classes the moving average
 should be performed (defalut: 5, for
@@ -107,12 +107,12 @@ data(synLFQ4)
 
 # K-Scan
 output <- ELEFAN(x = synLFQ4, Linf_fix = 80,
-   K_range = seq(0.3,0.7,0.1),C = 0.75, WP = 0.5, MA = 11)
+   K_range = seq(0.3,0.7,0.1),C = 0.75, ts = 0.5, MA = 11)
 plot(output)
 
 # Surface response analysis
 output2 <- ELEFAN(synLFQ4, Linf_range = seq(78,82,1),
-   K_range = seq(0.3,0.7,0.1),C = 0.75, WP = 0.5, MA = 11, contour = 3)
+   K_range = seq(0.3,0.7,0.1),C = 0.75, ts = 0.5, MA = 11, contour = 3)
 plot(output2)
 }
 
