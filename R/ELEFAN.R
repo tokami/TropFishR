@@ -225,13 +225,12 @@ ELEFAN <- function(x, Linf_fix = NA, Linf_range = NA,
 
   # Graphs
   if(is.na(Linf_fix)){
-    if(plot_title) main <- 'Response surface analysis'
-
     plot_dat <- reshape2::melt(score_mat)
     image(x = Linfs,
           y = Ks,
           z = t(score_mat), col=colorRampPalette(c("yellow","red"), space="Lab")(5),
-          main = main, ylab = 'K', xlab='Linf')
+          ylab = 'K', xlab='Linf')
+    if(plot_title)  title('Response surface analysis', line = 2)
     #grid (NULL,NULL, lty = 6, col = "cornsilk2")
     if(contour){
       contour(x = Linfs, y = Ks, z = t(score_mat), add = TRUE)
