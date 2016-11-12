@@ -142,6 +142,8 @@
 #'    knife-edge recruitment and selection of gears (Sparre and Venema, 1998).
 #'    If E_change instead of FM_change is used the range is cut at E=0.9, because
 #'    higher values of E correspond to unrealistic high values of fishing mortality.
+#'    If no selectivity information is given (by use of s_list), knife edge selectivity
+#'    with L50 equal to the first argument of Lc_change is assumed.
 #'
 #'
 #' @return A list with the input parameters and dependent on the model type following
@@ -614,7 +616,7 @@ predict_mod <- function(param, type, FM_change = NA,
       #Lt <-  Linf * (1- exp(-K * (classes.num - t0)))
 
       if(length(s_list) == 1){
-        s_list <- list(selectType = "trawl_ogive", L50 = Lc_change[1])
+        s_list <- list(selectType = "knife_edge", L50 = Lc_change[1])
       }
       sel <- select_ogive(s_list, Lt = Lt) #classes.num
 
