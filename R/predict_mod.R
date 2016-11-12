@@ -616,7 +616,7 @@ predict_mod <- function(param, type, FM_change = NA,
       #Lt <-  Linf * (1- exp(-K * (classes.num - t0)))
 
       if(length(s_list) == 1){
-        s_list <- list(selectType = "knife_edge", L50 = Lc_change[1])
+        s_list <- list(selecType = "knife_edge", L50 = Lc_change[1])
       }
       sel <- select_ogive(s_list, Lt = Lt) #classes.num
 
@@ -722,7 +722,7 @@ predict_mod <- function(param, type, FM_change = NA,
         curr.F = (nM * curr.E)/(1-curr.E)
 
         if(length(s_list) == 1){
-          s_list <- list(selecType = "trawl_ogive", L50 = curr.Lc)
+          s_list <- list(selecType = "knife_edge", L50 = curr.Lc)
         }
         sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
 

@@ -156,6 +156,8 @@ The Thompson and Bell model incorporates an iteration step simulating the
    knife-edge recruitment and selection of gears (Sparre and Venema, 1998).
    If E_change instead of FM_change is used the range is cut at E=0.9, because
    higher values of E correspond to unrealistic high values of fishing mortality.
+   If no selectivity information is given (by use of s_list), knife edge selectivity
+   with L50 equal to the first argument of Lc_change is assumed.
 }
 \examples{
 #______________________________________
