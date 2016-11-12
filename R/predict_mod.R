@@ -111,7 +111,8 @@
 #' select.list <- list(selecType = 'trawl_ogive', L50 = 50, L75 = 55)
 #'
 #' output <- predict_mod(param = hake, FM_change = seq(0,2,0.1),
-#'    Lc_change = seq(20,60,0.5), type = 'ThompBell', s_list = select.list)
+#'    Lc_change = seq(20,60,0.5), curr.E = 0.4, curr.Lc = 50,
+#'    type = 'ThompBell', s_list = select.list)
 #' plot(output, xaxis = "FM", yaxis_iso = "Lc", yaxis1 = "B_R")
 #'
 #'
@@ -616,7 +617,8 @@ predict_mod <- function(param, type, FM_change = NA,
       for(x7 in 1:length(FM_change)){
         param$Z <- pred_mat[,x7] + nM
         param$FM <- pred_mat[,x7]
-        resL <- stock_sim(param)
+        resL <- stock_sim(param, age_unit = age_unit,
+                          stock_size_1 = stock_size_1, plus_group = plus_group)
         pred_res_list[[x7]] <- resL$totals
       }
 
@@ -657,13 +659,13 @@ predict_mod <- function(param, type, FM_change = NA,
         Lt <- res$midLengths
         sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
 
-        Lc_mat_FM <- sel * max(FM, na.rm=TRUE)
+        Lc_mat_FM <- sel * 1 #max(FM, na.rm=TRUE)
         mati <- Lc_mat_FM * curr.F
         param.loop <- res
         param.loop$FM <- mati
         param.loop$Z <- mati + nM
-        res2 <- stock_sim(param = param.loop, age_unit,
-                          stock_size_1, plus_group=plus_group)
+        res2 <- stock_sim(param = param.loop, age_unit = age_unit,
+                          stock_size_1 = stock_size_1, plus_group=plus_group)
         mati2 <- res2$totals
 
         df_currents <- data.frame(curr.Lc = curr.Lc,
@@ -694,7 +696,7 @@ predict_mod <- function(param, type, FM_change = NA,
       Lc_mat <- do.call(cbind,sel.list)
       colnames(Lc_mat) <- Lc
 
-      Lc_mat_FM <- Lc_mat * max(FM, na.rm=TRUE)
+      Lc_mat_FM <- Lc_mat * 1 #max(FM, na.rm=TRUE)
 
       #list with FM_Lc_matrices per FM_change
       FM_Lc_com_mat.list <- list()
@@ -724,8 +726,8 @@ predict_mod <- function(param, type, FM_change = NA,
 
           param.loop$FM <- mati[,x22]
           param.loop$Z <- mati[,x22] + nM
-          res2 <- stock_sim(param.loop, age_unit,
-                            stock_size_1, plus_group=plus_group)
+          res2 <- stock_sim(param = param.loop, age_unit = age_unit,
+                            stock_size_1 = stock_size_1, plus_group=plus_group)
           pred.FM_Lc_com_res_loop1_list[[x22]] <- res2$totals
 
           # update counter and progress bar
