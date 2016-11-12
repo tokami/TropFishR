@@ -149,8 +149,8 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     if(!is.null(pes$currents)){
       currents <- pes$currents
       if(!is.na(currents$curr.E)){
-        px1 <- ifelse(p.FE == "FM",currents$curr.F, currents$curr.E)
-        py1 <- ifelse(p.yield == "Y_R",currents$curr.YPR,currents$curr.YPR.rel)
+        px1 <- ifelse(xaxis1 == "FM",currents$curr.F, currents$curr.E)
+        py1 <- ifelse(yaxis1 == "Y_R",currents$curr.Y,currents$curr.B)
         points(px1,py1, pch = 16)
       }
     }
