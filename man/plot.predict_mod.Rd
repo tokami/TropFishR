@@ -52,15 +52,15 @@ output <- predict_mod(threadfin, FM_change = seq(0,6,0.1),
    tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
 plot(output)
 
-hake - length structured data
+# hake - length structured data
 data(hake)
 hake$Lr <- 35
 select.list <- list(selecType = 'trawl_ogive', L50 = 20, L75 = 24)
-output <- predict_mod(param = hake, E_change = seq(0,1,0.05),
+output <- predict_mod(param = hake, FM_change = seq(0,0.4,0.05),
                       curr.E = 0.4, curr.Lc = 40,
                       Lc_change = seq(5,80,1), s_list = select.list,
                       type = 'ypr', plot = FALSE)
-plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "Y_R.rel",
+plot(output, type = "Isopleth", xaxis1 = "FM", yaxis1 = "Y_R.rel",
    identify = FALSE)
 
 }

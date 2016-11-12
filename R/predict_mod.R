@@ -80,17 +80,16 @@
 #'
 #' data(hake)
 #' hake$Lr <- 35
-#' select.list <- list(selecType = 'trawl_ogive', L50 = 20, L75 = 24)
-#' output <- predict_mod(param = hake, E_change = seq(0,1,0.05),
-#'                       Lc_change = seq(5,80,1), #s_list = select.list,
-#'                       type = 'ypr', plot = FALSE)
-#' plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "Y_R.rel", identify = FALSE)
+#' select.list <- list(selecType = 'trawl_ogive', L50 = 50, L75 = 54)
+#' output <- predict_mod(param = hake, FM_change = seq(0,3,0.05),
+#'                       Lc_change = seq(30,70,1), s_list = select.list,
+#'                       type = 'ypr', plot = FALSE, curr.Lc = 50, curr.E = 0.73)
+#' plot(output, type = "Isopleth", xaxis1 = "FM", yaxis1 = "Y_R.rel", mark = TRUE)
 #'
-#' select.list <- list(selecType = 'knife_edge', L50 = 20, L75 = 24)
-#' output <- predict_mod(param = hake, FM_change = seq(0,3,0.01),
-#'                       Lc_change = seq(5,80,1), s_list = select.list,
+#' output <- predict_mod(param = hake, E_change = seq(0,1,0.1),
+#'                       Lc_change = seq(2,120,2), #s_list = select.list,
 #'                       type = 'ypr', plot = FALSE)
-#' plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "B_R.rel")
+#' plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "B_R")
 #'
 #' #______________________________________
 #' #      Thompson and Bell model
@@ -98,25 +97,23 @@
 #' # with age structured data
 #' data(shrimps)
 #'
-#' output <- predict_mod(param = shrimps, FM_change = seq(0.1,3,0.1),
+#' output <- predict_mod(param = shrimps, FM_change = seq(0.1,20,0.1),
 #'      type = "ThompBell", age_unit = "month", plot = TRUE)
-#'
-#' # create list with selectivity information
-#' select.list <- list(selecType = 'trawl_ogive',
-#'    L50 = 34, L75 = 36)
-#'
-#' # add additional parameters to data list
-#' shrimps <- c(shrimps,  list(Linf = 50, K = 0.3, t0 = 0.01))
-#'
-#' output <- predict_mod(param = shrimps, E_change = seq(0,1,0.01),
-#'    Lc_change = seq(10,44,2),
-#'    type = 'ThompBell', s_list = select.list,  age_unit = 'month')
-#' plot(output, xaxis = "E")
 #'
 #' #______________________________________
 #' # with length structured data
 #' data(hake)
-#' predict_mod(hake,FM_change = seq(0.1,3,0.1), type = 'ThompBell', plot = TRUE)
+#' par(mar = c(5, 4, 4, 7))
+#' predict_mod(param = hake,FM_change = seq(0.1,3,0.05),
+#'      type = 'ThompBell', plot = TRUE)
+#'
+#' # create list with selectivity information
+#' select.list <- list(selecType = 'trawl_ogive', L50 = 50, L75 = 55)
+#'
+#' output <- predict_mod(param = hake, FM_change = seq(0,2,0.1),
+#'    Lc_change = seq(20,60,0.5), type = 'ThompBell', s_list = select.list)
+#' plot(output, xaxis = "FM", yaxis_iso = "Lc", yaxis1 = "B_R")
+#'
 #'
 #' @details The Thompson and Bell model incorporates an iteration step simulating the
 #'    stock by means
@@ -503,8 +500,9 @@ predict_mod <- function(param, type, FM_change = NA,
     df_Es <- do.call(rbind,list_Es)
 
     names(list_Lc_runs) <- paste0("Lc_", Lc_tc)   # names(list_tc_runs) <- tc
-    ret <- c(res,list(FM = FM_change,
-                      Lc = Lc,           #   tc = tc,
+    ret <- c(res,list(FM_change = FM_change,
+                      Lc = Lc,
+                      tc = tc,
                       list_Lc_runs = list_Lc_runs,   #   list_tc_runs = list_tc_runs,
                       df_Es = df_Es))   #   df_Es = df_Es,
 
@@ -563,6 +561,23 @@ predict_mod <- function(param, type, FM_change = NA,
     K <- res$K
     t0 <- ifelse("t0" %in% names(res),res$t0,0)
 
+    # Selectivity - knife edge or with selctivtiy ogive
+    tc <- res$tc   # might be NULL
+    Lc <- res$Lc   # might be NULL
+    if(is.null(tc) & is.null(Lc)){
+      if("L50" %in% s_list) Lc <- s_list$L50
+      if("Lc" %in% s_list) Lc <- s_list$Lc
+      #if(!("Lc" %in% s_list) & !("L50" %in% s_list))stop("Either the age or the length at first capture (tc or Lc) has to be provided in param! \n Or provide a Lc value in s_list!")
+    }
+    if(!is.null(Linf)){
+      if(is.null(tc) & !is.null(Lc)) tc <- VBGF(L=Lc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc,Linf=Linf,K=K,t0=t0)
+      if(is.null(Lc) & !is.null(tc)) Lc <- VBGF(t=tc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tc,Linf=Linf,K=K,t0=t0)
+      if(is.null(tc_change) & !is.null(Lc_change)) tc_change <- VBGF(L=Lc_change, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc_change,Linf=Linf,K=K,t0=t0)
+      if(is.null(Lc_change) & !is.null(tc_change)) Lc_change <- VBGF(t=tc_change, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tc_change,Linf=Linf,K=K,t0=t0)
+    }
+    tc <- c(tc,tc_change)
+    Lc <- c(Lc,Lc_change)
+
     # age based
     if('age' %in% names(res)) classes <- as.character(res$age)
     # length based
@@ -584,9 +599,16 @@ predict_mod <- function(param, type, FM_change = NA,
       E_change <- E_change[E_change <= 0.9]
       FM_change <- (E_change * nM) / (1 - E_change)
     }
+    if(length(E_change) == 1 & is.na(E_change[1])){
+      E_change <- FM_change / (FM_change + nM)
+    }
+
+    Lt <- classes.num  # if age in names(res) Lt here is age because classes.num = age
+
 
     # Only FM change provided without Lc_tc change
-    if((is.null(tc_change) & is.null(Lc_change)) | length(s_list) == 1){
+    if((is.null(tc_change) & is.null(Lc_change))){  #  | length(s_list) == 1){
+
       #prediction based on f_change
       pred_mat <- as.matrix(FM) %*% FM_change
 
@@ -594,38 +616,83 @@ predict_mod <- function(param, type, FM_change = NA,
       for(x7 in 1:length(FM_change)){
         param$Z <- pred_mat[,x7] + nM
         param$FM <- pred_mat[,x7]
-        res <- stock_sim(param)
-        pred_res_list[[x7]] <- res$totals
+        resL <- stock_sim(param)
+        pred_res_list[[x7]] <- resL$totals
       }
 
       pred_res_df <- do.call(rbind, pred_res_list)
-      pred_res_df$Xfact <- FM_change
+      pred_res_df$FM_change <- FM_change
+      pred_res_df$E_change <- E_change
 
       res2 <- pred_res_df
-      ret <- c(res,res2)
+      res3 <- c(res,res2)
+
+      # reference points
+      Bper <- rep(NA,length(pred_res_df$meanB))
+      Bper[1] <- 100
+      for(ix in 2:length(Bper)){
+        Bper[ix] <- pred_res_df$meanB[ix]/pred_res_df$meanB[1] * 100
+      }
+      N05 <- which.min(abs(Bper - 50))
+      Nmsy <- which.max(pred_res_df$totY)
+
+      df_Es <- data.frame(Lc = ifelse(!is.null(Lc),Lc,NA),
+                          tc = ifelse(!is.null(tc),tc,NA),
+                          Fmsy = FM_change[Nmsy],
+                          F05 = FM_change[N05],
+                          Emsy = E_change[Nmsy],
+                          E05 = E_change[N05])
+
+      ret <- c(res3, list(df_Es = df_Es))
+
+
+      if(!is.na(curr.E) & !is.na(curr.Lc)){
+        curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf, K=K, t0=t0))
+        # current exploitation rate
+        curr.F = (nM * curr.E)/(1-curr.E)
+
+        if(length(s_list) == 1){
+          s_list <- list(selecType = "knife_edge", L50 = curr.Lc)
+        }
+        Lt <- res$midLengths
+        sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
+
+        Lc_mat_FM <- sel * max(FM, na.rm=TRUE)
+        mati <- Lc_mat_FM * curr.F
+        param.loop <- res
+        param.loop$FM <- mati
+        param.loop$Z <- mati + nM
+        res2 <- stock_sim(param = param.loop, age_unit,
+                          stock_size_1, plus_group=plus_group)
+        mati2 <- res2$totals
+
+        df_currents <- data.frame(curr.Lc = curr.Lc,
+                                  curr.tc = curr.tc,
+                                  curr.E = curr.E,
+                                  curr.F = curr.F,
+                                  curr.C = mati2$totC,
+                                  curr.Y = mati2$totY,
+                                  curr.V = mati2$totV,
+                                  curr.B = mati2$meanB)
+        ret$currents <- df_currents
+      }
     }
 
     # FM and Lc_tc change provided
     if(!is.null(tc_change) | !is.null(Lc_change)){
       # instead of s_list the outcome of one of the other select functions?
 
-      if('midLengths' %in% names(res)) Lt <- classes.num
-      if('age' %in% names(res)) Lt <- VBGF(param = list(Linf = Linf,
-                                                        K = K,
-                                                        t0 = t0), t = classes.num)
-      #Lt <-  Linf * (1- exp(-K * (classes.num - t0)))
-
       if(length(s_list) == 1){
-        s_list <- list(selecType = "knife_edge", L50 = Lc_change[1])
+        s_list <- list(selecType = "knife_edge", L50 = Lc[1])
       }
       sel <- select_ogive(s_list, Lt = Lt) #classes.num
 
       sel.list <- list()
-      for(x19 in 1:length(Lc_change)){
-        sel.list[[x19]] <- select_ogive(s_list, Lt = Lt, Lc = Lc_change[x19]) #classes.num
+      for(x19 in 1:length(Lc)){
+        sel.list[[x19]] <- select_ogive(s_list, Lt = Lt, Lc = Lc[x19]) #classes.num
       }
       Lc_mat <- do.call(cbind,sel.list)
-      colnames(Lc_mat) <- Lc_change
+      colnames(Lc_mat) <- Lc
 
       Lc_mat_FM <- Lc_mat * max(FM, na.rm=TRUE)
 
@@ -681,22 +748,22 @@ predict_mod <- function(param, type, FM_change = NA,
 
       #for catch
       mat_FM_Lc_com.C <- do.call(rbind, pred.FM_Lc_com_res_loopC_list)
-      rownames(mat_FM_Lc_com.C) <- Lc_change
+      rownames(mat_FM_Lc_com.C) <- Lc
       colnames(mat_FM_Lc_com.C) <- FM_change
 
       #for yield
       mat_FM_Lc_com.Y <- do.call(rbind, pred.FM_Lc_com_res_loopY_list)
-      rownames(mat_FM_Lc_com.Y) <- Lc_change
+      rownames(mat_FM_Lc_com.Y) <- Lc
       colnames(mat_FM_Lc_com.Y) <- FM_change
 
       #for biomass
       mat_FM_Lc_com.B <- do.call(rbind, pred.FM_Lc_com_res_loopB_list)
-      rownames(mat_FM_Lc_com.B) <- Lc_change
+      rownames(mat_FM_Lc_com.B) <- Lc
       colnames(mat_FM_Lc_com.B) <- FM_change
 
       #for value
       mat_FM_Lc_com.V <- do.call(rbind, pred.FM_Lc_com_res_loopV_list)
-      rownames(mat_FM_Lc_com.V) <- Lc_change
+      rownames(mat_FM_Lc_com.V) <- Lc
       colnames(mat_FM_Lc_com.V) <- FM_change
 
       # transvers matrices for plotting (the opposite arrangement from book)
@@ -705,15 +772,37 @@ predict_mod <- function(param, type, FM_change = NA,
       mat_FM_Lc_com.B <- t(mat_FM_Lc_com.B)
       mat_FM_Lc_com.V <- t(mat_FM_Lc_com.V)
 
+      # reference points
+      mat_FM_Lc_com.Bper <- matrix(NA,ncol=dim(mat_FM_Lc_com.B)[2],
+                                           nrow=dim(mat_FM_Lc_com.B)[1])
+      mat_FM_Lc_com.Bper[1,] <- 100
+      for(ix in 2:dim(mat_FM_Lc_com.B)[1]){
+        mat_FM_Lc_com.Bper[ix,] <- mat_FM_Lc_com.B[ix,]/mat_FM_Lc_com.B[1,] *100
+      }
+      N05 <- apply(mat_FM_Lc_com.Bper, MARGIN = 2,
+                   FUN = function(x) which.min(abs(x - 50)))
+
+      Nmsy <- apply(mat_FM_Lc_com.Y, MARGIN = 2, FUN = which.max)
+
+      df_Es <- data.frame(Lc = ifelse(!is.null(Lc),Lc,NA),
+                          tc = ifelse(!is.null(tc),tc,NA),
+                          Fmsy = FM_change[Nmsy],
+                          F05 = FM_change[N05],
+                          Emsy = E_change[Nmsy],
+                          E05 = E_change[N05])
+
       ret <- c(res,
                list(FM_change = FM_change,
+                    E_change = E_change,
                     Lc_change = Lc_change,
-                    Lt=Lt,
-                    sel=sel,
-                    mat_FM_Lc_com.C=mat_FM_Lc_com.C,
-                    mat_FM_Lc_com.Y=mat_FM_Lc_com.Y,
-                    mat_FM_Lc_com.V=mat_FM_Lc_com.V,
-                    mat_FM_Lc_com.B=mat_FM_Lc_com.B))
+                    tc_change = tc_change,
+                    Lt = Lt,
+                    sel = sel,
+                    mat_FM_Lc_com.C = mat_FM_Lc_com.C,
+                    mat_FM_Lc_com.Y = mat_FM_Lc_com.Y,
+                    mat_FM_Lc_com.V = mat_FM_Lc_com.V,
+                    mat_FM_Lc_com.B = mat_FM_Lc_com.B,
+                    df_Es = df_Es))
 
 
       if(!is.na(curr.E) & !is.na(curr.Lc)){

@@ -34,15 +34,15 @@
 #'    tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
 #' plot(output)
 #'
-#' hake - length structured data
+#' # hake - length structured data
 #' data(hake)
 #' hake$Lr <- 35
 #' select.list <- list(selecType = 'trawl_ogive', L50 = 20, L75 = 24)
-#' output <- predict_mod(param = hake, E_change = seq(0,1,0.05),
+#' output <- predict_mod(param = hake, FM_change = seq(0,0.4,0.05),
 #'                       curr.E = 0.4, curr.Lc = 40,
 #'                       Lc_change = seq(5,80,1), s_list = select.list,
 #'                       type = 'ypr', plot = FALSE)
-#' plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "Y_R.rel",
+#' plot(output, type = "Isopleth", xaxis1 = "FM", yaxis1 = "Y_R.rel",
 #'    identify = FALSE)
 #'
 #'}
@@ -93,7 +93,32 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
   }
 
   #THOMPBELL
-  if("totals" %in% names(pes)){
+  if("totY" %in% names(pes)){
+    df_Es <- pes$df_Es
+
+    if(xaxis1 == "FM"){
+      px <- pes$FM_change
+      xlabel1 <- "Fishing mortality"
+
+      N05 <- df_Es$F05
+      Nmax <- df_Es$Fmsy
+      if(length(N05) == 1){
+        legend.lab <- c("F0.5","Fmsy")
+      }else legend.lab <- c("Fmsy")
+      if("currents" %in% names(pes)) curr_markX <- pes$currents$curr.F
+    }else{
+      px <- pes$E_change
+      xlabel1 <- "Exploitation rate"
+
+      N05 <- df_Es$E05
+      Nmax <- df_Es$Emsy
+      if(length(N05) == 1){
+        legend.lab <- c("E0.5","Emsy")
+      }else legend.lab <- c("Emsy")
+      if("currents" %in% names(pes)) curr_markX <- pes$currents$curr.E
+    }
+
+
     #save x axis positions
     max_val <- round(max(pes$totV,na.rm=TRUE),digits=0)
     dim_val <- 10 ^ (nchar(max_val)-1)
@@ -105,30 +130,66 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     #   max_val <- round(max(pes$totV,na.rm=TRUE),digits=0)
     #   dim_val <- 10 ^ (nchar(max_val)-1)
 
+
+    py <- pes$totY[1:length(px)]
+    py2 <- pes$meanB[1:length(px)]
+
     #op <- par(oma = c(1, 1, 1.5, 1),new=FALSE,mar = c(5, 4, 4, 6) + 0.3)
-    plot(pes$Xfact,pes$totV, type ='o',ylab='Value',xlab='F-factor X',
-         col ='darkorange', ylim = c(0,ceiling(max_val/dim_val)*dim_val),
+    plot(px,py, type ='l',ylab='Yield',xlab= xlabel1,
+         col ='black', ylim = c(0,ceiling(max_yiel/dim_yiel)*dim_yiel),
          lwd=1.6)
-    par(new=TRUE)
-    plot(pes$Xfact,pes$totY,type ='o',ylab='',xlab='',
-         col='dodgerblue',lwd=1.6,axes=FALSE,
-         ylim = c(0,ceiling(max_yiel/dim_yiel) * dim_yiel))
-    axis(4,at=pretty(c(0,pes$totY)))
-    mtext("Yield", side=4, line=2)
-    par(new=TRUE)
-    plot(pes$Xfact,pes$meanB,type='o',axes=FALSE,ylab='',xlab='',
-         col = 'darkgreen',lwd=1.6,
-         ylim = c(0,ceiling(max_bio/dim_bio)*dim_bio))    # draw lines with small intervals: seq(0,max(),0.05) but y as to be dependent of x (formula of calculaiton of y)
-    axis(4,at=pretty(c(0,pes$meanB)),line = 3)
-    mtext("Biomass", side=4, line=5)
+    # F or E max
+    segments(x0 = -1, x1 = Nmax, y0 = py[which(px == Nmax)],
+             y1 = py[which(px == Nmax)],
+             col= 'goldenrod1',lty = 2, lwd=1.6)
+    segments(x0 = Nmax, x1 = Nmax, y0 = -1, y1 = py[which(px == Nmax)],
+             col= 'goldenrod1',lty = 2, lwd=1.6)
 
-    #par(oma = c(0, 0, 0, 0), new = TRUE)
-    legend("top", c("value", "yield", "biomass"), xpd = TRUE,
-           horiz = TRUE, inset = c(0, -0.1), bty = "n",lty = 1,seg.len = 0.7,
-           col = c('darkorange','dodgerblue','darkgreen'), cex = 0.8,lwd=2,
-           text.width=0.3,x.intersp=0.3)
-    #par(op)
+    # current Exploitation rate or fishing mortality
+    if(!is.null(pes$currents)){
+      currents <- pes$currents
+      if(!is.na(currents$curr.E)){
+        px1 <- ifelse(p.FE == "FM",currents$curr.F, currents$curr.E)
+        py1 <- ifelse(p.yield == "Y_R",currents$curr.YPR,currents$curr.YPR.rel)
+        points(px1,py1, pch = 16)
+      }
+    }
 
+    # Biomass
+    par(new=TRUE)
+    plot(px,py2,type ='l',ylab='',xlab='',
+         col='blue',lwd=1.6,axes=FALSE,
+         ylim = c(0,ceiling(max_bio/dim_bio) * dim_bio))
+    axis(4,at=pretty(c(0,pes$meanB)),col = "blue", col.axis="blue")
+    mtext("Biomass", side=4, line=2, col = "blue")
+    # F or E 05
+    segments(x0 = -1, x1 = N05, y0 = py2[which(px == N05)], y1 = py2[which(px == N05)],
+             col= 'red',lty = 3, lwd=1.5)
+    segments(x0 = N05, x1 = N05, y0 = -1, y1 = py2[which(px == N05)],
+             col= 'red',lty = 3, lwd=1.5)
+    # Legend
+    legend("top", legend = legend.lab, xpd = TRUE, horiz = TRUE,
+           inset = c(0,0), bty = "n", lty = c(1,2), col = c("red","goldenrod1"),
+           seg.len = 1,pt.cex = 2, x.intersp = c(0.7,0.7),merge=TRUE,
+           y.intersp = -2, box.lty=0,cex=0.8, lwd =2)
+
+    # Value if present
+    if(any(pes$totV != 0)){
+      py3 <- pes$totV[1:length(px)]
+      par(new=TRUE)
+      plot(px,py3,type='l',axes=FALSE,ylab='',xlab='',
+           col = 'darkgreen',lwd=1.6,
+           ylim = c(0,ceiling(max_val/dim_val)*dim_val))    # draw lines with small intervals: seq(0,max(),0.05) but y as to be dependent of x (formula of calculaiton of y)
+      axis(4,at=pretty(c(0,pes$totV)),line = 3,col.axis="darkgreen",col="darkgreen")
+      mtext("Value", side=4, line=5,col="darkgreen")
+    }
+
+    # #par(oma = c(0, 0, 0, 0), new = TRUE)
+    # legend("top", c("value", "yield", "biomass"), xpd = TRUE,
+    #        horiz = TRUE, inset = c(0, -0.1), bty = "n",lty = 1,seg.len = 0.7,
+    #        col = c('darkorange','dodgerblue','darkgreen'), cex = 0.8,lwd=2,
+    #        text.width=0.3,x.intersp=0.3)
+    # #par(op)
   }
 
   # THOMP BELL WITH LC change - ISOPLETHS
@@ -390,7 +451,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
         #mtext("Yield", line=0.5, side=3)
         if("currents" %in% names(pes) & mark){
           abline(v=curr_markX, col="grey30",lty=2)
-          abline(h=pes$currents$curr.Lc/pes$Linf, col="grey30",lty=2)
+          abline(h=curr_markY, col="grey30",lty=2)
         }
         if(identify == TRUE) image.identifier(m)
       }

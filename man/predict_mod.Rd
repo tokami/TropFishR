@@ -190,17 +190,16 @@ plot(output)
 
 data(hake)
 hake$Lr <- 35
-select.list <- list(selecType = 'trawl_ogive', L50 = 20, L75 = 24)
-output <- predict_mod(param = hake, E_change = seq(0,1,0.05),
-                      Lc_change = seq(5,80,1), #s_list = select.list,
-                      type = 'ypr', plot = FALSE)
-plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "Y_R.rel", identify = FALSE)
+select.list <- list(selecType = 'trawl_ogive', L50 = 50, L75 = 54)
+output <- predict_mod(param = hake, FM_change = seq(0,3,0.05),
+                      Lc_change = seq(30,70,1), s_list = select.list,
+                      type = 'ypr', plot = FALSE, curr.Lc = 50, curr.E = 0.73)
+plot(output, type = "Isopleth", xaxis1 = "FM", yaxis1 = "Y_R.rel", mark = TRUE)
 
-select.list <- list(selecType = 'knife_edge', L50 = 20, L75 = 24)
-output <- predict_mod(param = hake, FM_change = seq(0,3,0.01),
-                      Lc_change = seq(5,80,1), s_list = select.list,
+output <- predict_mod(param = hake, E_change = seq(0,1,0.1),
+                      Lc_change = seq(2,120,2), #s_list = select.list,
                       type = 'ypr', plot = FALSE)
-plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "B_R.rel")
+plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "B_R")
 
 #______________________________________
 #      Thompson and Bell model
@@ -208,25 +207,23 @@ plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "B_R.rel")
 # with age structured data
 data(shrimps)
 
-output <- predict_mod(param = shrimps, FM_change = seq(0.1,3,0.1),
+output <- predict_mod(param = shrimps, FM_change = seq(0.1,20,0.1),
      type = "ThompBell", age_unit = "month", plot = TRUE)
-
-# create list with selectivity information
-select.list <- list(selecType = 'trawl_ogive',
-   L50 = 34, L75 = 36)
-
-# add additional parameters to data list
-shrimps <- c(shrimps,  list(Linf = 50, K = 0.3, t0 = 0.01))
-
-output <- predict_mod(param = shrimps, E_change = seq(0,1,0.01),
-   Lc_change = seq(10,44,2),
-   type = 'ThompBell', s_list = select.list,  age_unit = 'month')
-plot(output, xaxis = "E")
 
 #______________________________________
 # with length structured data
 data(hake)
-predict_mod(hake,FM_change = seq(0.1,3,0.1), type = 'ThompBell', plot = TRUE)
+par(mar = c(5, 4, 4, 7))
+predict_mod(param = hake,FM_change = seq(0.1,3,0.05),
+     type = 'ThompBell', plot = TRUE)
+
+# create list with selectivity information
+select.list <- list(selecType = 'trawl_ogive', L50 = 50, L75 = 55)
+
+output <- predict_mod(param = hake, FM_change = seq(0,2,0.1),
+   Lc_change = seq(20,60,0.5), type = 'ThompBell', s_list = select.list)
+plot(output, xaxis = "FM", yaxis_iso = "Lc", yaxis1 = "B_R")
+
 
 }
 \references{
