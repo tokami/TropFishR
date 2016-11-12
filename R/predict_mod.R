@@ -722,7 +722,7 @@ predict_mod <- function(param, type, FM_change = NA,
         curr.F = (nM * curr.E)/(1-curr.E)
 
         if(length(s_list) == 1){
-          s_list <- list(selectType = "trawl_ogive", L50 = curr.Lc)
+          s_list <- list(selecType = "trawl_ogive", L50 = curr.Lc)
         }
         sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
 
