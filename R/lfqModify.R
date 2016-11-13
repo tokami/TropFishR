@@ -60,7 +60,7 @@ lfqModify <- function(lfq, par = NULL, plus_group = FALSE){
       if(is.vector(catch)){
         print(data.frame(midLengths = midLengths, frequency = catch))
       }else print(data.frame(midLengths = midLengths, frequency = rowSums(catch)))
-      writeLines("Check the table above and insert the length of the plus group.")
+      writeLines("Check the table above and insert the length of the plus group (Esc to cancel).")
       pg = -1
       while(pg > max(midLengths) | pg < min(midLengths)){
         pg <- readline(paste0("Enter a length group between ", min(midLengths)," and ",
