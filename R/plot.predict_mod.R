@@ -23,6 +23,9 @@
 #'    clicking on them (uses \code{\link{locator}} function). To stop press right mouse click.
 #'    (default: TRUE).
 #' @param mark logical; if value of choosen points should be displayed in graph (default: TRUE)
+#' @param contour used in combination with the Isopleth graph. Usage
+#'    can be logical (e.g. TRUE) or providing a numeric which indicates the
+#'    number of levels (\code{nlevels} in \code{\link{contour}}). By default TRUE.
 #' @param ... optional parameters of plot function
 #'
 #' @examples
@@ -58,7 +61,7 @@
 plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
                              yaxis1 = "Y_R.rel", yaxis2 = "B_R.rel",
                              yaxis_iso = "Lc",
-                             identify = FALSE, mark = FALSE, ...){
+                             identify = FALSE, mark = FALSE, contour = TRUE, ...){
   pes <- x
 
   # function for identifying Lc and yield/biomass values in plot
@@ -146,12 +149,13 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
              col= 'goldenrod1',lty = 2, lwd=1.6)
 
     # current Exploitation rate or fishing mortality
-    if(!is.null(pes$currents)){
+    if(!is.null(pes$currents) & mark){
       currents <- pes$currents
       if(!is.na(currents$curr.E)){
         px1 <- ifelse(xaxis1 == "FM",currents$curr.F, currents$curr.E)
         py1 <- ifelse(yaxis1 == "Y_R",currents$curr.Y,currents$curr.B)
-        points(px1,py1, pch = 16)
+        points(px1,py1, pch = 16, col="grey30")
+        abline(v=px1, col="grey30",lty=2)
       }
     }
 
@@ -161,7 +165,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
          col='blue',lwd=1.6,axes=FALSE,
          ylim = c(0,ceiling(max_bio/dim_bio) * dim_bio))
     axis(4,at=pretty(c(0,pes$meanB)),col = "blue", col.axis="blue")
-    mtext("Biomass", side=4, line=2, col = "blue", cex=0.8)
+    mtext("Biomass", side=4, line=2, col = "blue", cex=1)
     # F or E 05
     segments(x0 = -1, x1 = N05, y0 = py2[which(px == N05)], y1 = py2[which(px == N05)],
              col= 'red',lty = 3, lwd=1.5)
@@ -242,10 +246,14 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     }
     image(m, col=pal(100),
           xlab = xlabel1, ylab = ylabel_iso)
-    contour(m, add=TRUE)
+    if(is.numeric(contour)){
+      contour(m, add=TRUE, nlevels = contour)
+    }else if(contour == TRUE){
+      contour(m, add=TRUE)
+    }
 
     if("currents" %in% names(pes) & mark){
-      points(x = curr_markX, y=curr_markY, pch=16)
+      points(x = curr_markX, y=curr_markY, pch=16, col="grey30")
       abline(v=curr_markX, col="grey30",lty=2)
       abline(h=curr_markY, col="grey30",lty=2)
     }
@@ -371,6 +379,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
             px <- ifelse(p.FE == "FM",currents$curr.F, currents$curr.E)
             py <- ifelse(p.yield == "Y_R",currents$curr.YPR,currents$curr.YPR.rel)
             points(px,py, pch = 16)
+            abline(v=px, col="grey30",lty=2)
           }
         }
       }
@@ -448,10 +457,15 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
         }
         image(m, col=pal(100),
               xlab = xlabel1, ylab = ylabel_iso)
-        contour(m, add=TRUE)
+        if(is.numeric(contour)){
+          contour(m, add=TRUE, nlevels = contour)
+        }else if(contour == TRUE){
+          contour(m, add=TRUE)
+        }
+
         #mtext("Yield", line=0.5, side=3)
         if("currents" %in% names(pes) & mark){
-          points(x = curr_markX, y=curr_markY, pch=16)
+          points(x = curr_markX, y=curr_markY, pch=16, col="grey30")
           abline(v=curr_markX, col="grey30",lty=2)
           abline(h=curr_markY, col="grey30",lty=2)
         }

@@ -115,7 +115,7 @@ plot.catchCurve <- function(x, plot_selec = FALSE, col='blue',
     par(xpd=TRUE)
     title(xlab = xlabel, outer = TRUE, line = 2)
     #text(y=-0.12, x=pes$t50, labels = "t50", col = 'red', xpd=TRUE)
-    mtext(text = "t50",side = 1, at = pes$t50,line = 0.75, col = 'red', xpd=TRUE)
+    mtext(text = "t50",side = 1, at = pes$t50,line = 0.3, col = 'red', xpd=TRUE)
 
 
 

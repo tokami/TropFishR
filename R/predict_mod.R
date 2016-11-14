@@ -113,7 +113,7 @@
 #' output <- predict_mod(param = hake, FM_change = seq(0,2,0.1),
 #'    Lc_change = seq(20,60,0.5), curr.E = 0.4, curr.Lc = 50,
 #'    type = 'ThompBell', s_list = select.list)
-#' plot(output, xaxis = "FM", yaxis_iso = "Lc", yaxis1 = "B_R")
+#' plot(output, xaxis1 = "FM", yaxis_iso = "Lc", yaxis1 = "B_R")
 #'
 #'
 #' @details The Thompson and Bell model incorporates an iteration step simulating the

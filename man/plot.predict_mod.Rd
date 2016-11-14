@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{predict_mod}(x, type = "ypr", xaxis1 = "FM",
   yaxis1 = "Y_R.rel", yaxis2 = "B_R.rel", yaxis_iso = "Lc",
-  identify = FALSE, mark = FALSE, ...)
+  identify = FALSE, mark = FALSE, contour = TRUE, ...)
 }
 \arguments{
 \item{x}{a object of the class 'predict_mod'}
@@ -36,6 +36,10 @@ clicking on them (uses \code{\link{locator}} function). To stop press right mous
 (default: TRUE).}
 
 \item{mark}{logical; if value of choosen points should be displayed in graph (default: TRUE)}
+
+\item{contour}{used in combination with the Isopleth graph. Usage
+can be logical (e.g. TRUE) or providing a numeric which indicates the
+number of levels (\code{nlevels} in \code{\link{contour}}). By default TRUE.}
 
 \item{...}{optional parameters of plot function}
 }
