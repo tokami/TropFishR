@@ -87,7 +87,7 @@ plot.catchCurve <- function(x, plot_selec = FALSE, col='blue',
 
     par(mfrow=c(2,1), xpd = FALSE,
               mar = c(1.2, 4, 1, 1) + 0.1,
-              oma = c(6, 0.5, 1, 2) + 0.1)
+              oma = c(5, 0.5, 1, 2) + 0.1)
     #final plot
     plot(x = xplot, y = yplot, ylim = ylims,
          xlab = '', xaxt = 'n', ylab = ylabel, xlim = xlims,
@@ -113,8 +113,9 @@ plot.catchCurve <- function(x, plot_selec = FALSE, col='blue',
     points(y = 0.5, x=pes$t50,col='red',pch=16)
     segments(x0 = pes$t50, y0 = 0.5, x1 = pes$t50, y1 = 0, col='red',lty=2)
     par(xpd=TRUE)
-    text(y=-0.08, x=pes$t50, labels = "t50", col = 'red')
     title(xlab = xlabel, outer = TRUE, line = 2)
+    #text(y=-0.12, x=pes$t50, labels = "t50", col = 'red', xpd=TRUE)
+    mtext(text = "t50",side = 1, at = pes$t50,line = 0.75, col = 'red', xpd=TRUE)
 
 
 

@@ -186,7 +186,7 @@
 #'      \item \strong{totY}: total yield values for different x factors,
 #'      \item \strong{totV}: total values for different x factors,
 #'      \item \strong{meanB}: average biomasses for different x factors,
-#'      \item \strong{Xfact}: fishing mortality changes;
+#'      \item \strong{F_change}: fishing mortality changes;
 #'   }
 #'   \item \code{type = 'ThomBell'} and \code{Lc_change} provided
 #'   \itemize{
@@ -547,7 +547,6 @@ predict_mod <- function(param, type, FM_change = NA,
     meanValue <- res$meanValue
 
     #mortalities
-    if(is.null(res$FM) | length(res$FM) == 1) stop(noquote("Please provide fishing mortality FM (in 'param') as a vector per size class!"))
     FM <- res$FM
     if(is.null(res$M) & is.null(res$Z)) stop(noquote("Either M or Z (in 'param') has to be provided!"))
     if(!is.null(res$M)){
@@ -609,6 +608,8 @@ predict_mod <- function(param, type, FM_change = NA,
 
     # Only FM change provided without Lc_tc change
     if((is.null(tc_change) & is.null(Lc_change))){  #  | length(s_list) == 1){
+
+      if(is.null(res$FM) | length(res$FM) == 1) stop(noquote("Please provide fishing mortality FM (in 'param') as a vector per size class!"))
 
       #prediction based on f_change
       pred_mat <- as.matrix(FM) %*% FM_change
@@ -696,7 +697,7 @@ predict_mod <- function(param, type, FM_change = NA,
       Lc_mat <- do.call(cbind,sel.list)
       colnames(Lc_mat) <- Lc
 
-      Lc_mat_FM <- Lc_mat * 1 #max(FM, na.rm=TRUE)
+      Lc_mat_FM <- Lc_mat * 1 #max(FM, na.rm=TRUE)  # with one it should correspond to actual fishing mortality not to change in mortality (x factor)
 
       #list with FM_Lc_matrices per FM_change
       FM_Lc_com_mat.list <- list()

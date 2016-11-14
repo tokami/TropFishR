@@ -110,7 +110,7 @@ A list with the input parameters and dependent on the model type following
      \item \strong{totY}: total yield values for different x factors,
      \item \strong{totV}: total values for different x factors,
      \item \strong{meanB}: average biomasses for different x factors,
-     \item \strong{Xfact}: fishing mortality changes;
+     \item \strong{F_change}: fishing mortality changes;
   }
   \item \code{type = 'ThomBell'} and \code{Lc_change} provided
   \itemize{

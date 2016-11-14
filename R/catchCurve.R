@@ -62,6 +62,10 @@
 #' summary(output$linear_mod_sel)
 #'  }
 #'
+#' # the same with predefined selection for regression line:
+#' output <- catchCurve(synLFQ3, calc_ogive = TRUE, reg_int = c(9,21))
+#' plot(output, plot_selec = TRUE)
+#'
 #' @details This function includes the \link{identify} function, which asks you to
 #'   choose two points from a graph manually. The two points which you choose by clicking
 #'   on the plot in the graphical device represent the start and end of the data points,

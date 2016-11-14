@@ -245,6 +245,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     contour(m, add=TRUE)
 
     if("currents" %in% names(pes) & mark){
+      points(x = curr_markX, y=curr_markY, pch=16)
       abline(v=curr_markX, col="grey30",lty=2)
       abline(h=curr_markY, col="grey30",lty=2)
     }
@@ -300,7 +301,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
       #op <- par(mfrow=c(1,1),new=F, mar = c(5, 4, 4, 4) + 0.3)
 
       #plot Y/R & B/R
-      label <- ifelse("tc" %in% names(pes), "tc", "Lc")
+      label <- ifelse("Lc" %in% names(pes),  "Lc","tc")
       tc_Lc_start <- which(tc_Lc == max(tc_Lc,na.rm=T))
       p.dat <- list_tc_Lc_runs[[tc_Lc_start]]
       py <- p.dat[,which(names(p.dat) == p.yield)]
@@ -450,6 +451,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
         contour(m, add=TRUE)
         #mtext("Yield", line=0.5, side=3)
         if("currents" %in% names(pes) & mark){
+          points(x = curr_markX, y=curr_markY, pch=16)
           abline(v=curr_markX, col="grey30",lty=2)
           abline(h=curr_markY, col="grey30",lty=2)
         }

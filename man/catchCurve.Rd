@@ -124,6 +124,10 @@ output <- catchCurve(synLFQ3, calc_ogive = TRUE)
 summary(output$linear_mod_sel)
  }
 
+# the same with predefined selection for regression line:
+output <- catchCurve(synLFQ3, calc_ogive = TRUE, reg_int = c(9,21))
+plot(output, plot_selec = TRUE)
+
 }
 \references{
 Baranov, F.I., 1926. On the question of the dynamics of the fishing industry.
