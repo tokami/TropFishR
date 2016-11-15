@@ -163,7 +163,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     par(new=TRUE)
     plot(px,py2,type ='l',ylab='',xlab='',
          col='blue',lwd=1.6,axes=FALSE)
-    axis(4,at=pretty(pes$meanB),col = "blue", col.axis="blue")
+    axis(4,at=pretty(c(0,max(pes$meanB))),col = "blue", col.axis="blue")
     mtext("Biomass", side=4, line=2, col = "blue", cex=1)
     # F or E 05
     segments(x0 = -1, x1 = N05, y0 = py2[which(px == N05)], y1 = py2[which(px == N05)],
