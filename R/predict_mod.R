@@ -653,7 +653,7 @@ predict_mod <- function(param, type, FM_change = NA,
       if(!is.na(curr.E)){
         if(!is.na(curr.Lc)){
           curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf, K=K, t0=t0))
-        }
+        }else curr.tc <- NA
         # current exploitation rate
         curr.F = (nM * curr.E)/(1-curr.E)
 
@@ -819,7 +819,7 @@ predict_mod <- function(param, type, FM_change = NA,
       if(!is.na(curr.E)){
         if(!is.na(curr.Lc)){
           curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf, K=K, t0=t0))
-        }
+        }else curr.tc <- NA
 
         # current exploitation rate
         curr.F = (nM * curr.E)/(1-curr.E)
