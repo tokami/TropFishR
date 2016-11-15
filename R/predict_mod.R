@@ -651,13 +651,15 @@ predict_mod <- function(param, type, FM_change = NA,
 
 
       if(!is.na(curr.E)){
-        curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf, K=K, t0=t0))
+        if(!is.na(curr.Lc)){
+          curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf, K=K, t0=t0))
+        }
         # current exploitation rate
         curr.F = (nM * curr.E)/(1-curr.E)
 
-        if(is.null(curr.Lc)){
+        if(is.na(curr.Lc)){
           sel <- (FM / max(FM,na.rm=TRUE))
-        }else if(!is.null(curr.Lc)){
+        }else if(!is.na(curr.Lc)){
           s_list <- list(selecType = "knife_edge", L50 = curr.Lc)
           Lt <- res$midLengths
           sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
@@ -815,16 +817,19 @@ predict_mod <- function(param, type, FM_change = NA,
 
 
       if(!is.na(curr.E)){
-        curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf, K=K, t0=t0))
+        if(!is.na(curr.Lc)){
+          curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf, K=K, t0=t0))
+        }
+
         # current exploitation rate
         curr.F = (nM * curr.E)/(1-curr.E)
 
-        if(is.null(curr.Lc)){
+        if(is.na(curr.Lc)){
           sel <- FM / max(FM, na.rm = TRUE)
-        }else if(!is.null(curr.Lc) | length(s_list) == 1){
+        }else if(!is.na(curr.Lc) | length(s_list) == 1){
           s_list <- list(selecType = "knife_edge", L50 = curr.Lc)
           sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
-        }else if(!is.null(curr.Lc) | length(s_list) != 1){
+        }else if(!is.na(curr.Lc) | length(s_list) != 1){
           sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
         }
         mati <- sel * curr.F
