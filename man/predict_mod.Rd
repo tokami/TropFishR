@@ -221,9 +221,10 @@ predict_mod(param = hake,FM_change = seq(0.1,3,0.05),
 select.list <- list(selecType = 'trawl_ogive', L50 = 50, L75 = 55)
 
 output <- predict_mod(param = hake, FM_change = seq(0,2,0.1),
-   Lc_change = seq(20,60,0.5), curr.E = 0.4, curr.Lc = 50,
+     Lc_change = seq(4,70,1),
+    curr.E = 0.4, curr.Lc = 50,
    type = 'ThompBell', s_list = select.list)
-plot(output, xaxis1 = "FM", yaxis_iso = "Lc", yaxis1 = "B_R")
+plot(output, xaxis1 = "FM", yaxis_iso = "Lc", yaxis1 = "B_R", mark = TRUE)
 
 
 }

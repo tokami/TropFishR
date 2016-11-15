@@ -111,9 +111,10 @@
 #' select.list <- list(selecType = 'trawl_ogive', L50 = 50, L75 = 55)
 #'
 #' output <- predict_mod(param = hake, FM_change = seq(0,2,0.1),
-#'    Lc_change = seq(20,60,0.5), curr.E = 0.4, curr.Lc = 50,
+#'      Lc_change = seq(4,70,1),
+#'     curr.E = 0.4, curr.Lc = 50,
 #'    type = 'ThompBell', s_list = select.list)
-#' plot(output, xaxis1 = "FM", yaxis_iso = "Lc", yaxis1 = "B_R")
+#' plot(output, xaxis1 = "FM", yaxis_iso = "Lc", yaxis1 = "B_R", mark = TRUE)
 #'
 #'
 #' @details The Thompson and Bell model incorporates an iteration step simulating the
@@ -612,7 +613,7 @@ predict_mod <- function(param, type, FM_change = NA,
       if(is.null(res$FM) | length(res$FM) == 1) stop(noquote("Please provide fishing mortality FM (in 'param') as a vector per size class!"))
 
       #prediction based on f_change
-      pred_mat <- as.matrix(FM) %*% FM_change
+      pred_mat <- as.matrix(FM/max(FM, na.rm = TRUE)) %*% FM_change
 
       pred_res_list <- list()
       for(x7 in 1:length(FM_change)){
@@ -649,19 +650,24 @@ predict_mod <- function(param, type, FM_change = NA,
       ret <- c(res3, list(df_Es = df_Es))
 
 
-      if(!is.na(curr.E) & !is.na(curr.Lc)){
+      if(!is.na(curr.E)){
         curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf, K=K, t0=t0))
         # current exploitation rate
         curr.F = (nM * curr.E)/(1-curr.E)
 
-        if(length(s_list) == 1){
+        if(is.null(curr.Lc)){
+          sel <- (FM / max(FM,na.rm=TRUE))
+        }else if(!is.null(curr.Lc)){
           s_list <- list(selecType = "knife_edge", L50 = curr.Lc)
+          Lt <- res$midLengths
+          sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
         }
-        Lt <- res$midLengths
-        sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
+        if(length(s_list) != 1){
+          Lt <- res$midLengths
+          sel <- select_ogive(s_list, Lt = Lt)
+        }
 
-        Lc_mat_FM <- sel * 1 #max(FM, na.rm=TRUE)
-        mati <- Lc_mat_FM * curr.F
+        mati <- sel * curr.F
         param.loop <- res
         param.loop$FM <- mati
         param.loop$Z <- mati + nM
@@ -697,7 +703,7 @@ predict_mod <- function(param, type, FM_change = NA,
       Lc_mat <- do.call(cbind,sel.list)
       colnames(Lc_mat) <- Lc
 
-      Lc_mat_FM <- Lc_mat * 1 #max(FM, na.rm=TRUE)  # with one it should correspond to actual fishing mortality not to change in mortality (x factor)
+      Lc_mat_FM <- Lc_mat   #max(FM, na.rm=TRUE)  # with one it should correspond to actual fishing mortality not to change in mortality (x factor)
 
       #list with FM_Lc_matrices per FM_change
       FM_Lc_com_mat.list <- list()
@@ -808,18 +814,20 @@ predict_mod <- function(param, type, FM_change = NA,
                     df_Es = df_Es))
 
 
-      if(!is.na(curr.E) & !is.na(curr.Lc)){
+      if(!is.na(curr.E)){
         curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf, K=K, t0=t0))
         # current exploitation rate
         curr.F = (nM * curr.E)/(1-curr.E)
 
-        if(length(s_list) == 1){
+        if(is.null(curr.Lc)){
+          sel <- FM / max(FM, na.rm = TRUE)
+        }else if(!is.null(curr.Lc) | length(s_list) == 1){
           s_list <- list(selecType = "knife_edge", L50 = curr.Lc)
+          sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
+        }else if(!is.null(curr.Lc) | length(s_list) != 1){
+          sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
         }
-        sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
-
-        Lc_mat_FM <- sel * max(FM, na.rm=TRUE)
-        mati <- Lc_mat_FM * curr.F
+        mati <- sel * curr.F
         param.loop <- res
         param.loop$FM <- mati
         param.loop$Z <- mati + nM

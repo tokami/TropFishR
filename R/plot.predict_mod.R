@@ -151,9 +151,9 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     # current Exploitation rate or fishing mortality
     if(!is.null(pes$currents) & mark){
       currents <- pes$currents
-      if(!is.na(currents$curr.E)){
+      if(!is.na(currents$curr.E) & yaxis1 == "Y_R" | yaxis1 == "Y_R.rel"){
         px1 <- ifelse(xaxis1 == "FM",currents$curr.F, currents$curr.E)
-        py1 <- ifelse(yaxis1 == "Y_R",currents$curr.Y,currents$curr.B)
+        py1 <- currents$curr.Y
         points(px1,py1, pch = 16, col="grey30")
         abline(v=px1, col="grey30",lty=2)
       }
@@ -171,6 +171,16 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
              col= 'red',lty = 3, lwd=1.5)
     segments(x0 = N05, x1 = N05, y0 = -1, y1 = py2[which(px == N05)],
              col= 'red',lty = 3, lwd=1.5)
+    # current Exploitation rate or fishing mortality
+    if(!is.null(pes$currents) & mark){
+      currents <- pes$currents
+      if(!is.na(currents$curr.E) & yaxis1 == "B_R" | yaxis1 == "B_R.rel"){
+        px1 <- ifelse(xaxis1 == "FM",currents$curr.F, currents$curr.E)
+        py1 <- currents$curr.B
+        points(px1,py1, pch = 16, col="grey30")
+        abline(v=px1, col="grey30",lty=2)
+      }
+    }
     # Legend
     legend("top", legend = legend.lab, xpd = TRUE, horiz = TRUE,
            inset = c(0,0), bty = "n", lty = c(1,2), col = c("red","goldenrod1"),
@@ -228,6 +238,10 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     # colours for plot
     pal <- colorRampPalette(rev(c(
       rgb(1,0.5,0.5), rgb(1,1,0.5), rgb(0.5,1,1), rgb(0.5,0.5,1))))
+    if(yaxis1 == "B_R" | yaxis1 == "B_R.rel"){
+      pal <- colorRampPalette(c(
+        rgb(1,0.5,0.5), rgb(1,1,0.5), rgb(0.5,1,1), rgb(0.5,0.5,1)))
+    }
 
     m <- list(x = px,
               y = Lc_change,
@@ -450,6 +464,10 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
         pal <- colorRampPalette(rev(c(
           rgb(1,0.5,0.5), rgb(1,1,0.5), rgb(0.5,1,1), rgb(0.5,0.5,1)
         )))
+        if(yaxis1 == "B_R" | yaxis1 == "B_R.rel"){
+          pal <- colorRampPalette(c(
+            rgb(1,0.5,0.5), rgb(1,1,0.5), rgb(0.5,1,1), rgb(0.5,0.5,1)))
+        }
 
         #plot
         if(identify == TRUE){
