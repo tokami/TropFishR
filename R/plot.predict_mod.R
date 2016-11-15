@@ -162,8 +162,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     # Biomass
     par(new=TRUE)
     plot(px,py2,type ='l',ylab='',xlab='',
-         col='blue',lwd=1.6,axes=FALSE,
-         ylim = c(0,ceiling(max_bio/dim_bio) * dim_bio))
+         col='blue',lwd=1.6,axes=FALSE)
     axis(4,at=pretty(c(0,pes$meanB)),col = "blue", col.axis="blue")
     mtext("Biomass", side=4, line=2, col = "blue", cex=1)
     # F or E 05
