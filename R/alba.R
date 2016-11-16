@@ -1,4 +1,4 @@
-#' @name Aabra
+#' @name alba
 #'
 #' @title Length-frequency data of the clam Abra alba
 #'
@@ -25,24 +25,24 @@
 #' expanded user's guide to ELEFAN 0, 1 and 2.
 #' ICLARM Contrib. 261.
 #'
-#' @usage data(Aabra)
+#' @usage data(alba)
 #' @keywords data dataset length-frequency
 #'
 #' @examples
-#' data(Aabra)
+#' data(alba)
 #'
 #' # plot raw catch frequencies
-#' plot(Aabra, Fname = "catch")
+#' plot(alba, Fname = "catch")
 #'
 #' # plot restructured frequencies
-#' Aabra <- lfqRestructure(Aabra, MA=5)
-#' plot(Aabra, Fname = "rcounts")
+#' alba <- lfqRestructure(alba, MA=5)
+#' plot(alba, Fname = "rcounts")
 #'
 #' \donttest{
 #' # ELEFAN_SA fitting
 #' set.seed(1)
 #' fitSA <- ELEFAN_SA(
-#'   Aabra, seasonalised = TRUE,
+#'   alba, seasonalised = TRUE,
 #'   init_par = list(Linf=14.5, K=1.1, t_anchor=0.4, ts=0, C=0.2),
 #'   low_par = list(Linf=13, K=0.7, t_anchor=0, ts=0, C=0),
 #'   up_par = list(Linf=15.5, K=1.5, t_anchor=1, ts=1, C=1),
@@ -52,7 +52,7 @@
 #' fitSA$Rn_max
 #'
 #' # plot ELEFAN_SA results
-#' plot(Aabra, Fname = "catch", draw = FALSE)
+#' plot(alba, Fname = "catch", draw = FALSE)
 #' lfqFitCurves(fitSA, col=2, par=fitSA$par, draw=TRUE)$Rn_max
 #' }
 #'
