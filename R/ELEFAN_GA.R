@@ -95,7 +95,9 @@
 #'        \item \strong{C}: amplitude of growth oscillation
 #'          (if \code{seasonalised} = TRUE),
 #'        \item \strong{ts}: summer point of oscillation (ts = WP - 0.5)
-#'          (if \code{seasonalised} = TRUE);
+#'          (if \code{seasonalised} = TRUE),
+#'        \item \strong{phiL}: growth performance index defined as
+#'          phiL = log10(K) + 2 * log10(Linf);
 #'      }
 #'   \item \strong{Rn_max}: highest value of fitness function, (comparable with ELEFAN and ELEFAN_SA).
 #' }
@@ -280,6 +282,10 @@ ELEFAN_GA <- function(
   final_res <- lfqFitCurves(lfq = lfq, par=pars,
                             flagging.out = flagging.out,
                             agemax = agemax)
+
+  # growth performance index
+  phiL <- log10(pars$K) + 2 * log10(pars$Linf)
+  pars$phiL <- phiL
 
   # Results
   ret <- c(lfq, list(ncohort = final_res$ncohort,

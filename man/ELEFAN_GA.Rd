@@ -115,7 +115,9 @@ A list with the input parameters and following list objects:
        \item \strong{C}: amplitude of growth oscillation
          (if \code{seasonalised} = TRUE),
        \item \strong{ts}: summer point of oscillation (ts = WP - 0.5)
-         (if \code{seasonalised} = TRUE);
+         (if \code{seasonalised} = TRUE),
+       \item \strong{phiL}: growth performance index defined as
+         phiL = log10(K) + 2 * log10(Linf);
      }
   \item \strong{Rn_max}: highest value of fitness function, (comparable with ELEFAN and ELEFAN_SA).
 }

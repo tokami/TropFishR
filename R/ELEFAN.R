@@ -87,7 +87,9 @@
 #'        \item \strong{C}: amplitude of growth oscillation
 #'          (if \code{seasonalised} = TRUE),
 #'        \item \strong{ts}: summer point of oscillation (ts = WP - 0.5)
-#'          (if \code{seasonalised} = TRUE);
+#'          (if \code{seasonalised} = TRUE),
+#'        \item \strong{phiL}: growth performance index defined as
+#'          phiL = log10(K) + 2 * log10(Linf);
 #'      }
 #'   \item \strong{Rn_max}: highest score value
 #' }
@@ -268,11 +270,15 @@ ELEFAN <- function(x, Linf_fix = NA, Linf_range = NA,
   Kest <- as.numeric(as.character(rownames(score_mat)[idxs[1]]))
   tanchest <- as.numeric(as.character(ESP_tanch_L[idxs[1],idxs[2]]))
 
+  # growth performance index
+  phiL <- log10(Kest) + 2 * log10(Linfest)
+
   pars <- list(Linf = Linfest,
                K = Kest,
                t_anchor = tanchest,
                C = C,
-               ts = ts)
+               ts = ts,
+               phiL = phiL)
 
   final_res <- lfqFitCurves(lfq = res, par=pars,
                             flagging.out = flagging.out,
