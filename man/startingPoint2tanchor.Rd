@@ -4,11 +4,12 @@
 \alias{startingPoint2tanchor}
 \title{Convert FiSAT's starting point to t_anchor value}
 \usage{
-startingPoint2tanchor(param, startingLength, startingSample)
+startingPoint2tanchor(param, par, startingLength, startingSample)
 }
 \arguments{
-\item{param}{lfq object with dates, midLengths, catch, and growth parameters 'Linf'
-and 'K' from VBGF}
+\item{param}{list with dates, midLengths, and catch}
+
+\item{par}{list with growth parameters 'Linf' and 'K' of VBGF}
 
 \item{startingLength}{starting length as returned by FiSAT, indicating the length within
 the starting sample cut by a growth curve}
@@ -17,7 +18,7 @@ the starting sample cut by a growth curve}
 cut by a growth curve}
 }
 \value{
-lfq object with t_anchor value
+list with input elements and estimated t_anchor value
 }
 \description{
 Starting points returned or chosen within FiSAT are not supported
@@ -25,10 +26,11 @@ Starting points returned or chosen within FiSAT are not supported
    a temporal axis. This function allows to convert FiSAT's starting points to \code{t_anchor} values
 }
 \examples{
-data(synLFQ1)
-synLFQ1$Linf <- 54
-synLFQ1$K <- 0.6
-lfqNEW <- startingPoint2tanchor(synLFQ1, startingLength = 20, startingSample = 4)
+data(synLFQ5)
+lfqNEW <- startingPoint2tanchor(synLFQ5, par = list(Linf = 92, K = 0.37),
+   startingLength = 31, startingSample = 4)
+lfqRest <- lfqRestructure(lfqNEW, MA = 11)
+plot(lfqRest,par=list(Linf=lfqRest$Linf,K=lfqRest$K,t_anchor=lfqRest$t_anchor))
 
 }
 \keyword{function}
