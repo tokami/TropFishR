@@ -135,7 +135,7 @@ powell_wetherall <- function(param, catch_columns = NA,
     #identify plot
     if(is.null(reg_int)){
       repeat{
-        dev.new(noRStudioGD = TRUE)
+        dev.new()#noRStudioGD = TRUE)
         plot(x = Lprime,y = Lmean_Lprime,
              xlab = "Lprime", ylab = "Lmean - Lprime")
         text(Lprime+0.5, Lmean_Lprime+0.5, labels=as.character(order(Lprime)), cex= 0.7)

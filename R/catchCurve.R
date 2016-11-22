@@ -346,7 +346,7 @@ catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
   #identify plot
   if(is.null(reg_int)){
     writeLines("Please choose the minimum and maximum point in the graph \nto include for the regression line!")
-    dev.new(noRStudioGD = TRUE)
+    dev.new()#noRStudioGD = TRUE)
     op <- par(mfrow = c(1,1),
               c(5, 4, 4, 2) + 0.1,
               oma = c(2, 1, 0, 1) + 0.1)

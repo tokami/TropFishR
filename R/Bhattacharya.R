@@ -148,7 +148,7 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
 
       repeat {
         # histogramm
-        dev.new(noRStudioGD = TRUE)
+        dev.new()#noRStudioGD = TRUE)
         par(mfrow = c(2,1),
             oma = c(6.5, 0.5, 2, 1) + 0.1,
             mar = c(0, 4, 0.5, 0) + 0.1)
@@ -264,7 +264,7 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
                     bhat.table.list[[1]]$N1.plus)
       h <- hist(freqis, breaks = 50, plot = FALSE)
 
-      dev.new(noRStudioGD = TRUE)
+      dev.new()#noRStudioGD = TRUE)
       par(mfrow = c(2,1),
           oma = c(6.5, 0.5, 2, 1) + 0.1,
           mar = c(0, 4, 0.5, 0) + 0.1)
