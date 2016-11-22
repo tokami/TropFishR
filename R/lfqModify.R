@@ -65,6 +65,7 @@ lfqModify <- function(lfq, par = NULL, plus_group = FALSE){
       while(pg > max(midLengths) | pg < min(midLengths)){
         pg <- readline(paste0("Enter a length group between ", min(midLengths)," and ",
                               max(midLengths),":"))
+        pg = as.numeric(as.character(pg))
         if(!(pg %in% midLengths)){
           writeLines(paste0(pg, " is not an element of midLengths (see table)."))
           pg = -1
