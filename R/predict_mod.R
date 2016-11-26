@@ -655,7 +655,9 @@ predict_mod <- function(param, type, FM_change = NA,
       N05 <- which.min(abs(Bper - 50))
       Nmsy <- which.max(pred_res_df$totY)
 
-      df_Es <- data.frame(Lc = ifelse(!is.null(Lc),Lc,NA),
+      df_Es <- data.frame(FM = FM_change,
+                          E = E_change,
+                          Lc = ifelse(!is.null(Lc),Lc,NA),
                           tc = ifelse(!is.null(tc),tc,NA),
                           Fmsy = FM_change[Nmsy],
                           F05 = FM_change[N05],
@@ -810,7 +812,9 @@ predict_mod <- function(param, type, FM_change = NA,
 
       Nmsy <- apply(mat_FM_Lc_com.Y, MARGIN = 2, FUN = which.max)
 
-      df_Es <- data.frame(Lc = ifelse(!is.null(Lc),Lc,NA),
+      df_Es <- data.frame(FM = FM_change,
+                          E = E_change,
+                          Lc = ifelse(!is.null(Lc),Lc,NA),
                           tc = ifelse(!is.null(tc),tc,NA),
                           Fmsy = FM_change[Nmsy],
                           F05 = FM_change[N05],
