@@ -112,8 +112,8 @@
 #'
 #' output <- predict_mod(param = hake, FM_change = seq(0,2,0.1),
 #'      Lc_change = seq(20,70,1),
-#'     curr.E = 0.4, curr.Lc = 50,
-#'    type = 'ThompBell', s_list = select.list)
+#'      curr.E = 0.4, curr.Lc = 50,
+#'      type = 'ThompBell', s_list = select.list)
 #' plot(output, xaxis1 = "FM", yaxis_iso = "Lc", yaxis1 = "B_R", mark = TRUE)
 #'
 #'
@@ -655,14 +655,20 @@ predict_mod <- function(param, type, FM_change = NA,
       N05 <- which.min(abs(Bper - 50))
       Nmsy <- which.max(pred_res_df$totY)
 
-      df_Es <- data.frame(FM = FM_change,
-                          E = E_change,
-                          Lc = ifelse(!is.null(Lc),Lc,NA),
-                          tc = ifelse(!is.null(tc),tc,NA),
-                          Fmsy = FM_change[Nmsy],
-                          F05 = FM_change[N05],
-                          Emsy = E_change[Nmsy],
-                          E05 = E_change[N05])
+      if(!is.null(Lc[1]) & !is.null(tc[1])){
+        df_Es <- data.frame(Lc = Lc,
+                            tc = tc,
+                            Fmsy = FM_change[Nmsy],
+                            F05 = FM_change[N05],
+                            Emsy = E_change[Nmsy],
+                            E05 = E_change[N05])
+      }else{
+        df_Es <- data.frame(Fmsy = FM_change[Nmsy],
+                            F05 = FM_change[N05],
+                            Emsy = E_change[Nmsy],
+                            E05 = E_change[N05])
+      }
+
 
       ret <- c(res3, list(df_Es = df_Es))
 
@@ -812,14 +818,20 @@ predict_mod <- function(param, type, FM_change = NA,
 
       Nmsy <- apply(mat_FM_Lc_com.Y, MARGIN = 2, FUN = which.max)
 
-      df_Es <- data.frame(FM = FM_change,
-                          E = E_change,
-                          Lc = ifelse(!is.null(Lc),Lc,NA),
-                          tc = ifelse(!is.null(tc),tc,NA),
-                          Fmsy = FM_change[Nmsy],
-                          F05 = FM_change[N05],
-                          Emsy = E_change[Nmsy],
-                          E05 = E_change[N05])
+      if((!is.null(Lc[1]) & !is.null(tc[1])) | (!is.na(Lc[1]) & !is.na(tc[1])) ){
+        df_Es <- data.frame(Lc = Lc,
+                            tc = tc,
+                            Fmsy = FM_change[Nmsy],
+                            F05 = FM_change[N05],
+                            Emsy = E_change[Nmsy],
+                            E05 = E_change[N05])
+      }else{
+        df_Es <- data.frame(Fmsy = FM_change[Nmsy],
+                            F05 = FM_change[N05],
+                            Emsy = E_change[Nmsy],
+                            E05 = E_change[N05])
+      }
+
 
       ret <- c(res,
                list(FM_change = FM_change,
@@ -877,4 +889,3 @@ predict_mod <- function(param, type, FM_change = NA,
   if(plot) plot(ret)
   return(ret)
 }
-
