@@ -111,7 +111,7 @@
 #' select.list <- list(selecType = 'trawl_ogive', L50 = 50, L75 = 55)
 #'
 #' output <- predict_mod(param = hake, FM_change = seq(0,2,0.1),
-#'      Lc_change = seq(4,70,1),
+#'      Lc_change = seq(20,70,1),
 #'     curr.E = 0.4, curr.Lc = 50,
 #'    type = 'ThompBell', s_list = select.list)
 #' plot(output, xaxis1 = "FM", yaxis_iso = "Lc", yaxis1 = "B_R", mark = TRUE)
@@ -610,7 +610,22 @@ predict_mod <- function(param, type, FM_change = NA,
     # Only FM change provided without Lc_tc change
     if((is.null(tc_change) & is.null(Lc_change))){  #  | length(s_list) == 1){
 
-      if(is.null(res$FM) | length(res$FM) == 1) stop(noquote("Please provide fishing mortality FM (in 'param') as a vector per size class!"))
+      #if(is.null(res$FM) | length(res$FM) == 1) stop(noquote("Please provide fishing mortality FM (in 'param') as a vector per size class!"))
+
+      if(is.null(res$FM)) stop(noquote("Please provide fishing mortality FM (in 'param')!"))
+      if(length(res$FM) == 1){
+        if(length(s_list) > 1 | !is.null(Lc[1])){
+          print(noquote("Fishing mortality per length class not povided, using selectivity information to derive fishing mortality per length class."))
+          if(length(s_list) == 1){
+            s_list <- list(selecType = "knife_edge", L50 = Lc[1])
+          }
+          sel <- select_ogive(s_list, Lt = Lt)
+          FM <- res$FM * sel
+        }else{
+          stop(noquote("Please provide either fishing mortality FM (in 'param') per length class or a Lc value!"))
+        }
+      }
+
 
       #prediction based on f_change
       pred_mat <- as.matrix(FM/max(FM, na.rm = TRUE)) %*% FM_change
