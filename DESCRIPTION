@@ -2,7 +2,7 @@ Package: TropFishR
 Type: Package
 Title: Tropical Fisheries Analysis with R
 Version: 1.0.2
-Date: 2016-11-11
+Date: 2016-12-24
 Author: Tobias K. Mildenberger, Marc H. Taylor, Matthias Wolff
 Maintainer: Tobias K. Mildenberger <t.k.mildenberger@gmail.com>
 Depends: R (>= 3.0.0)
@@ -18,4 +18,3 @@ BugReports: https://github.com/tokami/TropFishR/issues
 URL: https://github.com/tokami/TropFishR
 RoxygenNote: 5.0.1
 Suggests: stats, graphics, grDevices, utils, knitr, rmarkdown, plyr
-VignetteBuilder: knitr
