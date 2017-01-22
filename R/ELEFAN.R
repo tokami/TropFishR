@@ -96,7 +96,7 @@
 #'
 #' @importFrom grDevices colorRampPalette
 #' @importFrom graphics abline axis grid image mtext par plot text title
-#' @importFrom utils setTxtProgressBar txtProgressBar
+#' @importFrom utils setTxtProgressBar txtProgressBar flush.console
 #' @importFrom stats optimise
 #'
 #' @references
@@ -184,6 +184,9 @@ ELEFAN <- function(x, Linf_fix = NA, Linf_range = NA,
 
   ESP_tanch_L <- matrix(NA,nrow=length(Ks),ncol=length(Linfs))
   ESP_list_L <- matrix(NA,nrow=length(Ks),ncol=length(Linfs))
+  writeLines(paste("Optimisation procuedure of ELEFAN is running. This might take some minutes.\n The process bar will inform you about the process of the calculations.",sep=" "))
+  flush.console()
+
   if(!hide.progressbar){
     nlk <- prod(dim(ESP_list_L))
     pb <- txtProgressBar(min=1, max=nlk, style=3)
