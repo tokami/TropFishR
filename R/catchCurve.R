@@ -118,6 +118,7 @@
 #' @importFrom grDevices dev.new
 #' @importFrom graphics identify par plot
 #' @importFrom stats lm na.omit
+#' @importFrom utils flush.console
 #'
 #' @references
 #' Baranov, F.I., 1926. On the question of the dynamics of the fishing industry.
@@ -181,6 +182,7 @@ catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
   if(is.na(catch_columns[1]) & (class(res$catch) == 'matrix' |
      class(res$catch) == 'data.frame')){
     writeLines("Please be aware that you provided the catch as a matrix without specifiying any columns for \n the analysis. In this case the methods applies by default the catch curve with constant \n parameter system (refer to the help file for more information).")
+    flush.console()
     constant_dt <- TRUE
     catch <- res$catch
   }
@@ -346,12 +348,15 @@ catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
   #identify plot
   if(is.null(reg_int)){
     writeLines("Please choose the minimum and maximum point in the graph \nto include for the regression line!")
+    flush.console()
     dev.new()#noRStudioGD = TRUE)
     op <- par(mfrow = c(1,1),
               c(5, 4, 4, 2) + 0.1,
               oma = c(2, 1, 0, 1) + 0.1)
     plot(x = xvar,y = yvar, ylim = c(minY,maxY), xlim = xlims,
          xlab = xlabel, ylab = ylabel, type = "n")
+    mtext(side = 3, "Click on two numbers. Escape to Quit.",
+          xpd = NA, cex = 1.25)
     text(xvar, yvar, labels=as.character(order(xvar)), cex= 0.7)
     cutter <- identify(x = xvar, y = yvar,
                        labels = order(xvar), n=2)

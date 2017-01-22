@@ -55,6 +55,7 @@
 #' @importFrom grDevices dev.new dev.off recordPlot
 #' @importFrom graphics abline hist identify layout lines par plot points text title
 #' @importFrom stats dnorm lm rnorm sd
+#' @importFrom utils flush.console
 #'
 #' @references
 #' Bhattacharya, C.G., 1967. A simple method of resolution of a distribution into Gaussian
@@ -114,6 +115,7 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
   colour.vec <- rep('black', length(bhat.table$L))
 
   writeLines("Starting on the left, please choose from black points which \nlie on a straight line! Do not include points which might be \naffected by the next distribution! \nTo stop the process press right click (and choose \n'Stop' if necessary)")
+  flush.console()
 
   for(xy in 1:12){
 
@@ -155,9 +157,17 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
         layout(matrix(c(1,2),nrow=2), heights = c(1,2.5))
 
         freqis <- rep(bhat.table.list[[1]]$mean.length.classes, bhat.table.list[[1]]$N1.plus)
-        if(xy == 1) hist(freqis, breaks = 50, main = '', xaxt = 'n', probability = TRUE)
-        if(xy > 1) hist(freqis, breaks = 50, main = '', xaxt = 'n',
+        if(xy == 1){
+          hist(freqis, breaks = 50, main = '', xaxt = 'n', probability = TRUE)
+          mtext(side = 3, "Click on two points. Escape to Quit.",
+                      xpd = NA, cex = 1.25)
+        }
+        if(xy > 1){
+          hist(freqis, breaks = 50, main = '', xaxt = 'n',
                         probability = TRUE, ylim = c(0,maxlim))
+          mtext(side = 3, "Click on two points. Escape to Quit.",
+                      xpd = NA, cex = 1.25)
+        }
         if(xy > 1){
           for(tempRep in 1:(xy-1)){
             lines(temp.list[[tempRep]]$xfit, temp.list[[tempRep]]$yyfit,
@@ -203,7 +213,10 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
         x.co1 <- bhat.table$L[id.co1$ind[1]:id.co1$ind[2]]
 
         # Break loop if selection does not embrace at least 3 points
-        if(length(x.co1) < 3) writeLines("Your selection is not possible. You have to choose two \npoints which include at least one other point. At least \nthree points are required for a regression line. Please choose again!")
+        if(length(x.co1) < 3){
+          writeLines("Your selection is not possible. You have to choose two \npoints which include at least one other point. At least \nthree points are required for a regression line. Please choose again!")
+          flush.console()
+        }
         if(length(x.co1) >= 3){
           break
         }
@@ -211,6 +224,7 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
 
       if(xy == 1 & length(id.co1$ind) == 0){
         writeLines("You did not choose any points! Please run the function again \nand choose points to include in the calculation of the \nGaussian components of the observed frequency.")
+        flush.console()
         cancel <- TRUE
         break
       }

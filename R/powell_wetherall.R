@@ -61,6 +61,7 @@
 #' @importFrom grDevices dev.new recordPlot
 #' @importFrom graphics abline identify par plot points
 #' @importFrom stats lm qt
+#' @importFrom utils flush.console
 #'
 #' @references
 #' Powell, D.G., 1979. Estimation of mortality and growth parameters from the length-
@@ -135,12 +136,15 @@ powell_wetherall <- function(param, catch_columns = NA,
     #identify plot
     if(is.null(reg_int)){
       repeat{
+        writeLines("Please choose the minimum and maximum point in the \ngraph to include for the regression line!")
+        flush.console()
         dev.new()#noRStudioGD = TRUE)
         plot(x = Lprime,y = Lmean_Lprime,
              xlab = "Lprime", ylab = "Lmean - Lprime")
         text(Lprime+0.5, Lmean_Lprime+0.5, labels=as.character(order(Lprime)), cex= 0.7)
-        writeLines("Please choose the minimum and maximum point in the \ngraph to include for the regression line!")
-        cutter <- identify(x = Lprime,y = Lmean_Lprime,
+        mtext(side = 3, "Click on two points. Escape to Quit.",
+              xpd = NA, cex = 1.25)
+       cutter <- identify(x = Lprime,y = Lmean_Lprime,
                            labels = order(Lprime), n=2)
 
         if(length(cutter) == 0){
@@ -150,7 +154,10 @@ powell_wetherall <- function(param, catch_columns = NA,
 
         length.cutter <- length(cutter[1]:cutter[2])
         # Break loop if selection does not embrace at least 3 points
-        if(length.cutter < 3) writeLines("Your selection is not possible. You have to choose two \npoints which include at least one other point. At least \nthree points are required for a regression line. Please choose again!")
+        if(length.cutter < 3){
+          writeLines("Your selection is not possible. You have to choose two \npoints which include at least one other point. At least \nthree points are required for a regression line. Please choose again!")
+          flush.console()
+        }
         if(length.cutter >= 3){
           break
         }
