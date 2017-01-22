@@ -130,6 +130,7 @@
 #' @import parallel
 #' @import doParallel
 #' @importFrom GA ga
+#' @importFrom utils flush.console
 #'
 #' @references
 #' Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a
@@ -238,6 +239,8 @@ ELEFAN_GA <- function(
     min = c(low_Linf, low_K, low_tanc, low_C, low_ts)
     max = c(up_Linf, up_K, up_tanc, up_C, up_ts)
 
+    writeLines(paste("Genetic algorithm is running. This can take some time. A beep tone will inform you\n when the calculations are done.",sep=" "))
+    flush.console()
     fit <- GA::ga(
       type = "real-valued",
       fitness = sofun, lfq=lfq,
@@ -255,6 +258,8 @@ ELEFAN_GA <- function(
     min = c(low_Linf, low_K, low_tanc)
     max = c(up_Linf, up_K, up_tanc)
 
+    writeLines(paste("Genetic algorithm is running. This can take some time. A beep tone will inform you\n when the calculations are done.",sep=" "))
+    flush.console()
     fit <- GA::ga(
       type = "real-valued",
       fitness = fun,

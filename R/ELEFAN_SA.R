@@ -124,6 +124,7 @@
 #' @importFrom grDevices adjustcolor
 #' @importFrom stats median
 #' @importFrom GenSA GenSA
+#' @importFrom utils flush.console
 #'
 #' @references
 #' Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and
@@ -245,7 +246,9 @@ ELEFAN_SA <- function(x,
   }
 
   if(seasonalised){
-    # Simulated annealing
+    # Simulated annealing with seasonalised VBGF
+    writeLines(paste("Simulated annealing is running. This takes", round(SA_time/60,digits=2),"minutes. A beep tone will inform you\n when the calculations are done.",sep=" "))
+    flush.console()
     SAfit <- GenSA::GenSA(
       par = c(init_Linf, init_K, init_tanc, init_C, init_ts),
       fn = soSAfun,
@@ -265,6 +268,8 @@ ELEFAN_SA <- function(x,
     names(pars) <- c("Linf","K","t_anchor", "C", "ts")
   }else{
     # Simulated annealing
+    writeLines(paste("Simulated annealing is running. This takes", round(SA_time/60,digits=2),"minutes. A beep tone will inform you\n when the calculations are done.",sep=" "))
+    flush.console()
     SAfit <- GenSA::GenSA(par = c(init_Linf, init_K, init_tanc),
       fn = SAfun,
       lower = c(low_Linf, low_K, low_tanc),
