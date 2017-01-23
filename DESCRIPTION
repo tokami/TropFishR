@@ -18,3 +18,4 @@ BugReports: https://github.com/tokami/TropFishR/issues
 URL: https://github.com/tokami/TropFishR
 RoxygenNote: 5.0.1
 Suggests: stats, graphics, grDevices, utils, knitr, rmarkdown, plyr
+VignetteBuilder: knitr

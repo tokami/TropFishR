@@ -9,7 +9,9 @@
 #' @param bin_size size of the bins in cm (Default: 2)
 #' @param length_unit unit of length measurements, either "cm" (default), "mm" or "m"
 #' @param plus_group logical; should a plus group be created? If yes you will be
-#'    asked to insert the length for the plus group in the console. (Default: FALSE)
+#'    asked to insert the length for the plus group in the console (default: FALSE).
+#'    Instead of inserting the length of the plus group via the console, the value
+#'    can be incorporated in a vector, e.g. plus_group = c(TRUE, 30).
 #' @param aggregate_dates logical; indicating whether dates should be lumped in monthly
 #'    sampling times (assuming sampling always aound the 15th of
 #'    each month; default is FALSE). More exact lumping can only done manually and
@@ -28,7 +30,7 @@
 #'            length.out = 1000))
 #' # create lfq data
 #' lfq_dat <- lfqCreate(data,Lname = "length.mm.", Dname = "dates", aggregate_dates = TRUE,
-#'    length_unit = "mm", bin_size = 0.5, plot=TRUE)
+#'    length_unit = "mm", bin_size = 0.5, plot=TRUE, plus_group=c(TRUE,15.75))
 #'
 #' @return A list of "lfq" class with
 #'    \itemize{
@@ -89,26 +91,43 @@ lfqCreate <- function(data, Lname, Dname, bin_size = 2,
   catch_mat[is.na(catch_mat)] <- 0
 
   # plus group
-  if(plus_group){
-    print(data.frame(midLengths = midLengths, frequency = rowSums(catch_mat)))
-    writeLines("Check the table above and insert the length of the plus group.")
-    pg = -1
-    while(pg > max(midLengths) | pg < min(midLengths)){
-      pg <- readline(paste0("Enter a length group between ", min(midLengths)," and ",
-                           max(midLengths),":"))
-      if(!(pg %in% midLengths)){
-        writeLines(paste0(pg, " is not an element of midLengths (see table)."))
-        pg = -1
+  if(plus_group[1]){
+    if(length(plus_group) == 1){
+      if(is.vector(catch_mat)){
+        print(data.frame(midLengths = midLengths, frequency = catch_mat))
+      }else print(data.frame(midLengths = midLengths, frequency = rowSums(catch_mat)))
+      writeLines("Check the table above and insert the length of the plus group (Esc to cancel).")
+      pg = -1
+      while(pg > max(midLengths) | pg < min(midLengths)){
+        pg <- readline(paste0("Enter a length group between ", min(midLengths)," and ",
+                              max(midLengths),":"))
+        pg = as.numeric(as.character(pg))
+        if(!(pg %in% midLengths)){
+          writeLines(paste0(pg, " is not an element of midLengths (see table)."))
+          pg = -1
+          #pg <- ifelse(grepl("\\D",pg),-1,as.integer(pg))
+          if(is.na(pg)){break}  # breaks when hit enter
+        }
       }
-      #pg <- ifelse(grepl("\\D",pg),-1,as.integer(pg))
-      if(is.na(pg)){break}  # breaks when hit enter
+    }else if(length(plus_group) == 2){
+      pg = as.numeric(as.character(plus_group[2]))
     }
+
     midLengths <- midLengths[1:which(midLengths == pg)]
-    addplus <- colSums(catch_mat[(which(midLengths == pg):nrow(catch_mat)),])
-    catch_mat <- catch_mat[1:which(midLengths == pg),]
-    catch_mat[which(midLengths == pg),] <-
-      catch_mat[which(midLengths == pg),] + addplus
+    if(is.vector(catch_mat)){
+      addplus <- sum(catch_mat[(which(midLengths == pg):length(catch_mat))])
+      catch_mat <- catch_mat[1:which(midLengths == pg)]
+      catch_mat[which(midLengths == pg)] <-
+        catch_mat[which(midLengths == pg)] + addplus
+    }else{
+      addplus <- colSums(catch_mat[(which(midLengths == pg):nrow(catch_mat)),])
+      catch_mat <- catch_mat[1:which(midLengths == pg),]
+      catch_mat[which(midLengths == pg),] <-
+        catch_mat[which(midLengths == pg),] + addplus
+    }
   }
+
+
 
   res <- list(dates = unique(samplings),
                    midLengths = midLengths,

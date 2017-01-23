@@ -1,11 +1,12 @@
 #' @title Modify lfq data for further analysis
 #'
-#' @description Rearrange catch matrix in length frequency data (lfq class) to
-#'    have one column per year. This is required for e.g. \code{\link{catchCurve}}.
-#'    Add plus group to catch matrix.
+#' @description Modify length-freqeuncy (LFQ) data. Allows to summarise catch matrix
+#'    of LFQ data to one column per year. This is required for e.g. \code{\link{catchCurve}}.
+#'    Allows to change bin size of LFQ data. Allows to ad plus group to catch matrix.
 #'
 #' @param lfq lfq object with dates, midLengths, and catch
 #' @param par growth parameter as resulting from e.g. \code{\link{ELEFAN}}
+#' @param bin_size Bin size for length frequencies (in cm)
 #' @param plus_group logical; should a plus group be created? If yes you will be
 #'    asked to insert the length for the plus group in the console (default: FALSE).
 #'    Instead of inserting the length of the plus group via the console, the value
@@ -15,44 +16,71 @@
 #'
 #' @examples
 #' data(synLFQ4)
-#' newlfq <- lfqModify(synLFQ4)
+#'
+#' ## summarise catch matrix per year
+#' lfq_sum <- lfqModify(synLFQ4)
+#'
+#' ## change bin size
+#' lfq_bin <- lfqModify(synLFQ4, bin_size = 4)
 #'
 #' @return lfq object with rearranged catch matrix (yearly sums) and growth parameters
 #'    if provided.
 #'
 #' @export
 
-lfqModify <- function(lfq, par = NULL, plus_group = FALSE){
+lfqModify <- function(lfq, par = NULL, bin_size = NA, plus_group = FALSE){
 
   dates <- lfq$dates
   midLengths <- lfq$midLengths
   catch <- lfq$catch
 
-  # sum numbers per year
-  c_sum <- by(t(catch),format(dates,"%Y"), FUN = colSums)
-
-  # rearrange in data frame
-  c_list <- lapply(as.list(c_sum), c)
-  c_dat <- as.data.frame(c_list)
-
-  # get rid of 0 bins at both ends
-  lowRow <- 1
-  resi <- TRUE
-  while(resi == TRUE){
-    resi <- rowSums(c_dat)[lowRow] == 0
-    lowRow <- lowRow + 1
+  if(!is.na(bin_size)){
+    # rearrange data into LFQ data
+    bin.breaks <- seq(0, max(midLengths) + bin_size, by=bin_size)
+    midLengthsNEW <- bin.breaks[-length(bin.breaks)] + bin_size/2
+    listi <- vector("list",length(unique(dates)))
+    LF_dat <- data.frame(midLengths = midLengthsNEW)
+    for(i in 1:length(unique(dates))){
+      sampli <- unique(dates)[i]
+      dati <- as.character(unique(dates)[i])
+      lengthi <- rep.int(midLengths,times=as.numeric(catch[,dates == sampli]))
+      cuti <- cut(lengthi, breaks = bin.breaks, labels = midLengthsNEW, include.lowest = TRUE)
+      freq <- plyr::count(cuti)
+      colnames(freq) <- c("midLengths", dati)
+      listi[[i]] <- merge(LF_dat,freq, by.x = "midLengths", all.x =TRUE)[,2]
+    }
+    catch_mat <- do.call(cbind,listi)
+    catch_mat[is.na(catch_mat)] <- 0
+    catch <- catch_mat
+    midLengths <- midLengthsNEW
   }
+  if(is.na(bin_size)){
+    # sum numbers per year
+    c_sum <- by(t(catch),format(dates,"%Y"), FUN = colSums)
 
-  upRow <- nrow(c_dat)
-  resi <- TRUE
-  while(resi == TRUE){
-    resi <- rowSums(c_dat)[upRow] == 0
-    upRow <- upRow - 1
+    # rearrange in data frame
+    c_list <- lapply(as.list(c_sum), c)
+    c_dat <- as.data.frame(c_list)
+
+    # get rid of 0 bins at both ends
+    lowRow <- 1
+    resi <- TRUE
+    while(resi == TRUE){
+      resi <- rowSums(c_dat)[lowRow] == 0
+      lowRow <- lowRow + 1
+    }
+
+    upRow <- nrow(c_dat)
+    resi <- TRUE
+    while(resi == TRUE){
+      resi <- rowSums(c_dat)[upRow] == 0
+      upRow <- upRow - 1
+    }
+    upRow <- upRow + 1
+
+    catch <- c_dat[lowRow:upRow,]
+    midLengths <- midLengths[lowRow:upRow]
   }
-  upRow <- upRow + 1
-
-  catch <- c_dat[lowRow:upRow,]
-  midLengths <- midLengths[lowRow:upRow]
 
   # plus group
   if(plus_group[1]){

@@ -4,12 +4,14 @@
 \alias{lfqModify}
 \title{Modify lfq data for further analysis}
 \usage{
-lfqModify(lfq, par = NULL, plus_group = FALSE)
+lfqModify(lfq, par = NULL, bin_size = NA, plus_group = FALSE)
 }
 \arguments{
 \item{lfq}{lfq object with dates, midLengths, and catch}
 
 \item{par}{growth parameter as resulting from e.g. \code{\link{ELEFAN}}}
+
+\item{bin_size}{Bin size for length frequencies (in cm)}
 
 \item{plus_group}{logical; should a plus group be created? If yes you will be
 asked to insert the length for the plus group in the console (default: FALSE).
@@ -21,13 +23,18 @@ lfq object with rearranged catch matrix (yearly sums) and growth parameters
    if provided.
 }
 \description{
-Rearrange catch matrix in length frequency data (lfq class) to
-   have one column per year. This is required for e.g. \code{\link{catchCurve}}.
-   Add plus group to catch matrix.
+Modify length-freqeuncy (LFQ) data. Allows to summarise catch matrix
+   of LFQ data to one column per year. This is required for e.g. \code{\link{catchCurve}}.
+   Allows to change bin size of LFQ data. Allows to ad plus group to catch matrix.
 }
 \examples{
 data(synLFQ4)
-newlfq <- lfqModify(synLFQ4)
+
+## summarise catch matrix per year
+lfq_sum <- lfqModify(synLFQ4)
+
+## change bin size
+lfq_bin <- lfqModify(synLFQ4, bin_size = 4)
 
 }
 \keyword{function}
