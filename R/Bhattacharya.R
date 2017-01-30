@@ -39,7 +39,7 @@
 #'      "redo" if you want to repeat the selection procedure. This function
 #'      allows a maximum of 12 cohorts or seperate distributions in one sample. Please
 #'      find more details in the Vignette of this package or in the FAO manual by
-#'      Sparre and Venema (1998).
+#'      Sparre and Venema (1998) (\strong{Section 3.4.1, p. 80}).
 #'
 #' @return A list with the input parameters and
 #'    \itemize{
