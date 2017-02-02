@@ -139,6 +139,9 @@ data(synLFQ4)
 plot(synLFQ4, Fname="catch")
 
 # Genetic algorithm
+# (if using a multicore processor,
+#   consider adding the argument 'parallel=TRUE'
+#   to reduce computation time)
 output <- ELEFAN_GA(synLFQ4, seasonalised = TRUE,
    low_par = list(Linf = 70, K = 0.25, t_anchor = 0, C = 0, ts= 0),
    up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1),
