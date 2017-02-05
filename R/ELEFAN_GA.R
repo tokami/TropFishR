@@ -109,6 +109,9 @@
 #' plot(synLFQ4, Fname="catch")
 #'
 #' # Genetic algorithm
+#' # (if using a multicore processor,
+#' #   consider adding the argument 'parallel=TRUE'
+#' #   to reduce computation time)
 #' output <- ELEFAN_GA(synLFQ4, seasonalised = TRUE,
 #'    low_par = list(Linf = 70, K = 0.25, t_anchor = 0, C = 0, ts= 0),
 #'    up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1),
@@ -239,7 +242,10 @@ ELEFAN_GA <- function(
     min = c(low_Linf, low_K, low_tanc, low_C, low_ts)
     max = c(up_Linf, up_K, up_tanc, up_C, up_ts)
 
-    writeLines(paste("Genetic algorithm is running. This might take some time. A beep tone will inform you\n when the calculations are done.",sep=" "))
+    writeLines(paste(
+      "Genetic algorithm is running. This might take some time.\n
+      A beep tone will alert completion."
+    ,sep=" "))
     flush.console()
     fit <- GA::ga(
       type = "real-valued",

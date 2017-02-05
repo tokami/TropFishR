@@ -124,6 +124,7 @@ A more detailed description of the simulated annealing (SA) can be found in
 \donttest{
 ## synthetic lfq data example
 data(synLFQ4)
+plot(synLFQ4, Fname="catch")
 
 # ELEFAN_SA (takes approximately 2 minutes)
 output <- ELEFAN_SA(synLFQ4, SA_time = 60*2, seasonalised = TRUE, MA = 11,
