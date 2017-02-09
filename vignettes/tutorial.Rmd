@@ -93,7 +93,7 @@ For the data of this exercise the Powell-Wetherall plot returns an $L_{inf}$ (±
 
 To get a quick K value corresponding to the $L_{inf}$ estimate of the Powell Wetherall method, the estimate can be assigned to the argument `Linf_fix` in the function 'ELEFAN':
 
-```{r, include=TRUE, fig.width=6, fig.height=6, eval = TRUE, echo=TRUE, fig.cap="Example of a K-Scan application for the estimation of K to a corresponding Linf value. Graph shows the score function for different K values."}
+```{r, include=TRUE, fig.width=6, fig.height=6, eval = FALSE, echo=TRUE, fig.cap="Example of a K-Scan application for the estimation of K to a corresponding Linf value. Graph shows the score function for different K values."}
 # ELEFAN with K-Scan
 res_KScan <- ELEFAN(synLFQ7, Linf_fix = res_PW$Linf_est,
                     MA=11, hide.progressbar = TRUE, addl.sqrt = TRUE)
@@ -104,7 +104,7 @@ res_KScan$par; res_KScan$Rn_max
 
 This method, however, does not allow to test if different combinations of $L_{inf}$ and K might result in a better fit. RSA with a range around the $L_{inf}$ estimate from the Powell-Wetherall method can be used to check different combinations. Alternatively, the maximum length in the data or the maxmimum length class^[or average of the several largest lengths or length classes] might be used as an reference for the search space of $L_{inf}$ [@Taylor1958; @Beverton1963]. For this data set we chose a conservative range of the estimate from the Powell-Wetherall method plus/minus 10 cm. Any range can be chosen, while a larger search space increases computing time but gives a better overview of the score over a wide range of $L_{inf}$ and K combinations. A K range from 0.01 to 2 is relatively wide and should generally be sufficient.
 
-```{r Figure 3, fig.width=8, eval = TRUE,  fig.cap="Results of response surface analysis of the Thumbprint Emperor data. Red colours indicate higher scoring parameter combinations indicative of a better fit."}
+```{r Figure 3, fig.width=8, eval = FALSE,  fig.cap="Results of response surface analysis of the Thumbprint Emperor data. Red colours indicate higher scoring parameter combinations indicative of a better fit."}
 # Response surface analyss
 res_RSA <- ELEFAN(synLFQ7, Linf_range = seq(114,134,1), MA = 11,
                   K_range = seq(0.01,2,0.1), addl.sqrt = TRUE,
@@ -143,7 +143,7 @@ Note that RSA does not allow to test the fit of different C and $t_s$ values of 
 
 ```{r Figure 4,  fig.height=5, fig.width=5, eval=TRUE, fig.cap="Score graph of the ELEFAN method with simulated annealing. Green dots indicate the runnning minimum value of the cost function, while blue dots indicate the mean score of each iteration. The red line shows the decline of the 'temperature' value, which describes the probability of accepting worse solutions as the parameter space is explored."}
 # run ELEFAN with simulated annealing
-res_SA <- ELEFAN_SA(synLFQ7, SA_time = 60*3, SA_temp = 6e5,
+res_SA <- ELEFAN_SA(synLFQ7, SA_time = 60*1, SA_temp = 6e5,
                     MA = 11, seasonalised = TRUE, addl.sqrt = TRUE,
                     init_par = list(Linf = 124, K = 0.5, t_anchor = 0.5, C=0.5, ts = 0.5),
                     low_par = list(Linf = 119, K = 0.01, t_anchor = 0, C = 0, ts = 0),
@@ -156,7 +156,7 @@ Note that the computing time can be controlled with the argument 'SA_time' and t
 
 ```{r Figure 5, fig.height=5, fig.width=5, eval=TRUE, fig.cap="Score graph of the ELEFAN method with genetic algorithm. Green dots indicate the runnning maximum value of the fitness function, while blue dots indicate the mean score of each iteration."}
 # run ELEFAN with genetic algorithm
-res_GA <- ELEFAN_GA(synLFQ7, MA = 11, seasonalised = TRUE, maxiter = 100, addl.sqrt = TRUE,
+res_GA <- ELEFAN_GA(synLFQ7, MA = 11, seasonalised = TRUE, maxiter = 30, addl.sqrt = TRUE,
                     low_par = list(Linf = 119, K = 0.01, t_anchor = 0, C = 0, ts = 0),
                     up_par = list(Linf = 129, K = 1, t_anchor = 1, C = 1, ts = 1),
                     monitor = FALSE)
@@ -174,8 +174,8 @@ The fit of estimated growth parameters can also be explored visually and indicat
 plot(lfqbin, Fname = "rcounts",date.axis = "modern", ylim=c(0,130))
 lt <- lfqFitCurves(synLFQ7, par = list(Linf=123, K=0.2, t_anchor=0.25, C=0.3, ts=0),
                    draw = TRUE, col = "blue", lty = 1, lwd=1.5)
-lt <- lfqFitCurves(synLFQ7, par = res_RSA$par,
-                   draw = TRUE, col = "goldenrod1", lty = 1, lwd=1.5)
+# lt <- lfqFitCurves(synLFQ7, par = res_RSA$par,
+#                    draw = TRUE, col = "goldenrod1", lty = 1, lwd=1.5)
 lt <- lfqFitCurves(synLFQ7, par = res_SA$par,
                    draw = TRUE, col = "darkgreen", lty = 1, lwd=1.5)
 lt <- lfqFitCurves(synLFQ7, par = res_GA$par,
@@ -255,7 +255,7 @@ The results show the logistic shaped fishing pattern across length classes (red 
 Prediction models (or per-recruit models, e.g. Thompson and Bell model) allow to evaluate the status of a fish stock in relation to reference levels and to infer input control measures, such as restricting fishing effort or regulating gear types and mesh sizes.
 By default the Thompson and Bell model assumes knife edge selection ($L_{25}$ = $L_{50}$ = $L_{75}$)^[Note that the length at capture has 2 abbreviations $L_{50}$ and $L_c$.]; however, the parameter `s_list` allows for changes of the selectivity assumptions. The parameter `FM_change` determines the range of F for which to estimate the yield and biomass trajectories. In the second application of this model, the impact of mesh size restrictions on yield is explored by changing $L_{c}$ (`Lc_change`) and F (`FM_change`, or exploitation rate, `E_change`) simultaneously. The resulting estimates are presented as an isopleth graph showing yield per recruit. By setting the argument `stock_size_1` to 1, all results are per recruit. If the number of recruits (recruitment to the fishery) are known, the exact yield and biomass can be estimated. The arguments `curr.E` and `curr.Lc` allow to derive and visualise yield and biomass (per recruit) values for current fishing patterns.
 
-```{r Figure 9, echo=TRUE,  fig.cap="Thompson and Bell model for the Thumbprint Emperor data: (a) Curves of yield and biomass per recruit. The black dot represents yield and biomass under current fishing pressure. The yellow and red dashed lines represent fishing mortality for maximum sustainable yield (Fmsy) and fishing mortality to fish the stock at 50% of the virgin biomass (F0.5). (b) exploration of impact of different exploitation rates and Lc values on the relative yield per recruit."}
+```{r Figure 9, echo=TRUE, eval=FALSE, fig.cap="Thompson and Bell model for the Thumbprint Emperor data: (a) Curves of yield and biomass per recruit. The black dot represents yield and biomass under current fishing pressure. The yellow and red dashed lines represent fishing mortality for maximum sustainable yield (Fmsy) and fishing mortality to fish the stock at 50% of the virgin biomass (F0.5). (b) exploration of impact of different exploitation rates and Lc values on the relative yield per recruit."}
 # Thompson and Bell model with changes in F
 TB1 <- predict_mod(synLFQ7, type = "ThompBell",
                    FM_change = seq(0,5,0.05),  stock_size_1 = 1,
