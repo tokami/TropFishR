@@ -1,4 +1,4 @@
-#' @name synLFQ6
+#' @name synLFQ7
 #'
 #' @title Synthetic length-frequency data VII with seasonal oscillation
 #'
