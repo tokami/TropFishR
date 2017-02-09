@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.width=8, fig.height=7)
 
 ## ---- echo = TRUE, include = TRUE, eval = FALSE--------------------------
-#  install.packages("TropFishR")
+#  install.packages("TropFishR", repos = "https://cran.rstudio.com/")
 
 ## ---- echo = TRUE, include = TRUE, eval = FALSE--------------------------
 #  install.packages("devtools")
@@ -44,7 +44,7 @@ res_PW <- powell_wetherall(param = synLFQ7,
                            catch_columns = 1:ncol(synLFQ7$catch),
                            reg_int = c(9,29))
 # show results
-paste("Linf =",round(res_PW$Linf_est), "±", round(res_PW$se_Linf))
+paste("Linf =",round(res_PW$Linf_est), "Â±", round(res_PW$se_Linf))
 
 ## ---- include=TRUE, fig.width=6, fig.height=6, eval = FALSE, echo=TRUE, fig.cap="Example of a K-Scan application for the estimation of K to a corresponding Linf value. Graph shows the score function for different K values."----
 #  # ELEFAN with K-Scan
@@ -87,7 +87,7 @@ paste("Linf =",round(res_PW$Linf_est), "±", round(res_PW$se_Linf))
 
 ## ----Figure 4,  fig.height=5, fig.width=5, eval=TRUE, fig.cap="Score graph of the ELEFAN method with simulated annealing. Green dots indicate the runnning minimum value of the cost function, while blue dots indicate the mean score of each iteration. The red line shows the decline of the 'temperature' value, which describes the probability of accepting worse solutions as the parameter space is explored."----
 # run ELEFAN with simulated annealing
-res_SA <- ELEFAN_SA(synLFQ7, SA_time = 60*1, SA_temp = 6e5,
+res_SA <- ELEFAN_SA(synLFQ7, SA_time = 60*0.5, SA_temp = 6e5,
                     MA = 11, seasonalised = TRUE, addl.sqrt = TRUE,
                     init_par = list(Linf = 124, K = 0.5, t_anchor = 0.5, C=0.5, ts = 0.5),
                     low_par = list(Linf = 119, K = 0.01, t_anchor = 0, C = 0, ts = 0),
@@ -95,9 +95,34 @@ res_SA <- ELEFAN_SA(synLFQ7, SA_time = 60*1, SA_temp = 6e5,
 # show results
 res_SA$par; res_SA$Rn_max
 
+## ---- eval = FALSE, echo = TRUE------------------------------------------
+#  JK <- vector("list", length(synLFQ7$dates))
+#  for(i in 1:length(synLFQ7$dates)){
+#    loop_data <- list(dates = synLFQ7$dates[-i],
+#                    midLengths = synLFQ7$midLengths,
+#                    catch = synLFQ7$catch[,-i])
+#    tmp <- ELEFAN_SA(loop_data, SA_time = 60*0.5, SA_temp = 6e5,
+#                     MA = 11, addl.sqrt = TRUE,
+#                     init_par = list(Linf = 124, K = 0.5, t_anchor = 0.5, C=0.5, ts = 0.5),
+#                     low_par = list(Linf = 119, K = 0.01, t_anchor = 0, C = 0, ts = 0),
+#                     up_par = list(Linf = 129, K = 1, t_anchor = 1, C = 1, ts = 1),
+#                     plot = FALSE)
+#    JK[[i]] <- unlist(c(tmp$par,list(Rn_max=tmp$Rn_max)))
+#  }
+#  JKres <- do.call(cbind, JK)
+#  # mean
+#  JKmeans <- apply(as.matrix(JKres), MARGIN = 1, FUN = mean)
+#  # confidence intervals
+#  JKconf <- apply(as.matrix(JKres), MARGIN = 1, FUN = function(x) t.test(x)$conf.int[c(1,2)])
+#  JKconf <- t(JKconf)
+#  colnames(JKconf) <- c("lower","upper")
+#  
+#  # show results
+#  JKconf
+
 ## ----Figure 5, fig.height=5, fig.width=5, eval=TRUE, fig.cap="Score graph of the ELEFAN method with genetic algorithm. Green dots indicate the runnning maximum value of the fitness function, while blue dots indicate the mean score of each iteration."----
 # run ELEFAN with genetic algorithm
-res_GA <- ELEFAN_GA(synLFQ7, MA = 11, seasonalised = TRUE, maxiter = 30, addl.sqrt = TRUE,
+res_GA <- ELEFAN_GA(synLFQ7, MA = 11, seasonalised = TRUE, maxiter = 10, addl.sqrt = TRUE,
                     low_par = list(Linf = 119, K = 0.01, t_anchor = 0, C = 0, ts = 0),
                     up_par = list(Linf = 129, K = 1, t_anchor = 1, C = 1, ts = 1),
                     monitor = FALSE)
@@ -155,27 +180,27 @@ sum(vpa_res$meanBiomassTon, na.rm = TRUE)
 # assign F per length class to the data list
 synLFQ7$FM <- vpa_res$FM_calc
 
-## ----Figure 9, echo=TRUE, eval=FALSE, fig.cap="Thompson and Bell model for the Thumbprint Emperor data: (a) Curves of yield and biomass per recruit. The black dot represents yield and biomass under current fishing pressure. The yellow and red dashed lines represent fishing mortality for maximum sustainable yield (Fmsy) and fishing mortality to fish the stock at 50% of the virgin biomass (F0.5). (b) exploration of impact of different exploitation rates and Lc values on the relative yield per recruit."----
-#  # Thompson and Bell model with changes in F
-#  TB1 <- predict_mod(synLFQ7, type = "ThompBell",
-#                     FM_change = seq(0,5,0.05),  stock_size_1 = 1,
-#                     curr.E = synLFQ7$E, plot = FALSE, hide.progressbar = TRUE)
-#  # Thompson and Bell model with changes in F and Lc
-#  TB2 <- predict_mod(synLFQ7, type = "ThompBell",
-#                     FM_change = seq(0,5,0.1), Lc_change = seq(10,80,0.05),
-#                     stock_size_1 = 1,
-#                     curr.E = synLFQ7$E, curr.Lc = res_cc$L50,
-#                     s_list = list(selecType = "trawl_ogive",
-#                                   L50 = res_cc$L50, L75 = res_cc$L75),
-#                     plot = FALSE, hide.progressbar = TRUE)
-#  # plot results
-#  par(mfrow = c(2,1), mar = c(4,5,2,4.5), oma = c(1,0,0,0))
-#  plot(TB1, mark = TRUE)
-#  mtext("(a)", side = 3, at = -1, line = 0.6)
-#  plot(TB2, type = "Isopleth", xaxis1 = "E", mark = TRUE, contour = 6)
-#  mtext("(b)", side = 3, at = -0.1, line = 0.6)
-#  # Biological reference levels
-#  TB1$df_Es
-#  # Current yield and biomass levels
-#  TB1$currents
+## ----Figure 9, echo=TRUE, eval=TRUE, fig.cap="Thompson and Bell model for the Thumbprint Emperor data: (a) Curves of yield and biomass per recruit. The black dot represents yield and biomass under current fishing pressure. The yellow and red dashed lines represent fishing mortality for maximum sustainable yield (Fmsy) and fishing mortality to fish the stock at 50% of the virgin biomass (F0.5). (b) exploration of impact of different exploitation rates and Lc values on the relative yield per recruit."----
+# Thompson and Bell model with changes in F
+TB1 <- predict_mod(synLFQ7, type = "ThompBell",
+                   FM_change = seq(0,5,0.05),  stock_size_1 = 1,
+                   curr.E = synLFQ7$E, plot = FALSE, hide.progressbar = TRUE)
+# Thompson and Bell model with changes in F and Lc
+TB2 <- predict_mod(synLFQ7, type = "ThompBell",
+                   FM_change = seq(0,2,0.1), Lc_change = seq(20,60,0.1),
+                   stock_size_1 = 1,
+                   curr.E = synLFQ7$E, curr.Lc = res_cc$L50,
+                   s_list = list(selecType = "trawl_ogive",
+                                 L50 = res_cc$L50, L75 = res_cc$L75),
+                   plot = FALSE, hide.progressbar = TRUE)
+# plot results
+par(mfrow = c(2,1), mar = c(4,5,2,4.5), oma = c(1,0,0,0))
+plot(TB1, mark = TRUE)
+mtext("(a)", side = 3, at = -1, line = 0.6)
+plot(TB2, type = "Isopleth", xaxis1 = "E", mark = TRUE, contour = 6)
+mtext("(b)", side = 3, at = -0.1, line = 0.6)
+# Biological reference levels
+TB1$df_Es
+# Current yield and biomass levels
+TB1$currents
 
