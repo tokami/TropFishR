@@ -143,7 +143,7 @@ Note that RSA does not allow to test the fit of different C and $t_s$ values of 
 
 ```{r Figure 4,  fig.height=5, fig.width=5, eval=TRUE, fig.cap="Score graph of the ELEFAN method with simulated annealing. Green dots indicate the runnning minimum value of the cost function, while blue dots indicate the mean score of each iteration. The red line shows the decline of the 'temperature' value, which describes the probability of accepting worse solutions as the parameter space is explored."}
 # run ELEFAN with simulated annealing
-res_SA <- ELEFAN_SA(synLFQ7, SA_time = 60*1, SA_temp = 6e5,
+res_SA <- ELEFAN_SA(synLFQ7, SA_time = 60*0.5, SA_temp = 6e5,
                     MA = 11, seasonalised = TRUE, addl.sqrt = TRUE,
                     init_par = list(Linf = 124, K = 0.5, t_anchor = 0.5, C=0.5, ts = 0.5),
                     low_par = list(Linf = 119, K = 0.01, t_anchor = 0, C = 0, ts = 0),
@@ -156,7 +156,7 @@ Note that the computing time can be controlled with the argument 'SA_time' and t
 
 ```{r Figure 5, fig.height=5, fig.width=5, eval=TRUE, fig.cap="Score graph of the ELEFAN method with genetic algorithm. Green dots indicate the runnning maximum value of the fitness function, while blue dots indicate the mean score of each iteration."}
 # run ELEFAN with genetic algorithm
-res_GA <- ELEFAN_GA(synLFQ7, MA = 11, seasonalised = TRUE, maxiter = 30, addl.sqrt = TRUE,
+res_GA <- ELEFAN_GA(synLFQ7, MA = 11, seasonalised = TRUE, maxiter = 10, addl.sqrt = TRUE,
                     low_par = list(Linf = 119, K = 0.01, t_anchor = 0, C = 0, ts = 0),
                     up_par = list(Linf = 129, K = 1, t_anchor = 1, C = 1, ts = 1),
                     monitor = FALSE)
