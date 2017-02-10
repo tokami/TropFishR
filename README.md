@@ -25,6 +25,9 @@ Or the development version from github:
 devtools::install_github(“tokami/TropFishR”)
 ```
 
+## Vignette
+A [tutorial](https://rawgit.com/tokami/TropFishR/master/inst/doc/tutorial.html) demonstrates the use of some of the main functions of TropFishR .
+
 ## Questions / Issues
 In case you have questions or find bugs, please report on [TropFishR/issues](https://github.com/tokami/TropFishR/issues).
 
