@@ -306,7 +306,7 @@ Please note that the resolution of the $L_c$ and F changes is quite large and th
 The status of the fisheries can assessed in respect to reference levels of the ypr as well as based on the exploitation level. In this example, both methods indicate overfishing. The result should however be seen in reference to the uncertainty in the growth parameters and consequently in all other parameters (error propagation).
 
 ##*Author's comment*
-In case you found bugs or if you have comments or questions please write me an [email](mailto:t.k.mildenberger@gmail.com) or post an issue at [ResearchGate](https://github.com/tokami/TropFishR/issues). You can follow the development of **`TropFishR`** on [ResearchGate](https://www.researchgate.net/project/TropFishR?_esc=homefeed&_viewIds%5B0%5D=hVPmo2RDCok60qGq2z0JOroN&_viewIds%5B1%5D=zyj0j6jnUgNvrPXMrG9rouAP).
+In case you find bugs or if you have comments or questions please write me an [email](mailto:t.k.mildenberger@gmail.com) or post an issue at [GitHub](https://github.com/tokami/TropFishR/issues). You can follow the development of **`TropFishR`** on [ResearchGate](https://www.researchgate.net/project/TropFishR?_esc=homefeed&_viewIds%5B0%5D=hVPmo2RDCok60qGq2z0JOroN&_viewIds%5B1%5D=zyj0j6jnUgNvrPXMrG9rouAP).
 
 
 ##*References*
