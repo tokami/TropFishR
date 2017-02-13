@@ -6,9 +6,10 @@
 \usage{
 ELEFAN_SA(x, seasonalised = FALSE, init_par = list(Linf = 50, K = 0.5,
   t_anchor = 0.5, C = 0, ts = 0), low_par = NULL, up_par = NULL,
-  SA_time = 60 * 1, SA_temp = 1e+05, verbose = TRUE, MA = 5,
-  addl.sqrt = FALSE, agemax = NULL, flagging.out = TRUE, plot = FALSE,
-  plot.score = TRUE)
+  SA_time = 60 * 1, SA_temp = 1e+05, verbose = TRUE,
+  restructuring_type = "traditional", MA = 5, addl.sqrt = FALSE,
+  n.mult = 5, n.peak = 5, endrule = "median", logscore = FALSE,
+  agemax = NULL, flagging.out = TRUE, plot = FALSE, plot.score = TRUE)
 }
 \arguments{
 \item{x}{a list consisting of following parameters:
@@ -65,6 +66,10 @@ NULL the following default values are used:
 \item{verbose}{logical; TRUE means that messages from the algorithm
 are shown (default : TRUE).}
 
+\item{restructuring_type}{indicating which restructuring procedure should be used.
+"traditional" (default) for traditional approach according to Pauly, "logspline" for new approach
+based on logspline}
+
 \item{MA}{number indicating over how many length classes the moving average
 should be performed (defalut: 5, for
   more information see \link{lfqRestructure}).}
@@ -72,6 +77,14 @@ should be performed (defalut: 5, for
 \item{addl.sqrt}{Passed to \link{lfqRestructure}. Applied an additional
 square-root transformation of positive values according to Brey et al. (1988).
 (default: FALSE, for more information see \link{lfqRestructure}).}
+
+\item{n.mult}{multiplier to use in expanding the number of bins (Default=5)}
+
+\item{n.peak}{expected number of cohorts (Default=5)}
+
+\item{endrule}{running median rule (Default="median")}
+
+\item{logscore}{Logical. Return log-transformed scores (Default=FALSE)}
 
 \item{agemax}{maximum age of species; default NULL, then estimated from Linf}
 

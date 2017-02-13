@@ -49,12 +49,19 @@
 #' @param SA_temp numeric; Initial value for temperature (default : 1e5).
 #' @param verbose logical; TRUE means that messages from the algorithm
 #'    are shown (default : TRUE).
+#' @param restructuring_type indicating which restructuring procedure should be used.
+#'    "traditional" (default) for traditional approach according to Pauly, "logspline" for new approach
+#'    based on logspline
 #' @param MA number indicating over how many length classes the moving average
 #'  should be performed (defalut: 5, for
 #'    more information see \link{lfqRestructure}).
 #' @param addl.sqrt Passed to \link{lfqRestructure}. Applied an additional
 #'    square-root transformation of positive values according to Brey et al. (1988).
 #'    (default: FALSE, for more information see \link{lfqRestructure}).
+#' @param n.mult multiplier to use in expanding the number of bins (Default=5)
+#' @param n.peak expected number of cohorts (Default=5)
+#' @param endrule running median rule (Default="median")
+#' @param logscore Logical. Return log-transformed scores (Default=FALSE)
 #' @param agemax maximum age of species; default NULL, then estimated from Linf
 #' @param flagging.out logical; passed to \link{lfqFitCurves}. Default is TRUE
 #' @param plot logical; Plot restructured counts with fitted lines using
@@ -147,7 +154,12 @@ ELEFAN_SA <- function(x,
                       SA_time = 60 * 1,
                       SA_temp = 1e5,
                       verbose = TRUE,
+                      restructuring_type = "traditional",
                       MA = 5, addl.sqrt = FALSE,
+                      n.mult = 5,
+                      n.peak = 5,
+                      endrule = "median",
+                      logscore = FALSE,
                       agemax = NULL,
                       flagging.out = TRUE,
                       plot = FALSE,
@@ -224,7 +236,16 @@ ELEFAN_SA <- function(x,
 
 
   # ELEFAN 0
-  res <- lfqRestructure(res, MA = MA, addl.sqrt = addl.sqrt)
+  if(restructuring_type == "traditional"){
+    res <- lfqRestructure(res, MA = MA, addl.sqrt = addl.sqrt)
+  }else if(restructuring_type == "logspline"){
+    res <- lfqRestructure_logspline(res, n.mult = n.mult, n.peak = n.peak,
+                                    endrule = endrule, logscore = logscore)
+  }else{
+    stop(paste0("restructuring_type = ",restructuring_type, " not known. Choose either 'traditional' or 'logspline'."))
+    flush.console()
+  }
+
   catch_aAF_F <- res$rcounts
   peaks_mat <- res$peaks_mat
   ASP <- res$ASP
@@ -248,11 +269,9 @@ ELEFAN_SA <- function(x,
 
   if(seasonalised){
     # Simulated annealing with seasonalised VBGF
-    writeLines(paste(
-      "Simulated annealing is running.\n
-      This will take approximately", round(SA_time/60,digits=2),"minutes.\n
-      A beep tone will alert completion."
-    ,sep=" "))
+    writeLines(paste("Simulated annealing is running.\nThis will take approximately",
+                     round(SA_time/60,digits=2),
+                     "minutes.\nA beep tone will alert completion.",sep=" "))
     flush.console()
     SAfit <- GenSA::GenSA(
       par = c(init_Linf, init_K, init_tanc, init_C, init_ts),
