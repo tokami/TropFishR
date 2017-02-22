@@ -34,4 +34,3 @@ summary(bream)
 \keyword{dataset}
 \keyword{selectivity}
 \keyword{trawl}
-

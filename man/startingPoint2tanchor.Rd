@@ -37,4 +37,3 @@ plot(lfqRest,par=list(Linf=lfqRest$Linf,K=lfqRest$K,t_anchor=lfqRest$t_anchor))
 \keyword{lfq}
 \keyword{startingPoints}
 \keyword{t_anchor}
-

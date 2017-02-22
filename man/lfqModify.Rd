@@ -40,4 +40,3 @@ lfq_bin <- lfqModify(synLFQ4, bin_size = 4)
 \keyword{function}
 \keyword{length-frequency}
 \keyword{lfq}
-

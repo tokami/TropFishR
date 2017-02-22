@@ -11,13 +11,15 @@
 #'   \item K = 0.5
 #'   \item Linf = 80
 #'   \item C = 0.75
-#'   \item ts = 0
+#'   \item ts = 0.5
 #'   \item t_anchor = 0.25 (Time when yearly recruitment pulse occurs;
 #'   e.g. 0 = Jan 1, 0.25 = Apr 1, 0.5 = Jul 1st, 0.75 = Oct 1)
 #' }
 #'
 #' Further settings include:
 #' \itemize{
+#'   \item Linf.cv = 0.05
+#'   \item K.cv = 0.05
 #'   \item L50 = 20 (length at 50\% prob. of capture via trawl net)
 #'   \item wqs = 0 (width between 25\% and 75\% prob. of capture quantiles;
 #'   i.e. wqs = 0 is knife-edge selection)

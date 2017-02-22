@@ -33,4 +33,3 @@ summary(hake)
 \keyword{data}
 \keyword{dataset}
 \keyword{hake}
-

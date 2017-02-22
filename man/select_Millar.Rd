@@ -108,4 +108,3 @@ Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
  Holt, S. J. 1963. A method for determining gear selectivity and its application.
  \emph{ICNAF Special Publication}, 5: 106-115.
 }
-
