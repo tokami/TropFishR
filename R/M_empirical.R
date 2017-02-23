@@ -24,7 +24,8 @@
 #' @param method vector of method names. Any combination of following methods can
 #'    be employed: "AlversonCarney", "Gislason" (size dependent mortality estimates), "GundersonDygert", "Hoenig",
 #'    "Lorenzen", "Pauly_Linf", "Pauly_Winf", "PetersonWroblewski",
-#'    "RikhterEfanov", "Roff". Please refer to Details to see which input parameters
+#'    "RikhterEfanov", "Roff", "Then_growth", or "Then_tmax".
+#'    Please refer to Details to see which input parameters
 #'    are required by each method.
 #'
 #' @keywords function mortality M
@@ -95,8 +96,8 @@
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 #' Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.
 #'
-#' Then, A. Y., J. M. Hoenig, N. G. Hall, D. A. Hewitt. 2015. Evaluating the predictive 
-#' performance of empirical estimators of natural mortality rate using information on over 
+#' Then, A. Y., J. M. Hoenig, N. G. Hall, D. A. Hewitt. 2015. Evaluating the predictive
+#' performance of empirical estimators of natural mortality rate using information on over
 #' 200 fish species. ICES J. Mar. Sci. 72: 82-92.
 #'
 #' @export
@@ -217,12 +218,12 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
     dimnames(M_mat)[[1]][ind] <- list("Then (2015) - growth")
   }
   if (any(method == "Gislason")) {
-    Ml <- round(exp(0.55 - 1.61 * log(Bl) + 1.44 * 
+    Ml <- round(exp(0.55 - 1.61 * log(Bl) + 1.44 *
                                  log(Linf) + log(K_l)), 3)
     M_mat <- as.data.frame(matrix(c(Bl,Ml),byrow = FALSE,ncol=2))
     colnames(M_mat) <- c("Bl","Ml")
   }
-  
+
 
   return(M_mat)
 }
