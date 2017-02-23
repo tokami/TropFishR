@@ -80,6 +80,9 @@ lfqModify <- function(lfq, par = NULL, bin_size = NA, plus_group = FALSE){
 
     catch <- c_dat[lowRow:upRow,]
     midLengths <- midLengths[lowRow:upRow]
+
+    # override old dates
+    dates <- unique(as.Date(paste0(format(dates,"%Y"),"-01-01")))
   }
 
   # plus group
@@ -87,7 +90,21 @@ lfqModify <- function(lfq, par = NULL, bin_size = NA, plus_group = FALSE){
     if(length(plus_group) == 1){
       if(is.vector(catch)){
         print(data.frame(midLengths = midLengths, frequency = catch))
-      }else print(data.frame(midLengths = midLengths, frequency = rowSums(catch)))
+      }else if(length(unique(format(lfq$dates, "%Y"))) == 1){
+        print(data.frame(midLengths = midLengths, frequency = rowSums(catch)))
+      }else{
+        # sum numbers per year
+        c_sum <- by(t(catch),format(dates,"%Y"), FUN = colSums)
+
+        # rearrange in data frame
+        c_list <- lapply(as.list(c_sum), c)
+        c_dat <- as.data.frame(c_list)
+
+        tmp <- data.frame(midLengths = midLengths)
+        tmp <- cbind(tmp, c_dat)
+        print(tmp)
+      }
+
       writeLines("Check the table above and insert the length of the plus group (Esc to cancel).")
       pg = -1
       while(pg > max(midLengths) | pg < min(midLengths)){
@@ -107,12 +124,12 @@ lfqModify <- function(lfq, par = NULL, bin_size = NA, plus_group = FALSE){
 
     midLengths <- midLengths[1:which(midLengths == pg)]
     if(is.vector(catch)){
-      addplus <- sum(catch[(which(midLengths == pg):length(catch))])
+      addplus <- sum(catch[((which(midLengths == pg)+1):length(catch))])
       catch <- catch[1:which(midLengths == pg)]
       catch[which(midLengths == pg)] <-
         catch[which(midLengths == pg)] + addplus
     }else{
-      addplus <- colSums(catch[(which(midLengths == pg):nrow(catch)),])
+      addplus <- colSums(catch[((which(midLengths == pg)+1):nrow(catch)),])
       catch <- catch[1:which(midLengths == pg),]
       catch[which(midLengths == pg),] <-
         catch[which(midLengths == pg),] + addplus
