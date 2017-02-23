@@ -33,6 +33,8 @@ The data is generated with the following von Bertalanffy growth parameters:
 
 Further settings include:
 \itemize{
+  \item Linf.cv = 0.05
+  \item K.cv = 0.05
   \item L50 = 20 (length at 50\% prob. of capture via trawl net)
   \item wqs = 0 (width between 25\% and 75\% prob. of capture quantiles;
   i.e. wqs = 0 is knife-edge selection)
@@ -56,4 +58,3 @@ plot(synLFQ5, Fname = "rcounts")
 \keyword{data}
 \keyword{dataset}
 \keyword{length-frequency}
-
