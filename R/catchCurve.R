@@ -408,6 +408,7 @@ catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
     se = SE_Z_lm1,
     confidenceInt = conf_Z_lm1
   ))
+  if("M" %in% names(ret)){ret$FM <- ret$Z - ret$M}
   names(ret)[names(ret) == "xvar"] <- xname
   names(ret)[names(ret) == "yvar"] <- yname
   class(ret) <- "catchCurve"
