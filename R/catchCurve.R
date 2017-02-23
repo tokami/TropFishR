@@ -446,10 +446,12 @@ catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
     # selection parameters
     t50 <- T1/T2
     t75 <- (T1 + log(3))/T2
+    t95 <-  (T1 - log((1 / 0.95) - 1)) / T2
     if(!is.null(res$Linf) & !is.null(res$K)){
       if(is.null(res$t0)) t0 = 0
       L50 <- Linf*(1-exp(-K*(t50-t0)))
       L75 <- Linf*(1-exp(-K*(t75-t0)))
+      L95 <- Linf*(1-exp(-K*(t95-t0)))
     }
 
     ret2 <- c(ret,list(
@@ -459,11 +461,14 @@ catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
       ln_1_S_1 = ln_1_S_1,
       Sest = Sest,
       t50 = t50,
-      t75 = t75))
+      t75 = t75,
+      t95 = t95))
     if(exists("L50")) ret2$L50 = L50
     if(exists("L75")) ret2$L75 = L75
+    if(exists("L95")) ret2$L95 = L95
     if(exists("L50")) names(ret2)[which(ret2 %in% L50)] <- "L50"
     if(exists("L75")) names(ret2)[which(ret2 %in% L75)] <- "L75"
+    if(exists("L95")) names(ret2)[which(ret2 %in% L95)] <- "L95"
 
     class(ret2) <- "catchCurve"
     plot(ret2, plot_selec=TRUE)
