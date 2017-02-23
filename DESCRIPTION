@@ -5,17 +5,33 @@ Version: 1.0.3
 Date: 2017-01-01
 Author: Tobias K. Mildenberger, Marc H. Taylor, Matthias Wolff
 Maintainer: Tobias K. Mildenberger <t.k.mildenberger@gmail.com>
-Depends: R (>= 3.0.0)
-Imports: msm, reshape2, MASS, GenSA, GA, beepr, propagate,
-	parallel, doParallel
+Depends:
+    R (>= 3.0.0)
+Imports:
+    msm,
+    reshape2,
+    MASS,
+    GenSA,
+    GA,
+    beepr,
+    propagate,
+    parallel,
+    doParallel
 LazyData: TRUE
 Description: Fish stock assessment methods and fisheries models based on the FAO
-	Manual "Introduction to tropical fish stock assessment" by P. Sparre and
-	S.C. Venema <http://www.fao.org/docrep/W5449E/W5449E00.htm>.  Focus is the
-	analysis of length-frequency data and data poor fisheries.
+    Manual "Introduction to tropical fish stock assessment" by P. Sparre and
+    S.C. Venema <http://www.fao.org/docrep/W5449E/W5449E00.htm>.  Focus is the
+    analysis of length-frequency data and data poor fisheries.
 License: GPL-3
 BugReports: https://github.com/tokami/TropFishR/issues
 URL: https://github.com/tokami/TropFishR
-RoxygenNote: 6.0.1
-Suggests: stats, graphics, grDevices, utils, knitr, rmarkdown, plyr
+RoxygenNote: 5.0.1
+Suggests:
+    stats,
+    graphics,
+    grDevices,
+    utils,
+    knitr,
+    rmarkdown,
+    plyr
 VignetteBuilder: knitr

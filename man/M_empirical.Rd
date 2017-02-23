@@ -45,7 +45,8 @@ the species, only for Pauly's methods. Default is FALSE.}
 \item{method}{vector of method names. Any combination of following methods can
 be employed: "AlversonCarney", "Gislason" (size dependent mortality estimates), "GundersonDygert", "Hoenig",
 "Lorenzen", "Pauly_Linf", "Pauly_Winf", "PetersonWroblewski",
-"RikhterEfanov", "Roff". Please refer to Details to see which input parameters
+"RikhterEfanov", "Roff", "Then_growth", or "Then_tmax".
+Please refer to Details to see which input parameters
 are required by each method.}
 }
 \value{
@@ -119,10 +120,11 @@ Can. J. Fish. Aquat. Sci. 41: 989-1000.
 Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.
 
-Then, A. Y., J. M. Hoenig, N. G. Hall, D. A. Hewitt. 2015. Evaluating the predictive 
-performance of empirical estimators of natural mortality rate using information on over 
+Then, A. Y., J. M. Hoenig, N. G. Hall, D. A. Hewitt. 2015. Evaluating the predictive
+performance of empirical estimators of natural mortality rate using information on over
 200 fish species. ICES J. Mar. Sci. 72: 82-92.
 }
 \keyword{M}
 \keyword{function}
 \keyword{mortality}
+

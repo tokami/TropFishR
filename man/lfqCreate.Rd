@@ -4,8 +4,9 @@
 \alias{lfqCreate}
 \title{Create lfq data from length measurements}
 \usage{
-lfqCreate(data, Lname, Dname, bin_size = 2, length_unit = "cm",
-  plus_group = FALSE, aggregate_dates = FALSE, plot = FALSE)
+lfqCreate(data, Lname, Dname, Fname = NA, bin_size = 2,
+  length_unit = "cm", plus_group = FALSE, aggregate_dates = FALSE,
+  plot = FALSE)
 }
 \arguments{
 \item{data}{data with at least two columns, one with the length measurements, one
@@ -14,6 +15,9 @@ with the sampling date}
 \item{Lname}{name of the length column}
 
 \item{Dname}{name of the date column}
+
+\item{Fname}{optional; name of column with frequency, in case each length was measured more than
+one time}
 
 \item{bin_size}{size of the bins in cm (Default: 2)}
 
@@ -59,3 +63,4 @@ lfq_dat <- lfqCreate(data,Lname = "length.mm.", Dname = "dates", aggregate_dates
 \keyword{function}
 \keyword{length-frequency}
 \keyword{lfq}
+

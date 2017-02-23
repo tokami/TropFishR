@@ -59,3 +59,4 @@ lfqFitCurves(fitSA, col=2, par=fitSA$par, draw=TRUE)$Rn_max
 \keyword{data}
 \keyword{dataset}
 \keyword{length-frequency}
+

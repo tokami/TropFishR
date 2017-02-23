@@ -19,3 +19,4 @@ Convert dates to numeric years with decimal as fraction of a year
 date2yeardec(Sys.Date())
 
 }
+

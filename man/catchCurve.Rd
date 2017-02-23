@@ -178,3 +178,4 @@ conservation law. \emph{Oecologia, Berl.}, 27(4):311-318
 \keyword{catchCurve}
 \keyword{function}
 \keyword{mortality}
+

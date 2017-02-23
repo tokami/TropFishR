@@ -35,3 +35,4 @@ summary(whiting)
 \keyword{catchCurve}
 \keyword{data}
 \keyword{dataset}
+

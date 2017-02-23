@@ -27,3 +27,4 @@ plot(output, display_last_class = FALSE)
 Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407 p.
 }
+

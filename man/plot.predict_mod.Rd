@@ -73,3 +73,4 @@ plot(output, type = "Isopleth", xaxis1 = "FM", yaxis1 = "Y_R.rel",
 Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.
 }
+

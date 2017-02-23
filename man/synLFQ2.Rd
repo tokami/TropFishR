@@ -34,3 +34,4 @@ summary(synLFQ2)
 \keyword{data}
 \keyword{dataset}
 \keyword{length-frequency}
+

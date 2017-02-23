@@ -29,3 +29,4 @@ summary(emperor)
 \keyword{data}
 \keyword{dataset}
 \keyword{emperor}
+
