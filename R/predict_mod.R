@@ -45,6 +45,7 @@
 #'    selection ogive. The smaller the higher the resolution but the slower the model
 #'    run. Not required for "knife_edge" selection type
 #' @param plot logical; if TRUE results are displayed graphically
+#' @param mark logical; if value of choosen points should be displayed in graph (default: TRUE)
 #' @param hide.progressbar logical; should progressbar be displayed or hidden? (Default: FALSE)
 #'
 #' @keywords function prediction ypr
@@ -271,7 +272,7 @@ predict_mod <- function(param, type, FM_change = NA,
                         s_list = NA,
                         stock_size_1 = NA, age_unit = 'year', curr.E = NA,
                         curr.Lc = NA,
-                        plus_group = NA, Lmin = NA, Lincr = NA, plot = FALSE,
+                        plus_group = NA, Lmin = NA, Lincr = NA, plot = FALSE, mark = TRUE,
                         hide.progressbar = FALSE){
   res <- param
 
@@ -886,6 +887,6 @@ predict_mod <- function(param, type, FM_change = NA,
 
   # return results and plot
   class(ret) <- "predict_mod"
-  if(plot) plot(ret)
+  if(plot) plot(ret, mark = mark)
   return(ret)
 }
