@@ -33,30 +33,31 @@ set.seed(1)
 synLFQ7 <- lfqModify(synLFQ7, bin_size = 4)
 
 # plot raw and restructured LFQ data
-lfqbin <- lfqRestructure(synLFQ7, MA = 11, addl.sqrt = TRUE)
-par(mfrow = c(2,1), mar = c(2,5,2,3), oma = c(2,0,0,0))
+lfqbin <- lfqRestructure(synLFQ7, MA = 5, addl.sqrt = TRUE)
+opar <- par(mfrow = c(2,1), mar = c(2,5,2,3), oma = c(2,0,0,0))
 plot(lfqbin, Fname = "catch", date.axis = "modern")
 plot(lfqbin, Fname = "rcounts", date.axis = "modern")
+par(opar)
 
 ## ----Figure 2, fig.width=6, fig.height=5, echo=TRUE, eval=TRUE, fig.cap="Powell-Wetherall plot to derive an estimate of Linf."----
 # Powell Wetherall plot
 res_PW <- powell_wetherall(param = synLFQ7,
                            catch_columns = 1:ncol(synLFQ7$catch),
-                           reg_int = c(9,29))
+                           reg_int = c(10,30))
 # show results
 paste("Linf =",round(res_PW$Linf_est), "±", round(res_PW$se_Linf))
 
 ## ---- include=TRUE, fig.width=6, fig.height=6, eval = FALSE, echo=TRUE, fig.cap="Example of a K-Scan application for the estimation of K to a corresponding Linf value. Graph shows the score function for different K values."----
 #  # ELEFAN with K-Scan
 #  res_KScan <- ELEFAN(synLFQ7, Linf_fix = res_PW$Linf_est,
-#                      MA=11, hide.progressbar = TRUE, addl.sqrt = TRUE)
+#                      MA=5, hide.progressbar = TRUE, addl.sqrt = TRUE)
 #  
 #  # show results
 #  res_KScan$par; res_KScan$Rn_max
 
 ## ----Figure 3, fig.width=8, eval = FALSE,  fig.cap="Results of response surface analysis of the Thumbprint Emperor data. Red colours indicate higher scoring parameter combinations indicative of a better fit."----
 #  # Response surface analyss
-#  res_RSA <- ELEFAN(synLFQ7, Linf_range = seq(114,134,1), MA = 11,
+#  res_RSA <- ELEFAN(synLFQ7, Linf_range = seq(119,139,1), MA = 5,
 #                    K_range = seq(0.01,2,0.1), addl.sqrt = TRUE,
 #                    hide.progressbar = TRUE, contour=5)
 #  
@@ -88,10 +89,10 @@ paste("Linf =",round(res_PW$Linf_est), "±", round(res_PW$se_Linf))
 ## ----Figure 4,  fig.height=5, fig.width=5, eval=TRUE, fig.cap="Score graph of the ELEFAN method with simulated annealing. Green dots indicate the runnning minimum value of the cost function, while blue dots indicate the mean score of each iteration. The red line shows the decline of the 'temperature' value, which describes the probability of accepting worse solutions as the parameter space is explored."----
 # run ELEFAN with simulated annealing
 res_SA <- ELEFAN_SA(synLFQ7, SA_time = 60*0.5, SA_temp = 6e5,
-                    MA = 11, seasonalised = TRUE, addl.sqrt = TRUE,
-                    init_par = list(Linf = 124, K = 0.5, t_anchor = 0.5, C=0.5, ts = 0.5),
+                    MA = 5, seasonalised = TRUE, addl.sqrt = TRUE,
+                    init_par = list(Linf = 129, K = 0.5, t_anchor = 0.5, C=0.5, ts = 0.5),
                     low_par = list(Linf = 119, K = 0.01, t_anchor = 0, C = 0, ts = 0),
-                    up_par = list(Linf = 129, K = 1, t_anchor = 1, C = 1, ts = 1))
+                    up_par = list(Linf = 139, K = 1, t_anchor = 1, C = 1, ts = 1))
 # show results
 res_SA$par; res_SA$Rn_max
 
@@ -102,10 +103,10 @@ res_SA$par; res_SA$Rn_max
 #                    midLengths = synLFQ7$midLengths,
 #                    catch = synLFQ7$catch[,-i])
 #    tmp <- ELEFAN_SA(loop_data, SA_time = 60*0.5, SA_temp = 6e5,
-#                     MA = 11, addl.sqrt = TRUE,
-#                     init_par = list(Linf = 124, K = 0.5, t_anchor = 0.5, C=0.5, ts = 0.5),
+#                     MA = 5, addl.sqrt = TRUE,
+#                     init_par = list(Linf = 129, K = 0.5, t_anchor = 0.5, C=0.5, ts = 0.5),
 #                     low_par = list(Linf = 119, K = 0.01, t_anchor = 0, C = 0, ts = 0),
-#                     up_par = list(Linf = 129, K = 1, t_anchor = 1, C = 1, ts = 1),
+#                     up_par = list(Linf = 139, K = 1, t_anchor = 1, C = 1, ts = 1),
 #                     plot = FALSE)
 #    JK[[i]] <- unlist(c(tmp$par,list(Rn_max=tmp$Rn_max)))
 #  }
@@ -122,7 +123,7 @@ res_SA$par; res_SA$Rn_max
 
 ## ----Figure 5, fig.height=5, fig.width=5, eval=TRUE, fig.cap="Score graph of the ELEFAN method with genetic algorithm. Green dots indicate the runnning maximum value of the fitness function, while blue dots indicate the mean score of each iteration."----
 # run ELEFAN with genetic algorithm
-res_GA <- ELEFAN_GA(synLFQ7, MA = 11, seasonalised = TRUE, maxiter = 10, addl.sqrt = TRUE,
+res_GA <- ELEFAN_GA(synLFQ7, MA = 5, seasonalised = TRUE, maxiter = 10, addl.sqrt = TRUE,
                     low_par = list(Linf = 119, K = 0.01, t_anchor = 0, C = 0, ts = 0),
                     up_par = list(Linf = 129, K = 1, t_anchor = 1, C = 1, ts = 1),
                     monitor = FALSE)
@@ -143,29 +144,33 @@ lt <- lfqFitCurves(synLFQ7, par = res_GA$par,
 
 ## ------------------------------------------------------------------------
 # assign estimates to the data list
-synLFQ7 <- c(synLFQ7, res_SA$par)
+synLFQ7 <- c(synLFQ7, res_GA$par)
 
 ## ---- echo=TRUE----------------------------------------------------------
 # estimation of M
-Ms <- M_empirical(Linf = res_SA$par$Linf, K_l = res_SA$par$K, method = "Then_growth")
+Ms <- M_empirical(Linf = res_GA$par$Linf, K_l = res_GA$par$K, method = "Then_growth")
 synLFQ7$M <- as.numeric(Ms)
 # show results
 paste("M =", as.numeric(Ms))
 
 ## ----Figure 7,echo=TRUE, fig.width=6, fig.height=5, fig.cap="Catch curve with selected points for the regression analysis and in the second panel the selection ogive with age at first capture.", message = FALSE, warning=FALSE----
 # modify the data list
-synLFQ7 <- lfqModify(synLFQ7, plus_group = c(TRUE,110))
+synLFQ7 <- lfqModify(synLFQ7)
 # run catch curve
-res_cc <- catchCurve(synLFQ7,reg_int = c(10,24), calc_ogive = TRUE)
+res_cc <- catchCurve(synLFQ7,reg_int = c(14,50), calc_ogive = TRUE)
 # assign estimates to the data list
 synLFQ7$Z <- res_cc$Z
 synLFQ7$FM <- as.numeric(synLFQ7$Z - synLFQ7$M)
-synLFQ7$E <- as.numeric(synLFQ7$FM/synLFQ7$Z)
+synLFQ7$E <- synLFQ7$FM/synLFQ7$Z
 paste("Z =",round(synLFQ7$Z,2))
 paste("FM =",round(synLFQ7$FM,2))
 paste("E =",round(synLFQ7$E,2))
+paste("L50 =",round(res_cc$L50,2))
 
 ## ----Figure 8, echo=TRUE, fig.cap="Results of Jones' cohort analysis (CA).", message=FALSE,warning=FALSE----
+# add plus group which is smaller than Linf
+synLFQ7 <- lfqModify(synLFQ7, plus_group = c(TRUE,122))
+
 # assign length-weight parameters to the data list
 synLFQ7$a <- 0.01
 synLFQ7$b <- 3
@@ -183,11 +188,11 @@ synLFQ7$FM <- vpa_res$FM_calc
 ## ----Figure 9, echo=TRUE, eval=TRUE, fig.cap="Thompson and Bell model for the Thumbprint Emperor data: (a) Curves of yield and biomass per recruit. The black dot represents yield and biomass under current fishing pressure. The yellow and red dashed lines represent fishing mortality for maximum sustainable yield (Fmsy) and fishing mortality to fish the stock at 50% of the virgin biomass (F0.5). (b) exploration of impact of different exploitation rates and Lc values on the relative yield per recruit."----
 # Thompson and Bell model with changes in F
 TB1 <- predict_mod(synLFQ7, type = "ThompBell",
-                   FM_change = seq(0,5,0.05),  stock_size_1 = 1,
+                   FM_change = seq(0,1.5,0.05),  stock_size_1 = 1,
                    curr.E = synLFQ7$E, plot = FALSE, hide.progressbar = TRUE)
 # Thompson and Bell model with changes in F and Lc
 TB2 <- predict_mod(synLFQ7, type = "ThompBell",
-                   FM_change = seq(0,2,0.1), Lc_change = seq(20,60,0.1),
+                   FM_change = seq(0,1.5,0.1), Lc_change = seq(20,50,0.1),
                    stock_size_1 = 1,
                    curr.E = synLFQ7$E, curr.Lc = res_cc$L50,
                    s_list = list(selecType = "trawl_ogive",
@@ -197,7 +202,7 @@ TB2 <- predict_mod(synLFQ7, type = "ThompBell",
 par(mfrow = c(2,1), mar = c(4,5,2,4.5), oma = c(1,0,0,0))
 plot(TB1, mark = TRUE)
 mtext("(a)", side = 3, at = -1, line = 0.6)
-plot(TB2, type = "Isopleth", xaxis1 = "E", mark = TRUE, contour = 6)
+plot(TB2, type = "Isopleth", xaxis1 = "FM", mark = TRUE, contour = 6)
 mtext("(b)", side = 3, at = -0.1, line = 0.6)
 # Biological reference levels
 TB1$df_Es
