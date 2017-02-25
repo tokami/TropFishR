@@ -8,8 +8,8 @@
 #' \code{\link[TropFishR]{ELEFAN}} or \code{\link[TropFishR]{ELEFAN_SA}}.
 #' The data is generated with the following von Bertalanffy growth parameters:
 #' \itemize{
-#'   \item K = 0.47 ± 0.2 (CV)
-#'   \item Linf = 33.7 ± 0.05 (CV)
+#'   \item K = 0.47 +/- 0.2 (CV)
+#'   \item Linf = 33.7 +/- 0.05 (CV)
 #'   \item C = 0
 #'   \item ts = 0
 #'   \item t_anchor = 0.25 (Time when yearly recruitment pulse occurs;
