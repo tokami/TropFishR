@@ -10,7 +10,7 @@
 #' The data is generated with the following von Bertalanffy growth parameters:
 #' \itemize{
 #'   \item K = 0.2 +/- 0.1 (CV)
-#'   \item Linf = 123 +/- 0.1 (CV)
+#'   \item Linf = 123 +/- 0.05 (CV)
 #'   \item C = 0.3
 #'   \item ts = 0
 #'   \item t_anchor between 0.16 and 0.34 (Time when yearly recruitment pulse occurs;
@@ -21,7 +21,7 @@
 #' Further settings include:
 #' \itemize{
 #'   \item Lmat = 30.8 (length at maturity)
-#'   \item L50 = 25 (length at 50\% prob. of capture via trawl net)
+#'   \item L50 = 35 (length at 50\% prob. of capture via trawl net)
 #'   \item wqs = 5 (width between 25\% and 75\% prob. of capture quantiles;
 #'   i.e. wqs = 0 is knife-edge selection)
 #'   \item M = 0.2 (Natural mortality rate)
