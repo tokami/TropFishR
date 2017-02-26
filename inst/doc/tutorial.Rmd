@@ -1,5 +1,5 @@
 ---
-title: "A tutorial of single-species stock assessment with TropFishR"
+title: "Single-species fish stock assessment with TropFishR"
 author: "Tobias K. Mildenberger"
 date: "`r Sys.Date()`"
 output:
@@ -10,7 +10,6 @@ vignette: >
   %\VignetteIndexEntry{tutorial}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-csl: mee.csl
 bibliography: TropFishR.bib
 ---
 
@@ -51,7 +50,7 @@ The package is loaded into the R environment with:
 library(TropFishR)
 ```
 
-The tutorial will make use of a LFQ data set included in the package called "synLFQ7". To load the data set into the R environment use:
+The tutorial will make use of a synthetic LFQ data set included in the package ("synLFQ7"). To load the data set into the R environment use:
 
 ```{r}
 data("synLFQ7")
@@ -59,7 +58,7 @@ data("synLFQ7")
 
 
 ###*Biological stock characteristics*
-Growth, natural mortality, recruitment patterns and a stock-recruitment relationship are important biological stock characteristics and input parameters for population dynamics models.
+Growth, natural mortality, recruitment patterns and the stock-recruitment relationship are important biological stock characteristics and input parameters for population dynamics and yield per recruit models.
 
 ####*Growth parameters*
 Commonly used growth parameters are the asymptotic length ($L_{inf}$), the growth coefficient (K) and the theoretical length at age zero ($t_{0}$) of the von Bertalanffy growth function (VBGF). The ELEFAN (ELectronic LEngth Frequency ANalysis) methods allows to estimate $L_{inf}$ and K from LFQ data by restructuring the data and fitting growth curves through the restructured LFQ data [@Pauly1980].
@@ -184,7 +183,7 @@ colnames(JKconf) <- c("lower","upper")
 JKconf
 ```
 
-Depending on the number of sampling times (columns in the catch matrix) and the "SA_time", this loop can take some time as ELEFAN runs several times, each time removing the data of one of the sampling times. Another new optimisation routine is based on generic algorithms and is applied by:
+Depending on the number of sampling times (columns in the catch matrix) and the "SA_time", this loop can take some time as ELEFAN runs several times, each time removing the catch vector of one of the sampling times. Another new optimisation routine is based on generic algorithms and is applied by:
 
 ```{r Figure 5, fig.height=5, fig.width=5, eval=TRUE, results="hide", fig.cap="Score graph of the ELEFAN method with genetic algorithms. Green dots indicate the runnning maximum value of the fitness function, while blue dots indicate the mean score of each iteration."}
 # run ELEFAN with genetic algorithm
@@ -196,7 +195,7 @@ res_GA <- ELEFAN_GA(synLFQ7a, MA = 5, seasonalised = TRUE, maxiter = 10, addl.sq
 res_GA$par; res_GA$Rn_max
 ```
 
-The generation number of the ELEFAN method with the genetic algorithm was set to only 10 generations (argument 'maxiter'), which returns following results: $L_{inf}$ = `r {round(res_GA$par$Linf,2)}`, K = `r {round(res_GA$par$K,2)}`, $t_{anchor}$ = `r {round(res_GA$par$t_anchor,2)}`, C = `r {round(res_GA$par$C,2)}`, and $t_s$ = `r {round(res_GA$par$ts,2)}` with a score value ($Rn_{max}$) of `r {round(res_GA$Rn_max,2)}`. As with ELEFAN_SA this argument was hold low due to the vignette format and should be increased in order to find more stable results.
+The generation number of the ELEFAN_GA was set to only 10 generations (argument 'maxiter'), which returns following results: $L_{inf}$ = `r {round(res_GA$par$Linf,2)}`, K = `r {round(res_GA$par$K,2)}`, $t_{anchor}$ = `r {round(res_GA$par$t_anchor,2)}`, C = `r {round(res_GA$par$C,2)}`, and $t_s$ = `r {round(res_GA$par$ts,2)}` with a score value ($Rn_{max}$) of `r {round(res_GA$Rn_max,2)}`. As with ELEFAN_SA the generation number was hold down due to the vignette format and should be increased in order to find more stable results.
 According to [@Pauly1980] it is not possible to estimate $t_{0}$ (theoretical age at length zero) from LFQ data alone. However, this parameter does not influence results of the methods of the traditional stock assessment workflow (catch curve, VPA/CA, and yield per recruit model) and can be set to zero (Mildenberger, unpublished). The ELEFAN methods in this package do not return starting points as FiSAT II users might be used to. Instead, they return the parameter "t_anchor", which describes the fraction of the year where yearly repeating growth curves cross length equal to zero; for example a value of 0.25 refers to April 1st of any year. The maximum age is estimated within the ELEFAN function by corresponding to the age at 0.95 times $L_{inf}$, but can also be fixed, with the argument "agemax".
 
 The fit of estimated growth parameters can also be explored visually and indicates high similarity with true growth curves and a good fit through the peaks of the LFQ data.
@@ -315,8 +314,8 @@ Please note that the resolution of the $L_c$ and F changes is quite low and the 
 
 
 ##*Summary*
-For management purposes, stock assessments are mainly conducted for single species or stocks, which describe the manamgent units of a population. There is much to be gained from multi-species models, but data requirements make them rather unsuitable for deriving management advice. In particular, for data-poor fisheries single-species models and traditional fish stock assessment (as presented here) are useful. Length-frequency data comes with many advantages over long time series of catch and effort or catch-at-age data [@Mildenberger2016].
-In this exercise, the exploitation rate and results of the yield per recruit models indicate slight overfishing. The exploration of stock status and fisheries characteristics can of course be extended, but this tutorial is thought to help getting started with the **`TropFishR`** package. Further details about functions and their arguments can be found in the help files of the functions (`help(...)` or `?..`, where the dots stand for a function name). Also the two publications by @Mildenberger2016 and by @Taylor2016 provide more context and details about the functionality of the package.
+For management purposes, fish stock assessments are mainly conducted for single species or stocks, which describe the manamgent units of a population. There is much to be gained from multi-species and ecosystem models, but data requirements and complexity make them often unsuitable for deriving management advice. For data-poor fisheries, a traditional fish stock assessment solely based on length-frequency (LFQ) data of one year (as presented here) is particularly useful. LFQ data comes with many advantages over long time series of catch and effort or catch-at-age data [@Mildenberger2016].
+In this exercise, the exploitation rate and results of the yield per recruit models indicate slight overfishing. The exploration of stock status and fisheries characteristics can of course be extended, but go beyond the scope of this tutorial, which is thought to help getting started with the **`TropFishR`** package. Further details about functions and their arguments can be found in the help files of the functions (`help(...)` or `?..`, where the dots refer to any function of the package). Also the two publications by @Mildenberger2016 and by @Taylor2016 provide more details about the functionality and context of the package.
 
 
 ##*Author's comment*
