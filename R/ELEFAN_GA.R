@@ -268,7 +268,8 @@ ELEFAN_GA <- function(
     min = c(low_Linf, low_K, low_tanc)
     max = c(up_Linf, up_K, up_tanc)
 
-    writeLines(paste("Genetic algorithm is running. This might take some time. A beep tone will inform you\n when the calculations are done.",sep=" "))
+    writeLines(paste(
+      "Genetic algorithm is running. \nThis will take some time. \nA beep tone will alert completion.",sep=" "))
     flush.console()
     fit <- GA::ga(
       type = "real-valued",

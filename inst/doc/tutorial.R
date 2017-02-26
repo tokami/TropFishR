@@ -86,7 +86,7 @@ paste("Linf =",round(res_PW$Linf_est), "±", round(res_PW$se_Linf))
 #  }
 #  results <- do.call(rbind, res_loop)
 
-## ----Figure 4,  fig.height=5, fig.width=5, eval=TRUE, fig.cap="Score graph of the ELEFAN method with simulated annealing. Green dots indicate the runnning minimum value of the cost function, while blue dots indicate the mean score of each iteration. The red line shows the decline of the 'temperature' value, which describes the probability of accepting worse solutions as the parameter space is explored."----
+## ----Figure 4,  fig.height=5, fig.width=5, eval=TRUE, results="hide", fig.cap="Score graph of the ELEFAN method with simulated annealing. Green dots indicate the runnning minimum value of the cost function, while blue dots indicate the mean score of each iteration. The red line shows the decline of the 'temperature' value, which describes the probability of accepting worse solutions as the parameter space is explored."----
 # run ELEFAN with simulated annealing
 res_SA <- ELEFAN_SA(synLFQ7a, SA_time = 60*0.5, SA_temp = 6e5,
                     MA = 5, seasonalised = TRUE, addl.sqrt = TRUE,
@@ -121,7 +121,7 @@ res_SA$par; res_SA$Rn_max
 #  # show results
 #  JKconf
 
-## ----Figure 5, fig.height=5, fig.width=5, eval=TRUE, fig.cap="Score graph of the ELEFAN method with genetic algorithms. Green dots indicate the runnning maximum value of the fitness function, while blue dots indicate the mean score of each iteration."----
+## ----Figure 5, fig.height=5, fig.width=5, eval=TRUE, results="hide", fig.cap="Score graph of the ELEFAN method with genetic algorithms. Green dots indicate the runnning maximum value of the fitness function, while blue dots indicate the mean score of each iteration."----
 # run ELEFAN with genetic algorithm
 res_GA <- ELEFAN_GA(synLFQ7a, MA = 5, seasonalised = TRUE, maxiter = 10, addl.sqrt = TRUE,
                     low_par = list(Linf = 119, K = 0.01, t_anchor = 0, C = 0, ts = 0),
@@ -157,11 +157,13 @@ paste("M =", as.numeric(Ms))
 # modify the data list
 synLFQ7b <- lfqModify(synLFQ7a)
 # run catch curve
-res_cc <- catchCurve(synLFQ7b,reg_int = c(14,50), calc_ogive = TRUE)
+res_cc <- catchCurve(synLFQ7b, reg_int = c(9,28), calc_ogive = TRUE)
 # assign estimates to the data list
 synLFQ7b$Z <- res_cc$Z
 synLFQ7b$FM <- as.numeric(synLFQ7b$Z - synLFQ7b$M)
 synLFQ7b$E <- synLFQ7b$FM/synLFQ7b$Z
+
+## ---- echo=FALSE, eval=TRUE----------------------------------------------
 paste("Z =",round(synLFQ7b$Z,2))
 paste("FM =",round(synLFQ7b$FM,2))
 paste("E =",round(synLFQ7b$E,2))

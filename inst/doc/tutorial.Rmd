@@ -145,7 +145,7 @@ results <- do.call(rbind, res_loop)
 
 Note that RSA does not allow to optimise over the parameters C and $t_s$ of the seasonalised VBGF. It only allows to compare the score of ELEFAN runs with manually fixed C and $t_s$ values. In contrast, the newly implemented ELEFAN method `ELEFAN_SA` using a simulated annealing algorithm [@Xiang2013] and `ELEFAN_GA` using genetic algorithms allow for the optimisation of the seasonalised VBGF [@Taylor2016]. The optimisation procedure in the simulated annealing algorithm gradually reduces the stochasticity of the search process as a function of the decreasing "temperature" value, which describes the probability of accepting worse conditions. In reference to the results of the Powell-Wetherall plot a second search within the range of `r {round(res_PW$Linf_est)}` ± 10 cm for $L_{inf}$ is conducted. The search space of K is limted by 0.01 and 1. 
 
-```{r Figure 4,  fig.height=5, fig.width=5, eval=TRUE, fig.cap="Score graph of the ELEFAN method with simulated annealing. Green dots indicate the runnning minimum value of the cost function, while blue dots indicate the mean score of each iteration. The red line shows the decline of the 'temperature' value, which describes the probability of accepting worse solutions as the parameter space is explored."}
+```{r Figure 4,  fig.height=5, fig.width=5, eval=TRUE, results="hide", fig.cap="Score graph of the ELEFAN method with simulated annealing. Green dots indicate the runnning minimum value of the cost function, while blue dots indicate the mean score of each iteration. The red line shows the decline of the 'temperature' value, which describes the probability of accepting worse solutions as the parameter space is explored."}
 # run ELEFAN with simulated annealing
 res_SA <- ELEFAN_SA(synLFQ7a, SA_time = 60*0.5, SA_temp = 6e5,
                     MA = 5, seasonalised = TRUE, addl.sqrt = TRUE,
@@ -186,7 +186,7 @@ JKconf
 
 Depending on the number of sampling times (columns in the catch matrix) and the "SA_time", this loop can take some time as ELEFAN runs several times, each time removing the data of one of the sampling times. Another new optimisation routine is based on generic algorithms and is applied by:
 
-```{r Figure 5, fig.height=5, fig.width=5, eval=TRUE, fig.cap="Score graph of the ELEFAN method with genetic algorithms. Green dots indicate the runnning maximum value of the fitness function, while blue dots indicate the mean score of each iteration."}
+```{r Figure 5, fig.height=5, fig.width=5, eval=TRUE, results="hide", fig.cap="Score graph of the ELEFAN method with genetic algorithms. Green dots indicate the runnning maximum value of the fitness function, while blue dots indicate the mean score of each iteration."}
 # run ELEFAN with genetic algorithm
 res_GA <- ELEFAN_GA(synLFQ7a, MA = 5, seasonalised = TRUE, maxiter = 10, addl.sqrt = TRUE,
                     low_par = list(Linf = 119, K = 0.01, t_anchor = 0, C = 0, ts = 0),
@@ -243,11 +243,13 @@ Total mortality rate is estimated with a sample of the catch representative for 
 # modify the data list
 synLFQ7b <- lfqModify(synLFQ7a)
 # run catch curve
-res_cc <- catchCurve(synLFQ7b,reg_int = c(14,50), calc_ogive = TRUE)
+res_cc <- catchCurve(synLFQ7b, reg_int = c(9,28), calc_ogive = TRUE)
 # assign estimates to the data list
 synLFQ7b$Z <- res_cc$Z
 synLFQ7b$FM <- as.numeric(synLFQ7b$Z - synLFQ7b$M)
 synLFQ7b$E <- synLFQ7b$FM/synLFQ7b$Z
+```
+```{r, echo=FALSE, eval=TRUE}
 paste("Z =",round(synLFQ7b$Z,2))
 paste("FM =",round(synLFQ7b$FM,2))
 paste("E =",round(synLFQ7b$E,2))
@@ -313,7 +315,8 @@ Please note that the resolution of the $L_c$ and F changes is quite low and the 
 
 
 ##*Summary*
-The status of the fisheries can be assessed in respect to reference levels of the ypr as well as based on the exploitation level. In this example, both methods indicate slight overfishing. The result should however be seen in reference to the uncertainty in the growth parameters and consequently in all other parameters (error propagation).
+For management purposes, stock assessments are mainly conducted for single species or stocks, which describe the manamgent units of a population. There is much to be gained from multi-species models, but data requirements make them rather unsuitable for deriving management advice. In particular, for data-poor fisheries single-species models and traditional fish stock assessment (as presented here) are useful. Length-frequency data comes with many advantages over long time series of catch and effort or catch-at-age data [@Mildenberger2016].
+In this exercise, the exploitation rate and results of the yield per recruit models indicate slight overfishing. The exploration of stock status and fisheries characteristics can of course be extended, but this tutorial is thought to help getting started with the **`TropFishR`** package. Further details about functions and their arguments can be found in the help files of the functions (`help(...)` or `?..`, where the dots stand for a function name). Also the two publications by @Mildenberger2016 and by @Taylor2016 provide more context and details about the functionality of the package.
 
 
 ##*Author's comment*

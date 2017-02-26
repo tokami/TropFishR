@@ -249,9 +249,7 @@ ELEFAN_SA <- function(x,
   if(seasonalised){
     # Simulated annealing with seasonalised VBGF
     writeLines(paste(
-      "Simulated annealing is running.\n
-      This will take approximately", round(SA_time/60,digits=2),"minutes.\n
-      A beep tone will alert completion."
+      "Simulated annealing is running. \nThis will take approximately", round(SA_time/60,digits=2),"minutes. \nA beep tone will alert completion."
     ,sep=" "))
     flush.console()
     SAfit <- GenSA::GenSA(
