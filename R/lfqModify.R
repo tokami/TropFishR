@@ -20,7 +20,7 @@
 #' data(synLFQ4)
 #'
 #' ## summarise catch matrix per year
-#' lfq_sum <- lfqModify(synLFQ4)
+#' lfq_sum <- lfqModify(synLFQ4, vectorise_catch = TRUE)
 #'
 #' ## change bin size
 #' lfq_bin <- lfqModify(synLFQ4, bin_size = 4)
