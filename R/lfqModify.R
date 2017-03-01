@@ -7,6 +7,8 @@
 #' @param lfq lfq object with dates, midLengths, and catch
 #' @param par growth parameter as resulting from e.g. \code{\link{ELEFAN}}
 #' @param bin_size Bin size for length frequencies (in cm)
+#' @param vectorise_catch logical; indicating if the catch matrix should be summarised to
+#'    yearly vectors (default: FALSE).
 #' @param plus_group logical; should a plus group be created? If yes you will be
 #'    asked to insert the length for the plus group in the console (default: FALSE).
 #'    Instead of inserting the length of the plus group via the console, the value
@@ -28,7 +30,7 @@
 #'
 #' @export
 
-lfqModify <- function(lfq, par = NULL, bin_size = NA, plus_group = FALSE){
+lfqModify <- function(lfq, par = NULL, bin_size = NA, vectorise_catch = FALSE, plus_group = FALSE){
 
   dates <- lfq$dates
   midLengths <- lfq$midLengths
@@ -54,7 +56,10 @@ lfqModify <- function(lfq, par = NULL, bin_size = NA, plus_group = FALSE){
     catch <- catch_mat
     midLengths <- midLengthsNEW
   }
-  if(is.na(bin_size)){
+  if(vectorise_catch & !is.matrix(catch)){
+    stop(paste0("Catch is ", class(catch), ". To vectorise catch, it has to be a matrix."))
+  }
+  if(vectorise_catch & is.matrix(catch)){
     # sum numbers per year
     c_sum <- by(t(catch),format(dates,"%Y"), FUN = colSums)
 
@@ -63,11 +68,11 @@ lfqModify <- function(lfq, par = NULL, bin_size = NA, plus_group = FALSE){
     c_dat <- as.data.frame(c_list)
 
     # get rid of 0 bins at both ends
-    lowRow <- 1
+    lowRow <- 0
     resi <- TRUE
     while(resi == TRUE){
-      resi <- rowSums(c_dat)[lowRow] == 0
       lowRow <- lowRow + 1
+      resi <- rowSums(c_dat)[lowRow] == 0
     }
 
     upRow <- nrow(c_dat)
