@@ -239,8 +239,8 @@ In order to estimate the level of exploitation, knowledge on fishing mortality (
 Total mortality rate is estimated with a sample of the catch representative for the whole year. Besides, changing the bin size, the function `lfqModify` allows to rearrange the catch matrix in the required format (catch vector per year) and to pool the largest length classes with only a few individuals into a plus group (necessary later for the cohort analysis). As with the Powell-Wetherall plot, the `reg_int` argument is necessary to avoid the interactive plotting function (more information in `help(catchCurve)`). The argument `calc_ogive` allows the estimation of the selection ogive.
 
 ```{r Figure 7,echo=TRUE, fig.width=6, fig.height=5, fig.cap="Catch curve with selected points for the regression analysis and in the second panel the selection ogive with age at first capture.", message = FALSE, warning=FALSE}
-# modify the data list
-synLFQ7b <- lfqModify(synLFQ7a)
+# summarise catch matrix into vector
+synLFQ7b <- lfqModify(synLFQ7a, vectorise_catch = TRUE)
 # run catch curve
 res_cc <- catchCurve(synLFQ7b, reg_int = c(9,28), calc_ogive = TRUE)
 # assign estimates to the data list
