@@ -19,11 +19,19 @@
 #' @examples
 #' data("synLFQ4")
 #'
-#' synLFQ4 <- lfqRestructure_logspline(synLFQ4, n.peak=7)
+#' synLFQ4 <- lfqRestructure_logspline(synLFQ4, n.peak=5)
 #' plot(synLFQ4)
 #'
 #' synLFQ4 <- lfqRestructure_logspline(synLFQ4, n.mult=7, n.peak=7, logscore=TRUE)
 #' plot(synLFQ4)
+#'
+#' # compare to lfqRestructure
+#' op <- par(mfcol=c(2,1), mar=c(4,4,1,1))
+#' synLFQ4 <- lfqRestructure(synLFQ4, MA=13)
+#' plot(synLFQ4)
+#' synLFQ4 <- lfqRestructure_logspline(synLFQ4, n.peak=7, logscore=FALSE)
+#' plot(synLFQ4)
+#' par(op)
 #'
 #' @export
 

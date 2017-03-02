@@ -173,4 +173,3 @@ growth parameters from length-frequency data. \emph{Meeresforschung}, 28(4):205-
 Xiang, Y., Gubian, S., Suomela, B., & Hoeng, J. (2013). Generalized simulated
 annealing for global optimization: the GenSA Package. R Journal, 5(1), 13-28.
 }
-

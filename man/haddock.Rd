@@ -33,4 +33,3 @@ summary(haddock)
 \keyword{dataset}
 \keyword{selectivity}
 \keyword{trawl}
-

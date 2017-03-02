@@ -56,4 +56,3 @@ plot(synLFQ5, Fname = "rcounts")
 \keyword{data}
 \keyword{dataset}
 \keyword{length-frequency}
-
