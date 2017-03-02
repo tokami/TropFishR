@@ -32,4 +32,3 @@ str(synCPUE)
 }
 \keyword{CPUE}
 \keyword{data}
-

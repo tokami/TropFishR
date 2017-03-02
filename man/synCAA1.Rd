@@ -33,4 +33,3 @@ summary(synCAA1)
 \keyword{age}
 \keyword{data}
 \keyword{dataset}
-

@@ -34,4 +34,3 @@ summary(shrimps)
 \keyword{dataset}
 \keyword{length}
 \keyword{prediction}
-
