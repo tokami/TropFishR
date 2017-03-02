@@ -25,8 +25,12 @@
 #'   \item \strong{meanWeight}: vector with mean weight per length group or age class,
 #'   \item \strong{meanValue}: vector with mean value per length group or age class,
 #' }
-#' @param FM_change vector with ascending fishing mortalities, or
-#' @param E_change vector with ascending exploitation rates
+#' @param FM_change vector with ascending fishing mortalities (if \code{FM_relative}
+#'    is set to TRUE, values can also be relative (only for Thompson and Bell model).
+#'    Default are absolute values from 0 to 10). Or
+#' @param E_change vector with ascending absolute exploitation rates;
+#' @param FM_relative logical; indicating whether \code{FM_change} is relative or
+#'    absolute. Default is FALSE (absolute fishing mortalities in \code{FM_change}).
 #' @param Lc_change vector with ascending lengths at first capture (Lc), or
 #' @param tc_change vector with ascending ages at first capture (tc)
 #' @param type indicating which model should be applied: \code{"ypr"} for Beverton
@@ -267,7 +271,9 @@
 #' @export
 
 predict_mod <- function(param, type, FM_change = NA,
-                        E_change = NA, Lc_change = NULL,
+                        E_change = NA,
+                        FM_relative = FALSE,
+                        Lc_change = NULL,
                         tc_change = NULL,
                         s_list = NA,
                         stock_size_1 = NA, age_unit = 'year', curr.E = NA,
@@ -275,9 +281,11 @@ predict_mod <- function(param, type, FM_change = NA,
                         plus_group = NA, Lmin = NA, Lincr = NA, plot = FALSE, mark = TRUE,
                         hide.progressbar = FALSE){
   res <- param
+  res$FM_relative = FM_relative
 
   # Beverton and Holt's ypr
   if(type == "ypr"){
+    if(FM_relative) stop(noquote("ypr does not work with relative changes in FM, please provide absolute values."))
     M <- res$M
     K <- res$K
     t0 <- ifelse(!is.null(res$t0),res$t0,0)
@@ -592,7 +600,7 @@ predict_mod <- function(param, type, FM_change = NA,
     if(length(FM_change) == 1 & is.na(FM_change[1]) &
        length(E_change) == 1 & is.na(E_change[1])){
       FM_change <- seq(0,10,0.1)
-      print(noquote("No fishing mortality (FM_change) or exploitation rate (E_change) was provided, a default range for fishing mortality of 0 to 10 is used."))
+      print(noquote("No fishing mortality (FM_change) or exploitation rate (E_change) \nwas provided, a default range for the absolute \nfishing mortality of 0 to 10 is used."))
     }
 
     # transfer E_change into F_change if provided
@@ -629,7 +637,13 @@ predict_mod <- function(param, type, FM_change = NA,
 
 
       #prediction based on f_change
-      pred_mat <- as.matrix(FM/max(FM, na.rm = TRUE)) %*% FM_change
+      if(!FM_relative){
+        pred_mat <- as.matrix(FM/max(FM, na.rm = TRUE)) %*% FM_change
+      }
+      if(FM_relative){
+        pred_mat <- as.matrix(FM) %*% FM_change
+      }
+
 
       pred_res_list <- list()
       for(x7 in 1:length(FM_change)){
@@ -733,9 +747,17 @@ predict_mod <- function(param, type, FM_change = NA,
 
       #list with FM_Lc_matrices per FM_change
       FM_Lc_com_mat.list <- list()
-      for(x20 in 1:length(colnames(Lc_mat_FM))){
-        FM_Lc_com_mat.list[[x20]] <- as.matrix(Lc_mat_FM[,x20]) %*% FM_change
-        colnames(FM_Lc_com_mat.list[[x20]]) <- FM_change
+      if(!FM_relative){
+        for(x20 in 1:length(colnames(Lc_mat_FM))){
+          FM_Lc_com_mat.list[[x20]] <- as.matrix(Lc_mat_FM[,x20]) %*% FM_change
+          colnames(FM_Lc_com_mat.list[[x20]]) <- FM_change
+        }
+      }
+      if(FM_relative){
+        for(x20 in 1:length(colnames(Lc_mat_FM))){
+          FM_Lc_com_mat.list[[x20]] <- as.matrix(Lc_mat_FM[,x20] * FM) %*% FM_change
+          colnames(FM_Lc_com_mat.list[[x20]]) <- FM_change
+        }
       }
 
       param.loop <- res
@@ -836,6 +858,7 @@ predict_mod <- function(param, type, FM_change = NA,
 
       ret <- c(res,
                list(FM_change = FM_change,
+                    # FM_relative = FM_relative,
                     E_change = E_change,
                     Lc_change = Lc_change,
                     tc_change = tc_change,

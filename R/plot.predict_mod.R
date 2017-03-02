@@ -112,6 +112,9 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     if(xaxis1 == "FM"){
       px <- pes$FM_change
       xlabel1 <- "Fishing mortality"
+      if(pes$FM_relative){
+        xlabel1 <- "rel. Fishing mortality"
+      }
 
       N05 <- df_Es$F05
       Nmax <- df_Es$Fmsy
@@ -122,6 +125,9 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     }else{
       px <- pes$E_change
       xlabel1 <- "Exploitation rate"
+      if(pes$FM_relative){
+        xlabel1 <- "rel. Exploitation rate"
+      }
 
       N05 <- df_Es$E05
       Nmax <- df_Es$Emsy
@@ -225,8 +231,8 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
       plot(px,py3,type='l',axes=FALSE,ylab='',xlab='',
            col = 'darkgreen',lwd=1.6,
            ylim = c(0,ceiling(max_val/dim_val)*dim_val))    # draw lines with small intervals: seq(0,max(),0.05) but y as to be dependent of x (formula of calculaiton of y)
-      axis(4,at=pretty(c(0,pes$totV)),line = 3,col.axis="darkgreen",col="darkgreen")
-      mtext(ylabel3, side=4, line=5,col="darkgreen")
+      axis(4,at=pretty(c(0,pes$totV)),line = 3.6,col.axis="darkgreen",col="darkgreen")
+      mtext(ylabel3, side=4, line=5.7,col="darkgreen")
     }
 
     # #par(oma = c(0, 0, 0, 0), new = TRUE)
@@ -243,6 +249,9 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     p.FE <- xaxis1
     p.B <- yaxis2
     xlabel1 <- ifelse(xaxis1 == "FM", "Fishing mortality", "Exploitation rate")
+    if(pes$FM_relative){
+      xlabel1 <- ifelse(xaxis1 == "FM", "rel. Fishing mortality", "rel. Exploitation rate")
+    }
     #ylabel1 <- ifelse(yaxis1 == "Y_R", "Y/R", "rel. Y/R")
     ylabel_iso <- ifelse(yaxis_iso == "Lc", "Lc", "Lc / Linf")
     if(!is.na(xlab[1])){
@@ -330,6 +339,9 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     p.FE <- xaxis1
     p.B <- yaxis2
     xlabel1 <- ifelse(xaxis1 == "FM", "Fishing mortality", "Exploitation rate")
+    if(pes$FM_relative){
+      xlabel1 <- ifelse(xaxis1 == "FM", "rel. Fishing mortality", "rel. Exploitation rate")
+    }
     ylabel1 <- ifelse(yaxis1 == "Y_R", "Y/R", "rel. Y/R")
     ylabel2 <- ifelse(yaxis2 == "B_R", "B/R", "B/R [%]")
     ylabel_iso <- ifelse(yaxis_iso == "Lc", "Lc", "Lc / Linf")

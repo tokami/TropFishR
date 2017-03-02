@@ -6,7 +6,8 @@
 \usage{
 \method{plot}{predict_mod}(x, type = "ypr", xaxis1 = "FM",
   yaxis1 = "Y_R.rel", yaxis2 = "B_R.rel", yaxis_iso = "Lc",
-  identify = FALSE, mark = FALSE, contour = TRUE, ...)
+  identify = FALSE, mark = FALSE, contour = TRUE, xlab = NA,
+  ylab1 = NA, ylab2 = NA, ylab3 = NA, ...)
 }
 \arguments{
 \item{x}{a object of the class 'predict_mod'}
@@ -40,6 +41,18 @@ clicking on them (uses \code{\link{locator}} function). To stop press right mous
 \item{contour}{used in combination with the Isopleth graph. Usage
 can be logical (e.g. TRUE) or providing a numeric which indicates the
 number of levels (\code{nlevels} in \code{\link{contour}}). By default TRUE.}
+
+\item{xlab}{Label of x-axis. If set to NA, then default "Fishing mortality", or
+"Exploitation rate" is used.}
+
+\item{ylab1}{Label of y-axis. If set to NA, then default "Yield" is used for the
+Thompson and Bell model, "Lc" is used for the Isopleth graph, and "Y/R" is used for ypr.}
+
+\item{ylab2}{Label of second y-axis. If set to NA, then default "Biomass" is used for
+the Thompson and Bell model and "B/R" for ypr.}
+
+\item{ylab3}{Label of third y-axis. If set to NA, then default "Value" is used
+for the Thompson and Bell model.}
 
 \item{...}{optional parameters of plot function}
 }

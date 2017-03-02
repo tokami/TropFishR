@@ -4,10 +4,11 @@
 \alias{predict_mod}
 \title{Prediction models}
 \usage{
-predict_mod(param, type, FM_change = NA, E_change = NA, Lc_change = NULL,
-  tc_change = NULL, s_list = NA, stock_size_1 = NA, age_unit = "year",
-  curr.E = NA, curr.Lc = NA, plus_group = NA, Lmin = NA, Lincr = NA,
-  plot = FALSE, mark = TRUE, hide.progressbar = FALSE)
+predict_mod(param, type, FM_change = NA, E_change = NA,
+  FM_relative = FALSE, Lc_change = NULL, tc_change = NULL, s_list = NA,
+  stock_size_1 = NA, age_unit = "year", curr.E = NA, curr.Lc = NA,
+  plus_group = NA, Lmin = NA, Lincr = NA, plot = FALSE, mark = TRUE,
+  hide.progressbar = FALSE)
 }
 \arguments{
 \item{param}{a list consisting of following parameters (not all are required):
@@ -34,9 +35,14 @@ additional list objects for the Thompson and Bell model:
 \item{type}{indicating which model should be applied: \code{"ypr"} for Beverton
 and Holt's yield per recruit model and \code{"ThompBell"} for the Thompson and Bell model}
 
-\item{FM_change}{vector with ascending fishing mortalities, or}
+\item{FM_change}{vector with ascending fishing mortalities (if \code{FM_relative}
+is set to TRUE, values can also be relative (only for Thompson and Bell model).
+Default are absolute values from 0 to 10). Or}
 
-\item{E_change}{vector with ascending exploitation rates}
+\item{E_change}{vector with ascending absolute exploitation rates;}
+
+\item{FM_relative}{logical; indicating whether \code{FM_change} is relative or
+absolute. Default is FALSE (absolute fishing mortalities in \code{FM_change}).}
 
 \item{Lc_change}{vector with ascending lengths at first capture (Lc), or}
 
