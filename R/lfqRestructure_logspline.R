@@ -22,7 +22,7 @@
 #' synLFQ4 <- lfqRestructure_logspline(synLFQ4, n.peak=5)
 #' plot(synLFQ4)
 #'
-#' synLFQ4 <- lfqRestructure_logspline(synLFQ4, n.mult=7, n.peak=7, logscore=TRUE)
+#' synLFQ4 <- lfqRestructure_logspline(synLFQ4, n.peak=7, logscore=TRUE)
 #' plot(synLFQ4)
 #'
 #' # compare to lfqRestructure

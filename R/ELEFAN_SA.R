@@ -49,19 +49,13 @@
 #' @param SA_temp numeric; Initial value for temperature (default : 1e5).
 #' @param verbose logical; TRUE means that messages from the algorithm
 #'    are shown (default : TRUE).
-#' @param restructuring_type indicating which restructuring procedure should be used.
-#'    "traditional" (default) for traditional approach according to Pauly, "logspline" for new approach
-#'    based on logspline
-#' @param MA number indicating over how many length classes the moving average
-#'  should be performed (defalut: 5, for
-#'    more information see \link{lfqRestructure}).
-#' @param addl.sqrt Passed to \link{lfqRestructure}. Applied an additional
-#'    square-root transformation of positive values according to Brey et al. (1988).
-#'    (default: FALSE, for more information see \link{lfqRestructure}).
-#' @param n.mult multiplier to use in expanding the number of bins (Default=5)
-#' @param n.peak expected number of cohorts (Default=5)
-#' @param endrule running median rule (Default="median")
-#' @param logscore Logical. Return log-transformed scores (Default=FALSE)
+#' @param restructure_args list of arguments passed to restructure_fun.
+#' Default restructure_args = list(MA=5)
+#' #n.mult multiplier to use in expanding the number of bins (Default=5)
+#' @param restructure_fun = "lfqRestructure"
+#' #@param n.peak expected number of cohorts (Default=5)
+#' #@param endrule running median rule (Default="median")
+#' #@param logscore Logical. Return log-transformed scores (Default=FALSE)
 #' @param agemax maximum age of species; default NULL, then estimated from Linf
 #' @param flagging.out logical; passed to \link{lfqFitCurves}. Default is TRUE
 #' @param plot logical; Plot restructured counts with fitted lines using
@@ -74,27 +68,38 @@
 #' data(synLFQ4)
 #' plot(synLFQ4, Fname="catch")
 #'
-#' # ELEFAN_SA (takes approximately 2 minutes)
-#' output <- ELEFAN_SA(synLFQ4, SA_time = 60*2, seasonalised = TRUE, MA = 11,
+#' # ELEFAN_SA (takes approximately 2 minutes for each)
+#' output <- ELEFAN_SA(synLFQ4, SA_time = 60*2, seasonalised = TRUE,
+#'   restructure_fun = "lfqRestructure",
+#'   restructure_args = list(MA=13),
 #'   init_par = list(Linf = 75, K = 0.5, t_anchor = 0.5, C = 0.5, ts = 0.5),
 #'   low_par = list(Linf = 70, K = 0.3, t_anchor = 0, C = 0, ts = 0),
 #'   up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1))
 #' output$par
 #' output$Rn_max
 #'
-#' # view fit
+#' output2 <- ELEFAN_SA(synLFQ4, SA_time = 60*2, seasonalised = TRUE,
+#'   restructure_fun = "lfqRestructure_logspline",
+#'   restructure_args = list(n.peak=7, logscore=TRUE),
+#'   init_par = list(Linf = 75, K = 0.5, t_anchor = 0.5, C = 0.5, ts = 0.5),
+#'   low_par = list(Linf = 70, K = 0.3, t_anchor = 0, C = 0, ts = 0),
+#'   up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1))
+#' output2$par
+#' output2$Rn_max
+#'
+#' # view fit and compare scores to original parameters
 #' plot(output)
+#' plot(output2)
+#' lfqFitCurves(output2, col=2, par=output2$par, draw=TRUE)$Rn_max
+#' tmp <- lfqFitCurves(output2, col=3, par=list(Linf=80, K=0.5, t_anchor=0.25, ts=0, C=0.75), draw=TRUE)
 #'
-#' # or
-#' plot(output, draw = FALSE)
-#' lfqFitCurves(output, col=1, par=output$par, draw=TRUE)$ESP
-#'
-#' # compare to original parameters
-#' tmp <- lfqFitCurves(output, col=4, lty=1,
-#'    par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0), draw=TRUE)
-#' tmp$fESP
+#' # Compare scores to original parameters
+#' tmp$fESP # original
 #' output$Rn_max
-#' }
+#' output2$Rn_max
+#'
+#'}
+#'
 #'
 #' @details A more detailed description of the simulated annealing (SA) can be found in
 #'    Xiang et al. (2013). The score value \code{cost_value} is not comparable with
@@ -154,12 +159,8 @@ ELEFAN_SA <- function(x,
                       SA_time = 60 * 1,
                       SA_temp = 1e5,
                       verbose = TRUE,
-                      restructuring_type = "traditional",
-                      MA = 5, addl.sqrt = FALSE,
-                      n.mult = 5,
-                      n.peak = 5,
-                      endrule = "median",
-                      logscore = FALSE,
+                      restructure_fun = "lfqRestructure",
+                      restructure_args = list(MA=5),
                       agemax = NULL,
                       flagging.out = TRUE,
                       plot = FALSE,
@@ -235,16 +236,11 @@ ELEFAN_SA <- function(x,
                   get("ts", up_par_ALL))
 
 
-  # ELEFAN 0
-  if(restructuring_type == "traditional"){
-    res <- lfqRestructure(res, MA = MA, addl.sqrt = addl.sqrt)
-  }else if(restructuring_type == "logspline"){
-    res <- lfqRestructure_logspline(res, n.mult = n.mult, n.peak = n.peak,
-                                    endrule = endrule, logscore = logscore)
-  }else{
-    stop(paste0("restructuring_type = ",restructuring_type, " not known. Choose either 'traditional' or 'logspline'."))
-    flush.console()
-  }
+  # Restructure LFQ
+  ARGS <- c(list(param=x), restructure_args)
+  res <- do.call(restructure_fun, args = ARGS)
+  plot(res)
+
 
   catch_aAF_F <- res$rcounts
   peaks_mat <- res$peaks_mat
