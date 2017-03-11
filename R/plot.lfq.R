@@ -24,9 +24,6 @@
 #' }
 #' @param agemax maximum age of species; default NULL, then estimated from Linf
 #' @param curve.col colour of growth curves (default: 1)
-#' @param xlim limits of x axis
-#' @param ylim limits of y axis
-
 #' @param hist.sc defines the scaling factor to use for maximum histogram extent (x-axis
 #'    direction). The default setting of hist.sc=0.5 will result in a maximum distance equal
 #'    to half the distance between closest sample dates (i.e. ensures no overlap and full
@@ -229,9 +226,7 @@ plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
     }
   }
 
-  # frame
-  box()
-
+  # optional addition of cohort growth curves
   if("par" %in% names(x) & is.null(par) & draw){
     Lt <- lfqFitCurves(lfq = x, par = x$par,
       agemax = x$agemax, draw = TRUE, col=curve.col
@@ -242,5 +237,9 @@ plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
      agemax = agemax, draw = TRUE, col=curve.col
     )
   }
+
+  # frame
+  box()
+
 
 }

@@ -76,10 +76,6 @@ seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by="months")}
 lfq plot if parameters are provided (default : TRUE)}
 
 \item{...}{additional options of the plot function}
-
-\item{xlim}{limits of x axis}
-
-\item{ylim}{limits of y axis}
 }
 \description{
 This function plots length frequency (lfq) samples sequentially
