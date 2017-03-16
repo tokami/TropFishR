@@ -112,10 +112,10 @@ stock_sim <- function(param, age_unit = "year",
     N[1] <- ifelse(is.na(stock_size_1),1000,stock_size_1)
 
     for(x1 in 2:length(N)){
-      N[x1] <- N[x1-1] * exp(-Z[x1] * dt[x1])
-      if(x1 == length(N)){                                ####CORRECT????? WHY? Z[x1] and dt[x1] = NA!!!
-        N[x1] <- N[x1-1] * exp(-Z[x1-1] * dt[x1-1])
-      }
+      N[x1] <- N[x1-1] * exp(-Z[x1-1] * dt[x1-1])
+      # if(x1 == length(N)){
+      #   N[x1] <- N[x1-1] * exp(-Z[x1-1] * dt[x1-1])
+      # }
     }
 
     #number of deaths per time step month or year

@@ -139,4 +139,3 @@ Tukey, J., 1986. The future of processes of data analysis. In L. V. Jones (Eds.)
 The Collected Works of John W. Tukey philosophy and principles of data analysis:
 1965-1986 (Vol. 4, pp. 517-549). Monterey, CA, USA: Wadsworth & Brooks/Cole
 }
-

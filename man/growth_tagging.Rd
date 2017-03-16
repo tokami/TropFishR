@@ -76,4 +76,3 @@ Part 2. Excercises. FAO Fisheries Technical Paper, (306.2, Rev. 2). 94 p.
 
 Wolff, M., 1984. Early setback for scallop culture in Peru.
 }
-

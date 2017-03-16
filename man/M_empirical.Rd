@@ -127,4 +127,3 @@ performance of empirical estimators of natural mortality rate using information 
 \keyword{M}
 \keyword{function}
 \keyword{mortality}
-

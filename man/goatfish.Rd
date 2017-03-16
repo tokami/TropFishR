@@ -35,4 +35,3 @@ summary(goatfish)
 \keyword{data}
 \keyword{dataset}
 \keyword{length-frequency}
-

@@ -25,7 +25,7 @@ Description: Fish stock assessment methods and fisheries models based on the FAO
 License: GPL-3
 BugReports: https://github.com/tokami/TropFishR/issues
 URL: https://github.com/tokami/TropFishR
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
 Suggests:
     stats,
     graphics,

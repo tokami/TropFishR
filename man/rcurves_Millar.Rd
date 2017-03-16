@@ -31,4 +31,3 @@ Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
  using log-linear models. \emph{ICES Journal of Marine Science: Journal du Conseil},
  54(3):471-477
 }
-

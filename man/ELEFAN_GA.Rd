@@ -176,4 +176,3 @@ growth parameters from length-frequency data. \emph{Meeresforschung}, 28(4):205-
 Scrucca, L. (2013). GA: a package for genetic algorithms in R. Journal of
 Statistical Software, 53(4), 1-37.
 }
-

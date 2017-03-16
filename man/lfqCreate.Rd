@@ -63,4 +63,3 @@ lfq_dat <- lfqCreate(data,Lname = "length.mm.", Dname = "dates", aggregate_dates
 \keyword{function}
 \keyword{length-frequency}
 \keyword{lfq}
-
