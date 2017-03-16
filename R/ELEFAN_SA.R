@@ -60,6 +60,7 @@
 #' @param plot logical; Plot restructured counts with fitted lines using
 #' \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).
 #' @param plot.score logical; Plot simulated annealing score progression.
+#'    (Default: plot.score=TRUE)
 #'
 #' @examples
 #' \donttest{

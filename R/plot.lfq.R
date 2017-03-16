@@ -16,26 +16,29 @@
 #'    displayed (default: "rcounts")
 #' @param par a list with following growth parameters (default NULL):
 #'  \itemize{
-#'   \item \strong{Linf} length infinity,
-#'   \item \strong{K} curving coefficient,
+#'   \item \strong{Linf} asymptotic length,
+#'   \item \strong{K} growth coefficient,
+#'   \item \strong{t_anchor} time at length zero,
 #'   \item \strong{C} amplitude of growth oscillation (optional),
-#'   \item \strong{WP} winter point (WP = ts + 0.5) (optional);
+#'   \item \strong{ts} summer point (optional);
 #' }
 #' @param agemax maximum age of species; default NULL, then estimated from Linf
-#' @param flagging.out logical; should positive peaks be flagged out?
-#'    (Default : TRUE)
-#' @param col colour of growth curves (default: 1)
-#' @param xlim limits of x axis
-#' @param ylim limits of y axis
-#' @param add.image logical; should and image be added to the lfq plot
-#'    (default : TRUE)
-#' @param col.image colour of image, by default (NULL) red and blue colours
-#'    are used
+#' @param curve.col colour of growth curves (default: 1)
+#' @param hist.sc defines the scaling factor to use for maximum histogram extent (x-axis
+#'    direction). The default setting of hist.sc=0.5 will result in a maximum distance equal
+#'    to half the distance between closest sample dates (i.e. ensures no overlap and full
+#'    plotting within the plot region).
+#' @param hist.col vector of 2 values defining coloring to use on negative and positive
+#'    histogram bars (default: hist.col=c("white", "black"))
+#' @param image.col colour of image, by default (NULL) red and blue colours
+#'    are used. To remove image coloring, set image.col=NA.
+#' @param region.col colour of plotting region. Will overwrite image.col
+#' (default: region.col=NULL)
 #' @param zlim the minimum and maximum z values for which colors should be
 #'    plotted (default : NULL).
 #' @param zlimtype indicating if zlim should be based on the range of
-#'    the catch ("range") or based on the maximum catch ("balanced", default). This parameter is only
-#'    considered if zlim is NULL.
+#'    the catch ("range") or based on the maximum absolute value in Fname
+#'    ("balanced", default). This parameter is only considered if zlim is NULL.
 #' @param date.axis the style of the x axis. By default the "traditional"
 #'    approach is used with years under the months. Alternatively, by using
 #'    "modern" the date is plotted in one line according to the chosen
@@ -52,16 +55,39 @@
 #'
 #'
 #' @examples
-#' data(synLFQ4)
-#' res <- lfqRestructure(synLFQ4)
-#' plot(x = res, Fname = "rcounts")
-#' plot(res, Fname = "rcounts", par = list(Linf = 80, K = 0.5, t_anchor = 0.25))
-#' plot(res, Fname = "catch", par = list(Linf = 80, K = 0.5,
-#'    t_anchor = 0.25, C= 0.75, WP = -0.5))
+#' data(alba)
+#' res <- lfqRestructure(alba)
 #'
-#' # plot length frequency data without restructuring
-#' class(synLFQ4) <- "lfq"
-#' plot(synLFQ4, Fname = "catch")
+#' # simple plot or reconstructed frequencies
+#' plot(x = res, Fname = "rcounts")
+#'
+#' # add VBGF curves
+#' plot(res, Fname = "rcounts", par = list(Linf = 14, K = 1.1, t_anchor = 0.3))
+#'
+#' # add soVBGF curves, adjust hist.sc and xlim
+#' plot(res, Fname = "catch", curve.col=4,
+#'   par = list(Linf = 14, K = 1.1, t_anchor = 0.3, C = 0.2, ts = 0.75),
+#'   hist.sc = 0.9,
+#'   xlim=range(res$dates)+c(-30, 0)
+#' )
+#'
+#' # adjust image colors
+#' plot(res, Fname = "rcounts", image.col = NA )
+#' plot(res, Fname = "rcounts", image.col = rev(cm.colors(21)) )
+#' plot(res, Fname = "rcounts", image.col = colorRampPalette(c("red","grey90","green"))(21))
+#'
+#' # solid plot region color
+#' plot(res, xlim=range(res$dates)+c(-60, 60),
+#'   hist.sc=0.75, image.col="grey90") # leaves gaps
+#' plot(res, xlim=range(res$dates)+c(-60, 60),
+#'   hist.sc=0.75, region.col="grey90") # full coverage
+#'
+#' # low-level plot additions
+#' plot(res)
+#' abline(h=4, lty=2)
+#' mtext("Restructured frequencies (MA=5)", line=0.25, side=3)
+#'
+#'
 #'
 #' @details This function uses \code{\link{lfqFitCurves}} when growth
 #'    parameters are provided to plot growth curves, this can be turned off with
@@ -113,21 +139,21 @@
 #' @export
 
 plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
-                     par = NULL,
-                     agemax = NULL,
-                     flagging.out = TRUE,
-                     col = "blue",
-                     xlim = NULL,
-                     ylim = NULL,
-                     add.image = TRUE,
-                     col.image = NULL,
-                     zlim = NULL,
-                     zlimtype = "balanced",   # alternative : "range"
-                     date.axis = "traditional",  # alternative : "modern"
-                     date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by="months"),
-                     date.format = "'%y-%b", xlab = "", ylab = "Length classes",
-                     draw = TRUE,
-                     ...){
+  par = NULL,
+  agemax = NULL,
+  curve.col = 1,
+  hist.sc = 0.5,
+  hist.col = c("white", "black"),
+  image.col = NULL,
+  region.col = NULL,
+  zlim = NULL,
+  zlimtype = "balanced",   # alternative : "range"
+  date.axis = "traditional",  # alternative : "modern"
+  date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by="months"),
+  date.format = "'%y-%b", xlab = "", ylab = "Length classes",
+  draw = TRUE,
+  ...
+){
 
   dates <- x$dates
   classes <- x$midLengths
@@ -137,26 +163,16 @@ plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
   bin.lower <- classes - c(bin.width[1], bin.width)/2
   bin.upper <- classes + c(bin.width, bin.width[length(bin.width)])/2
 
-  if(is.null(xlim)){
-    xlims <- c(min(dates) - min(diff(dates)), max(dates) + min(diff(dates)))
-  }else xlims <- xlim
-  if(is.null(ylim)){
-    ylims <- c(min(classes)-1, max(classes)+1)
-  }else ylims <- ylim
-
   # bin height scaling
-  if(Fname == "catch"){
-    sc <- (min(diff(unclass(dates)))-0.5) / max(abs(catch))  #min(diff(dates)) * 0.7 / max(abs(catch))
-  }
-  if(Fname == "rcounts"){
-    sc <- min(diff(dates)) * 0.5 / max(abs(catch))
-  }
-
+  sc <- unclass(min(diff(dates)) * hist.sc / max(abs(catch)))
 
   # image colour
-  if(is.null(col.image)){
+  if(is.null(image.col)){
     pal <- colorRampPalette(c(rgb(1,0.8,0.8), rgb(1,1,1), rgb(0.8,0.8,1)))
-    col.image <- pal(21)
+    image.col <- pal(21)
+  }
+  if(!is.null(region.col)){
+    image.col <- NA
   }
 
   # zlim value + type
@@ -167,16 +183,17 @@ plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
     zlim = range(catch, na.rm = TRUE)
   }
 
-  # with image
-  if(add.image){
-    #par(mar = c(5, 5, 1, 1) + .1)
-    image(x=dates, y=classes, z=t(catch), col=col.image, zlim=zlim,
-          xaxt="n",  xlab = xlab, ylab = ylab, xlim = xlims, ylim = ylims, ...)
-  }
-  # without image
-  if(add.image == FALSE){
-    image(x=dates, y=classes, z=t(catch), col=NA, zlim=zlim,
-          xaxt="n",  xlab = xlab, ylab = ylab, xlim = xlims, ylim = ylims, ...)
+  # Initial plot
+  image(
+    x=dates, y=classes, z=t(catch), col=image.col, zlim=zlim,
+    xaxt="n", xlab = xlab, ylab = ylab, ...
+  )
+
+  if(!is.null(region.col)){
+    usr <- par()$usr
+    if(par()$xlog) usr[1:2] <- 10^usr[1:2]
+    if(par()$ylog) usr[3:4] <- 10^usr[3:4]
+    rect(usr[1], usr[3], usr[2], usr[4], col=region.col)
   }
 
   # add time axis
@@ -194,29 +211,35 @@ plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
     mtext(side = 1, at = year_ticks, text = year, line = 2.5)
   }
 
-  # frame
-  box(col = "gray40") #bty = "L"
-
-  # vertical lines
-  abline(v= dates, col = "gray40")
-
-  #Histograms
+  # Histograms
   for(i in seq(length(dates))){
     score.sc <- catch[,i] * sc
     for(j in seq(classes)){
-      polygon(x = c(dates[i], dates[i], dates[i]-score.sc[j], dates[i]-score.sc[j]),
-              y = c(bin.lower[j], bin.upper[j], bin.upper[j], bin.lower[j]),
-              col = c("white", "black")[(score.sc[j]>0)+1],
-              border = "grey20", lwd = 1)
+      # if(score.sc[j] != 0){
+        polygon(
+          x = c(dates[i], dates[i], dates[i]-score.sc[j], dates[i]-score.sc[j]),
+          y = c(bin.lower[j], bin.upper[j], bin.upper[j], bin.lower[j]),
+          col = hist.col[(score.sc[j]>0)+1],
+          border = "grey20", lwd = 1
+        )
+      # }
     }
   }
 
+  # optional addition of cohort growth curves
   if("par" %in% names(x) & is.null(par) & draw){
     Lt <- lfqFitCurves(lfq = x, par = x$par,
-                       agemax = x$agemax, flagging.out = flagging.out, draw = TRUE)
+      agemax = x$agemax, draw = TRUE, col=curve.col
+    )
   }
   if(!is.null(par) & draw){
     Lt <- lfqFitCurves(x, par = par,
-                       agemax = agemax, flagging.out = flagging.out, draw = TRUE)
+     agemax = agemax, draw = TRUE, col=curve.col
+    )
   }
+
+  # frame
+  box()
+
+
 }

@@ -66,7 +66,8 @@
 #' if parallel computing is required, the doRNG package must be installed.
 #' @param plot logical; Plot restructured counts with fitted lines using
 #' \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).
-#' @param plot.score logical; Plot genetic algorithm fitness progression
+#' @param plot.score logical; Plot genetic algorithm fitness progression.
+#'    (Default: plot.score=TRUE)
 #' @param ... additional parameters to pass to \code{\link[GA]{ga}}
 #'
 #'
