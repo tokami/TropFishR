@@ -12,7 +12,7 @@
 #'   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
 #'   \item \code{catch}: catch as vector, or a matrix with catches of subsequent years;
 #' }
-#' @param catch_column optional; in case catch is a matrix or data.frame, a number
+#' @param catch_columns optional; in case catch is a matrix or data.frame, a number
 #'    indicating which column of the matrix should be analysed (Default: \code{NA}).
 #' @param Lprime_tprime length or age prime, above which all fish are under full exploitation as
 #'    mid length or age class.
@@ -22,11 +22,11 @@
 #' @examples
 #' # based on length-frequency data
 #' data(synLFQ2)
-#' Z_BevertonHolt(synLFQ2, catch_column = 2, Lprime_tprime = 47.5)
+#' Z_BevertonHolt(synLFQ2, catch_columns = 2, Lprime_tprime = 47.5)
 #'
 #' # based on age composition data
 #' data(synCAA1)
-#' Z_BevertonHolt(synCAA1, catch_column = 3, Lprime_tprime = 2.5)
+#' Z_BevertonHolt(synCAA1, catch_columns = 3, Lprime_tprime = 2.5)
 #'
 #' @details  The first length group or age class within the list object \code{midLengths} or
 #'    \code{age} will be used as the Lprim or tprime (length of recruitment to fishery).
@@ -49,13 +49,16 @@
 #'
 #' @export
 
-Z_BevertonHolt <- function(param, catch_column = NA, Lprime_tprime){
+Z_BevertonHolt <- function(param, catch_columns = NA, Lprime_tprime){
   res <- param
   catch <- res$catch
 
   if(class(catch) == "data.frame" | class(catch) == "matrix"){
-    if(is.na(catch_column)) stop("Please provide a number indicating which column of the catch matrix should be analysed!")
-    catch <- catch[,catch_column]
+    if(is.na(catch_columns)) stop("Please provide numbers indicating which column of the catch matrix should be analysed!")
+    catchmat <- res$catch[,(catch_columns)]
+    if(length(catch_columns) > 1){
+      catch <- rowSums(catchmat, na.rm = TRUE)
+    }else catch <- catchmat
   }
 
   #   Length based equation
