@@ -68,6 +68,7 @@ Z_BevertonHolt <- function(param, catch_columns = NA, Lprime_tprime){
     # create column without plus group (sign) if present
     classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
     classes.num <- as.numeric(classes.num[,1])
+    Lprime_tprime_ind <- which.min(classes.num - Lprime_tprime)
 
     Linf <- res$Linf
     K <- res$K
@@ -88,8 +89,8 @@ Z_BevertonHolt <- function(param, catch_columns = NA, Lprime_tprime){
     c_midlength <- catch * classes.num
 
     # calculate L mean
-    c_midlength_for_Lmean <- c_midlength[Lprime_tprime:length(c_midlength)]
-    catch_for_Lmean <- catch[Lprime_tprime:length(catch)]
+    c_midlength_for_Lmean <- c_midlength[Lprime_tprime_ind:length(c_midlength)]
+    catch_for_Lmean <- catch[Lprime_tprime_ind:length(catch)]
     Lmean <- sum(c_midlength_for_Lmean, na.rm = TRUE) / sum(catch_for_Lmean, na.rm = TRUE)
 
     Z <- K * (Linf - Lmean) / (Lmean - Lprime_tprime)
@@ -111,6 +112,7 @@ Z_BevertonHolt <- function(param, catch_columns = NA, Lprime_tprime){
     # create column without plus group (sign) if present
     classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
     classes.num <- as.numeric(classes.num[,1])
+    Lprime_tprime_ind <- which.min(classes.num - Lprime_tprime)
 
     # Error message if catch and age do not have same length
     if(class(catch) == 'numeric'){
@@ -120,8 +122,8 @@ Z_BevertonHolt <- function(param, catch_columns = NA, Lprime_tprime){
     interval <- (classes.num[2] - classes.num[1]) / 2
     Lprime_tprime <- Lprime_tprime - interval
     #tprime <- classes.num[1] - interval
-    catch_for_tprime <- catch[Lprime_tprime:length(catch)]
-    classes.num_for_tprime <- classes.num[Lprime_tprime:length(classes.num)]
+    catch_for_tprime <- catch[Lprime_tprime_ind:length(catch)]
+    classes.num_for_tprime <- classes.num[Lprime_tprime_ind:length(classes.num)]
     sample.size <- sum(catch_for_tprime,na.rm=TRUE)
     sum.age.number <- sum((catch_for_tprime * classes.num_for_tprime), na.rm=TRUE)
     tmean <- sum.age.number/sample.size
