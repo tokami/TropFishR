@@ -68,7 +68,7 @@ Z_BevertonHolt <- function(param, catch_columns = NA, Lprime_tprime){
     # create column without plus group (sign) if present
     classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
     classes.num <- as.numeric(classes.num[,1])
-    Lprime_tprime_ind <- which.min(classes.num - Lprime_tprime)
+    Lprime_tprime_ind <- which.min(abs(classes.num - Lprime_tprime))
 
     Linf <- res$Linf
     K <- res$K
@@ -112,7 +112,7 @@ Z_BevertonHolt <- function(param, catch_columns = NA, Lprime_tprime){
     # create column without plus group (sign) if present
     classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
     classes.num <- as.numeric(classes.num[,1])
-    Lprime_tprime_ind <- which.min(classes.num - Lprime_tprime)
+    Lprime_tprime_ind <- which.min(abs(classes.num - Lprime_tprime))
 
     # Error message if catch and age do not have same length
     if(class(catch) == 'numeric'){
