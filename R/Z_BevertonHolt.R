@@ -54,7 +54,7 @@ Z_BevertonHolt <- function(param, catch_columns = NA, Lprime_tprime){
   catch <- res$catch
 
   if(class(catch) == "data.frame" | class(catch) == "matrix"){
-    if(is.na(catch_columns)) stop("Please provide numbers indicating which column of the catch matrix should be analysed!")
+    if(is.na(catch_columns[1])) stop("Please provide numbers indicating which column of the catch matrix should be analysed!")
     catchmat <- res$catch[,(catch_columns)]
     if(length(catch_columns) > 1){
       catch <- rowSums(catchmat, na.rm = TRUE)
