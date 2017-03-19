@@ -161,6 +161,8 @@ lfqModify <- function(lfq, par = NULL, bin_size = NA, vectorise_catch = FALSE, p
   if("K" %in% names(lfq)) res$K <- lfq$K
   if("t0" %in% names(lfq)) res$t0 <- lfq$t0
   if("t_anchor" %in% names(lfq)) res$t_anchor <- lfq$t_anchor
+  if("C" %in% names(lfq)) res$C <- lfq$C
+  if("ts" %in% names(lfq)) res$ts <- lfq$ts
   if("M" %in% names(lfq)) res$M <- lfq$M
   if("Z" %in% names(lfq)) res$Z <- lfq$Z
   if("FM" %in% names(lfq)) res$FM <- lfq$FM
