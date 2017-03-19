@@ -17,8 +17,8 @@ Z_BevertonHolt(param, catch_columns = NA, Lprime_tprime)
   \item \code{catch}: catch as vector, or a matrix with catches of subsequent years;
 }}
 
-\item{catch_columns}{optional; in case catch is a matrix or data.frame, a number
-indicating which column of the matrix should be analysed (Default: \code{NA}).}
+\item{catch_columns}{optional; in case catch is a matrix or data.frame, a number or vector
+indicating which column(s) of the matrix should be analysed (Default: \code{NA}).}
 
 \item{Lprime_tprime}{length or age prime, above which all fish are under full exploitation as
 mid length or age class.}

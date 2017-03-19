@@ -12,8 +12,8 @@
 #'   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
 #'   \item \code{catch}: catch as vector, or a matrix with catches of subsequent years;
 #' }
-#' @param catch_columns optional; in case catch is a matrix or data.frame, a number
-#'    indicating which column of the matrix should be analysed (Default: \code{NA}).
+#' @param catch_columns optional; in case catch is a matrix or data.frame, a number or vector
+#'    indicating which column(s) of the matrix should be analysed (Default: \code{NA}).
 #' @param Lprime_tprime length or age prime, above which all fish are under full exploitation as
 #'    mid length or age class.
 #'
