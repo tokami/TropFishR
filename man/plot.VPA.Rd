@@ -4,11 +4,13 @@
 \alias{plot.VPA}
 \title{VPA plot}
 \usage{
-\method{plot}{VPA}(x, display_last_class = TRUE, xlabel = NA,
-  ylabel1 = "Population", ylabel2 = "Fishing mortality", ...)
+\method{plot}{VPA}(x, yaxis = "numbers", display_last_class = TRUE,
+  xlabel = NA, ylabel1 = "Population", ylabel2 = "Fishing mortality", ...)
 }
 \arguments{
 \item{x}{list of the class \code{"VPA"} containing the results of the VPA model.}
+
+\item{yaxis}{indicating which variable should be displayed on the y axis, either "numbers" or "biomass".}
 
 \item{display_last_class}{logical; should last age/length class be displayed in graph?}
 

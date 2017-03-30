@@ -68,12 +68,13 @@
 #' #_______________________________________________
 #' # Virtual Popuation Analysis with age-composition data
 #' data(whiting)
-#' output <- VPA(param = whiting, terminalE = 0.5, analysis_type = "VPA")
+#' output <- VPA(param = whiting, catch_columns = 1, terminalE = 0.5, analysis_type = "VPA")
 #' plot(output)
 #'#_______________________________________________
 #' # Pope's Cohort Analysis with age-composition data
 #' data(whiting)
-#' VPA(whiting, terminalF = 0.5, analysis_type = "CA", plot= TRUE)
+#' VPA(whiting, terminalE = 0.5, catch_columns = 3, analysis_type = "CA",
+#'    plot= TRUE, plus_group = TRUE)
 #'
 #'#_______________________________________________
 #' # Virtual population analysis with length-composition data
@@ -237,7 +238,7 @@ VPA <- function(param,
       # other survivors
       for(x3 in (lastLengthClass-1):1){
         survivors[x3] <- (survivors[x3+1] * exp((M_vec[x3]/2)) +
-                            catch_numbers[x3] ) * exp((M[x3]/2))
+                            catch_numbers[x3] ) * exp((M_vec[x3]/2))
       }
 
       #F
@@ -410,11 +411,13 @@ VPA <- function(param,
     lowerLength <- classes.num - (interval / 2)
     upperLength <- classes.num + (interval / 2)
 
-    #Mean body weight according to Beyer (1987)
-    meanBodyWeight <- (1/(upperLength - lowerLength)) * (a / (b + 1)) * (upperLength^(b+1) - lowerLength^(b+1))
+    #Mean body weight
+    # FAO manual:
+    meanBodyWeight <- a * classes.num ^ b
+    # same as what provided in FAO manual: a * ((lowerLength + upperLength)/2)^b
     meanBodyWeight <- meanBodyWeight / 1000  # in kg
-    # old
-    # meanBodyWeight <- a * classes.num ^ b  # same as what provided in FAO manual: a * ((lowerLength + upperLength)/2)^b
+    #according to Beyer (1987) (FISAT II)
+    # meanBodyWeight <- (1/(upperLength - lowerLength)) * (a / (b + 1)) * (upperLength^(b+1) - lowerLength^(b+1))
 
     # translate catch in tons into numbers
     if(catch_unit %in% c("tons", "t", "T", "Tons", "tonnes", "Tonnes")){
@@ -556,7 +559,9 @@ VPA <- function(param,
     df.VPAnew <- data.frame(survivors = survivors_rea,
                             nat.losses = natLoss,
                             catch = catch_numbers,
-                            FM_calc = FM_calc)
+                            FM_calc = FM_calc,
+                            meanBodyWeight = meanBodyWeight,
+                            meanBiomassTon = meanBiomassTon)
 
     #transpose matrix for barplot function
     df.VPAnew <- t(as.matrix(df.VPAnew))

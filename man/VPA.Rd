@@ -16,7 +16,8 @@ VPA(param, catch_columns = NA, catch_unit = NA, catch_corFac = NA,
   \item \code{Linf}: infinite length for investigated species in cm [cm],
   \item \code{K}: growth coefficent for investigated species per year [1/year],
   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
-  \item \code{M}: natural mortality [1/year],
+  \item \code{M}: natural mortality [1/year] (numeric value or vector of identical
+     length than midLengths),
   \item \code{a}: length-weight relationship coefficent (W = a * L^b),
   \item \code{b}: length-weight relationship coefficent (W = a * L^b),
   \item \code{catch}: catch as vector for pseudo cohort analysis,
@@ -106,12 +107,13 @@ The main difference between virtual population analysis (VPA) and cohort
 #_______________________________________________
 # Virtual Popuation Analysis with age-composition data
 data(whiting)
-output <- VPA(param = whiting, terminalE = 0.5, analysis_type = "VPA")
+output <- VPA(param = whiting, catch_columns = 1, terminalE = 0.5, analysis_type = "VPA")
 plot(output)
 #_______________________________________________
 # Pope's Cohort Analysis with age-composition data
 data(whiting)
-VPA(whiting, terminalF = 0.5, analysis_type = "CA", plot= TRUE)
+VPA(whiting, terminalE = 0.5, catch_columns = 3, analysis_type = "CA",
+   plot= TRUE, plus_group = TRUE)
 
 #_______________________________________________
 # Virtual population analysis with length-composition data

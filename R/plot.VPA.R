@@ -4,6 +4,7 @@
 #'    mortality resulting from the \link{VPA} model.
 #'
 #' @param x list of the class \code{"VPA"} containing the results of the VPA model.
+#' @param yaxis indicating which variable should be displayed on the y axis, either "numbers" or "biomass".
 #' @param display_last_class logical; should last age/length class be displayed in graph?
 #' @param xlabel Label of the x axis
 #' @param ylabel1 Label of the first y axis
@@ -30,7 +31,9 @@
 #'
 #' @export
 
-plot.VPA <- function(x, display_last_class = TRUE,
+plot.VPA <- function(x,
+                     yaxis = "numbers",
+                     display_last_class = TRUE,
                      xlabel = NA,
                      ylabel1 = "Population",
                      ylabel2 = "Fishing mortality",
@@ -41,8 +44,29 @@ plot.VPA <- function(x, display_last_class = TRUE,
   natLoss <- pes$plot_mat[2,]
   catch <- pes$plot_mat[3,]
   FM_calc <- pes$plot_mat[4,]
+  if(dim(pes$plot_mat)[1] == 5){
+    meanBodyWeight <- pes$plot_mat[5,]
+  }
+  if(dim(pes$plot_mat)[1] == 6){
+    meanBiomassTon <- pes$plot_mat[6,]
+  }
   classes.num <- as.numeric(colnames(pes$plot_mat))
-  df.VPAnew <- pes$plot_mat[-4,]
+
+  #put together in dataframe
+  if(yaxis == "numbers"){
+    df.VPAnew <- data.frame(survivors = survivors,
+                            nat.losses = natLoss,
+                            catch = catch)
+  }
+  if(yaxis == "biomass"){
+    df.VPAnew <- data.frame(survivors = c(meanBiomassTon[-1],0),
+                            nat.losses = natLoss * meanBodyWeight,
+                            catch = catch * meanBodyWeight)
+  }
+
+  #transpose matrix for barplot function
+  df.VPAnew <- t(as.matrix(df.VPAnew))
+  colnames(df.VPAnew) <- classes.num
 
   if(is.na(xlabel)){
     if("age" %in% names(pes)){
@@ -58,7 +82,7 @@ plot.VPA <- function(x, display_last_class = TRUE,
 
 
   #save x axis positions
-  max_sur <- round(max(survivors+natLoss+catch,na.rm=TRUE),digits=0)
+  max_sur <- round(max(colSums(df.VPAnew),na.rm=TRUE),digits=0)
   dim_sur <- 10 ^ (nchar(max_sur)-1)
   max_FM <- ceiling(max(FM_calc,na.rm=TRUE))
   max_clas <- max(classes.num,na.rm=TRUE)
