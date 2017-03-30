@@ -4,12 +4,19 @@
 \alias{plot.VPA}
 \title{VPA plot}
 \usage{
-\method{plot}{VPA}(x, display_last_class = TRUE, ...)
+\method{plot}{VPA}(x, display_last_class = TRUE, xlabel = NA,
+  ylabel1 = "Population", ylabel2 = "Fishing mortality", ...)
 }
 \arguments{
 \item{x}{list of the class \code{"VPA"} containing the results of the VPA model.}
 
 \item{display_last_class}{logical; should last age/length class be displayed in graph?}
+
+\item{xlabel}{Label of the x axis}
+
+\item{ylabel1}{Label of the first y axis}
+
+\item{ylabel2}{Label of the second y axis}
 
 \item{...}{standard parameters of \code{\link{barplot}}}
 }
@@ -19,8 +26,14 @@ This function plots the survivors, catches, natural losses, and fishing
 }
 \examples{
 data(whiting)
-output <- VPA(whiting, terminalF = 0.5, analysis_type = "VPA")
+output <- VPA(whiting, terminalF = 0.5)
 plot(output, display_last_class = FALSE)
+
+data(hake)
+output <- VPA(hake, terminalE = 0.5)
+plot_mat <- output$plot_mat[,-c(1,2)]  # remove first two length classes
+class(plot_mat) <- "VPA"
+plot(plot_mat, xlabel = "Midlengths [cm]")
 
 }
 \references{

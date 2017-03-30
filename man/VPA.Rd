@@ -6,7 +6,7 @@
 \usage{
 VPA(param, catch_columns = NA, catch_unit = NA, catch_corFac = NA,
   terminalF = NA, terminalE = NA, analysis_type = "VPA",
-  algorithm = "new", plus_group = FALSE, plot = FALSE)
+  algorithm = "new", plus_group = TRUE, plot = FALSE)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -48,7 +48,7 @@ Cohort Analysis. Default is "VPA".}
 setting \code{"new"} uses \code{\link[stats]{optimise}},
 while \code{"old"} uses the algorithm described by Sparre and Venema (1998).}
 
-\item{plus_group}{logical; indicating if the last length group is a plus group}
+\item{plus_group}{logical; indicating if the last length group is a plus group (default: TRUE).}
 
 \item{plot}{logical; indicating whether a plot should be printed}
 }

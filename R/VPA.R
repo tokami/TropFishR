@@ -11,7 +11,8 @@
 #'   \item \code{Linf}: infinite length for investigated species in cm [cm],
 #'   \item \code{K}: growth coefficent for investigated species per year [1/year],
 #'   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
-#'   \item \code{M}: natural mortality [1/year],
+#'   \item \code{M}: natural mortality [1/year] (numeric value or vector of identical
+#'      length than midLengths),
 #'   \item \code{a}: length-weight relationship coefficent (W = a * L^b),
 #'   \item \code{b}: length-weight relationship coefficent (W = a * L^b),
 #'   \item \code{catch}: catch as vector for pseudo cohort analysis,
@@ -136,9 +137,14 @@ VPA <- function(param,
                 plus_group = TRUE, plot = FALSE){
 
   res <- param
-  if(is.na(catch_columns[1])){
-    catch <- res$catch
-  }else catch <- res$catch[,(catch_columns)]
+
+  if(is.na(catch_columns[1])) catch <- res$catch
+  if(!is.na(catch_columns[1])){
+    catchmat <- res$catch[,(catch_columns)]
+    if(length(catch_columns) > 1){
+      catch <- rowSums(catchmat, na.rm = TRUE)
+    }else catch <- catchmat
+  }
 
 
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
@@ -162,14 +168,22 @@ VPA <- function(param,
     b <- res$b
     if(!("M" %in% names(res))) stop("Please provide a natural mortality estimate 'M' in res.")
     M <- res$M
+    if(length(M) == length(classes)){
+      M_vec <- M
+    }else if(length(M) > 1){
+      writeLines(noquote("The number of natural mortality values does not correspond to the number of length classes. \nOnly the first value will be used."))
+      M_vec <- rep(M[1],length(classes))
+    }else{
+      M_vec <- rep(M, length(classes))
+    }
     if(!is.na(terminalF)){
-      terminalE <- terminalF / (terminalF + M)
+      terminalE <- terminalF / (terminalF + M_vec[length(M_vec)])
     }else if(!is.na(terminalE)){
-      terminalF <- M * terminalE / (1 - terminalE)
+      terminalF <- M_vec[length(M_vec)] * terminalE / (1 - terminalE)
     }else{
       stop("Please provide either the terminal exploitation rate (terminalE) or the terminal fishing mortality rate (terminalF)!")
     }
-    terminalZ <- terminalF + M
+    terminalZ <- terminalF + M_vec[length(M_vec)]
 
     # create column without plus group (sign) if present
     classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
@@ -222,15 +236,15 @@ VPA <- function(param,
     if(analysis_type == "CA"){
       # other survivors
       for(x3 in (lastLengthClass-1):1){
-        survivors[x3] <- (survivors[x3+1] * exp((M/2)) +
-                            catch_numbers[x3] ) * exp((M/2))
+        survivors[x3] <- (survivors[x3+1] * exp((M_vec[x3]/2)) +
+                            catch_numbers[x3] ) * exp((M[x3]/2))
       }
 
       #F
       FM_calc <- rep(NA,length(classes.num))
       FM_calc[lastLengthClass] <- terminalF
       for(x5 in 1:(lastLengthClass-1)){
-        FM_calc[x5] <- log(survivors[x5]/survivors[x5+1]) - M
+        FM_calc[x5] <- log(survivors[x5]/survivors[x5+1]) - M_vec[x5]
       }
     }
 
@@ -244,10 +258,9 @@ VPA <- function(param,
 
         sur.C <- catch_numbers[num_class]
         sur.Ntplus1 <- survivors[(num_class+1)]
-        sur.M <- M
+        sur.M <- M_vec[num_class]
         LHS <-  sur.C / sur.Ntplus1
         sur.F <- 0
-        seqi <- c(1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7)
 
         if(algorithm == "old"){
           LHS <-  sur.C / sur.Ntplus1
@@ -283,29 +296,13 @@ VPA <- function(param,
     }
 
     # Z
-    Z <- M + FM_calc
+    Z <- M_vec + FM_calc
 
     #Annual mean Nr
     deads <- abs(diff(survivors))
     annualMeanNr <- deads / Z[-length(survivors)]
     # annualMeanNr[length(survivors)] <- NA
     annualMeanNr[length(survivors)] <- survivors[length(survivors)] / Z[length(survivors)]
-    # annualMeanNr <- rep(NA,length(classes.num))
-    # for(x7 in 1:(length(annualMeanNr-1))){
-    #   annualMeanNr[x7] <- (survivors[x7] -
-    #                          survivors[x7+1]) / Z[x7]
-    # }
-
-    # #Mean body weight
-    # meanBodyWeight <- a * classes.num ^ b
-    #
-    # #Mean biomass
-    # meanBiomass <- annualMeanNr * meanBodyWeight
-    # meanBiomassTon <- meanBiomass/1000
-    #
-    # #Yield
-    # yield <- catch_numbers * meanBodyWeight
-    # yieldTon <- yield/1000
 
     #FOR PLOT
     #Survivors rearranged
@@ -323,7 +320,8 @@ VPA <- function(param,
     #put together in dataframe
     df.VPAnew <- data.frame(survivors = survivors_rea,
                             nat.losses = natLoss,
-                            catch = catch_numbers)
+                            catch = catch_numbers,
+                            FM_calc = FM_calc)
 
     #transpose matrix for barplot function
     df.VPAnew <- t(as.matrix(df.VPAnew))
@@ -337,9 +335,6 @@ VPA <- function(param,
       Z = Z,
       survivors = survivors,
       annualMeanNr = annualMeanNr,
-      # meanBodyWeight = meanBodyWeight,
-      # meanBiomassTon = meanBiomassTon,
-      # yieldTon = yieldTon,
       natLoss = natLoss,
       plot_mat = df.VPAnew))
 
@@ -365,14 +360,6 @@ VPA <- function(param,
 
   if((class(catch) == 'numeric' | class(catch) == 'integer') &
      "midLengths" %in% names(res) == TRUE){
-
-    if(is.na(catch_columns[1])) catch <- res$catch
-    if(!is.na(catch_columns[1])){
-      catchmat <- res$catch[,(catch_columns)]
-      if(length(catch_columns) > 1){
-        catch <- rowSums(catchmat, na.rm = TRUE)
-      }else catch <- catchmat
-    }
 
     classes <- as.character(res$midLengths)
 
