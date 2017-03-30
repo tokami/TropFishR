@@ -129,12 +129,24 @@ lfqModify <- function(lfq, par = NULL, bin_size = NA, vectorise_catch = FALSE, p
 
     midLengths <- midLengths[1:which(midLengths == pg)]
     if(is.vector(catch)){
-      addplus <- sum(catch[((which(midLengths == pg)+1):length(catch))])
+      if(which(midLengths == pg) < (length(catch)-1)){
+        addplus <- sum(catch[((which(midLengths == pg)+1):length(catch))])
+      }else if(which(midLengths == pg) == (length(catch)-1)){
+        addplus <- catch[(which(midLengths == pg)+1)]
+      }else if(which(midLengths == pg) == (length(catch))){
+        addplus <- 0
+      }
       catch <- catch[1:which(midLengths == pg)]
       catch[which(midLengths == pg)] <-
         catch[which(midLengths == pg)] + addplus
     }else{
-      addplus <- colSums(catch[((which(midLengths == pg)+1):nrow(catch)),])
+      if(which(midLengths == pg) < (nrow(catch)-1)){
+        addplus <- colSums(catch[((which(midLengths == pg)+1):nrow(catch)),])
+      }else if(which(midLengths == pg) == (nrow(catch)-1)){
+        addplus <- catch[(which(midLengths == pg)+1),]
+      }else if(which(midLengths == pg) == (nrow(catch))){
+        addplus <- 0
+      }
       catch <- catch[1:which(midLengths == pg),]
       catch[which(midLengths == pg),] <-
         catch[which(midLengths == pg),] + addplus
