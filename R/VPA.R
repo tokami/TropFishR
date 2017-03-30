@@ -15,22 +15,27 @@
 #'   \item \code{a}: length-weight relationship coefficent (W = a * L^b),
 #'   \item \code{b}: length-weight relationship coefficent (W = a * L^b),
 #'   \item \code{catch}: catch as vector for pseudo cohort analysis,
-#'      or a matrix with catches of subsequent years to follow a real cohort;
+#'      or a matrix with catches of subsequent years to follow a real cohort.
+#'      For age-based VPA/CA catch has to be provided in numbers, e.g. '000 individuals
+#'      for length-based VPA/CA catch can also be provided in weight, e.g. kg (use
+#'      argument \code{catch_unit}).
 #' }
-#' @param terminalF a fishing mortality value which is used as the terminal FM for the
-#'   last age/length group.
-#' @param analysis_type determines which type of assessment should be done,
-#'   options: "VPA" for classical age-based VPA, "CA" for age- or length-based
-#'   Cohort analysis
+#' @param catch_columns numerical; indicating the column of the catch matrix which should be
+#'   used for the analysis.
+#' @param catch_unit optional; a character indicating if the catch is provided in weight
+#'    ("tons" or "kg") or in thousand individuals ("'000")
 #' @param catch_corFac optional; correction factor for catch, in case provided
 #'   catch does spatially or temporarily not reflect catch for fishing ground of
 #'   a whole year.
-#' @param catch_columns numerical; indicating the column of the catch matrix which should be
-#'   used for the analysis.
+#' @param terminalF the fishing mortality rate of the last age/length group.
+#' @param terminalE the exploitation rate of the last age/length group.
+#' @param analysis_type determines which type of assessment should be done,
+#'   options: "VPA" for age or length-based Virtual Population Analysis, "CA" for age- or length-based
+#'   Cohort Analysis. Default is "VPA".
 #' @param algorithm an Algorithm to use to solve for fishing mortality. The default
 #'   setting \code{"new"} uses \code{\link[stats]{optimise}},
 #'   while \code{"old"} uses the algorithm described by Sparre and Venema (1998).
-#' @param plus_group logical; indicating if the last length group is a plus group
+#' @param plus_group logical; indicating if the last length group is a plus group (default: TRUE).
 #' @param plot logical; indicating whether a plot should be printed
 #'
 #' @details The main difference between virtual population analysis (VPA) and cohort
@@ -39,6 +44,9 @@
 #'    caught during a single day, which makes the calcualtion easier, VPA assumes that
 #'    the fish are caught continuously, which has to be solved by the trial and error
 #'    method (Sparre and Venema, 1998).
+#'    For the age-based VPA/CA the catch has to be provided in numbers (or '000 numbers),
+#'    while for the length-based VPA/CA the catch can also be provided in weight (tons or kg) by
+#'    using the argument \code{catch_unit}.
 #'    The catch has to be representative for fished species, that means there should not be
 #'    other fisheries fishing the same stock. If this is the case \code{catch_corFac} can
 #'    be used as a raising factor to account for the proportion of fish caught by other
@@ -59,13 +67,17 @@
 #' #_______________________________________________
 #' # Virtual Popuation Analysis with age-composition data
 #' data(whiting)
-#' output <- VPA(param = whiting, terminalF = 0.5, analysis_type = "VPA")
+#' output <- VPA(param = whiting, terminalE = 0.5, analysis_type = "VPA")
 #' plot(output)
 #'#_______________________________________________
 #' # Pope's Cohort Analysis with age-composition data
 #' data(whiting)
 #' VPA(whiting, terminalF = 0.5, analysis_type = "CA", plot= TRUE)
 #'
+#'#_______________________________________________
+#' # Virtual population analysis with length-composition data
+#' data(hake)
+#' VPA(hake, terminalE = 0.5, analysis_type = "VPA", plot = TRUE)
 #'#_______________________________________________
 #' # Jones's Cohort Analysis with length-composition data
 #' data(hake)
@@ -78,8 +90,10 @@
 #'   the analysis (exists only if catch was a matrix),
 #'   \item \strong{FM_calc}: a vector with the ifshing mortality (M),
 #'   \item \strong{Z}: a vector with the total mortality (Z),
-#'   \item \strong{survivors}: a vector with the number of fish surviving to the next age class or length group,
-#'   \item \strong{annualMeanNr}: ta vector with the mean number of fish per year,
+#'   \item \strong{survivors}: a vector with the number of fish surviving to the
+#'       next age class or length group (same unit than input catch vector),
+#'   \item \strong{annualMeanNr}: ta vector with the mean number of fish per year
+#'      (same unit than input catch vector),
 #'   \item \strong{meanBodyWeight}: a vector with the mean body weight in kg,
 #'   \item \strong{meanBiomassTon}: a vector with the mean biomass in tons,
 #'   \item \strong{YieldTon}: a vector with the yield in tons,
@@ -115,12 +129,14 @@
 #'
 #' @export
 
-VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
-                catch_columns = NA,
-                algorithm = "new", plus_group = FALSE, plot = FALSE){
+VPA <- function(param,
+                catch_columns = NA, catch_unit = NA, catch_corFac = NA,
+                terminalF = NA, terminalE = NA,
+                analysis_type = "VPA", algorithm = "new",
+                plus_group = TRUE, plot = FALSE){
 
   res <- param
-  if(is.na(catch_columns)){
+  if(is.na(catch_columns[1])){
     catch <- res$catch
   }else catch <- res$catch[,(catch_columns)]
 
@@ -136,7 +152,7 @@ VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
     # Error message if catch and age do not have same length
     if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
       #if(length(classes) != length(catch[,1])) stop("Age/length classes and catch do not have the same length!")
-      if(length(classes) != length(diag(as.matrix(catch)))) writeLines("Warning: Age/length classes and the real cohort in the catch matrix \ndo not have the same length. The missing age/length \nclasses will be omitted.")
+      if(length(classes) != length(diag(as.matrix(catch)))) warning("Age/length classes and the real cohort in the catch matrix \ndo not have the same length. The missing age/length \nclasses will be omitted.")
       }else if(class(catch) == 'numeric'){
       if(length(classes) != length(catch)) stop("Age/length classes and catch do not have the same length!")
     }
@@ -146,6 +162,14 @@ VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
     b <- res$b
     if(!("M" %in% names(res))) stop("Please provide a natural mortality estimate 'M' in res.")
     M <- res$M
+    if(!is.na(terminalF)){
+      terminalE <- terminalF / (terminalF + M)
+    }else if(!is.na(terminalE)){
+      terminalF <- M * terminalE / (1 - terminalE)
+    }else{
+      stop("Please provide either the terminal exploitation rate (terminalE) or the terminal fishing mortality rate (terminalF)!")
+    }
+    terminalZ <- terminalF + M
 
     # create column without plus group (sign) if present
     classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
@@ -169,22 +193,37 @@ VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
     if(!is.na(catch_corFac)) catch_cor <- catch.cohort * catch_corFac
     if(is.na(catch_corFac)) catch_cor <- catch.cohort
 
+    # translate catch into individuals
+    if(catch_unit %in% c("tons", "t", "T", "Tons", "tonnes", "Tonnes")){
+      stop("The age-based VPA/CA is not applicable to catch in weight. Please set the argument 'catch_unit' either to NA, '000, or '000000 for catch in numbers.")
+    }else if(catch_unit %in% c("kg", "Kg", "KG", "kilo", "KILO", "kilogramm", "Kilogramm")){
+      stop("The age-based VPA/CA is not applicable to catch in weight. Please set the argument 'catch_unit' either to NA, '000, or '000000 for catch in numbers.")
+    }else if(catch_unit %in% c("'000","1000","1e3")){
+      catch_numbers <- catch_cor * 1000
+    }else if(catch_unit %in% c("'000000","1000000","1e6","'000.000")){
+      catch_numbers <- catch_cor * 1000000
+    }else if(!is.na(catch_unit)){
+      stop(paste0(catch_unit, " not known. Please use either NA, '000, or '000000 for catch in numbers."))
+    }else{
+      warning("You did not specify catch_unit. The Method assumes that catch is provided in numbers!")
+      catch_numbers <- catch_cor
+    }
+
     #Survivors    #N(L1)=(N(L2)*H(L1,L2)+C(L1,L2)) *H(L1,L2)
     survivors <- rep(NA,length(classes.num))
 
     # survivors last size class
-    lastLengthClass <- max(which(!is.na(catch_cor)),na.rm=TRUE)  ###
+    lastLengthClass <- max(which(!is.na(catch_numbers)),na.rm=TRUE)  ###
     if(!plus_group) survivors[lastLengthClass] <-
-      catch_cor[lastLengthClass] / ((terminalF/(terminalF + M)) * (1 - exp(-(terminalF + M))))
-    if(plus_group) survivors[lastLengthClass] <-
-      catch_cor[lastLengthClass] / (terminalF/(terminalF + M))
+      catch_numbers[lastLengthClass] / (terminalE * (1 - exp(-terminalZ)))
+    if(plus_group) survivors[lastLengthClass] <- catch_numbers[lastLengthClass] / terminalE
 
     #   Age-based Cohort Analysis (Pope's cohort analysis)
     if(analysis_type == "CA"){
       # other survivors
       for(x3 in (lastLengthClass-1):1){
         survivors[x3] <- (survivors[x3+1] * exp((M/2)) +
-                            catch_cor[x3] ) * exp((M/2))
+                            catch_numbers[x3] ) * exp((M/2))
       }
 
       #F
@@ -203,7 +242,7 @@ VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
 
       for(num_class in (lastLengthClass-1):1){
 
-        sur.C <- catch_cor[num_class]
+        sur.C <- catch_numbers[num_class]
         sur.Ntplus1 <- survivors[(num_class+1)]
         sur.M <- M
         LHS <-  sur.C / sur.Ntplus1
@@ -244,28 +283,29 @@ VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
     }
 
     # Z
-    Z <- rep(NA,length(classes.num))
-    for(x6 in 1:(length(Z))){
-      Z[x6] <- M  +  FM_calc[x6]
-    }
+    Z <- M + FM_calc
 
     #Annual mean Nr
-    annualMeanNr <- rep(NA,length(classes.num))
-    for(x7 in 1:(length(annualMeanNr-1))){
-      annualMeanNr[x7] <- (survivors[x7] -
-                             survivors[x7+1]) / Z[x7]
-    }
+    deads <- abs(diff(survivors))
+    annualMeanNr <- deads / Z[-length(survivors)]
+    # annualMeanNr[length(survivors)] <- NA
+    annualMeanNr[length(survivors)] <- survivors[length(survivors)] / Z[length(survivors)]
+    # annualMeanNr <- rep(NA,length(classes.num))
+    # for(x7 in 1:(length(annualMeanNr-1))){
+    #   annualMeanNr[x7] <- (survivors[x7] -
+    #                          survivors[x7+1]) / Z[x7]
+    # }
 
-    #Mean body weight
-    meanBodyWeight <- a * classes.num ^ b
-
-    #Mean biomass
-    meanBiomass <- annualMeanNr * meanBodyWeight
-    meanBiomassTon <- meanBiomass/1000
-
-    #Yield
-    yield <- catch_cor * meanBodyWeight
-    yieldTon <- yield/1000
+    # #Mean body weight
+    # meanBodyWeight <- a * classes.num ^ b
+    #
+    # #Mean biomass
+    # meanBiomass <- annualMeanNr * meanBodyWeight
+    # meanBiomassTon <- meanBiomass/1000
+    #
+    # #Yield
+    # yield <- catch_numbers * meanBodyWeight
+    # yieldTon <- yield/1000
 
     #FOR PLOT
     #Survivors rearranged
@@ -277,16 +317,13 @@ VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
 
 
     #Calculate natural losses
-    natLoss <- rep(NA,length(classes.num))
-    for(x9 in 1:length(natLoss)){
-      natLoss[x9] <- survivors[x9] - survivors_rea[x9] -
-        catch_cor[x9]
-    }
+    natLoss <- survivors - survivors_rea - catch_numbers
+
 
     #put together in dataframe
     df.VPAnew <- data.frame(survivors = survivors_rea,
                             nat.losses = natLoss,
-                            catch = catch_cor)
+                            catch = catch_numbers)
 
     #transpose matrix for barplot function
     df.VPAnew <- t(as.matrix(df.VPAnew))
@@ -300,9 +337,9 @@ VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
       Z = Z,
       survivors = survivors,
       annualMeanNr = annualMeanNr,
-      meanBodyWeight = meanBodyWeight,
-      meanBiomassTon = meanBiomassTon,
-      yieldTon = yieldTon,
+      # meanBodyWeight = meanBodyWeight,
+      # meanBiomassTon = meanBiomassTon,
+      # yieldTon = yieldTon,
       natLoss = natLoss,
       plot_mat = df.VPAnew))
 
@@ -315,17 +352,27 @@ VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
   }
 
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-  #           Jones' Length-based Cohort Analysis            #
+  #          LENGTH BASED VPA AND COHORT ANALYSIS            #
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   if("midLengths" %in% names(res) == TRUE &
      (class(catch) == 'matrix' |
-      class(catch) == 'data.frame')) stop("The length-based Cohort analysis is not applicable to length frequency data. Please provide catch as vector.")
-
-  if("midLengths" %in% names(res) == TRUE & analysis_type == "VPA") stop("Please choose analysis_type = 'CA' for length composition data!")
+      class(catch) == 'data.frame')){
+    if(is.na(catch_columns[1])) stop("The length-based Cohort analysis is not applicable to length frequency data. Please provide catch as vector or use the argument 'catch_columns'.")
+    if(!is.na(catch_columns[1])){
+      catch <- rowSums(catch)
+    }
+  }
 
   if((class(catch) == 'numeric' | class(catch) == 'integer') &
-     "midLengths" %in% names(res) == TRUE &
-     analysis_type == "CA"){
+     "midLengths" %in% names(res) == TRUE){
+
+    if(is.na(catch_columns[1])) catch <- res$catch
+    if(!is.na(catch_columns[1])){
+      catchmat <- res$catch[,(catch_columns)]
+      if(length(catch_columns) > 1){
+        catch <- rowSums(catchmat, na.rm = TRUE)
+      }else catch <- catchmat
+    }
 
     classes <- as.character(res$midLengths)
 
@@ -344,87 +391,168 @@ VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
     b <- res$b
     if(!("M" %in% names(res))) stop("Please provide a natural mortality estimate 'M' in res.")
     M <- res$M
+    if(length(M) == length(classes)){
+      M_vec <- M
+    }else if(length(M) > 1){
+      writeLines(noquote("The number of natural mortality values does not correspond to the number of length classes. \nOnly the first value will be used."))
+      M_vec <- rep(M[1],length(classes))
+    }else{
+      M_vec <- rep(M, length(classes))
+    }
+    if(!is.na(terminalF)){
+      terminalE <- terminalF / (terminalF + M_vec[length(M_vec)])
+    }else if(!is.na(terminalE)){
+      terminalF <- M_vec[length(M_vec)] * terminalE / (1 - terminalE)
+    }else{
+      stop("Please provide either the terminal exploitation rate (terminalE) or the terminal fishing mortality rate (terminalF)!")
+    }
+    terminalZ <- terminalF + M_vec[length(M_vec)]
+
+    # correct catch with raising factor
+    if(!is.na(catch_corFac)) catch_cor <- catch * catch_corFac
+    if(is.na(catch_corFac)) catch_cor <- catch
 
     # create column without plus group (sign) if present
-    classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
+    classes.num <- do.call(rbind, strsplit(classes, split="\\+"))
     classes.num <- as.numeric(classes.num[,1])
 
     #calculate size class interval
     interval <- classes.num[2] - classes.num[1]
 
-    # t of lower length classes
+    # lower and upper length vectors
     lowerLength <- classes.num - (interval / 2)
-    if(!is.na(catch_corFac)) catch_cor <- catch * catch_corFac
-    if(is.na(catch_corFac)) catch_cor <- catch
-    t_L1 <- (t0 - (1/K)) * log(1 - (lowerLength / Linf))
+    upperLength <- classes.num + (interval / 2)
+
+    #Mean body weight according to Beyer (1987)
+    meanBodyWeight <- (1/(upperLength - lowerLength)) * (a / (b + 1)) * (upperLength^(b+1) - lowerLength^(b+1))
+    meanBodyWeight <- meanBodyWeight / 1000  # in kg
+    # old
+    # meanBodyWeight <- a * classes.num ^ b  # same as what provided in FAO manual: a * ((lowerLength + upperLength)/2)^b
+
+    # translate catch in tons into numbers
+    if(catch_unit %in% c("tons", "t", "T", "Tons", "tonnes", "Tonnes")){
+      catch_numbers <- (catch_cor * 1000) / meanBodyWeight
+    }else if(catch_unit %in% c("kg", "Kg", "KG", "kilo", "KILO", "kilogramm", "Kilogramm")){
+      catch_numbers <- catch_cor / meanBodyWeight
+    }else if(catch_unit %in% c("'000","1000","1e3")){
+      catch_numbers <- catch_cor * 1000
+    }else if(catch_unit %in% c("'000000","1000000","1e6","'000.000")){
+      catch_numbers <- catch_cor * 1000000
+    }else if(!is.na(catch_unit)){
+      stop(paste0(catch_unit, " not known. Please use either 'tons' or 'kg' for catch in weight or NA, '000, or '000000 for catch in numbers."))
+    }else{
+      warning("You did not specify catch_unit. The Method assumes that catch is provided in numbers!")
+      catch_numbers <- catch_cor
+    }
+
+    # t of lower length classes
+    t_L1 <- t0 - (1/K) * log(1 - (lowerLength / Linf))
+
+    # t of lower upper classes
+    if(plus_group) upperLength[length(upperLength)] <- Linf
+    t_L2 <- t0 - (1/K) * log(1 - (upperLength / Linf))
+    if(upperLength[length(upperLength)] > Linf){
+      writeLines(noquote("Upper limit of last length class is larger than Linf, \nconsider creating lower plus group or set the argument plus_group = TRUE."))
+    }
 
     # delta t
-    dt <- rep(NA,length(classes.num))
-    for(x1 in 1:(length(dt)-1)){
-      dt[x1] <- t_L1[x1+1] - t_L1[x1]
-    }
+    # dt <- t_L2 - t_L1
+    dt <- (1/K) * log((Linf - lowerLength)/(Linf - upperLength))
 
-    # t of midlengths
-    t_midL <- (t0 - (1/K)) * log(1 - (classes.num / Linf))
-
-    # H (L1,L2)   #H(L1,L2)=((Linf-L1)/Linf-L2)^(M/2K)
-    H <- rep(NA,length(classes.num))
-    for(x2 in 1:(length(H)-1)){
-      H[x2] <- ((Linf - lowerLength[x2]) /
-                         (Linf - lowerLength[x2+1])) ^
-        (M / (2*K))
-    }
-
-    #Survivors    #N(L1)=(N(L2)*H(L1,L2)+C(L1,L2)) *H(L1,L2)
-    survivors <- rep(NA,length(classes.num))
+    #Survivors
+    survivors <- rep(NA, length(classes.num))
 
     # survivors last size class
-    survivors[length(survivors)] <-
-      catch_cor[length(survivors)] / (terminalF/(terminalF + M))
-    # other survivors
-    for(x3 in (length(survivors)-1):1){
-      survivors[x3] <- (survivors[x3+1] *
-                                 H[x3] + catch_cor[x3] ) *
-        H[x3]
+    lastLengthClass <- max(which(!is.na(catch_numbers)),na.rm=TRUE)
+    if(plus_group) survivors[length(survivors)] <- catch_numbers[length(survivors)] / terminalE
+    if(!plus_group){
+      survivors[length(survivors)] <- catch_numbers[length(survivors)] /
+        (terminalE * (1 - exp(-terminalZ * dt[length(survivors)])))
     }
 
-    # F/Z  #F(L1,L2)/Z(L1,L2)=C(L1,L2)/(N(L1)-N(L2))
-    F_Z <- rep(NA,length(classes.num))
-    for(x4 in 1:(length(F_Z)-1)){
-      F_Z[x4] <- catch_cor[x4] /
-        (survivors[x4] - survivors[x4+1])
-    }
-    F_Z[length(F_Z)] <- terminalF / (terminalF + M)
+    ###  Jones' Length-based Cohort Analysis
+    if(analysis_type == "CA"){
+      # H (L1,L2)   #H(L1,L2)=((Linf-L1)/Linf-L2)^(M/2K)
+      H <- ((Linf - lowerLength)/(Linf - upperLength))^(M_vec/(2*K))
 
-    #F  # F = M * (F_Z / 1-F_Z)
-    FM_calc <- rep(NA,length(classes.num))
-    for(x5 in 1:(length(FM_calc))){
-      FM_calc[x5] <- M  *  (F_Z[x5] / (1 - F_Z[x5]))
+      # other survivors
+      for(x3 in (length(survivors)-1):1){
+        survivors[x3] <- (survivors[x3+1] * H[x3] + catch_numbers[x3]) * H[x3]
+      }
+
+      # F/Z  #F(L1,L2)/Z(L1,L2)=C(L1,L2)/(N(L1)-N(L2))
+      deads <- abs(diff(survivors))
+      F_Z <- catch_numbers[-length(survivors)] / deads
+      F_Z[length(survivors)] <- terminalE
+
+      #F  # F = M * (F_Z / 1-F_Z)
+      FM_calc <- M_vec * F_Z / (1 - F_Z)
+    }
+
+    ###  Length-based VPA
+    if(analysis_type == "VPA"){
+      #other survivors and fishing mortality
+      FM_calc <- rep(NA,length(classes.num))
+      FM_calc[lastLengthClass] <- terminalF
+
+      for(num_class in (lastLengthClass-1):1){
+
+        sur.C <- catch_numbers[num_class]
+        sur.Ntplus1 <- survivors[(num_class+1)]
+        sur.M <- M_vec[num_class]
+        sur.dt <- dt[num_class]
+        LHS <-  sur.C / sur.Ntplus1
+        sur.F <- 0
+
+        if(algorithm == "old"){
+          LHS <-  sur.C / sur.Ntplus1
+          sur.F <- 0
+          seqi <- c(1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7)
+          #trail and error
+          for(y in seqi){
+            stepi <- y
+            for(x in seq(sur.F,10,stepi)){
+              sur.F <- x
+              RHS <- (sur.F/(sur.F + sur.M)) * (exp(sur.F+sur.M) * sur.dt - 1)
+              if(LHS-RHS < 0) break
+            }
+            sur.F = x-stepi
+          }
+        }
+
+        if(algorithm == "new"){
+          Fcalc <- function(sur.F=sur.M){
+            ((sur.F/(sur.F+sur.M)) * (exp((sur.F+sur.M) * sur.dt) - 1) - (sur.C / sur.Ntplus1))^2
+          }
+          tmp <- optimise(f = Fcalc, interval=c(0,100))
+          sur.F <- tmp$min
+        }
+
+        #fill F
+        FM_calc[num_class] <- sur.F
+
+        #fill survivors
+        survivors[num_class] <- survivors[(num_class+1)] *
+          exp((sur.F + sur.M) * sur.dt)
+      }
     }
 
     # Z
-    Z <- rep(NA,length(classes.num))
-    for(x6 in 1:(length(Z))){
-      Z[x6] <- M  +  FM_calc[x6]
-    }
+    Z <- M_vec + FM_calc
 
     #Annual mean Nr
-    annualMeanNr <- rep(NA,length(classes.num))
-    for(x7 in 1:(length(annualMeanNr-1))){
-      annualMeanNr[x7] <- (survivors[x7] -
-                                    survivors[x7+1]) / Z[x7]
-    }
-
-    #Mean body weight
-    meanBodyWeight <- a * classes.num ^ b
+    deads <- abs(diff(survivors))
+    annualMeanNr <- deads / Z[-length(survivors)]
+    # annualMeanNr[length(survivors)] <- NA
+    annualMeanNr[length(survivors)] <- survivors[length(survivors)] / Z[length(survivors)]
 
     #Mean biomass
     meanBiomass <- annualMeanNr * meanBodyWeight
-    meanBiomassTon <- meanBiomass/1000
+    meanBiomassTon <- meanBiomass / 1000
 
     #Yield
-    yield <- catch_cor * meanBodyWeight
-    yieldTon <- yield/1000
+    yield <- catch_numbers * meanBodyWeight
+    yieldTon <- yield / 1000
 
     #FOR PLOT
     #Survivors rearranged
@@ -435,16 +563,13 @@ VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
     survivors_rea[length(survivors_rea)] <- 0
 
     #Calculate natural losses
-    natLoss <- rep(NA,length(classes.num))
-    for(x9 in 1:length(natLoss)){
-      natLoss[x9] <- survivors[x9] - survivors_rea[x9] -
-        catch_cor[x9]
-    }
+    natLoss <- survivors - survivors_rea - catch_numbers
 
     #put together in dataframe
     df.VPAnew <- data.frame(survivors = survivors_rea,
                             nat.losses = natLoss,
-                            catch = catch_cor)
+                            catch = catch_numbers,
+                            FM_calc = FM_calc)
 
     #transpose matrix for barplot function
     df.VPAnew <- t(as.matrix(df.VPAnew))
@@ -459,6 +584,7 @@ VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
       annualMeanNr = annualMeanNr,
       meanBodyWeight = meanBodyWeight,
       meanBiomassTon = meanBiomassTon,
+      catch_numbers = catch_numbers,
       yieldTon = yieldTon,
       natLoss = natLoss,
       plot_mat = df.VPAnew))
@@ -466,8 +592,9 @@ VPA <- function(param, terminalF, analysis_type, catch_corFac = NA,
     class(ret) <- "VPA"
 
     # plot results
-    if(plot == TRUE) try(plot(ret))
+    if(plot == TRUE & all(!is.na(survivors)) & all(!is.na(natLoss))) try(plot(ret))
 
     return(ret)
-  }
+
+  }# stop("Please choose analysis_type = 'CA' for length composition data!")
 }
