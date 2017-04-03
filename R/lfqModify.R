@@ -45,7 +45,11 @@ lfqModify <- function(lfq, par = NULL, bin_size = NA, vectorise_catch = FALSE, p
     for(i in 1:length(unique(dates))){
       sampli <- unique(dates)[i]
       dati <- as.character(unique(dates)[i])
-      lengthi <- rep.int(midLengths,times=as.numeric(catch[,dates == sampli]))
+      if(length(unique(dates)) > 1){
+        lengthi <- rep.int(midLengths,times=as.numeric(catch[,dates == sampli]))
+      }else{
+        lengthi <- rep.int(midLengths,times=as.numeric(catch[dates == sampli]))
+      }
       cuti <- cut(lengthi, breaks = bin.breaks, labels = midLengthsNEW, include.lowest = TRUE)
       freq <- plyr::count(cuti)
       colnames(freq) <- c("midLengths", dati)
