@@ -9,10 +9,10 @@
 #' @param bin_size Bin size for length frequencies (in cm)
 #' @param vectorise_catch logical; indicating if the catch matrix should be summarised to
 #'    yearly vectors (default: FALSE).
-#' @param plus_group logical; should a plus group be created? If yes you will be
+#' @param plus_group logical or numeric; should a plus group be created? If yes you will be
 #'    asked to insert the length for the plus group in the console (default: FALSE).
 #'    Instead of inserting the length of the plus group via the console, the value
-#'    can be incorporated in a vector, e.g. plus_group = c(TRUE, 30).
+#'    can be inserted, e.g. plus_group = 85.5.
 #'
 #' @keywords function lfq length-frequency
 #'
@@ -24,6 +24,9 @@
 #'
 #' ## change bin size
 #' lfq_bin <- lfqModify(synLFQ4, bin_size = 4)
+#'
+#' ## add plus_group
+#' lfqModify(synLFQ4, plus_group = 85.5)
 #'
 #' @return lfq object with rearranged catch matrix (yearly sums) and growth parameters
 #'    if provided.
@@ -95,8 +98,8 @@ lfqModify <- function(lfq, par = NULL, bin_size = NA, vectorise_catch = FALSE, p
   }
 
   # plus group
-  if(plus_group[1]){
-    if(length(plus_group) == 1){
+  if(isTRUE(plus_group) | is.numeric(plus_group)){
+    if(isTRUE(plus_group)){
       if(is.vector(catch)){
         print(data.frame(midLengths = midLengths, frequency = catch))
       }else if(length(unique(format(lfq$dates, "%Y"))) == 1){
@@ -127,10 +130,12 @@ lfqModify <- function(lfq, par = NULL, bin_size = NA, vectorise_catch = FALSE, p
           if(is.na(pg)){break}  # breaks when hit enter
         }
       }
-    }else if(length(plus_group) == 2){
-      pg = as.numeric(as.character(plus_group[2]))
+    }else if(is.numeric(plus_group)){
+      pg = as.numeric(as.character(plus_group))
     }
-
+    if(!(pg %in% midLengths)){
+      stop(paste0(pg, " is not an element of midLengths. Set 'plus_group' TRUE and pick a length class \n or check the vector 'midLengths' in your data."))
+    }
     midLengths <- midLengths[1:which(midLengths == pg)]
     if(is.vector(catch)){
       if(which(midLengths == pg) < (length(catch)-1)){
