@@ -17,10 +17,10 @@ lfqModify(lfq, par = NULL, bin_size = NA, vectorise_catch = FALSE,
 \item{vectorise_catch}{logical; indicating if the catch matrix should be summarised to
 yearly vectors (default: FALSE).}
 
-\item{plus_group}{logical; should a plus group be created? If yes you will be
+\item{plus_group}{logical or numeric; should a plus group be created? If yes you will be
 asked to insert the length for the plus group in the console (default: FALSE).
 Instead of inserting the length of the plus group via the console, the value
-can be incorporated in a vector, e.g. plus_group = c(TRUE, 30).}
+can be inserted, e.g. plus_group = 85.5.}
 }
 \value{
 lfq object with rearranged catch matrix (yearly sums) and growth parameters
@@ -39,6 +39,9 @@ lfq_sum <- lfqModify(synLFQ4, vectorise_catch = TRUE)
 
 ## change bin size
 lfq_bin <- lfqModify(synLFQ4, bin_size = 4)
+
+## add plus_group
+lfqModify(synLFQ4, plus_group = 85.5)
 
 }
 \keyword{function}
