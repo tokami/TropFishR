@@ -6,7 +6,7 @@ TropFishR :fishing_pole_and_fish:
 [![CRAN version](http://www.r-pkg.org/badges/version/TropFishR)](https://cran.r-project.org/package=TropFishR) 
 [![CRAN Downloads](http://cranlogs.r-pkg.org/badges/TropFishR)](https://cran.r-project.org/package=TropFishR)
 [![GitHub release](https://img.shields.io/github/release/tokami/TropFishR.svg)](https://github.com/tokami/TropFishR/releases)
-
+[![DOI](https://zenodo.org/badge/43552811.svg)](https://zenodo.org/badge/latestdoi/43552811)
 
 TropFishR is a collection of fisheries models based on the FAO Manual 
 "Introduction to tropical fish stock assessment" by Sparre and Venema 
