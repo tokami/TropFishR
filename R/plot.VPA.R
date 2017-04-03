@@ -9,6 +9,7 @@
 #' @param xlabel Label of the x axis
 #' @param ylabel1 Label of the first y axis
 #' @param ylabel2 Label of the second y axis
+#' @param ylim limits of y axis
 #' @param ... standard parameters of \code{\link{barplot}}
 #'
 #' @examples
@@ -40,6 +41,7 @@ plot.VPA <- function(x,
                      xlabel = NA,
                      ylabel1 = "Population",
                      ylabel2 = "Fishing mortality",
+                     ylim = NA,
                      ...){
   pes <- x
   if(!is.list(pes)){pes <- list(plot_mat = x)}
@@ -87,6 +89,11 @@ plot.VPA <- function(x,
 
   #save x axis positions
   max_sur <- round(max(colSums(df.VPAnew),na.rm=TRUE),digits=0)
+  if(is.na(ylim)){
+    ylim = c(0, max_sur)
+  }else{
+    ylim  = ylim
+  }
   dim_sur <- 10 ^ (nchar(max_sur)-1)
   max_FM <- ceiling(max(FM_calc,na.rm=TRUE))
   max_clas <- max(classes.num,na.rm=TRUE)
@@ -98,8 +105,8 @@ plot.VPA <- function(x,
   #dev.new()
   op <- par(mar = c(7, 5, 4, 5))
   barplot(df.VPAnew,col=c('darkgreen','darkmagenta','gold2'),
-          xlab = xlabel, ylab = ylabel1,xlim=c(0,ceiling(max(mids))),
-          ylim = c(0,max_sur), yaxs="i", ...)
+          xlab = xlabel, ylab = ylabel1, xlim=c(0,ceiling(max(mids))),
+          ylim = ylim, yaxs="i", ...)
   legend("topright",
          legend = c(rownames(df.VPAnew),"fishing mortality"),
          col = c('darkgreen','darkmagenta','gold2','red'),xpd = TRUE,

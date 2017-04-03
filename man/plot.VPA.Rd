@@ -5,7 +5,8 @@
 \title{VPA plot}
 \usage{
 \method{plot}{VPA}(x, yaxis = "numbers", display_last_class = TRUE,
-  xlabel = NA, ylabel1 = "Population", ylabel2 = "Fishing mortality", ...)
+  xlabel = NA, ylabel1 = "Population", ylabel2 = "Fishing mortality",
+  ylim = NA, ...)
 }
 \arguments{
 \item{x}{list of the class \code{"VPA"} containing the results of the VPA model.}
@@ -19,6 +20,8 @@
 \item{ylabel1}{Label of the first y axis}
 
 \item{ylabel2}{Label of the second y axis}
+
+\item{ylim}{limits of y axis}
 
 \item{...}{standard parameters of \code{\link{barplot}}}
 }
