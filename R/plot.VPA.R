@@ -10,6 +10,7 @@
 #' @param ylabel1 Label of the first y axis
 #' @param ylabel2 Label of the second y axis
 #' @param ylim limits of y axis
+#' @param ylim_FM limits of y axis of fishing mortality plot
 #' @param plot.bars logical; should the barplot of survivors, nat.losses and catch
 #'     be displayed? (Default: TRUE)
 #' @param plot.FM logical; should the fishing mortality be displayed in the graph? (Default: TRUE)
@@ -43,6 +44,7 @@ plot.VPA <- function(x,
                      ylabel1 = "Population",
                      ylabel2 = "Fishing mortality",
                      ylim = NA,
+                     ylim_FM = NA,
                      plot.bars = TRUE,
                      plot.FM = TRUE,
                      plot.legend = TRUE,
@@ -93,13 +95,14 @@ plot.VPA <- function(x,
 
   #save x axis positions
   max_sur <- round(max(colSums(df.VPAnew),na.rm=TRUE),digits=0)
-  if(is.na(ylim)){
+  if(is.na(ylim[1 ])){
     ylim = c(0, max_sur)
   }else{
     ylim  = ylim
   }
   dim_sur <- 10 ^ (nchar(max_sur)-1)
   max_FM <- ceiling(max(FM_calc,na.rm=TRUE))
+  if(is.na(ylim_FM[1])){ylim_FM <- c(0,max_FM)}
   max_clas <- max(classes.num,na.rm=TRUE)
   par(new = FALSE)
   mids <- barplot(df.VPAnew, xlab="", ann=TRUE, plot = FALSE,
@@ -128,7 +131,7 @@ plot.VPA <- function(x,
   if(plot.FM){
     par(new = TRUE)
     plot(mids, FM_calc, col='red',xlim=c(0,ceiling(max(mids, na.rm = TRUE))),
-         ylim=c(0,max_FM),
+         ylim=ylim_FM,
          type = "n", yaxs="i", axes = FALSE, bty = "n", xlab = "", ylab = "")
     lines(x=mids,y=FM_calc,col='red',lwd=2)
     axis(4, at = pretty(c(0,max_FM)),line = 1)
