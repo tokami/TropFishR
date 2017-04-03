@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{VPA}(x, yaxis = "numbers", display_last_class = TRUE,
   xlabel = NA, ylabel1 = "Population", ylabel2 = "Fishing mortality",
-  ylim = NA, ...)
+  ylim = NA, plot.FM = TRUE, plot.legend = TRUE, ...)
 }
 \arguments{
 \item{x}{list of the class \code{"VPA"} containing the results of the VPA model.}
@@ -22,6 +22,10 @@
 \item{ylabel2}{Label of the second y axis}
 
 \item{ylim}{limits of y axis}
+
+\item{plot.FM}{logical; should the fishing mortality be displayed in the graph?}
+
+\item{plot.legend}{logical; should a legend be displayed in the graph?}
 
 \item{...}{standard parameters of \code{\link{barplot}}}
 }

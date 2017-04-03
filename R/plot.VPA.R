@@ -10,6 +10,8 @@
 #' @param ylabel1 Label of the first y axis
 #' @param ylabel2 Label of the second y axis
 #' @param ylim limits of y axis
+#' @param plot.FM logical; should the fishing mortality be displayed in the graph?
+#' @param plot.legend logical; should a legend be displayed in the graph?
 #' @param ... standard parameters of \code{\link{barplot}}
 #'
 #' @examples
@@ -32,9 +34,6 @@
 #'
 #' @export
 
-# x = VPAres
-# yaxis = "biomass"
-
 plot.VPA <- function(x,
                      yaxis = "numbers",
                      display_last_class = TRUE,
@@ -42,6 +41,8 @@ plot.VPA <- function(x,
                      ylabel1 = "Population",
                      ylabel2 = "Fishing mortality",
                      ylim = NA,
+                     plot.FM = TRUE,
+                     plot.legend = TRUE,
                      ...){
   pes <- x
   if(!is.list(pes)){pes <- list(plot_mat = x)}
@@ -103,23 +104,33 @@ plot.VPA <- function(x,
 
   #create VPA plot
   #dev.new()
-  op <- par(mar = c(7, 5, 4, 5))
+  if(par("mfrow")[1] == 1 & par("mfrow")[2] == 1){
+    op <- par(mar = c(7, 5, 4, 5))
+  }
   barplot(df.VPAnew,col=c('darkgreen','darkmagenta','gold2'),
-          xlab = xlabel, ylab = ylabel1, xlim=c(0,ceiling(max(mids))),
+          xlab="",
+          ylab = ylabel1, xlim=c(0,ceiling(max(mids))),
           ylim = ylim, yaxs="i", ...)
-  legend("topright",
-         legend = c(rownames(df.VPAnew),"fishing mortality"),
-         col = c('darkgreen','darkmagenta','gold2','red'),xpd = TRUE,
-         pch=c(rep(15,3),NA), lty = c(NA,NA,NA,1), lwd=2, seg.len = 0.9,
-         pt.cex = 2, x.intersp = c(0.7,0.7,0.7,0.7), merge=TRUE,
-         y.intersp = 1.2, box.lty=0, cex=0.8, xjust = -0.3, yjust = 0.7)
-  par(new = TRUE)
-  plot(mids, FM_calc, col='red',xlim=c(0,ceiling(max(mids, na.rm = TRUE))),
-       ylim=c(0,max_FM),
-       type = "n", yaxs="i", axes = FALSE, bty = "n", xlab = "", ylab = "")
-  lines(x=mids,y=FM_calc,col='red',lwd=2)
-  axis(4, at = pretty(c(0,max_FM)),line = 1)
-  mtext(ylabel2, side=4, line=3.5)
-  par(op)
+  mtext(text = xlabel, side = 1, line = 2.5)
+  if(plot.legend){
+    legend("topright",
+           legend = c(rownames(df.VPAnew),"fishing mortality"),
+           col = c('darkgreen','darkmagenta','gold2','red'),xpd = TRUE,
+           pch=c(rep(15,3),NA), lty = c(NA,NA,NA,1), lwd=2, seg.len = 0.9,
+           pt.cex = 2, x.intersp = c(0.7,0.7,0.7,0.7), merge=TRUE,
+           y.intersp = 1.2, box.lty=0, cex=0.8, xjust = -0.3, yjust = 0.7)
+  }
+  if(plot.FM){
+    par(new = TRUE)
+    plot(mids, FM_calc, col='red',xlim=c(0,ceiling(max(mids, na.rm = TRUE))),
+         ylim=c(0,max_FM),
+         type = "n", yaxs="i", axes = FALSE, bty = "n", xlab = "", ylab = "")
+    lines(x=mids,y=FM_calc,col='red',lwd=2)
+    axis(4, at = pretty(c(0,max_FM)),line = 1)
+    mtext(ylabel2, side=4, line=3.5)
+  }
+  if(par("mfrow")[1] == 1 & par("mfrow")[2] == 1){
+    par(op)
+  }
 }
 
