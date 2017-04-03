@@ -154,8 +154,8 @@ synLFQ7a$M <- as.numeric(Ms)
 paste("M =", as.numeric(Ms))
 
 ## ----Figure 7,echo=TRUE, fig.width=6, fig.height=5, fig.cap="Catch curve with selected points for the regression analysis and in the second panel the selection ogive with age at first capture.", message = FALSE, warning=FALSE----
-# modify the data list
-synLFQ7b <- lfqModify(synLFQ7a)
+# summarise catch matrix into vector
+synLFQ7b <- lfqModify(synLFQ7a, vectorise_catch = TRUE)
 # run catch curve
 res_cc <- catchCurve(synLFQ7b, reg_int = c(9,28), calc_ogive = TRUE)
 # assign estimates to the data list
@@ -171,7 +171,7 @@ paste("L50 =",round(res_cc$L50,2))
 
 ## ----Figure 8, echo=TRUE, fig.cap="Results of Jones' cohort analysis (CA).", message=FALSE,warning=FALSE----
 # add plus group which is smaller than Linf
-synLFQ7c <- lfqModify(synLFQ7b, plus_group = c(TRUE,122))
+synLFQ7c <- lfqModify(synLFQ7b, plus_group = 122)
 
 # assign length-weight parameters to the data list
 synLFQ7c$a <- 0.015
