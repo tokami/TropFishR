@@ -10,8 +10,10 @@
 #' @param ylabel1 Label of the first y axis
 #' @param ylabel2 Label of the second y axis
 #' @param ylim limits of y axis
-#' @param plot.FM logical; should the fishing mortality be displayed in the graph?
-#' @param plot.legend logical; should a legend be displayed in the graph?
+#' @param plot.bars logical; should the barplot of survivors, nat.losses and catch
+#'     be displayed? (Default: TRUE)
+#' @param plot.FM logical; should the fishing mortality be displayed in the graph? (Default: TRUE)
+#' @param plot.legend logical; should a legend be displayed in the graph? (Default: TRUE)
 #' @param ... standard parameters of \code{\link{barplot}}
 #'
 #' @examples
@@ -41,6 +43,7 @@ plot.VPA <- function(x,
                      ylabel1 = "Population",
                      ylabel2 = "Fishing mortality",
                      ylim = NA,
+                     plot.bars = TRUE,
                      plot.FM = TRUE,
                      plot.legend = TRUE,
                      ...){
@@ -107,11 +110,13 @@ plot.VPA <- function(x,
   if(par("mfrow")[1] == 1 & par("mfrow")[2] == 1){
     op <- par(mar = c(7, 5, 4, 5))
   }
-  barplot(df.VPAnew,col=c('darkgreen','darkmagenta','gold2'),
-          xlab="",
-          ylab = ylabel1, xlim=c(0,ceiling(max(mids))),
-          ylim = ylim, yaxs="i", ...)
-  mtext(text = xlabel, side = 1, line = 2.5)
+  if(plot.bars){
+    barplot(df.VPAnew,col=c('darkgreen','darkmagenta','gold2'),
+            xlab="",
+            ylab = ylabel1, xlim=c(0,ceiling(max(mids))),
+            ylim = ylim, yaxs="i", ...)
+    mtext(text = xlabel, side = 1, line = 2.5)
+  }
   if(plot.legend){
     legend("topright",
            legend = c(rownames(df.VPAnew),"fishing mortality"),

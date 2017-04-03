@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{VPA}(x, yaxis = "numbers", display_last_class = TRUE,
   xlabel = NA, ylabel1 = "Population", ylabel2 = "Fishing mortality",
-  ylim = NA, plot.FM = TRUE, plot.legend = TRUE, ...)
+  ylim = NA, plot.bars = TRUE, plot.FM = TRUE, plot.legend = TRUE, ...)
 }
 \arguments{
 \item{x}{list of the class \code{"VPA"} containing the results of the VPA model.}
