@@ -31,6 +31,9 @@
 #'
 #' @export
 
+# x = VPAres
+# yaxis = "biomass"
+
 plot.VPA <- function(x,
                      yaxis = "numbers",
                      display_last_class = TRUE,
@@ -48,6 +51,7 @@ plot.VPA <- function(x,
     meanBodyWeight <- pes$plot_mat[5,]
   }
   if(dim(pes$plot_mat)[1] == 6){
+    meanBodyWeight <- pes$plot_mat[5,]
     meanBiomassTon <- pes$plot_mat[6,]
   }
   classes.num <- as.numeric(colnames(pes$plot_mat))
@@ -59,7 +63,7 @@ plot.VPA <- function(x,
                             catch = catch)
   }
   if(yaxis == "biomass"){
-    df.VPAnew <- data.frame(survivors = c(meanBiomassTon[-1],0),
+    df.VPAnew <- data.frame(survivors = survivors * meanBodyWeight, #c(meanBiomassTon[-1],0) * 1000,
                             nat.losses = natLoss * meanBodyWeight,
                             catch = catch * meanBodyWeight)
   }
@@ -95,7 +99,7 @@ plot.VPA <- function(x,
   op <- par(mar = c(7, 5, 4, 5))
   barplot(df.VPAnew,col=c('darkgreen','darkmagenta','gold2'),
           xlab = xlabel, ylab = ylabel1,xlim=c(0,ceiling(max(mids))),
-          ylim = c(0,max_sur), yaxs="i")#, ...)
+          ylim = c(0,max_sur), yaxs="i", ...)
   legend("topright",
          legend = c(rownames(df.VPAnew),"fishing mortality"),
          col = c('darkgreen','darkmagenta','gold2','red'),xpd = TRUE,
