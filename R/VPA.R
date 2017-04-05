@@ -13,7 +13,7 @@
 #'   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
 #'   \item \code{M}: natural mortality [1/year] (numeric value or vector of identical
 #'      length than midLengths),
-#'   \item \code{a}: length-weight relationship coefficent (W = a * L^b),
+#'   \item \code{a}: length-weight relationship coefficent (W = a * L^b; for kg/cm3),
 #'   \item \code{b}: length-weight relationship coefficent (W = a * L^b),
 #'   \item \code{catch}: catch as vector for pseudo cohort analysis,
 #'      or a matrix with catches of subsequent years to follow a real cohort.
@@ -83,7 +83,8 @@
 #'#_______________________________________________
 #' # Jones's Cohort Analysis with length-composition data
 #' data(hake)
-#' VPA(hake, terminalF = 0.5, analysis_type = "CA", plot = TRUE)
+#' VPA(hake, terminalE = 0.5, analysis_type = "CA", plot = TRUE,
+#'    catch_unit = "'000", plus_group = TRUE)
 #'
 #' @return A list with the input parameters and following list objects:
 #' \itemize{
@@ -334,7 +335,8 @@ VPA <- function(param,
       catch.cohort = catch.cohort,
       FM_calc = FM_calc,
       Z = Z,
-      survivors = survivors,
+      survivors_L1 = survivors,
+      survivors_L2 = survivors_rea,
       annualMeanNr = annualMeanNr,
       natLoss = natLoss,
       plot_mat = df.VPAnew))
@@ -410,12 +412,13 @@ VPA <- function(param,
     # lower and upper length vectors
     lowerLength <- classes.num - (interval / 2)
     upperLength <- classes.num + (interval / 2)
+    if(plus_group) upperLength[length(upperLength)] <- Linf
 
     #Mean body weight
     # FAO manual:
-    meanBodyWeight <- a * classes.num ^ b
+    meanBodyWeight <- a * ((lowerLength + upperLength)/2)^b    # a * classes.num ^ b
     # same as what provided in FAO manual: a * ((lowerLength + upperLength)/2)^b
-    meanBodyWeight <- meanBodyWeight / 1000  # in kg
+    #meanBodyWeight <- meanBodyWeight / 1000  # in kg
     #according to Beyer (1987) (FISAT II)
     # meanBodyWeight <- (1/(upperLength - lowerLength)) * (a / (b + 1)) * (upperLength^(b+1) - lowerLength^(b+1))
 
@@ -439,7 +442,6 @@ VPA <- function(param,
     t_L1 <- t0 - (1/K) * log(1 - (lowerLength / Linf))
 
     # t of lower upper classes
-    if(plus_group) upperLength[length(upperLength)] <- Linf
     t_L2 <- t0 - (1/K) * log(1 - (upperLength / Linf))
     if(upperLength[length(upperLength)] > Linf){
       writeLines(noquote("Upper limit of last length class is larger than Linf, \nconsider creating lower plus group or set the argument plus_group = TRUE."))
@@ -572,7 +574,8 @@ VPA <- function(param,
       classes.num = classes.num,
       FM_calc = FM_calc,
       Z = Z,
-      survivors = survivors,
+      survivors_L1 = survivors,
+      survivors_L2 = survivors_rea,
       annualMeanNr = annualMeanNr,
       meanBodyWeight = meanBodyWeight,
       meanBiomassTon = meanBiomassTon,

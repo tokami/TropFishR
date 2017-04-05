@@ -122,8 +122,8 @@ plot.VPA <- function(x,
   }
   if(plot.legend){
     legend("topright",
-           legend = c(rownames(df.VPAnew),"fishing mortality"),
-           col = c('darkgreen','darkmagenta','gold2','red'),xpd = TRUE,
+           legend = c("Catch","Natural losses","Survivors","Fishing mortality"),
+           col = c('gold2','darkmagenta','darkgreen','red'),xpd = TRUE,
            pch=c(rep(15,3),NA), lty = c(NA,NA,NA,1), lwd=2, seg.len = 0.9,
            pt.cex = 2, x.intersp = c(0.7,0.7,0.7,0.7), merge=TRUE,
            y.intersp = 1.2, box.lty=0, cex=0.8, xjust = -0.3, yjust = 0.7)
