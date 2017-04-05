@@ -79,7 +79,8 @@
 #'#_______________________________________________
 #' # Virtual population analysis with length-composition data
 #' data(hake)
-#' VPA(hake, terminalE = 0.5, analysis_type = "VPA", plot = TRUE)
+#' VPA(hake, terminalE = 0.5, analysis_type = "VPA", plot = TRUE,
+#'     catch_unit = "'000", plus_group = TRUE)
 #'#_______________________________________________
 #' # Jones's Cohort Analysis with length-composition data
 #' data(hake)
@@ -160,7 +161,7 @@ VPA <- function(param,
     # Error message if catch and age do not have same length
     if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
       #if(length(classes) != length(catch[,1])) stop("Age/length classes and catch do not have the same length!")
-      if(length(classes) != length(diag(as.matrix(catch)))) warning("Age/length classes and the real cohort in the catch matrix \ndo not have the same length. The missing age/length \nclasses will be omitted.")
+      if(length(classes) != length(diag(as.matrix(catch)))) warning("Age/length classes and the real cohort in the catch matrix do not have the same length. The missing age/length classes will be omitted.")
       }else if(class(catch) == 'numeric'){
       if(length(classes) != length(catch)) stop("Age/length classes and catch do not have the same length!")
     }
@@ -192,6 +193,7 @@ VPA <- function(param,
     classes.num <- as.numeric(classes.num[,1])
 
     if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
+      writeLines(noquote("A catch matrix was provided: The VPA/CA will follow the 'real' cohort, assuming yearly intervals in the catch matrix. If you want to perform the VPA/CA with a pseudo cohort please use the argument 'catch_columns' specifying which column(s) of the catch matrix to use."))
       #find cohort to analyse
       real.cohort <- diag(as.matrix(catch))
        catch.cohort <- c(real.cohort,
@@ -200,6 +202,9 @@ VPA <- function(param,
         catch.cohort <- real.cohort
         classes.num <- classes.num[1:length(catch.cohort)]
       }
+       if(length(M_vec) != length(classes.num)){
+         M_vec <- M_vec[1:length(classes.num)]
+       }
     }
     if(class(catch) == 'numeric'){
       catch.cohort <- catch
@@ -574,12 +579,14 @@ VPA <- function(param,
       classes.num = classes.num,
       FM_calc = FM_calc,
       Z = Z,
+      meanBodyWeight = meanBodyWeight,
       survivors_L1 = survivors,
       survivors_L2 = survivors_rea,
-      annualMeanNr = annualMeanNr,
-      meanBodyWeight = meanBodyWeight,
-      meanBiomassTon = meanBiomassTon,
       catch_numbers = catch_numbers,
+      annualMeanNr = annualMeanNr,
+
+      meanBiomassTon = meanBiomassTon,
+
       yieldTon = yieldTon,
       natLoss = natLoss,
       plot_mat = df.VPAnew))

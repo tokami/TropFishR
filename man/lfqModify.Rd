@@ -41,7 +41,7 @@ lfq_sum <- lfqModify(synLFQ4, vectorise_catch = TRUE)
 lfq_bin <- lfqModify(synLFQ4, bin_size = 4)
 
 ## add plus_group
-lfqModify(synLFQ4, plus_group = 85.5)
+lfq_plus <- lfqModify(synLFQ4, plus_group = 85.5)
 
 }
 \keyword{function}

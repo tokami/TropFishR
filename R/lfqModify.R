@@ -26,7 +26,7 @@
 #' lfq_bin <- lfqModify(synLFQ4, bin_size = 4)
 #'
 #' ## add plus_group
-#' lfqModify(synLFQ4, plus_group = 85.5)
+#' lfq_plus <- lfqModify(synLFQ4, plus_group = 85.5)
 #'
 #' @return lfq object with rearranged catch matrix (yearly sums) and growth parameters
 #'    if provided.

@@ -18,7 +18,7 @@ VPA(param, catch_columns = NA, catch_unit = NA, catch_corFac = NA,
   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
   \item \code{M}: natural mortality [1/year] (numeric value or vector of identical
      length than midLengths),
-  \item \code{a}: length-weight relationship coefficent (W = a * L^b),
+  \item \code{a}: length-weight relationship coefficent (W = a * L^b; for kg/cm3),
   \item \code{b}: length-weight relationship coefficent (W = a * L^b),
   \item \code{catch}: catch as vector for pseudo cohort analysis,
      or a matrix with catches of subsequent years to follow a real cohort.
@@ -118,11 +118,13 @@ VPA(whiting, terminalE = 0.5, catch_columns = 3, analysis_type = "CA",
 #_______________________________________________
 # Virtual population analysis with length-composition data
 data(hake)
-VPA(hake, terminalE = 0.5, analysis_type = "VPA", plot = TRUE)
+VPA(hake, terminalE = 0.5, analysis_type = "VPA", plot = TRUE,
+    catch_unit = "'000", plus_group = TRUE)
 #_______________________________________________
 # Jones's Cohort Analysis with length-composition data
 data(hake)
-VPA(hake, terminalF = 0.5, analysis_type = "CA", plot = TRUE)
+VPA(hake, terminalE = 0.5, analysis_type = "CA", plot = TRUE,
+   catch_unit = "'000", plus_group = TRUE)
 
 }
 \references{

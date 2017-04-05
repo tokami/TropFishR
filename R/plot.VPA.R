@@ -23,7 +23,7 @@
 #' plot(output, display_last_class = FALSE)
 #'
 #' data(hake)
-#' output <- VPA(hake, terminalE = 0.5)
+#' output <- VPA(hake, terminalE = 0.5, catch_unit = "'000")
 #' plot_mat <- output$plot_mat[,-c(1,2)]  # remove first two length classes
 #' class(plot_mat) <- "VPA"
 #' plot(plot_mat, xlabel = "Midlengths [cm]")
@@ -70,10 +70,18 @@ plot.VPA <- function(x,
                             nat.losses = natLoss,
                             catch = catch)
   }
-  if(yaxis == "biomass"){
-    df.VPAnew <- data.frame(survivors = survivors * meanBodyWeight, #c(meanBiomassTon[-1],0) * 1000,
+  if(yaxis == "biomass" & dim(pes$plot_mat)[1] > 4){
+    df.VPAnew <- data.frame(survivors = survivors * meanBodyWeight,
                             nat.losses = natLoss * meanBodyWeight,
                             catch = catch * meanBodyWeight)
+  }else if(yaxis == "biomass" & dim(pes$plot_mat)[1] <= 4){
+    stop("The information about the mean body weight per age or length class is missing!")
+  }
+
+  if(!display_last_class){
+    df.VPAnew <- df.VPAnew[-dim(df.VPAnew)[1],]
+    FM_calc <- FM_calc[-length(FM_calc)]
+    classes.num <- classes.num[-length(classes.num)]
   }
 
   #transpose matrix for barplot function
@@ -91,7 +99,6 @@ plot.VPA <- function(x,
   }else{
     xlabel = xlabel
   }
-
 
   #save x axis positions
   max_sur <- round(max(colSums(df.VPAnew),na.rm=TRUE),digits=0)
