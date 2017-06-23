@@ -1,0 +1,54 @@
+
+
+year <- sub("-.*", "", meta$Date)
+note <- sprintf("R package version %s", meta$Version)#
+
+bibentry(
+  header = "Manual on CRAN:",
+  bibtype = "Manual",
+  title = "TropFishR: Tropical Fisheries Analysis with R",
+  author = c(
+    person(c("Tobias", "M."), "Mildenberger", role = c("aut", "cre"), email = "t.k.mildenberger@gmail.com"),
+    person(c("Marc", "H."), "Taylor", role = c("aut")),
+    person("Matthias", "Wolff", role = c("aut"))
+  ),
+  year = year,
+  note = note,
+  url = "https://CRAN.R-project.org/package=TropFishR"
+)
+
+bibentry(
+  header = "Overview article of TropFishR:",
+  bibtype = "Article",
+  title = "TropFishR: an R package for fisheries analysis with length-frequency data",
+  author = c(
+    person(c("Tobias", "M."), "Mildenberger"),
+    person(c("Marc", "H."), "Taylor"),
+    person("Matthias", "Wolff")
+  ),
+  journal = "Methods in Ecology and Evolution",
+  year = "2017",
+  pages = "n/a--n/a",
+  doi = "10.1111/2041-210X.12791",
+  issn = "2041-210X"
+)
+
+bibentry(
+  header = "Article on ELEFAN extensions:",
+  bibtype = "Article",
+  title = "Extending electronic length frequency analysis in R",
+  author = c(
+    person(c("Marc", "H."), "Taylor"),
+    person(c("Tobias", "M."), "Mildenberger")
+  ),
+  journal = "Fisheries Management and Ecology",
+  year = "in press",
+  pages = "n/a--n/a",
+  doi = "10.1111/fme.12232",
+  url = "https://doi.org/10.6084/m9.figshare.4206561"
+)
+
+
+
+citFooter("As TropFishR is continually evolving, you may want to view the development version at https://github.com/tokami/TropFishR")
+
