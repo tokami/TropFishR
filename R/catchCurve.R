@@ -248,7 +248,7 @@ catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
 
     # L and t of lower length classes
     lowerLengths <- midLengths - (interval / 2)
-    t_L1 <- (t0 - (1/K)) * log(1 - (lowerLengths / Linf))
+    t_L1 <- t0 - (1/K) * log(1 - (lowerLengths / Linf))
 
     # delta t
     dt <- rep(NA,length(midLengths))
@@ -260,7 +260,7 @@ catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
     #ln (Linf - L)
     ln_Linf_L <- log(Linf - lowerLengths)
     # t of midlengths
-    t_midL <- (t0 - (1/K)) * log(1 - (midLengths / Linf))
+    t_midL <- t0 - (1/K) * log(1 - (midLengths / Linf))
 
     # y variable
     #ln C(L1,Linf)
