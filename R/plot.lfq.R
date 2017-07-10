@@ -201,7 +201,7 @@ plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
     axis.Date(side = 1, x=dates, at=date.at, format = date.format)
   }else if(date.axis == "traditional"){
     axis.Date(side = 1, x = dates, at = date.at, format = "%b")
-    year <- unique(format(dates, "%Y"))
+    year <- seq(min(as.numeric(format(dates, "%Y"))), max(as.numeric(format(dates, "%Y"))), 1)
     date_seq <- seq.Date(dates[1],dates[length(dates)], by = "month")
     date_label <- format(date_seq, "%m")
     year_pre <- which(date_label %in% "01")
