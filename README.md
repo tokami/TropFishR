@@ -19,7 +19,6 @@ the FAO manual.
 
 
 ## Installation
-
 Download the released version from CRAN:
 
 ```R
@@ -33,10 +32,16 @@ Or the development version from github:
 devtools::install_github(“tokami/TropFishR”)
 ```
 
+## Citation
+Please use the R command `citation("TropFishR")` to receive information on
+how to cite this package.
+
+
 ## Vignette
 A [tutorial](https://rawgit.com/tokami/TropFishR/master/inst/doc/tutorial.html)
 demonstrates the use of some of the main functions of TropFishR for a 
 single-species stock assessment with length-frequency data.
+
 
 ## Questions / Issues
 In case you have questions or find bugs, please report on 
@@ -50,3 +55,10 @@ In case you have questions or find bugs, please report on
   2. Sparre, P., Venema, S.C., 1999. Introduction to tropical fish stock 
   assessment. Part 2. Excercises. FAO Fisheries Technical Paper, 
   (306.2, Rev. 2). 94 p. [link](http://www.fao.org/docrep/w5448e/w5448e00.htm)
+  3. Mildenberger, T. K., Taylor, M. H. and Wolff, M., 2017. TropFishR: an
+  R package for fisheries analysis with length-frequency data. Methods in 
+  Ecology and Evolution. doi:10.1111/2041-210X.12791 
+  [link](http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12791/abstract)
+  4. Taylor, M. H., and Mildenberger, T. K., in press. Extending electronic 
+  length frequency analysis in R. Fisheries Management and Ecology. 
+  doi:10.1111/fme.12232 [link](http://doi.org/10.6084/m9.figshare.4206561)
