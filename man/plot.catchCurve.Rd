@@ -4,12 +4,14 @@
 \alias{plot.catchCurve}
 \title{Plotting catch curve}
 \usage{
-\method{plot}{catchCurve}(x, plot_selec = FALSE, col = "blue", cex = 1.5,
-  xlim = NULL, ylim = NULL, ...)
+\method{plot}{catchCurve}(x, xaxis = "age", plot_selec = FALSE,
+  col = "blue", cex = 1.5, xlim = NULL, ylim = NULL, ...)
 }
 \arguments{
 \item{x}{A list of the class \code{"catchCurve"} containing the results of the
 catchCurve model.}
+
+\item{xaxis}{Character defining if x axis should represent length or age (default: 'age')}
 
 \item{plot_selec}{logical; if TRUE the regression line is plotted for not fully
 exploited length groups and the probability of capture is plotted. This
