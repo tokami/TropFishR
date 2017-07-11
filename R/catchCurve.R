@@ -238,6 +238,8 @@ catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
     Linf <- res$Linf
     K <- res$K
     t0 <- ifelse("t0" %in% names(res), res$t0, 0)
+    ## C <- ifelse("C" %in% names(res), res$C, 0)
+    ## ts <- ifelse("ts" %in% names(res), res$ts, 0)
 
     if((is.null(Linf) | is.null(K))) stop(noquote(
       "You need to assign values to Linf and K for the catch curve based on length-frequency data!"))
@@ -248,7 +250,8 @@ catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
 
     # L and t of lower length classes
     lowerLengths <- midLengths - (interval / 2)
-    t_L1 <- t0 - (1/K) * log(1 - (lowerLengths / Linf))
+    t_L1 <- VBGF(param = list(Linf = Linf, K = K, t0 = t0), L = lowerLengths)
+    ## t0 - (1/K) * log(1 - (lowerLengths / Linf))
 
     # delta t
     dt <- rep(NA,length(midLengths))
@@ -260,7 +263,8 @@ catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
     #ln (Linf - L)
     ln_Linf_L <- log(Linf - lowerLengths)
     # t of midlengths
-    t_midL <- t0 - (1/K) * log(1 - (midLengths / Linf))
+    t_midL <- VBGF(param = list(Linf = Linf, K = K, t0 = t0), L = midLengths)
+    ## t0 - (1/K) * log(1 - (midLengths / Linf))
 
     # y variable
     #ln C(L1,Linf)
