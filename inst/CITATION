@@ -42,10 +42,13 @@ bibentry(
     person(c("Tobias", "K."), "Mildenberger")
   ),
   journal = "Fisheries Management and Ecology",
-  year = "in press",
-  pages = "n/a--n/a",
+  year = "2017",
+  volume = "24",
+  number = "4",
+  pages = "230--238",
   doi = "10.1111/fme.12232",
-  url = "https://doi.org/10.6084/m9.figshare.4206561"
+  url = "http://doi.wiley.com/10.1111/fme.12232",
+  issn = "0969997X",
 )
 
 
