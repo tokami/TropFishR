@@ -137,10 +137,12 @@ lfqFitCurves <- function(lfq,
   for(ct in seq(ncohort)){
     par2$t_anchor <- tAs[ct]
     rel.age <- t-tAs[ct] # relative age to anchor time
-    t.ct <- t[which(rel.age <= agemax & rel.age > 0)]
+    t.use <- which(rel.age <= agemax & rel.age > 0)
+    t.ct <- t[t.use]
+    rel.age <- rel.age[t.use]
     if(length(t.ct) > 0){
       Lt.ct <- VBGF(param = par2, t = t.ct) ## do.call(what = VBGF,  par2)    # Lt.ct <- VBGF(lfq = par2, t = yeardec)   #
-      Lt[[ct]] <- data.frame(t=t.ct, Lt=Lt.ct)
+      Lt[[ct]] <- data.frame(t=t.ct, Lt=Lt.ct, ct=ct, rel.age=rel.age)
       if(draw){
         tmp <- par2
         t_tmp <- seq(tAs[ct], max(t.ct)+tincr, by=tincr)

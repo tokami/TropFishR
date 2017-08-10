@@ -13,6 +13,6 @@
 
 
 yeardec2date <- function(yeardec){
-  as.Date(strptime(paste(yeardec %/% 1, floor(yeardec %% 1 * 365 + 1), sep="-"), format = "%Y-%j"))
+  as.Date(strptime(paste(yeardec %/% 1, round(yeardec %% 1 * 365.25 + 1), sep="-"), format = "%Y-%j"))
 }
 

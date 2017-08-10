@@ -11,6 +11,7 @@
 #' @export
 
 date2yeardec <- function(date){
-  as.POSIXlt(date)$year + 1900 + (as.POSIXlt(date)$yday) / 365
+  as.POSIXlt(date)$year + 1900 + (as.POSIXlt(date)$yday) / 365.25
 }
+
 
