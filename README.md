@@ -58,7 +58,7 @@ In case you have questions or find bugs, please report on
   3. Mildenberger, T. K., Taylor, M. H. and Wolff, M., 2017. TropFishR: an
   R package for fisheries analysis with length-frequency data. Methods in 
   Ecology and Evolution. doi:10.1111/2041-210X.12791 
-  [link](http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12791/abstract)
+  [link](https://doi.org/10.1111/2041-210X.12791)
   4. Taylor, M. H., and Mildenberger, T. K., 2017. Extending electronic 
   length frequency analysis in R. Fisheries Management and Ecology, 24:330-338. 
-  doi:10.1111/fme.12232 [link](http://doi.org/10.6084/m9.figshare.4206561)
+  doi:10.1111/fme.12232 [link](https://doi.org/10.1111/fme.12232)
