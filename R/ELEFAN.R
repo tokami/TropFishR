@@ -19,12 +19,22 @@
 #' @param C growth oscillation amplitude (default: 0)
 #' @param ts onset of the first oscillation relative to t0 (summer point, default: 0)
 #' @param MA number indicating over how many length classes the moving average
-#'    should be performed (defalut: 5, for
+#'    should be performed (default: 5, for
 #'    more information see \link{lfqRestructure}).
 #' @param addl.sqrt Passed to \link{lfqRestructure}. Applied an additional square-root transformation of positive values according to Brey et al. (1988).
 #'    (default: FALSE, for more information see \link{lfqRestructure}).
 #' @param agemax maximum age of species; default NULL, then estimated from Linf
 #' @param flagging.out logical; should positive peaks be flagged out? (Default : TRUE)
+#' @param method Choose between the old FiSAT option to force VBGF crossing of a pre-defined
+#'    bin (method = "cross"), or the more sophisticated (but computationally expensive) option
+#'    to solve for t_anchor via a maximisation of reconstructed score
+#'    (default: method = "optimise").
+#' @param cross.date Date. For use with \code{method = "cross"}. In combination
+#'    with \code{cross.midLength}, defines the date of the crossed bin.
+#' @param cross.midLength Numeric. For use with \code{method = "cross"}. In combination
+#'    with \code{cross.date}, defines the mid-length of the crossed bin.
+#' @param cross.max logical. For use with \code{method = "cross"}. Forces growth function
+#'    to cross the bin with maximum positive score.
 #' @param hide.progressbar logical; should the progress bar be hidden? (default: FALSE)
 #' @param plot logical; indicating if plot with restructured frequencies and growth curves should
 #'    be displayed
@@ -36,18 +46,59 @@
 #'
 #' @examples
 #' \donttest{
+#' data(alba)
+#'
+#' ### Surface response analysis ###
+#'
+#' # 'cross' method (used in FiSAT)
+#' fit1 <- ELEFAN(
+#'    x = alba, method = "cross",
+#'    Linf_range = seq(from = 10, to = 20, length.out = 10),
+#'    K_range = exp(seq(from = log(0.1), to = log(2), length.out = 20)),
+#'    cross.date = alba$dates[3], cross.midLength = alba$midLengths[4],
+#'    contour = TRUE
+#' )
+#' fit1$Rn_max; unlist(fit1$par)
+#' plot(fit1); points(alba$dates[3], alba$midLengths[4], col=2, cex=2, lwd=2)
+#'
+#' # 'cross' method (bin with maximum score crossed)
+#' fit2 <- ELEFAN(
+#'    x = alba, method = "cross",
+#'    Linf_range = seq(from = 10, to = 20, length.out = 20),
+#'    K_range = exp(seq(from = log(0.1), to = log(2), length.out = 20)),
+#'    cross.max = TRUE,
+#'    contour = TRUE
+#' )
+#' fit2$Rn_max; unlist(fit2$par)
+#' plot(fit2); points(alba$dates[7], alba$midLengths[9], col=2, cex=2, lwd=2)
+#'
+#'
+#' # 'optimise' method (default)
+#' fit3 <- ELEFAN(
+#'    x = alba, method = "optimise",
+#'    Linf_range = seq(from = 10, to = 20, length.out = 10),
+#'    K_range = exp(seq(from = log(0.1), to = log(2), length.out = 20)),
+#'    contour = TRUE
+#' )
+#' fit3$Rn_max; unlist(fit3$par)
+#' plot(fit3)
+#'
+#'
+#' ### K-Scan ###
+#'
 #' data(synLFQ4)
 #'
-#' # K-Scan
-#' output <- ELEFAN(x = synLFQ4, Linf_fix = 80,
-#'    K_range = seq(0.3,0.7,0.1),C = 0.75, ts = 0.5, MA = 11)
-#' plot(output)
+#' # K-Scan (fixed Linf, using 'cross' method)
+#' fit4 <- ELEFAN(
+#'    x = alba, method = "cross",
+#'    Linf_fix = 10,
+#'    K_range = round(exp(seq(from = log(0.1), to = log(2), length.out = 50)),2),
+#'    cross.date = alba$dates[3], cross.midLength = alba$midLengths[4]
+#' )
+#' fit4$Rn_max; unlist(fit4$par)
+#' plot(fit4); points(alba$dates[3], alba$midLengths[4], col=2, cex=2, lwd=2)
 #'
-#' # Surface response analysis
-#' output2 <- ELEFAN(synLFQ4, Linf_range = seq(78,82,1),
-#'    K_range = seq(0.3,0.7,0.1),C = 0.75, ts = 0.5, MA = 11, contour = 3)
-#' plot(output2)
-#'}
+#' }
 #'
 #' @details This functions allows to perform the K-Scan and Response surface
 #'    analysis to estimate growth parameters.
@@ -61,9 +112,10 @@
 #'    Both methods use \code{\link[stats]{optimise}} to find the best \code{t_anchor} value
 #'    for each combination of \code{K} and \code{Linf}. To find out more about
 #'    \code{t_anchor}, please refer to the Details description of
-#'    \code{\link{lfqFitCurves}}. The score value \code{Rn_max} is not comparable with
-#'    the score value of the other ELEFAN functions (\code{\link{ELEFAN_SA}} or
-#'    \code{\link{ELEFAN_GA}}).
+#'    \code{\link{lfqFitCurves}}. The score value \code{Rn_max} is comparable with
+#'    the score values of the other ELEFAN functions (\code{\link{ELEFAN_SA}} or
+#'    \code{\link{ELEFAN_GA}}) when other settings are consistent
+#'    (e.g. `MA`, `addl.sqrt`, `agemax`, `flagging.out`).
 #'
 #' @return A list with the input parameters and following list objects:
 #' \itemize{
@@ -140,14 +192,17 @@
 #'
 #' @export
 
-ELEFAN <- function(x, Linf_fix = NA, Linf_range = NA,
-                   K_range = exp(seq(log(0.1), log(10), length.out=100)),
-                   C = 0, ts = 0,
-                   MA = 5, addl.sqrt = FALSE,
-                   agemax = NULL, flagging.out = TRUE,
-                   hide.progressbar = FALSE,
-                   plot = FALSE, contour = FALSE,
-                   plot_title = TRUE){
+ELEFAN <- function(
+  x, Linf_fix = NA, Linf_range = NA,
+  K_range = exp(seq(log(0.1), log(10), length.out=100)),
+  C = 0, ts = 0,
+  MA = 5, addl.sqrt = FALSE,
+  agemax = NULL, flagging.out = TRUE, method = "optimise",
+  cross.date = NULL, cross.midLength = NULL, cross.max = FALSE,
+  hide.progressbar = FALSE,
+  plot = FALSE, contour = FALSE,
+  plot_title = TRUE)
+{
 
   res <- x
   classes <- res$midLengths
@@ -159,7 +214,6 @@ ELEFAN <- function(x, Linf_fix = NA, Linf_range = NA,
   n_classes <- length(classes)
 
   #ts <- WP - 0.5
-
   if(is.na(Linf_fix) & is.na(Linf_range[1])) Linf_range <- seq(classes[n_classes]-5,classes[n_classes]+5,1) ### OLD: c(classes[n_classes]-5,classes[n_classes]+5)
 
   # ELEFAN 0
@@ -172,6 +226,9 @@ ELEFAN <- function(x, Linf_fix = NA, Linf_range = NA,
     Linfs <- Linf_fix
   }else Linfs <-  Linf_range
   Ks <- K_range
+
+
+
 
   # optimisation function
   sofun <- function(tanch, lfq, par, agemax, flagging.out){
@@ -187,6 +244,22 @@ ELEFAN <- function(x, Linf_fix = NA, Linf_range = NA,
   writeLines(paste("Optimisation procuedure of ELEFAN is running. \nThis will take some time. \nThe process bar will inform you about the process of the calculations.",sep=" "))
   flush.console()
 
+
+  # check that both cross.date and cross.midLength are identified
+  if(method == "cross"){
+    if(cross.max){ # overrides 'cross.date' and 'cross.midLength'
+      max.rcount <- which.max(res$rcounts)
+      COMB <- expand.grid(midLengths = rev(rev(res$midLengths)), dates = res$dates)
+      cross.date <- COMB$dates[max.rcount]
+      cross.midLength <- COMB$midLengths[max.rcount]
+    } else {
+      if(is.null(cross.date) | is.null(cross.midLength)){
+        stop("Must define both 'cross.date' and 'cross.midLength' when 'cross.max' equals FALSE")
+      }
+    }
+  }
+
+
   if(!hide.progressbar){
     nlk <- prod(dim(ESP_list_L))
     pb <- txtProgressBar(min=1, max=nlk, style=3)
@@ -198,18 +271,48 @@ ELEFAN <- function(x, Linf_fix = NA, Linf_range = NA,
     ESP_list_K <- rep(NA,length(Ks))
     for(ki in 1:length(Ks)){
 
-      # ELEFAN 1
-      resis <- optimise(f = sofun,
-                        lower = 0,
-                        upper = 1,
-                        lfq = res,
-                        par = c(Linfs[li], Ks[ki], NA, C, ts),
-                        agemax = agemax,
-                        flagging.out = flagging.out,
-                        tol = 0.001,
-                        maximum = TRUE)
-      ESP_list_K[ki] <- resis$objective
-      ESP_tanch_K[ki] <- resis$maximum
+      # determine agemax for Linf and K combination if not already defined
+      if(is.null(agemax)){
+        agemax.i <- ceiling((1/-Ks[ki])*log(1-((Linfs[li]*0.95)/Linfs[li])))
+      } else {
+        agemax.i <- agemax
+      }
+
+
+      if(method == "cross"){ # Method for crossing center of a prescribed bin
+
+        t0s <- seq(floor(min(date2yeardec(res$dates)) - agemax.i), ceiling(max(date2yeardec(res$dates))), by = 0.01)
+
+        Ltlut <- Linfs[li] * (1-exp(-(
+          Ks[ki]*(date2yeardec(cross.date)-t0s)
+          + (((C*Ks[ki])/(2*pi))*sin(2*pi*(date2yeardec(cross.date)-ts)))
+          - (((C*Ks[ki])/(2*pi))*sin(2*pi*(t0s-ts)))
+        )))
+
+        t_anchor <- t0s[which.min((Ltlut - cross.midLength)^2)] %% 1
+
+        resis <- sofun(tanch = t_anchor, lfq = res, par = c(Linfs[li], Ks[ki], NA, C, ts), agemax = agemax.i, flagging.out = flagging.out)
+        ESP_list_K[ki] <- resis
+        ESP_tanch_K[ki] <- t_anchor
+
+      }
+
+      # Optimised method for searching best scoring t_anchor
+      if(method == "optimise"){
+        resis <- optimise(
+          f = sofun,
+          lower = 0,
+          upper = 1,
+          lfq = res,
+          par = c(Linfs[li], Ks[ki], NA, C, ts),
+          agemax = agemax.i,
+          flagging.out = flagging.out,
+          tol = 0.001,
+          maximum = TRUE
+        )
+        ESP_list_K[ki] <- resis$objective
+        ESP_tanch_K[ki] <- resis$maximum
+      }
 
       # update counter and progress bar
       if(!hide.progressbar){
@@ -227,27 +330,34 @@ ELEFAN <- function(x, Linf_fix = NA, Linf_range = NA,
   dimnames(ESP_tanch_L) <- list(Ks,Linfs)
 
 
-
   # Graphs
   if(is.na(Linf_fix)){
     plot_dat <- reshape2::melt(score_mat)
-    image(x = Linfs,
-          y = Ks,
-          z = t(score_mat), col=colorRampPalette(c("yellow","red"), space="Lab")(5),
-          ylab = 'K', xlab='Linf')
+
+    image(
+      x = Linfs,
+      y = Ks,
+      z = t(score_mat), col=colorRampPalette(c("yellow","red"), space="Lab")(10),
+      ylab = 'K', xlab='Linf'
+    )
+
     if(plot_title)  title('Response surface analysis', line = 2)
-    #grid (NULL,NULL, lty = 6, col = "cornsilk2")
+
     if(contour){
       contour(x = Linfs, y = Ks, z = t(score_mat), add = TRUE)
-    }else if(is.numeric(contour)){
-      contour(x = Linfs, y = Ks, z = t(score_mat), add = TRUE, nlevels = contour)
-    }else text(x=plot_dat$Var2,y=plot_dat$Var1,round(as.numeric(plot_dat$value),digits = 2),cex = 0.6)
-  }else{
+    } else {
+      if(is.numeric(contour)){
+        contour(x = Linfs, y = Ks, z = t(score_mat), add = TRUE, nlevels = contour)
+      } else {
+        text(x=plot_dat$Var2,y=plot_dat$Var1,round(as.numeric(plot_dat$value),digits = 2),cex = 0.6)
+      }
+    }
+  } else {
     if(all(Ks %in% exp(seq(log(0.1),log(10),length.out=100)))){
       K_labels <- c(seq(0.1,1,0.1),2:10)
       K_plot <- log10(Ks)
       K_ats <- log10(K_labels)
-    }else{
+    } else {
       K_labels <- Ks
       K_plot <- Ks
       K_ats <- Ks

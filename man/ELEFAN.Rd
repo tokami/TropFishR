@@ -6,8 +6,10 @@
 \usage{
 ELEFAN(x, Linf_fix = NA, Linf_range = NA, K_range = exp(seq(log(0.1),
   log(10), length.out = 100)), C = 0, ts = 0, MA = 5, addl.sqrt = FALSE,
-  agemax = NULL, flagging.out = TRUE, hide.progressbar = FALSE,
-  plot = FALSE, contour = FALSE, plot_title = TRUE)
+  agemax = NULL, flagging.out = TRUE, method = "optimise",
+  cross.date = NULL, cross.midLength = NULL, cross.max = FALSE,
+  hide.progressbar = FALSE, plot = FALSE, contour = FALSE,
+  plot_title = TRUE)
 }
 \arguments{
 \item{x}{a list consisting of following parameters:
@@ -33,7 +35,7 @@ calculated
 \item{ts}{onset of the first oscillation relative to t0 (summer point, default: 0)}
 
 \item{MA}{number indicating over how many length classes the moving average
-should be performed (defalut: 5, for
+should be performed (default: 5, for
 more information see \link{lfqRestructure}).}
 
 \item{addl.sqrt}{Passed to \link{lfqRestructure}. Applied an additional square-root transformation of positive values according to Brey et al. (1988).
@@ -42,6 +44,20 @@ more information see \link{lfqRestructure}).}
 \item{agemax}{maximum age of species; default NULL, then estimated from Linf}
 
 \item{flagging.out}{logical; should positive peaks be flagged out? (Default : TRUE)}
+
+\item{method}{Choose between the old FiSAT option to force VBGF crossing of a pre-defined
+bin (method = "cross"), or the more sophisticated (but computationally expensive) option
+to solve for t_anchor via a maximisation of reconstructed score
+(default: method = "optimise").}
+
+\item{cross.date}{Date. For use with \code{method = "cross"}. In combination
+with \code{cross.midLength}, defines the date of the crossed bin.}
+
+\item{cross.midLength}{Numeric. For use with \code{method = "cross"}. In combination
+with \code{cross.date}, defines the mid-length of the crossed bin.}
+
+\item{cross.max}{logical. For use with \code{method = "cross"}. Forces growth function
+to cross the bin with maximum positive score.}
 
 \item{hide.progressbar}{logical; should the progress bar be hidden? (default: FALSE)}
 
@@ -101,23 +117,65 @@ This functions allows to perform the K-Scan and Response surface
    Both methods use \code{\link[stats]{optimise}} to find the best \code{t_anchor} value
    for each combination of \code{K} and \code{Linf}. To find out more about
    \code{t_anchor}, please refer to the Details description of
-   \code{\link{lfqFitCurves}}. The score value \code{Rn_max} is not comparable with
-   the score value of the other ELEFAN functions (\code{\link{ELEFAN_SA}} or
-   \code{\link{ELEFAN_GA}}).
+   \code{\link{lfqFitCurves}}. The score value \code{Rn_max} is comparable with
+   the score values of the other ELEFAN functions (\code{\link{ELEFAN_SA}} or
+   \code{\link{ELEFAN_GA}}) when other settings are consistent
+   (e.g. `MA`, `addl.sqrt`, `agemax`, `flagging.out`).
 }
 \examples{
 \donttest{
+data(alba)
+
+### Surface response analysis ###
+
+# 'cross' method (used in FiSAT)
+fit1 <- ELEFAN(
+   x = alba, method = "cross",
+   Linf_range = seq(from = 10, to = 20, length.out = 10),
+   K_range = exp(seq(from = log(0.1), to = log(2), length.out = 20)),
+   cross.date = alba$dates[3], cross.midLength = alba$midLengths[4],
+   contour = TRUE
+)
+fit1$Rn_max; unlist(fit1$par)
+plot(fit1); points(alba$dates[3], alba$midLengths[4], col=2, cex=2, lwd=2)
+
+# 'cross' method (bin with maximum score crossed)
+fit2 <- ELEFAN(
+   x = alba, method = "cross",
+   Linf_range = seq(from = 10, to = 20, length.out = 20),
+   K_range = exp(seq(from = log(0.1), to = log(2), length.out = 20)),
+   cross.max = TRUE,
+   contour = TRUE
+)
+fit2$Rn_max; unlist(fit2$par)
+plot(fit2); points(alba$dates[7], alba$midLengths[9], col=2, cex=2, lwd=2)
+
+
+# 'optimise' method (default)
+fit3 <- ELEFAN(
+   x = alba, method = "optimise",
+   Linf_range = seq(from = 10, to = 20, length.out = 10),
+   K_range = exp(seq(from = log(0.1), to = log(2), length.out = 20)),
+   contour = TRUE
+)
+fit3$Rn_max; unlist(fit3$par)
+plot(fit3)
+
+
+### K-Scan ###
+
 data(synLFQ4)
 
-# K-Scan
-output <- ELEFAN(x = synLFQ4, Linf_fix = 80,
-   K_range = seq(0.3,0.7,0.1),C = 0.75, ts = 0.5, MA = 11)
-plot(output)
+# K-Scan (fixed Linf, using 'cross' method)
+fit4 <- ELEFAN(
+   x = alba, method = "cross",
+   Linf_fix = 10,
+   K_range = round(exp(seq(from = log(0.1), to = log(2), length.out = 50)),2),
+   cross.date = alba$dates[3], cross.midLength = alba$midLengths[4]
+)
+fit4$Rn_max; unlist(fit4$par)
+plot(fit4); points(alba$dates[3], alba$midLengths[4], col=2, cex=2, lwd=2)
 
-# Surface response analysis
-output2 <- ELEFAN(synLFQ4, Linf_range = seq(78,82,1),
-   K_range = seq(0.3,0.7,0.1),C = 0.75, ts = 0.5, MA = 11, contour = 3)
-plot(output2)
 }
 
 }
