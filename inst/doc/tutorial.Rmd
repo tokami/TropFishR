@@ -28,16 +28,16 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.width=8, fig.height=7)
 ```
 
-This tutorial illustrates the application of the **`TropFishR`** package to perform a single-species fish stock assessment with length frequency (LFQ) data. According to @Sparre1998b, this includes following steps: (1) estimation of biological stock characteristics (growth and natural mortality), (2) fisheries aspects (exploitation rate and selectivity), (3) stock size and status. The order of the methods is important as they build upon each other in a sequential way. Data from literature might be used to skip a step in this workflow or to compare them to the outcomes of this routine. 
+This tutorial illustrates the application of the **`TropFishR`** package to perform a single-species fish stock assessment with length frequency (LFQ) data. According to @Sparre1998b, this includes following steps: (1) estimation of biological stock characteristics (growth and natural mortality), (2) exploration of fisheries aspects (exploitation rate and selectivity), (3) assessment of stock size and status. The order of the methods is important as they build upon each other in a sequential way. Data from literature might be used to skip a step in this workflow or to compare them to the outcomes of this routine. 
 
 ###*Installing TropFishR*
-The current version of **`TropFishR`** (v1.1) requires R $>= 3.0.0$ and can be downloaded from CRAN as follows:
+The current version of **`TropFishR`** (v1.1.4) requires R $>= 3.0.0$ and can be downloaded from CRAN as follows:
 
 ```{r, echo = TRUE, include = TRUE, eval = FALSE}
 install.packages("TropFishR", repos = "https://cran.rstudio.com/")
 ```
 
-The development version (v1.1.2) can be downloaded from Github.
+The development version (v1.1.5) can be downloaded from Github.
 
 ```{r, echo = TRUE, include = TRUE, eval = FALSE}
 install.packages("devtools")
@@ -79,7 +79,7 @@ plot(lfqbin, Fname = "rcounts", date.axis = "modern")
 par(opar)
 ```
 
-For synLFQ7, a bin size of 4 cm and a moving average of 5 seems appropriate and will be used in the following. To get a first estimate of $L_{inf}$, the Powell-Wetherall method [@Wetherall1987] can be applied. The method requires a catch vetor per length class representative for the length distribution in yearly catches instead of the catch matrix. The argument `catch_columns` allows to choose the columns of the catch matrix which will be summarised for the analysis. Here all columns are used as the catch matrix only includes catches from 2016. If data of several years are available, the data can aggregated yearly and results averaged or the data of several years is analysed jointly assuming constant growth parameters.
+For synLFQ7, a bin size of 4 cm and a moving average of 5 seems appropriate and will be used in the following. To get a first estimate of $L_{inf}$, the Powell-Wetherall method [@Wetherall1987] can be applied. The method requires a catch vetor per length class representative for the length distribution in yearly catches instead of the catch matrix. The argument `catch_columns` allows to choose the columns of the catch matrix which will be summarised for the analysis. Here all columns are used as the catch matrix only includes catches from 2016. If data of several years are available, the data can be aggregated yearly and the results can be averaged or the data of several years is analysed jointly assuming constant growth parameters.
 
 ```{r Figure 2, fig.width=6, fig.height=5, echo=TRUE, eval=TRUE, fig.cap="Powell-Wetherall plot to derive an estimate of Linf."}
 # Powell Wetherall plot
