@@ -42,13 +42,17 @@
 #'    are displayed rather than the score as text in each field of the score plot. Usage
 #'    can be logical (e.g. TRUE) or by providing a numeric which indicates the
 #'    number of levels (\code{nlevels} in \code{\link{contour}}). By default FALSE.
+#' @param add.values logical. Add values to Response Surface Analysis plot (default: TRUE).
+#'    Overridden when \code{contour = TRUE}.
+#' @param rsa.colors vector of colors to be used with the Response Surface Analysis plot.
+#'    (default: terrain.colors(20))
 #' @param plot_title logical; indicating whether title to score plots should be displayed
 #'
 #' @examples
 #' \donttest{
 #' data(alba)
 #'
-#' ### Surface response analysis ###
+#' ### Response Surface Analysis (varies Linf and K) ###
 #'
 #' # 'cross' method (used in FiSAT)
 #' fit1 <- ELEFAN(
@@ -84,11 +88,9 @@
 #' plot(fit3)
 #'
 #'
-#' ### K-Scan ###
+#' ### K-Scan (varies K, Linf is fixed) ###
 #'
-#' data(synLFQ4)
-#'
-#' # K-Scan (fixed Linf, using 'cross' method)
+#' # 'cross' method
 #' fit4 <- ELEFAN(
 #'    x = alba, method = "cross",
 #'    Linf_fix = 10,
@@ -146,7 +148,7 @@
 #'   \item \strong{Rn_max}: highest score value
 #' }
 #'
-#' @importFrom grDevices colorRampPalette
+#' @importFrom grDevices terrain.colors
 #' @importFrom graphics abline axis grid image mtext par plot text title
 #' @importFrom utils setTxtProgressBar txtProgressBar flush.console
 #' @importFrom stats optimise
@@ -201,6 +203,7 @@ ELEFAN <- function(
   cross.date = NULL, cross.midLength = NULL, cross.max = FALSE,
   hide.progressbar = FALSE,
   plot = FALSE, contour = FALSE,
+  add.values = TRUE, rsa.colors = terrain.colors(20),
   plot_title = TRUE)
 {
 
@@ -337,11 +340,11 @@ ELEFAN <- function(
     image(
       x = Linfs,
       y = Ks,
-      z = t(score_mat), col=colorRampPalette(c("yellow","red"), space="Lab")(10),
+      z = t(score_mat), col=rsa.colors,
       ylab = 'K', xlab='Linf'
     )
 
-    if(plot_title)  title('Response surface analysis', line = 2)
+    if(plot_title)  title('Response surface analysis', line = 1)
 
     if(contour){
       contour(x = Linfs, y = Ks, z = t(score_mat), add = TRUE)
@@ -349,7 +352,9 @@ ELEFAN <- function(
       if(is.numeric(contour)){
         contour(x = Linfs, y = Ks, z = t(score_mat), add = TRUE, nlevels = contour)
       } else {
-        text(x=plot_dat$Var2,y=plot_dat$Var1,round(as.numeric(plot_dat$value),digits = 2),cex = 0.6)
+        if(add.values){
+          text(x=plot_dat$Var2,y=plot_dat$Var1,round(as.numeric(plot_dat$value),digits = 2),cex = 0.6)
+        }
       }
     }
   } else {
@@ -373,7 +378,7 @@ ELEFAN <- function(
     mtext(text = expression(paste("Growth performance index (",phi,"')")),side = 1,line = 8.5)
     grid(nx = 0, NULL, lty = 6, col = "gray40")
     abline(v = K_ats, lty = 6, col = "gray40")
-    if(plot_title) title("K-Scan", line = 2)
+    if(plot_title) title("K-Scan", line = 1)
     par(op)
   }
 

@@ -9,7 +9,7 @@ ELEFAN(x, Linf_fix = NA, Linf_range = NA, K_range = exp(seq(log(0.1),
   agemax = NULL, flagging.out = TRUE, method = "optimise",
   cross.date = NULL, cross.midLength = NULL, cross.max = FALSE,
   hide.progressbar = FALSE, plot = FALSE, contour = FALSE,
-  plot_title = TRUE)
+  add.values = TRUE, rsa.colors = terrain.colors(20), plot_title = TRUE)
 }
 \arguments{
 \item{x}{a list consisting of following parameters:
@@ -69,6 +69,12 @@ are displayed rather than the score as text in each field of the score plot. Usa
 can be logical (e.g. TRUE) or by providing a numeric which indicates the
 number of levels (\code{nlevels} in \code{\link{contour}}). By default FALSE.}
 
+\item{add.values}{logical. Add values to Response Surface Analysis plot (default: TRUE).
+Overridden when \code{contour = TRUE}.}
+
+\item{rsa.colors}{vector of colors to be used with the Response Surface Analysis plot.
+(default: terrain.colors(20))}
+
 \item{plot_title}{logical; indicating whether title to score plots should be displayed}
 }
 \value{
@@ -126,7 +132,7 @@ This functions allows to perform the K-Scan and Response surface
 \donttest{
 data(alba)
 
-### Surface response analysis ###
+### Response Surface Analysis (varies Linf and K) ###
 
 # 'cross' method (used in FiSAT)
 fit1 <- ELEFAN(
@@ -162,11 +168,9 @@ fit3$Rn_max; unlist(fit3$par)
 plot(fit3)
 
 
-### K-Scan ###
+### K-Scan (varies K, Linf is fixed) ###
 
-data(synLFQ4)
-
-# K-Scan (fixed Linf, using 'cross' method)
+# 'cross' method
 fit4 <- ELEFAN(
    x = alba, method = "cross",
    Linf_fix = 10,
