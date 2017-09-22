@@ -148,7 +148,7 @@
 #'   \item \strong{Rn_max}: highest score value
 #' }
 #'
-#' @importFrom grDevices colorRampPalette
+#' @importFrom grDevices terrain.colors
 #' @importFrom graphics abline axis grid image mtext par plot text title
 #' @importFrom utils setTxtProgressBar txtProgressBar flush.console
 #' @importFrom stats optimise
