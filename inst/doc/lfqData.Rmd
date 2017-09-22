@@ -44,12 +44,9 @@ There are three main ways in which you can arrange your data in a spreadsheet or
 ###*Data arrangement 1*
 The first data arrangement assumes that each measurement was inserted into a specific cell in the spreadsheet, together with associated date when this measurement was done.
 
-\begin{figure}
-\begin{center}	
-\includegraphics[width = 0.4\textwidth]{LFQdat1.png}		       
-\caption{Data arrangement 1. A column with dates and a column with length measurements.}
-\end{center}
-\end{figure}
+
+![Data arrangement 1. A column with dates and a column with length measurements.](LFQdat1.png)
+
 
 The data in this arrangement can be loaded into R by following code.
 
@@ -71,12 +68,8 @@ It is awlays important to convert the date information into the R class 'Date' w
 ###*Data arrangement 2*
 The second data arrangement represents the case with an additional column which contains the number of times the length was measured at respective date.
 
-\begin{figure}
-\begin{center}	
-\includegraphics[width = 0.4\textwidth]{LFQdat2.png}		       
-\caption{Data arrangement 2. A column with dates, one with length measurements, and one with the frequency of the length at respective date.}
-\end{center}
-\end{figure}
+
+![Data arrangement 2. A column with dates, one with length measurements, and one with the frequency of the length at respective date.](LFQdat2.png)
 
 Data of this arrangement can be loaded into R by following code.
 
@@ -95,12 +88,7 @@ Be aware of the different date format, the different column headers or names and
 ###*Data arrangement 3*
 The last data arragement presented here, assumes that the data was already sorted into length classes within your spreadsheet. The first column does now represent the length classes and the number of times each length class was observed at repsective sampling times is in the subsequent columns, where each column represent one sampling time (here aggregated per month). In this example, the information about the date is contained within the header of the not-length-class columns (cp Fig. 3). This is however not necessary and the date information can also be added manually in R.
 
-\begin{figure}
-\begin{center}	
-\includegraphics[width = 0.7\textwidth]{LFQdat3.png}		       
-\caption{Data arrangement 3. A column with the length classes and subsequent columns with the frequency of observed lengths for several sampling times.}
-\end{center}
-\end{figure}
+![Data arrangement 3. A column with the length classes and subsequent columns with the frequency of observed lengths for several sampling times.](LFQdat3.png)
 
 Data in this arrangement have to be treated a little differently:
 
