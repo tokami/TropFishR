@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Tobias K. Mildenberger" />
+
+<meta name="date" content="2017-09-22" />
+
+<title>Length-frequency data for TropFishR</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Length-frequency data for TropFishR</h1>
+<h4 class="author"><em>Tobias K. Mildenberger</em></h4>
+<h4 class="date"><em>2017-09-22</em></h4>
+
+
+
+<div id="background" class="section level2">
+<h2><em>Background</em></h2>
+<p>Length-frequency data (LFQ) is collected by measuring the length of focal fish species onboard of the fishing vessel, the landing site or the fish market. Concerning fish there are three different lengths which can be measured: standard length (SL), fork length (FL), and total length (TL), for more information see <a href="http://www.fao.org/docrep/003/T0535E/T0535E02.htm#ch2"><strong>here</strong></a>. The big advantage of LFQ data is that only a representative subsample of the total catch is needed, meaning that not every fish in the catch has to be measured if the subsample is random but representative. The sample should be representative of the whole stock under investigation and for all seasons of a year. Furthermore, enough samples of a range of different fish lengths have to be measured in order for the methods of <strong><code>TropFishR</code></strong> to work - a reference value is around 50 fish measurements per month. Assuming that collected data are entered in some spreadsheet or text format, this document will illustrate how different arrangements of data can be read into R and converted to the LFQ list required by all methods within <strong><code>TropFishR</code></strong>. No manual data input in R is required, The data used in the examples below were generated randomly.</p>
+</div>
+<div id="lfq-import" class="section level2">
+<h2><em>LFQ import</em></h2>
+<p>There are three main ways in which you can arrange your data in a spreadsheet or text file and easily import it into R an convert it to a LFQ list (Fig. 1-3). Each of these 3 methods works evenly well with a ‘csv’, ‘xls’, or ‘txt’ file. For simplification, I will present all three methods with ‘csv’ files and consequently demonstrate how to use a ‘xlsx’ and a ‘txt’ file. This vignette requires to load the <strong><code>TropFishR package</code></strong>, <code>require(TropFishR)</code>.</p>
+<div id="data-arrangement-1" class="section level3">
+<h3><em>Data arrangement 1</em></h3>
+<p>The first data arrangement assumes that each measurement was inserted into a specific cell in the spreadsheet, together with associated date when this measurement was done.</p>
+
+<p>The data in this arrangement can be loaded into R by following code.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lfq1 &lt;-<span class="st"> </span><span class="kw">read.csv2</span>(<span class="st">&quot;lfq1.csv&quot;</span>)
+
+lfq1<span class="op">$</span>date &lt;-<span class="st"> </span><span class="kw">as.Date</span>(lfq1<span class="op">$</span>date, <span class="dt">format =</span> <span class="st">&quot;%d.%m.%Y&quot;</span>)
+
+lfq1new &lt;-<span class="st"> </span><span class="kw">lfqCreate</span>(<span class="dt">data =</span> lfq1, <span class="dt">Lname =</span> <span class="st">&quot;length&quot;</span>, <span class="dt">Dname =</span> <span class="st">&quot;date&quot;</span>)
+
+<span class="kw">plot</span>(lfq1new, <span class="dt">Fname =</span> <span class="st">&quot;catch&quot;</span>)</code></pre></div>
+<p>It is awlays important to convert the date information into the R class ‘Date’ which can be done by the function <code>as.Date()</code>. The second argument in that function displays the format of the date in your data, ‘%d’ stand for the day, ‘%m’ for the month, and ‘%Y’ for the year with the century, e.g. 2014, without the century it would be ‘%y’, e.g. 14. The separator, here ‘.’, should be the same as in your data (see other examples below). The function <code>lfqCreate()</code> is a handy function, which allows you to convert the dataframe into a list in the right format. The arguments ‘Lname’ and ‘Dname’ define the names of the columns in your dataframe with the length measurements and the dates, respectively. They should correspond to <code>colnames(lfq1)</code>. Besides the arguments above it allows for many other adjustments, such as setting the bin size or aggregating the data monthly, see <code>?lfqCreate</code> for more information.</p>
+</div>
+<div id="data-arrangement-2" class="section level3">
+<h3><em>Data arrangement 2</em></h3>
+<p>The second data arrangement represents the case with an additional column which contains the number of times the length was measured at respective date.</p>
+
+<p>Data of this arrangement can be loaded into R by following code.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lfq2 &lt;-<span class="st"> </span><span class="kw">read.csv2</span>(<span class="st">&quot;lfq2.csv&quot;</span>)
+
+lfq2<span class="op">$</span>date &lt;-<span class="st"> </span><span class="kw">as.Date</span>(lfq2<span class="op">$</span>date, <span class="dt">format =</span> <span class="st">&quot;%d/%m/%y&quot;</span>)
+
+lfq2new &lt;-<span class="st"> </span><span class="kw">lfqCreate</span>(<span class="dt">data =</span> lfq2, <span class="dt">Lname =</span> <span class="st">&quot;Length_CM&quot;</span>, <span class="dt">Dname =</span> <span class="st">&quot;DATE&quot;</span>, <span class="dt">Fname =</span> <span class="st">&quot;Frequency&quot;</span>)
+
+<span class="kw">plot</span>(lfq2new, <span class="dt">Fname =</span> <span class="st">&quot;catch&quot;</span>)</code></pre></div>
+<p>Be aware of the different date format, the different column headers or names and the additional argument in the function <code>lfqCreate()</code> called ‘Fname’ displaying the name of the column with the frequency information.</p>
+</div>
+<div id="data-arrangement-3" class="section level3">
+<h3><em>Data arrangement 3</em></h3>
+<p>The last data arragement presented here, assumes that the data was already sorted into length classes within your spreadsheet. The first column does now represent the length classes and the number of times each length class was observed at repsective sampling times is in the subsequent columns, where each column represent one sampling time (here aggregated per month). In this example, the information about the date is contained within the header of the not-length-class columns (cp Fig. 3). This is however not necessary and the date information can also be added manually in R.</p>
+
+<p>Data in this arrangement have to be treated a little differently:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lfq3 &lt;-<span class="st"> </span><span class="kw">read.csv2</span>(<span class="st">&quot;lfq3.csv&quot;</span>)
+
+dates &lt;-<span class="st"> </span><span class="kw">colnames</span>(lfq3)[<span class="op">-</span><span class="dv">1</span>]
+dates &lt;-<span class="st"> </span><span class="kw">strsplit</span>(dates, <span class="st">&quot;X&quot;</span>)
+dates &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">lapply</span>(dates, <span class="cf">function</span>(x) x[<span class="dv">2</span>]))
+dates &lt;-<span class="st"> </span><span class="kw">as.Date</span>(dates, <span class="st">&quot;%Y-%d-%m&quot;</span>)
+
+lfq3new &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">dates =</span> dates,
+                <span class="dt">midLengths =</span> lfq3<span class="op">$</span>lengthClass,
+                <span class="dt">catch =</span> <span class="kw">as.matrix</span>(lfq3[,<span class="op">-</span><span class="dv">1</span>]))
+<span class="kw">class</span>(lfq3new) &lt;-<span class="st"> &quot;lfq&quot;</span>
+lfq3new<span class="op">$</span>catch[<span class="kw">is.na</span>(lfq3new<span class="op">$</span>catch)] &lt;-<span class="st"> </span><span class="dv">0</span>
+
+<span class="kw">plot</span>(lfq3new, <span class="dt">Fname =</span> <span class="st">&quot;catch&quot;</span>)</code></pre></div>
+<p>In this case, the function <code>lfqCreate()</code> can not be used, instead the data is arranged into a list manually. Extracting the dates involves extra steps to separate the actual dates from the ‘X’. Next, the dates, mid lengths and the catch matrix can be directly arranged together with the function <code>list()</code>. It is of crucial importance to use the exact names and spelling (incl. case sensitivity) in the list (‘dates’, ‘midLengths’, ‘catch’). with the function <code>class()</code> the TropFishR internal class ‘lfq’ can be assigned to the created list. Missing values in the catch matrix (<code>NA</code>, <code>NaN</code>) should be put to 0.</p>
+</div>
+<div id="other-file-formats" class="section level3">
+<h3><em>Other file formats</em></h3>
+<p>Of course, your data has not to be in the csv format, it can just as well be ‘odt’, ‘xls’, ‘xlsx’, ‘txt’ or any text file. Other formats require different functions to load the data into R (beside <code>read.csv2()</code>). The following code demonstrats this for a ‘xlsx’ and ‘txt’ file.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lfq2a &lt;-<span class="st"> </span><span class="kw">read.table</span>(<span class="st">&quot;lfq2.txt&quot;</span>, <span class="dt">sep=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>, <span class="dt">dec=</span><span class="st">','</span>, <span class="dt">fileEncoding=</span><span class="st">&quot;latin1&quot;</span>, <span class="dt">skipNul=</span><span class="ot">TRUE</span>)
+
+<span class="kw">install.packages</span>(<span class="st">&quot;openxlsx&quot;</span>)
+<span class="kw">require</span>(openxlsx)
+lfq3a &lt;-<span class="st"> </span><span class="kw">read.xlsx</span>(<span class="st">&quot;lfq3.xlsx&quot;</span>, <span class="dt">sheet =</span> <span class="dv">1</span>)</code></pre></div>
+<p>The function <code>read.table()</code> allows to read and load many different file formats into R, The arguments ‘sep’ and ‘dec’ control the separator between columns (here tabstop) and the decimal separator (here comma), respectively. Additional arguments like ‘fileEncoding’ and ‘skipNul’ might be necessary to use for controlling the encoding of the file and if nuls should be skipped. More information about the arguments can be viewed with <code>?read.table</code>. There are many different R packages available to read ‘xls’ and ‘xlsx’ files into R, one of the fastest is openxlsx, but it does not allow to read in ‘xls’ files. For this you might consider using the package ‘xlsx’. These functions allow you to read in any sheet of your ‘xlsx’ file by using the ‘sheet’ argument.</p>
+</div>
+</div>
+<div id="conclusion" class="section level2">
+<h2><em>Conclusion</em></h2>
+<p>This vignette demonstrates the first step in the application of <strong><code>TropFishR</code></strong>, the arrangement of your length measurements in a spreadsheet (or text file) and the import into R. Nevertheless, this step is important and several requests motivated me to write this vignette. How you can use <strong><code>TropFishR</code></strong> for the further analysis of your data is demonstrated in the detailed <a href="https://cran.r-project.org/web/packages/TropFishR/vignettes/tutorial.html"><strong>tutorial</strong></a>.</p>
+</div>
+<div id="authors-comment" class="section level2">
+<h2><em>Author’s comment</em></h2>
+<p>I hope this short vignette is of help. Any comment or question can be addresed to me via <a href="mailto:t.k.mildenberger@gmail.com"><strong>email</strong></a> or you can post an issue at <a href="https://github.com/tokami/TropFishR/issues"><strong>GitHub</strong></a>. You can follow the development of <strong><code>TropFishR</code></strong> on <a href="https://www.researchgate.net/project/TropFishR?_esc=homefeed&amp;_viewIds%5B0%5D=hVPmo2RDCok60qGq2z0JOroN&amp;_viewIds%5B1%5D=zyj0j6jnUgNvrPXMrG9rouAP"><strong>ResearchGate</strong></a>. All bold words are links.</p>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
