@@ -110,10 +110,11 @@
 #' @export
 
 lfqFitCurves <- function(lfq,
-                         par = list(Linf = 100, K = 0.1, t_anchor = 0.25, C = 0, ts = 0),
-                         agemax = NULL, flagging.out = TRUE,
-                         lty = 2, lwd = 1, col = 1,
-                         draw = FALSE, tincr = 0.05){
+  par = list(Linf = 100, K = 0.1, t_anchor = 0.25, C = 0, ts = 0),
+  agemax = NULL, flagging.out = TRUE,
+  lty = 2, lwd = 1, col = 1,
+  draw = FALSE, tincr = 0.05
+){
 
   if(is.null(par$Linf) | is.null(par$K) | is.null(par$t_anchor)) stop("Linf, K and t_anchor have to provided in par.")
 
@@ -125,9 +126,11 @@ lfqFitCurves <- function(lfq,
   yeardec <- date2yeardec(lfq$dates)
 
   tmax <- max(yeardec, na.rm = TRUE) # maximum sample date
+  tmin <- min(yeardec, na.rm = TRUE) # minimum sample date
   ncohort <- agemax + ceiling(diff(range(yeardec))) # number of cohorts
   tA.use <- par$t_anchor # VBGF anchor time in year
   tAs <- seq(floor(tmax-ncohort), floor(tmax), by=1) + (tA.use+1e6)%%1   # anchor times
+  tAs <- tAs[which(tAs < tmax)]
   ncohort <- length(tAs)
 
 
@@ -166,15 +169,20 @@ lfqFitCurves <- function(lfq,
   grd$bin.upper <- lfq$midLengths + (c(bin.width, bin.width[length(bin.width)])/2) # lower bin limit
 
   # mark all length classes (in all sampling times) which are hit
-  for(h in seq(nrow(grd))){
-    tmp <- grd$t[h] == Lt$t & grd$bin.lower[h] <= Lt$Lt & grd$bin.upper[h] > Lt$Lt
-    if(sum(tmp, na.rm = TRUE) > 0){
-      if(!flagging.out) grd$hit[h] <-  1
-      if(flagging.out) grd$hit[h] <- 1 + grd$hit[h]
-    }
+  tmp <-
+    outer(X = c(grd$t), Y = Lt$t, FUN = "==") &
+    outer(X = c(grd$bin.lower), Y = Lt$Lt, FUN = "<=") &
+    outer(X = c(grd$bin.upper), Y = Lt$Lt, FUN = ">"
+  )
+
+  tmp2 <- apply(X = tmp, MARGIN = 1, FUN = sum, na.rm = TRUE)
+  if(flagging.out){
+    grd$hit <- tmp2
+  } else {
+    grd$hit <- as.numeric(tmp2 > 0)
   }
 
-  # remove marks of positive peaks within one cohort peak
+  # Count only one crossing of positive peaks within a cohort peak
   if(flagging.out){
     ch <- unique(grd$cohort_peaks)
     if(0 %in% ch) ch <- ch[-which(0 %in% ch)]
@@ -184,8 +192,8 @@ lfqFitCurves <- function(lfq,
       dpch <- grd$hit[peaki]
       if(sum(dpch, na.rm = TRUE) > 1){
         grd$hit[peaki] <- 0
-        maxi <- max(grd$Fs[peaki], na.rm = TRUE)
-        grd$hit[((peaki[1]-1) + which(grd$Fs[peaki] == maxi))] <- 1
+        maxi <- which.max(grd$Fs[peaki])
+        grd$hit[peaki[maxi]] <- 1
       }
     }
   }

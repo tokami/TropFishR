@@ -85,7 +85,7 @@
 #'
 #' # compare to original parameters
 #' tmp <- lfqFitCurves(output, col=4, lty=1,
-#'    par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0), draw=TRUE)
+#'    par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0.5), draw=TRUE)
 #' tmp$fESP
 #' output$Rn_max
 #' }
