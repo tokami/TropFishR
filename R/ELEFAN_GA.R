@@ -260,13 +260,7 @@ ELEFAN_GA <- function(
   if(seasonalised){
     min = c(low_Linf, low_K, low_tanc, low_C, low_ts)
     max = c(up_Linf, up_K, up_tanc, up_C, up_ts)
-
-    writeLines(paste(
-      "Genetic algorithm is running.",
-      "\nThis will take some time.",
-      ifelse(beep, "\nA beep tone will alert completion.", ""),
-      sep=" "
-    ))
+    writeLines("Genetic algorithm is running. This might take some time. \nA beep tone will alert completion.")
     flush.console()
     fit <- GA::ga(
       type = "real-valued",
@@ -285,13 +279,7 @@ ELEFAN_GA <- function(
   }else{
     min = c(low_Linf, low_K, low_tanc)
     max = c(up_Linf, up_K, up_tanc)
-
-    writeLines(paste(
-      "Genetic algorithm is running.",
-      "\nThis will take some time.",
-      ifelse(beep, "\nA beep tone will alert completion.", ""),
-      sep=" "
-    ))
+    writeLines("Genetic algorithm is running. This might take some time. \nA beep tone will alert completion.")
     flush.console()
     fit <- GA::ga(
       type = "real-valued",
