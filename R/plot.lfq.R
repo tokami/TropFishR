@@ -23,6 +23,8 @@
 #'   \item \strong{ts} summer point (optional);
 #' }
 #' @param agemax maximum age of species; default NULL, then estimated from Linf
+#' @param rel logical; defines if relative numbers per length class should be plotted (relative to
+#'   the sample size per sampling time, e.g. month). Default: FALSE.
 #' @param curve.col colour of growth curves (default: 1)
 #' @param hist.sc defines the scaling factor to use for maximum histogram extent (x-axis
 #'    direction). The default setting of hist.sc=0.5 will result in a maximum distance equal
@@ -141,6 +143,7 @@
 plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
   par = NULL,
   agemax = NULL,
+  rel = FALSE,
   curve.col = 1,
   hist.sc = 0.5,
   hist.col = c("white", "black"),
@@ -155,9 +158,19 @@ plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
   ...
 ){
 
-  dates <- x$dates
-  classes <- x$midLengths
-  catch <- get(Fname, x)
+    dates <- x$dates
+    classes <- x$midLengths
+    catch <- get(Fname, x)
+
+    ## display relative catches (relative to number of samples per month)
+    if(rel){
+        catchrel <- catch
+        for(i in 1:ncol(catch)){
+            catchrel[,i] <- catch[,i]/colSums(catch, na.rm = TRUE)[i]
+        }
+        catch <- catchrel
+    }
+    
 
   bin.width <- diff(classes)
   bin.lower <- classes - c(bin.width[1], bin.width)/2
