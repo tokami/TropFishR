@@ -25,13 +25,16 @@
 #' @param agemax maximum age of species; default NULL, then estimated from Linf
 #' @param rel logical; defines if relative numbers per length class should be plotted (relative to
 #'   the sample size per sampling time, e.g. month). Default: FALSE.
+#' @param y an optional second list of class "lfq" consisting of same parameters as x. This allows to plot
+#'   samples from different sources (e.g. different fleets) on top of eachother, classes and dates have to
+#'   correspond at least partially. Default is NA.
 #' @param curve.col colour of growth curves (default: 1)
 #' @param hist.sc defines the scaling factor to use for maximum histogram extent (x-axis
 #'    direction). The default setting of hist.sc=0.5 will result in a maximum distance equal
 #'    to half the distance between closest sample dates (i.e. ensures no overlap and full
 #'    plotting within the plot region).
 #' @param hist.col vector of 2 values defining coloring to use on negative and positive
-#'    histogram bars (default: hist.col=c("white", "black"))
+#'    histogram bars (default: hist.col=c("white", "black", "orange", "darkgreen"))
 #' @param image.col colour of image, by default (NULL) red and blue colours
 #'    are used. To remove image coloring, set image.col=NA.
 #' @param region.col colour of plotting region. Will overwrite image.col
@@ -140,28 +143,73 @@
 #'
 #' @export
 
-plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
-  par = NULL,
-  agemax = NULL,
-  rel = FALSE,
-  curve.col = 1,
-  hist.sc = 0.5,
-  hist.col = c("white", "black"),
-  image.col = NULL,
-  region.col = NULL,
-  zlim = NULL,
-  zlimtype = "balanced",   # alternative : "range"
-  date.axis = "traditional",  # alternative : "modern"
-  date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by="months"),
-  date.format = "'%y-%b", xlab = "", ylab = "Length classes",
-  draw = TRUE,
-  ...
-){
+plot.lfq <- function(x,
+                     Fname = "rcounts",  # alternative : "catch"
+                     par = NULL,
+                     agemax = NULL,
+                     rel = FALSE,
+                     y = NA,
+                     curve.col = 1,
+                     hist.sc = 0.5,
+                     hist.col = c("white", "black", "orange","darkgreen"),
+                     image.col = NULL,
+                     region.col = NULL,
+                     zlim = NULL,
+                     zlimtype = "balanced",   # alternative : "range"
+                     date.axis = "traditional",  # alternative : "modern"
+                     date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by="months"),
+                     date.format = "'%y-%b", xlab = "", ylab = "Length classes",
+                     draw = TRUE,
+                     ...){
 
     dates <- x$dates
     classes <- x$midLengths
     catch <- get(Fname, x)
 
+    ## combine lfq data sets (e.g. different fleets)
+    if(any(!is.na(y))){
+        datesY <- y$dates
+        classesY <- y$midLengths
+        catchY <- get(Fname, y)
+
+        if(diff(classes)[1] != diff(classesY)[1]) stop("The bin sizes do not fit eachother")
+        mergi <- merge(data.frame(dates=dates,x=dates),
+                       data.frame(dates=datesY,y=datesY),
+                       by="dates",all=TRUE)
+        mergi2 <- merge(data.frame(classes=classes,x=classes),
+                        data.frame(classes=classesY,y=classesY),
+                        by="classes",all=TRUE)
+        indY <- which(is.na(mergi2$y) & mergi2$classes > max(classesY))
+        matY <- matrix(0, nrow=length(indY), ncol=ncol(catchY))
+        catchY <- rbind(catchY,matY)
+        indY <- which(is.na(mergi2$y) & mergi2$classes < min(classesY))
+        matY <- matrix(0, nrow=length(indY), ncol=ncol(catchY))
+        catchY <- rbind(matY,catchY)
+        ind <- which(is.na(mergi2$x) & mergi2$classes > max(classes))
+        mat <- matrix(0, nrow=length(ind), ncol=ncol(catch))
+        catch <- rbind(catch,mat)
+        ind <- which(is.na(mergi2$x) & mergi2$classes < min(classes))
+        mat <- matrix(0, nrow=length(ind), ncol=ncol(catch))
+        catch <- rbind(mat,catch)
+
+        designMat <- matrix(0, ncol=length(mergi$dates), nrow=length(mergi2$classes))
+        temp <- designMat
+        ind = 1
+        for(i in which(!is.na(mergi$x))){
+            temp[,i] <- catch[,ind]
+            ind <- ind + 1
+        }
+        catch <- temp
+        temp <- designMat
+        ind = 1
+        for(i in which(!is.na(mergi$y))){
+                temp[,i] <- catchY[,ind]
+            ind <- ind + 1
+        }
+        catchY <- temp
+        }
+
+    
     ## display relative catches (relative to number of samples per month)
     if(rel){
         catchrel <- catch
@@ -169,90 +217,137 @@ plot.lfq <- function(x, Fname = "rcounts",  # alternative : "catch"
             catchrel[,i] <- catch[,i]/colSums(catch, na.rm = TRUE)[i]
         }
         catch <- catchrel
+        catch[is.nan(catch)] <- 0
+
+        ## combined lfq plot
+        if(any(!is.na(y))){
+            catchrelY <- catchY
+            for(i in 1:ncol(catchY)){
+                catchrelY[,i] <- catchY[,i]/colSums(catchY, na.rm = TRUE)[i]
+            }
+            catchY <- catchrelY
+            catchY[is.nan(catchY)] <- 0            
+        }
+    }
+
+
+    ## bin height scaling
+    sc <- unclass(min(diff(dates)) * hist.sc / max(abs(catch)))
+
+    if(any(!is.na(y))){    
+    ## bin height scaling
+    scY <- unclass(min(diff(dates)) * hist.sc / max(abs(catchY)))
     }
     
 
-  bin.width <- diff(classes)
-  bin.lower <- classes - c(bin.width[1], bin.width)/2
-  bin.upper <- classes + c(bin.width, bin.width[length(bin.width)])/2
+    bin.width <- diff(classes)
+    bin.lower <- classes - c(bin.width[1], bin.width)/2
+    bin.upper <- classes + c(bin.width, bin.width[length(bin.width)])/2
 
-  # bin height scaling
-  sc <- unclass(min(diff(dates)) * hist.sc / max(abs(catch)))
 
-  # image colour
-  if(is.null(image.col)){
-    pal <- colorRampPalette(c(rgb(1,0.8,0.8), rgb(1,1,1), rgb(0.8,0.8,1)))
-    image.col <- pal(21)
-  }
-  if(!is.null(region.col)){
-    image.col <- NA
-  }
-
-  # zlim value + type
-  if(is.null(zlim) & zlimtype == "balanced"){
-    zlim = c(-1,1) * max(abs(catch), na.rm=TRUE)
-  }
-  if(is.null(zlim) & zlimtype == "range"){
-    zlim = range(catch, na.rm = TRUE)
-  }
-
-  # Initial plot
-  image(
-    x=dates, y=classes, z=t(catch), col=image.col, zlim=zlim,
-    xaxt="n", xlab = xlab, ylab = ylab, ...
-  )
-
-  if(!is.null(region.col)){
-    usr <- par()$usr
-    if(par()$xlog) usr[1:2] <- 10^usr[1:2]
-    if(par()$ylog) usr[3:4] <- 10^usr[3:4]
-    rect(usr[1], usr[3], usr[2], usr[4], col=region.col)
-  }
-
-  # add time axis
-  if(date.axis == "modern"){
-    axis.Date(side = 1, x=dates, at=date.at, format = date.format)
-  }else if(date.axis == "traditional"){
-    axis.Date(side = 1, x = dates, at = date.at, format = "%b")
-    year <- seq(min(as.numeric(format(dates, "%Y"))), max(as.numeric(format(dates, "%Y"))), 1)
-    date_seq <- seq.Date(dates[1],dates[length(dates)], by = "month")
-    date_label <- format(date_seq, "%m")
-    year_pre <- which(date_label %in% "01")
-    if(!(1 %in% year_pre)) year_pre <- c(1,which(date_label %in% "01"))
-    dates_for_years <- as.Date(paste(format(date_seq,"%Y"),date_label,"01",sep="-"))
-    year_ticks <- dates_for_years[year_pre]
-    mtext(side = 1, at = year_ticks, text = year, line = 2.5)
-  }
-
-  # Histograms
-  for(i in seq(length(dates))){
-    score.sc <- catch[,i] * sc
-    for(j in seq(classes)){
-      # if(score.sc[j] != 0){
-        polygon(
-          x = c(dates[i], dates[i], dates[i]-score.sc[j], dates[i]-score.sc[j]),
-          y = c(bin.lower[j], bin.upper[j], bin.upper[j], bin.lower[j]),
-          col = hist.col[(score.sc[j]>0)+1],
-          border = "grey20", lwd = 1
-        )
-      # }
+    # image colour
+    if(is.null(image.col)){
+      pal <- colorRampPalette(c(rgb(1,0.8,0.8), rgb(1,1,1), rgb(0.8,0.8,1)))
+      image.col <- pal(21)
     }
-  }
+    if(!is.null(region.col)){
+      image.col <- NA
+    }
 
-  # optional addition of cohort growth curves
-  if("par" %in% names(x) & is.null(par) & draw){
-    Lt <- lfqFitCurves(lfq = x, par = x$par,
-      agemax = x$agemax, draw = TRUE, col=curve.col
-    )
-  }
-  if(!is.null(par) & draw){
-    Lt <- lfqFitCurves(x, par = par,
-     agemax = agemax, draw = TRUE, col=curve.col
-    )
-  }
+    # zlim value + type
+    if(is.null(zlim) & zlimtype == "balanced"){
+      zlim = c(-1,1) * max(abs(catch), na.rm=TRUE)
+    }
+    if(is.null(zlim) & zlimtype == "range"){
+      zlim = range(catch, na.rm = TRUE)
+    }
 
-  # frame
-  box()
+    ## Initial plot
+    if(any(!is.na(y))){
+        catchComb <- catch + catchY
+        image(
+            x=dates, y=classes, z=t(catchComb), col=image.col, zlim=zlim,
+            xaxt="n", xlab = xlab, ylab = ylab, ...)
+    }else{
+        image(
+            x=dates, y=classes, z=t(catch), col=image.col, zlim=zlim,
+            xaxt="n", xlab = xlab, ylab = ylab, ...)        
+    }
+
+    if(!is.null(region.col)){
+      usr <- par()$usr
+      if(par()$xlog) usr[1:2] <- 10^usr[1:2]
+      if(par()$ylog) usr[3:4] <- 10^usr[3:4]
+      rect(usr[1], usr[3], usr[2], usr[4], col=region.col)
+    }
+
+    # add time axis
+    if(date.axis == "modern"){
+      axis.Date(side = 1, x=dates, at=date.at, format = date.format)
+    }else if(date.axis == "traditional"){
+      axis.Date(side = 1, x = dates, at = date.at, format = "%b")
+      year <- seq(min(as.numeric(format(dates, "%Y"))), max(as.numeric(format(dates, "%Y"))), 1)
+      date_seq <- seq.Date(dates[1],dates[length(dates)], by = "month")
+      date_label <- format(date_seq, "%m")
+      year_pre <- which(date_label %in% "01")
+      if(!(1 %in% year_pre)) year_pre <- c(1,which(date_label %in% "01"))
+      dates_for_years <- as.Date(paste(format(date_seq,"%Y"),date_label,"01",sep="-"))
+      year_ticks <- dates_for_years[year_pre]
+      mtext(side = 1, at = year_ticks, text = year, line = 2.5)
+    }
+
+
+    ## Histograms
+    if(any(!is.na(y))){
+        bin.width <- diff(mergi2$classes)
+        bin.lower <- mergi2$classes - c(bin.width[1], bin.width)/2
+        bin.upper <- mergi2$classes + c(bin.width, bin.width[length(bin.width)])/2        
+        for(i in seq(length(mergi$dates))){
+            score.sc <- catch[,i] * sc
+            score.scY <- catchY[,i] * scY
+            for(j in seq(mergi2$classes)){
+                polygon(
+                    x = c(mergi$dates[i], mergi$dates[i], mergi$dates[i]-score.sc[j], mergi$dates[i]-score.sc[j]),
+                    y = c(bin.lower[j], bin.upper[j], bin.upper[j], bin.lower[j]),
+                    col = hist.col[(score.sc[j]>0)+1],
+                    border = "grey20", lwd = 1)
+                polygon(
+                    x = c(mergi$dates[i], mergi$dates[i], mergi$dates[i]-score.scY[j], mergi$dates[i]-score.scY[j]),
+                    y = c(bin.lower[j], bin.upper[j], bin.upper[j], bin.lower[j]),
+                    col = hist.col[(score.scY[j]>0)+3],
+                    border = "grey20", lwd = 1)
+                
+            }
+        }   
+    }else{
+    for(i in seq(length(dates))){
+      score.sc <- catch[,i] * sc
+      for(j in seq(classes)){
+        # if(score.sc[j] != 0){
+          polygon(
+            x = c(dates[i], dates[i], dates[i]-score.sc[j], dates[i]-score.sc[j]),
+            y = c(bin.lower[j], bin.upper[j], bin.upper[j], bin.lower[j]),
+            col = hist.col[(score.sc[j]>0)+1],
+            border = "grey20", lwd = 1)
+        # }
+      }
+    }
+    }
+
+    # optional addition of cohort growth curves
+    if("par" %in% names(x) & is.null(par) & draw){
+      Lt <- lfqFitCurves(lfq = x, par = x$par,
+        agemax = x$agemax, draw = TRUE, col=curve.col
+      )
+    }
+    if(!is.null(par) & draw){
+      Lt <- lfqFitCurves(x, par = par,
+       agemax = agemax, draw = TRUE, col=curve.col
+      )
+    }
+
+    # frame
+    box()
 
 
 }
