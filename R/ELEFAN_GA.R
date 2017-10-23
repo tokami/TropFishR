@@ -64,6 +64,15 @@
 #' @param seed an integer value containing the random number generator state. This
 #' argument can be used to replicate the results of a GA search. Note that
 #' if parallel computing is required, the doRNG package must be installed.
+#' @param monitor a logical or an R function which takes as input the current
+#'                state of the ‘ga-class’ object and show the evolution of the
+#'                search. By default, ‘monitor = FALSE’ so any
+#'                output is suppressed. Possible also, the functions
+#'                ‘gaMonitor’ or ‘gaMonitor2’ (depending on whether or not is
+#'                an RStudio session) which print the average and best fitness
+#'                values at each iteration. If set to ‘plot’ these information
+#'                are plotted on a graphical device. Other functions can be
+#'                written by the user and supplied as argument.
 #' @param plot logical; Plot restructured counts with fitted lines using
 #' \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).
 #' @param plot.score logical; Plot genetic algorithm fitness progression.
@@ -169,6 +178,7 @@ ELEFAN_GA <- function(
   agemax = NULL,
   flagging.out = TRUE,
   seed = 1,
+  monitor = FALSE,
   plot = FALSE,
   plot.score = TRUE,
   ...
@@ -261,6 +271,7 @@ ELEFAN_GA <- function(
       flagging.out = flagging.out,
       popSize = popSize, maxiter = maxiter, run = run, parallel = parallel,
       pmutation = pmutation, pcrossover = pcrossover, elitism = elitism,
+      seed = seed, monitor = FALSE,
       ...
     )
     pars <- as.list(fit@solution[1,])
@@ -283,6 +294,7 @@ ELEFAN_GA <- function(
       popSize = popSize, maxiter = maxiter, run = run, parallel = parallel,
       pmutation = pmutation, pcrossover = pcrossover, elitism = elitism,
       seed = seed,
+      monitor = FALSE,
       ...
     )
     pars <- as.list(fit@solution[1,])
