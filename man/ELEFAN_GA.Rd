@@ -159,7 +159,7 @@ output$Rn_max
 # compare fitness score (fESP) to
 # that calculated with "true" growth parameter values
 plot(output, draw = FALSE)
-lfqFitCurves(output, par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0),
+lfqFitCurves(output, par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0.5),
        draw = TRUE, col=1, flagging.out = FALSE)$fESP
 lfqFitCurves(output, par=output$par, draw = TRUE, col=2, flagging.out = FALSE)$fESP
 legend("top", legend=c("orig.", "GA"), lty=2, col=1:2, ncol=2)

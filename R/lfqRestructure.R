@@ -102,43 +102,59 @@
 lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE){
 
   lfq <- param
+
+  # replace NAs in catch
+  lfq$catch[which(is.na(lfq$catch))] <- 0
+
   if(MA%%2 == 0) stop("MA must be an odd integer")
 
   # Steps refer to Gayanilo (1997) FAO-ICLARM stock assessment tools: reference manual
-  rcounts <- NaN*lfq$catch
+  rcounts <- 0*lfq$catch
   for(i in seq(ncol(lfq$catch))){
     pm <- (MA-1)/2 # plus minus
-    n <- length(lfq$catch[,i])
-    AF <- NaN*seq(lfq$catch[,i])
-    nz <- NaN*seq(lfq$catch[,i])
 
-    # Step A & B
-    for(j in seq(lfq$catch[,i])){
+    # positions of first and last non-zero valules
+    val_first <- min(which(lfq$catch[,i] != 0))
+    val_last <- max(which(lfq$catch[,i] != 0))
+    val_pos <- seq(val_first, val_last)
+    val_string <- lfq$catch[val_pos,i]
+
+    # number of values
+    n <- length(val_string)
+
+    AF <- NaN*val_string
+    nz <- NaN*val_string
+
+    ## Steps A & B - Computation of the moving average
+    for(j in seq(val_string)){
       idx <- (j-pm):(j+pm)
-      idx <- idx[which(idx %in% seq(lfq$catch[,i]))]
+      idx <- idx[which(idx %in% seq(val_string))]
       idxn <- idx[-which(idx==j)] # neighbors only
-      nz[j] <- sum(lfq$catch[idxn,i] == 0) + (MA-length(idx)) # number of adjacent zeros
-      MA.j <- sum(lfq$catch[idx,i])/MA
-      # print(MA)
-      AF[j] <- lfq$catch[j,i]/MA.j
+      nz[j] <- sum(val_string[idxn] == 0) + (MA-length(idx)) # number of adjacent zeros
+      MA.j <- sum(val_string[idx])/MA
+      AF[j] <- val_string[j]/MA.j
     }
-    # intermediate step to remove Inf an NA
+    # intermediate step to remove Inf or NA
     AF <- replace(AF, which(AF==Inf | is.na(AF)), 0)
 
-    # Step C
-    Fs <- AF/mean(AF, na.rm=TRUE)-1 # restructured frequencies
+    # Calculate mean quotient
+    mprime <- mean(AF, na.rm=TRUE)
 
-    # Steps D & E - Adjust for zero frequency
+
+    ## Step C Divide by mean quotient and subtract 1.0
+    Fs <- AF / mprime - 1 # restructured frequencies
+
+    ## Steps D & E - Identify isolated peaks; Adjust for zero frequency
     posFs <- which(Fs > 0)
-    if(length(posFs)>0) {Fs[posFs] <- (Fs * 1/2^nz)[posFs]}
+    if(length(posFs)>0) {Fs[posFs] <- (Fs * 0.5^nz)[posFs]}
     # replace ultimate length bin with zero if negative
     if(sign(Fs[length(Fs)]) == -1){Fs[length(Fs)] <- 0}
     # divide penultimate length bin by 2 if negative
-    if(sign(Fs[length(Fs)-1]) == -1){Fs[length(Fs)-1] <- Fs[length(Fs)-1]/2}
+    if(sign(Fs[length(Fs)-1]) == -1){Fs[length(Fs)-1] <- Fs[length(Fs)-1]*0.5}
 
-    # Step F - Adjust for Fi
-    SPV <- sum(Fs[which(Fs > 0)])
-    SNV <- sum(Fs[which(Fs < 0)])
+    ## Step F - Adjust for Fi
+    SPV <- sum(Fs[which(Fs > 0)]) # sum of positive values
+    SNV <- sum(Fs[which(Fs < 0)]) # sum of negative values
     # set -1 to 0
     minus1 <- which((1+Fs) < 1e-8 | is.na(Fs))
     if(length(minus1)>0) {Fs[minus1] <- 0}
@@ -152,8 +168,9 @@ lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE){
       if(length(posFs)>0) {Fs[posFs] <- Fs[posFs] / sqrt(1+2/lfq$catch[posFs,i])} #Fs[posFs] / sqrt(1+2/Fs[posFs])}
     }
 
-    rcounts[,i] <- Fs
+    rcounts[val_pos,i] <- Fs
   }
+
   lfq$rcounts <- rcounts
 
   # create peak matrix
