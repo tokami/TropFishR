@@ -19,7 +19,7 @@ the FAO manual.
 
     
 ## News
-News concerning the package version are available [here](https://rawgit.com/tokami/TropFishR/smallImpros/inst/doc/news.html).
+You can find detailed descriptions of new features, bug fixes, other changes of specific package versions [here](https://rawgit.com/tokami/TropFishR/smallImpros/inst/doc/news.html).
 
      
 ## Installation
@@ -41,15 +41,15 @@ Please use the R command `citation("TropFishR")` to receive information on
 how to cite this package.
 
 
-## Vignette
+## Vignettes
 A [tutorial](https://rawgit.com/tokami/TropFishR/master/inst/doc/tutorial.html)
 demonstrates the use of some of the main functions of TropFishR for a 
-single-species stock assessment with length-frequency data.
+single-species stock assessment with length-frequency data. The [second vignette](https://rawgit.com/tokami/TropFishR/smallImpros/inst/doc/lfqData.html) gives a brief description of LFQ data and illustrates how files with raw length measurements (e.g. excel files) can be imported into R and trimmed for the use with TropFishR.
 
 
 ## Questions / Issues
 In case you have questions or find bugs, please report on 
-[TropFishR/issues](https://github.com/tokami/TropFishR/issues).
+[TropFishR/issues](https://github.com/tokami/TropFishR/issues). If you want to be updated with the development of the package or want to discuss with TropFishR users and developers, follow the project on [ResearchGate](https://www.researchgate.net/project/TropFishR).
 
 
 ## References
