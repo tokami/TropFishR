@@ -400,6 +400,4 @@ plot.lfq <- function(x,
 
     # frame
     box()
-
-
 }
