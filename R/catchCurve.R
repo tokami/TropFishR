@@ -24,7 +24,10 @@
 #'   calculated from the catch curve (only if \code{cumulative = FALSE})
 #' @param reg_int instead of using the identity method a range can be determined,
 #'    which is to be used for the regression analysis. If equal to NULL identity method
-#'    is applied (default).
+#'    is applied (default). For multiple regression lines provide list with the two points
+#'    for the regression line in each element of the list.
+#' @param reg_num integer indicating how many separate regression lines should be applied to the
+#'    data. Default 1.
 #'
 #' @keywords function mortality Z catchCurve
 #'
@@ -167,8 +170,13 @@
 #'
 #' @export
 
-catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
-                       calc_ogive = FALSE, reg_int = NULL){
+catchCurve <- function(param,
+                       catch_columns = NA,
+                       cumulative = FALSE,
+                       calc_ogive = FALSE,
+                       reg_int = NULL,
+                       reg_num = 1
+                       ){
 
   res <- param
 
@@ -238,8 +246,8 @@ catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
     Linf <- res$Linf
     K <- res$K
     t0 <- ifelse("t0" %in% names(res), res$t0, 0)
-    ## C <- ifelse("C" %in% names(res), res$C, 0)
-    ## ts <- ifelse("ts" %in% names(res), res$ts, 0)
+    C <- ifelse("C" %in% names(res), res$C, 0)
+    ts <- ifelse("ts" %in% names(res), res$ts, 0)
 
     if((is.null(Linf) | is.null(K))) stop(noquote(
       "You need to assign values to Linf and K for the catch curve based on length-frequency data!"))
@@ -250,7 +258,11 @@ catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
 
     # L and t of lower length classes
     lowerLengths <- midLengths - (interval / 2)
-    t_L1 <- VBGF(param = list(Linf = Linf, K = K, t0 = t0), L = lowerLengths)
+    if("C" %in% names(res) & "ts" %in% names(res)){
+        t_L1 <- VBGF(param = list(Linf = Linf, K = K, t0 = t0, C=C, ts=ts), L = lowerLengths)
+    }else{
+        t_L1 <- VBGF(param = list(Linf = Linf, K = K, t0 = t0), L = lowerLengths)
+    }
     ## t0 - (1/K) * log(1 - (lowerLengths / Linf))
 
     # delta t
@@ -262,8 +274,12 @@ catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
     # x varaible
     #ln (Linf - L)
     ln_Linf_L <- log(Linf - lowerLengths)
-    # t of midlengths
-    t_midL <- VBGF(param = list(Linf = Linf, K = K, t0 = t0), L = midLengths)
+    ## t of midlengths
+    if("C" %in% names(res) & "ts" %in% names(res)){
+        t_midL <- VBGF(param = list(Linf = Linf, K = K, t0 = t0, C=C, ts=ts), L = midLengths)
+    }else{
+        t_midL <- VBGF(param = list(Linf = Linf, K = K, t0 = t0), L = midLengths)
+    }
     ## t0 - (1/K) * log(1 - (midLengths / Linf))
 
     # y variable
@@ -347,137 +363,187 @@ catchCurve <- function(param, catch_columns = NA, cumulative = FALSE,
   #minY <- ifelse(min(yvar,na.rm=TRUE) < 0, min(yvar,na.rm=TRUE),0)
   minY <- min(yvar,na.rm=TRUE)
   maxY <- max(yvar,na.rm=TRUE) + 1
-  xlims <- c(0, max(xvar,na.rm=TRUE))
+    xlims <- c(0, max(xvar,na.rm=TRUE))
 
+    cutterList <- vector("list", reg_num)
   #identify plot
   if(is.null(reg_int)){
     writeLines("Please choose the minimum and maximum point in the graph \nto include for the regression line!")
     flush.console()
-    dev.new()#noRStudioGD = TRUE)
-    op <- par(mfrow = c(1,1),
-              c(5, 4, 4, 2) + 0.1,
-              oma = c(2, 1, 0, 1) + 0.1)
-    plot(x = xvar,y = yvar, ylim = c(minY,maxY), xlim = xlims,
-         xlab = xlabel, ylab = ylabel, type = "n")
-    mtext(side = 3, "Click on two numbers. Escape to Quit.",
-          xpd = NA, cex = 1.25)
-    text(xvar, yvar, labels=as.character(order(xvar)), cex= 0.7)
-    cutter <- identify(x = xvar, y = yvar,
-                       labels = order(xvar), n=2)
-    par(op)
+    for(I in 1:reg_num){
 
-    if(is.na(cutter[1]) | is.nan(cutter[1]) |
-       is.na(cutter[2]) | is.nan(cutter[2]) ) stop(noquote("You did not choose any points in the graph. Please re-run the function and choose points in the graph!"))
+        dev.new()#noRStudioGD = TRUE)
+        op <- par(mfrow = c(1,1),
+                  c(5, 4, 4, 2) + 0.1,
+                  oma = c(2, 1, 0, 1) + 0.1)
+        plot(x = xvar,y = yvar, ylim = c(minY,maxY), xlim = xlims,
+             xlab = xlabel, ylab = ylabel, type = "n")
+        
+        ## plot previous regression lines when using multiple regression lines
+        if(I > 1){
+            for(II in 1:(I-1)){
+                points(xvar[cutterList[[II]]],yvar[cutterList[[II]]], col="darkgreen", pch=16)
+                lines(xvar[cutterList[[II]]],yvar[cutterList[[II]]], col="darkgreen", lwd=2)
+            }
+        }
+        mtext(side = 3, "Click on two numbers. Escape to Quit.",
+              xpd = NA, cex = 1.25)
+        text(xvar, yvar, labels=as.character(order(xvar)), cex= 0.7)
+        cutter <- identify(x = xvar, y = yvar,
+                           labels = order(xvar), n=2, col = "red")
+        par(op)
 
-    dev.off()
+        if(is.na(cutter[1]) | is.nan(cutter[1]) |
+           is.na(cutter[2]) | is.nan(cutter[2]) ) stop(noquote("You did not choose any points in the graph. Please re-run the function and choose points in the graph!"))
+
+        dev.off()
+
+        ## save results to list
+        cutterList[[I]] <- cutter
+    }
+    
 
   }
   if(!is.null(reg_int)){
-    cutter <- reg_int
+    cutterList <- reg_int
   }
-  if(length(cutter) != 2) stop("You have to provide 2 numbers in reg_int.")
 
-  #calculations + model
-  df.CC <- as.data.frame(cbind(xvar,yvar))
-  df.CC.cut <- df.CC[cutter[1]:cutter[2],]
-  lm1 <- lm(yvar ~ xvar, data = df.CC.cut)
-  sum_lm1 <- summary(lm1)
-  r_lm1 <- sum_lm1$r.squared
-  intercept_lm1 <- sum_lm1$coefficients[1]
-  slope_lm1 <- sum_lm1$coefficients[2]
-  se_slope_lm1 <- sum_lm1$coefficients[4]
+    if(any(unlist(lapply(cutterList,length)) != 2)) stop("You have to provide 2 numbers in reg_int.")
 
 
-  #fit of regression line
-  lm1.fit <- sum_lm1$r.squared
-  Z_lm1 <- abs(slope_lm1)
-  SE_Z_lm1 <- abs(se_slope_lm1)
-  confi <-  abs(se_slope_lm1) * qt(0.975,sum_lm1$df[2])
-  conf_Z_lm1 <- Z_lm1 + c(-confi,confi)
+    ## define result lists
+    lm1List <- vector("list",reg_num)
+    Z_lm1List <- vector("list",reg_num)
+    SE_Z_lm1List <- vector("list",reg_num)
+    conf_Z_lm1List <- vector("list",reg_num)
+    intercept_lm1List <- vector("list",reg_num)
 
 
-  # special case when cumulative and length-frequency data
-  if(cumulative & "midLengths" %in% names(res) == TRUE){
-    Z_lm1 <- Z_lm1 * K
-    SE_Z_lm1 <- SE_Z_lm1 * K
-  }
+    for(I in 1:reg_num){
+
+        cutter <- cutterList[[I]]
+
+        ## calculations + model
+        df.CC <- as.data.frame(cbind(xvar,yvar))
+        df.CC.cut <- df.CC[cutter[1]:cutter[2],]
+        lm1 <- lm(yvar ~ xvar, data = df.CC.cut)
+        sum_lm1 <- summary(lm1)
+        r_lm1 <- sum_lm1$r.squared
+        intercept_lm1 <- sum_lm1$coefficients[1]
+        slope_lm1 <- sum_lm1$coefficients[2]
+        se_slope_lm1 <- sum_lm1$coefficients[4]
+
+        ## fit of regression line
+        lm1.fit <- sum_lm1$r.squared
+        Z_lm1 <- abs(slope_lm1)
+        SE_Z_lm1 <- abs(se_slope_lm1)
+        confi <-  abs(se_slope_lm1) * qt(0.975,sum_lm1$df[2])
+        conf_Z_lm1 <- Z_lm1 + c(-confi,confi)
+
+        ## special case when cumulative and length-frequency data
+        if(cumulative & "midLengths" %in% names(res) == TRUE){
+          Z_lm1 <- Z_lm1 * K
+          SE_Z_lm1 <- SE_Z_lm1 * K
+        }
+
+        ## save results to lists
+        lm1List[[I]] <- lm1
+        Z_lm1List[[I]] <- Z_lm1
+        SE_Z_lm1List[[I]] <- SE_Z_lm1
+        conf_Z_lm1List[[I]] <- conf_Z_lm1
+        intercept_lm1List[[I]] <- intercept_lm1
+    }
+    
+
 
   #save all in list
   ret <- c(res,list(
     xvar = xvar,
     yvar = yvar,
-    reg_int = cutter,
-    linear_mod = lm1,
-    Z =  Z_lm1,
-    se = SE_Z_lm1,
-    confidenceInt = conf_Z_lm1
-  ))
-  if("M" %in% names(ret)){ret$FM <- ret$Z - ret$M}
-  names(ret)[names(ret) == "xvar"] <- xname
-  names(ret)[names(ret) == "yvar"] <- yname
-  class(ret) <- "catchCurve"
+    reg_int = cutterList,
+    linear_mod = lm1List,
+    Z =  Z_lm1List,
+    se = SE_Z_lm1List,
+    confidenceInt = conf_Z_lm1List))
+    
+    if("M" %in% names(ret) && length(ret$M)==1){
+        ret$FM <- lapply(ret$Z, function(x) x - ret$M)
+    }
+    names(ret)[names(ret) == "xvar"] <- xname
+    names(ret)[names(ret) == "yvar"] <- yname
+    class(ret) <- "catchCurve"
 
   # Calculate selection ogive from catch curve and add to ret
   if(calc_ogive & cumulative) stop(noquote("It is not possible to estimate the selection ogive for the cumulative catch curve."))
-  if(calc_ogive){
+    if(calc_ogive){
 
-    # only use part of catch and t which is not fully exploited by the gear
-    t_ogive <- xvar[1:(cutter[1]-1)]
-    dt_ogive <- dt[1:(cutter[1]-1)]
-    if("age" %in% names(res) == TRUE &
-       class(catch) == 'matrix' | class(catch) == 'data.frame'){
-      catch_ogive <- catch[1:(cutter[1]-1)] ## catch.cohort
-    }else catch_ogive <- catch[1:(cutter[1]-1)]
+        ## Assumption that Z of smallest selected individuals is most appropriate
+        mini <- min(unlist(cutterList))
+        temp <- lapply(cutterList, function(x) grep(mini,x))
+        ind <- sapply(temp, function(x) length(x) > 0)
+        cutter <- unlist(cutterList[ind])
 
-    # calculate observed selection ogive
-    Sobs <- catch_ogive/(dt_ogive * exp(intercept_lm1 - Z_lm1*t_ogive))
 
-    # dependent vairable in following regression analysis
-    ln_1_S_1 <- log((1/Sobs) - 1)
+        ## only use part of catch and t which is not fully exploited by the gear
+        t_ogive <- xvar[1:(cutter[1]-1)]
+        dt_ogive <- dt[1:(cutter[1]-1)]
+        if("age" %in% names(res) == TRUE &
+           class(catch) == 'matrix' | class(catch) == 'data.frame'){
+          catch_ogive <- catch[1:(cutter[1]-1)] ## catch.cohort
+        }else catch_ogive <- catch[1:(cutter[1]-1)]
 
-    # get rid of Inf
-    ln_1_S_1[which(ln_1_S_1 == Inf)] <- NA
-    t_ogive[which(t_ogive == Inf)] <- NA
 
-    #regression analysis to caluclate T1 and T2
-    mod_ogive <- lm(ln_1_S_1 ~ t_ogive, na.action = na.omit)
-    sum_lm_ogive <- summary(mod_ogive)
-    T1 <- sum_lm_ogive$coefficients[1]
-    T2 <- abs(sum_lm_ogive$coefficients[2])
+        # calculate observed selection ogive
+        Sobs <- catch_ogive/(dt_ogive * exp(unlist(intercept_lm1List[ind]) - unlist(Z_lm1List[ind]) * t_ogive))
 
-    # calculate estimated selection ogive
-    Sest <- 1/(1+exp(T1 - T2*xvar))
+        # dependent vairable in following regression analysis
+        ln_1_S_1 <- log((1/Sobs) - 1)
 
-    # selection parameters
-    t50 <- T1/T2
-    t75 <- (T1 + log(3))/T2
-    t95 <-  (T1 - log((1 / 0.95) - 1)) / T2
-    if(!is.null(res$Linf) & !is.null(res$K)){
-      if(is.null(res$t0)) t0 = 0
-      L50 <- Linf*(1-exp(-K*(t50-t0)))
-      L75 <- Linf*(1-exp(-K*(t75-t0)))
-      L95 <- Linf*(1-exp(-K*(t95-t0)))
-    }
+        # get rid of Inf
+        ln_1_S_1[which(ln_1_S_1 == Inf)] <- NA
+        t_ogive[which(t_ogive == Inf)] <- NA
 
-    ret2 <- c(ret,list(
-      intercept = intercept_lm1,
-      linear_mod_sel = mod_ogive,
-      Sobs = Sobs,
-      ln_1_S_1 = ln_1_S_1,
-      Sest = Sest,
-      t50 = t50,
-      t75 = t75,
-      t95 = t95))
-    if(exists("L50")) ret2$L50 = L50
-    if(exists("L75")) ret2$L75 = L75
-    if(exists("L95")) ret2$L95 = L95
-    if(exists("L50")) names(ret2)[which(ret2 %in% L50)] <- "L50"
-    if(exists("L75")) names(ret2)[which(ret2 %in% L75)] <- "L75"
-    if(exists("L95")) names(ret2)[which(ret2 %in% L95)] <- "L95"
+        #regression analysis to caluclate T1 and T2
+        mod_ogive <- lm(ln_1_S_1 ~ t_ogive, na.action = na.omit)
+        sum_lm_ogive <- summary(mod_ogive)
+        T1 <- sum_lm_ogive$coefficients[1]
+        T2 <- abs(sum_lm_ogive$coefficients[2])
 
-    class(ret2) <- "catchCurve"
-    plot(ret2, plot_selec=TRUE)
-    return(ret2)
-  }else {plot(ret)
-    return(ret)}
+        # calculate estimated selection ogive
+        Sest <- 1/(1+exp(T1 - T2*xvar))
+
+        # selection parameters
+        t50 <- T1/T2
+        t75 <- (T1 + log(3))/T2
+        t95 <-  (T1 - log((1 / 0.95) - 1)) / T2
+        if(!is.null(res$Linf) & !is.null(res$K)){
+          if(is.null(res$t0)) t0 = 0
+          L50 <- Linf*(1-exp(-K*(t50-t0)))
+          L75 <- Linf*(1-exp(-K*(t75-t0)))
+          L95 <- Linf*(1-exp(-K*(t95-t0)))
+        }
+
+        ret2 <- c(ret,list(
+          intercept = intercept_lm1,
+          linear_mod_sel = mod_ogive,
+          Sobs = Sobs,
+          ln_1_S_1 = ln_1_S_1,
+          Sest = Sest,
+          t50 = t50,
+          t75 = t75,
+          t95 = t95))
+        if(exists("L50")) ret2$L50 = L50
+        if(exists("L75")) ret2$L75 = L75
+        if(exists("L95")) ret2$L95 = L95
+        if(exists("L50")) names(ret2)[which(ret2 %in% L50)] <- "L50"
+        if(exists("L75")) names(ret2)[which(ret2 %in% L75)] <- "L75"
+        if(exists("L95")) names(ret2)[which(ret2 %in% L95)] <- "L95"
+
+        class(ret2) <- "catchCurve"
+        plot(ret2, plot_selec=TRUE)
+        return(ret2)
+      }else {
+        plot(ret)
+        return(ret)
+      }
 }
