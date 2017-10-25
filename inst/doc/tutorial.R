@@ -123,7 +123,7 @@ res_SA$par; res_SA$Rn_max
 
 ## ----Figure 5, fig.height=5, fig.width=5, eval=TRUE, results="hide", fig.cap="Score graph of the ELEFAN method with genetic algorithms. Green dots indicate the runnning maximum value of the fitness function, while blue dots indicate the mean score of each iteration."----
 # run ELEFAN with genetic algorithm
-res_GA <- ELEFAN_GA(synLFQ7a, MA = 5, seasonalised = TRUE, maxiter = 10, addl.sqrt = TRUE,
+res_GA <- ELEFAN_GA(synLFQ7a, MA = 5, seasonalised = TRUE, maxiter = 30, addl.sqrt = TRUE,
                     low_par = list(Linf = 119, K = 0.01, t_anchor = 0, C = 0, ts = 0),
                     up_par = list(Linf = 129, K = 1, t_anchor = 1, C = 1, ts = 1),
                     monitor = FALSE)
@@ -145,6 +145,7 @@ lt <- lfqFitCurves(synLFQ7a, par = res_GA$par,
 ## ------------------------------------------------------------------------
 # assign estimates to the data list
 synLFQ7a <- c(synLFQ7a, res_GA$par)
+class(synLFQ7a) <- "lfq"
 
 ## ---- echo=TRUE----------------------------------------------------------
 # estimation of M
