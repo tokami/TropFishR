@@ -17,7 +17,11 @@ comes with 30 functions, 19 data sets and 10 s3 methods. All objects are
 documented and provide examples that allow reproducing the examples from 
 the FAO manual. 
 
+    
+## News
+News concerning the package version are available [here](https://rawgit.com/tokami/TropFishR/smallImpros/inst/doc/news.html).
 
+     
 ## Installation
 Download the released version from CRAN:
 

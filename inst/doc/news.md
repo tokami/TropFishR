@@ -38,7 +38,7 @@
       - plot.catchCurve() was not displaying the regression line, but
       a straight line from the first to last point of the chosen interval
       - restructering of lfq data was not in line with FiSAT implementation
-      - 
+      - fixing bug in handling of leap years
 
 ##### Deprecated & defunct
 
