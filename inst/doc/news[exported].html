@@ -123,26 +123,41 @@ $(document).ready(function () {
 <h3>TropFishR 1.1.5</h3>
 <div id="new-features" class="section level5">
 <h5>New features</h5>
-<ul>
-<li>ELEFAN 4 times faster with more efficient calculations</li>
-<li>missing seed values in ELEFAN added</li>
-<li>lfq plot allows plotting of 2 different lfq data sets</li>
-</ul>
+<pre><code>  - ELEFAN 4 times faster with more efficient calculations
+  - missing seed values in ELEFAN added
+  - plot.lfq() allows now to plot relative frequencies, this is
+  in particular useful in cases where one sampling time has a high sample size
+  - plot.catchCurve() allows now to plot results according to length rather
+  than relative age. This can be done with the argument 'xaxis'.
+  - lfq plot allows plotting of 2 different lfq data sets
+  - lfqModfiy() allows now to combine two different lfq data sets. This
+  might be interesting when different fleets are investigated separately
+  - possible to define and plot multiple regression lines
+  in catch curve analysis
+  - length converted catch curve can now account for the seasonalized
+  VBGF</code></pre>
 </div>
 <div id="user-visible-changes" class="section level5">
 <h5>User-visible changes</h5>
+<pre><code>  - better control over graphical devices with par(),
+  when par() defined the default settings are not used
+  -</code></pre>
 </div>
 <div id="documentation" class="section level5">
 <h5>Documentation</h5>
-<ul>
-<li>new vignette with a short description of lfq data and how to import in R and TropFishR</li>
-</ul>
+<pre><code>  - new vignette with a short description of lfq data and
+  how to import in R and TropFishR
+  - updated tutorial vignette
+  - more informative error and warning messages for many functions added</code></pre>
 </div>
 <div id="bug-fixes" class="section level5">
 <h5>Bug fixes</h5>
-<ul>
-<li>crash report of ELEFAN_GA with Rstudio fixed</li>
-</ul>
+<pre><code>  - crash report of ELEFAN_GA with interactive sessions (Rstudio) fixed
+  and more stable on windows
+  - plot.catchCurve() was not displaying the regression line, but
+  a straight line from the first to last point of the chosen interval
+  - restructering of lfq data was not in line with FiSAT implementation
+  - </code></pre>
 </div>
 <div id="deprecated-defunct" class="section level5">
 <h5>Deprecated &amp; defunct</h5>
@@ -150,6 +165,7 @@ $(document).ready(function () {
 </div>
 <div id="tropfishr-1.1.4" class="section level3">
 <h3>TropFishR 1.1.4</h3>
+<pre><code>not kept track off</code></pre>
 </div>
 
 

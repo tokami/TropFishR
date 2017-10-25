@@ -28,6 +28,7 @@
 
       - new vignette with a short description of lfq data and
       how to import in R and TropFishR
+      - updated tutorial vignette
       - more informative error and warning messages for many functions added
 
 ##### Bug fixes
@@ -36,7 +37,8 @@
       and more stable on windows
       - plot.catchCurve() was not displaying the regression line, but
       a straight line from the first to last point of the chosen interval
-      -
+      - restructering of lfq data was not in line with FiSAT implementation
+      - 
 
 ##### Deprecated & defunct
 
@@ -44,3 +46,6 @@
 
       
 ### TropFishR 1.1.4
+
+
+    not kept track off
