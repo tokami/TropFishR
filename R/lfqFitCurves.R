@@ -41,10 +41,10 @@
 #' @param tincr step for plotting
 #'
 #' @examples
-#' data(synLFQ4)
-#' res <- lfqRestructure(synLFQ4)
+#' data(synLFQ5)
+#' res <- lfqRestructure(synLFQ5, MA=11)
 #' plot(res)
-#' lfqFitCurves(res, par=list(Linf=80,K=0.5,t_anchor=0.75), draw=TRUE)
+#' tmp <- lfqFitCurves(res, par=list(Linf=80,K=0.5,t_anchor=0.25), draw=TRUE)
 #'
 #' @details \code{t_anchor} subsitutes the starting point from known from Fisat 2.
 #'    This parameter is necessary for anchoring the growth curves on the time axis.

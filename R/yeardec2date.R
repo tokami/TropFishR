@@ -11,8 +11,10 @@
 #'
 #' @export
 
-
 yeardec2date <- function(yeardec){
-  as.Date(strptime(paste(yeardec %/% 1, round(yeardec %% 1 * 365.25 + 1), sep="-"), format = "%Y-%j"))
+  # adapted from lubridate::date_decimal
+  start <- as.POSIXct(paste0(trunc(yeardec),  "/01/01"), tz="UTC")
+  end   <- as.POSIXct(paste0(trunc(yeardec)+1,"/01/01"), tz="UTC")
+  res <- as.Date(start + (difftime(end, start, units="secs") * (yeardec - trunc(yeardec))))
+  return(res)
 }
-

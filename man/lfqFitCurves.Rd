@@ -82,10 +82,10 @@ Thsi function estimates von Bertalanffy growth function (VBGF)
    of the year, March.
 }
 \examples{
-data(synLFQ4)
-res <- lfqRestructure(synLFQ4)
+data(synLFQ5)
+res <- lfqRestructure(synLFQ5, MA=11)
 plot(res)
-lfqFitCurves(res, par=list(Linf=80,K=0.5,t_anchor=0.75), draw=TRUE)
+tmp <- lfqFitCurves(res, par=list(Linf=80,K=0.5,t_anchor=0.25), draw=TRUE)
 
 }
 \references{
