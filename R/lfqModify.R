@@ -13,6 +13,8 @@
 #'    asked to insert the length for the plus group in the console (default: FALSE).
 #'    Instead of inserting the length of the plus group via the console, the value
 #'    can be inserted, e.g. plus_group = 85.5.
+#' @param lfq2 optional second lfq object which will be merged with lfq. This might be interesting for
+#'    fleet specific lfq objects. Default: NA.
 #'
 #' @keywords function lfq length-frequency
 #'
@@ -33,13 +35,92 @@
 #'
 #' @export
 
-lfqModify <- function(lfq, par = NULL, bin_size = NA, vectorise_catch = FALSE, plus_group = FALSE){
+lfqModify <- function(lfq, par = NULL,
+                      bin_size = NA,
+                      vectorise_catch = FALSE,
+                      plus_group = FALSE,
+                      lfq2 = NA){
 
-  dates <- lfq$dates
-  midLengths <- lfq$midLengths
-  catch <- lfq$catch
+    if(class(lfq) != "lfq") stop("Your lfq data set has to have class 'lfq'!")
+    dates <- lfq$dates
+    midLengths <- lfq$midLengths
+    catch <- lfq$catch
 
-  if(!is.na(bin_size)){
+    ## replace NAs in catch
+    catch[which(is.na(catch))] <- 0
+
+
+    if(!any(is.na(lfq2))){
+        if(class(lfq2) != "lfq") stop("Your lfq2 data set has to have class 'lfq'!")
+        
+        ## extract variables
+        dates2 <- lfq2$dates
+        midLengths2 <- lfq2$midLengths
+        catch2 <- lfq2$catch
+
+        ## error messages
+        if(diff(midLengths)[1] != diff(midLengths2)[1]) stop("The bin sizes do not fit eachother")
+        if(any(!dates2 %in% dates)) warning("At least one sampling date of lfq2 does not match with the dates \nin lfq, not matching dates will be added!")
+        
+        mergi <- merge(data.frame(dates=dates,x=dates),
+                       data.frame(dates=dates2,y=dates2),
+                       by="dates",all=TRUE)
+        mergi2 <- merge(data.frame(midLengths=midLengths,x=midLengths),
+                        data.frame(midLengths=midLengths2,y=midLengths2),
+                        by="midLengths",all=TRUE)
+        indY <- which(is.na(mergi2$y) & mergi2$midLengths > max(midLengths2))
+        matY <- matrix(0, nrow=length(indY), ncol=ncol(catch2))
+        catch2 <- rbind(catch2,matY)
+        indY <- which(is.na(mergi2$y) & mergi2$midLengths < min(midLengths2))
+        matY <- matrix(0, nrow=length(indY), ncol=ncol(catch2))
+        catch2 <- rbind(matY,catch2)
+        ind <- which(is.na(mergi2$x) & mergi2$midLengths > max(midLengths))
+        mat <- matrix(0, nrow=length(ind), ncol=ncol(catch))
+        catch <- rbind(catch,mat)
+        ind <- which(is.na(mergi2$x) & mergi2$midLengths < min(midLengths))
+        mat <- matrix(0, nrow=length(ind), ncol=ncol(catch))
+        catch <- rbind(mat,catch)
+
+        
+        ## both catch matrices should have same sampling dates
+        designMat <- matrix(0, ncol=length(mergi$dates), nrow=length(mergi2$midLengths))
+        temp <- designMat
+        ind = 1
+        for(i in which(!is.na(mergi$x))){
+            temp[,i] <- catch[,ind]
+            ind <- ind + 1
+        }
+        catch <- temp
+        temp <- designMat
+        ind = 1
+        for(i in which(!is.na(mergi$y))){
+                temp[,i] <- catch2[,ind]
+            ind <- ind + 1
+        }
+        catch2 <- temp
+
+        ## combine lfq data sets
+        for(i in 1:dim(designMat)[2]){
+            temp1 <- data.frame(midLengths = mergi2$midLengths,
+                                catch1 = catch[,i])
+            temp2 <- data.frame(midLengths = mergi2$midLengths,
+                                catch2 = catch2[,i])            
+            temp3 <- merge(temp1, temp2, by="midLengths", all=TRUE)
+            designMat[,i] <- rowSums(temp3[,c(2,3)])
+        }
+
+        ## reassign combined data to vectors
+        dates <- mergi$dates
+        midLengths <- mergi2$midLengths
+        catch <- designMat
+        
+    }
+    
+
+    if(!is.na(bin_size)){
+
+        ## error and warning messages
+        if(bin_size < midLengths[2]-midLengths[1]) stop("The specified bin_size is smaller than the bin size \nin your data. This is not possible!")
     # rearrange data into LFQ data
     bin.breaks <- seq(0, max(midLengths) + bin_size, by=bin_size)
     midLengthsNEW <- bin.breaks[-length(bin.breaks)] + bin_size/2
@@ -169,7 +250,10 @@ lfqModify <- function(lfq, par = NULL, bin_size = NA, vectorise_catch = FALSE, p
   res <- list(dates = dates,
               midLengths = midLengths,
               catch = catches)
-  if(!is.na(bin_size)){class(res) <- "lfq"}
+    if(class(res) != "lfq"){
+        class(res) <- "lfq"
+    }
+  ## if(!is.na(bin_size)){class(res) <- "lfq"}
 
   # add growth parameter if known
   if(!is.null(par)){
