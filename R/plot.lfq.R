@@ -208,6 +208,7 @@ plot.lfq <- function(x,
         }
         catchY <- temp
     }
+
     
     ## display relative catches (relative to number of samples per month)
     if(rel){
@@ -294,6 +295,7 @@ plot.lfq <- function(x,
       year_ticks <- dates_for_years[year_pre]
       mtext(side = 1, at = year_ticks, text = year, line = 2.5)
     }
+
         
 
   bin.width <- diff(classes)
@@ -348,7 +350,6 @@ plot.lfq <- function(x,
     mtext(side = 1, at = year_ticks, text = year, line = 2.5)
   }
 
-
     ## Histograms
     if(any(!is.na(y))){
         bin.width <- diff(mergi2$classes)
@@ -386,6 +387,7 @@ plot.lfq <- function(x,
     }
     }
 
+
     # optional addition of cohort growth curves
     if("par" %in% names(x) & is.null(par) & draw){
       Lt <- lfqFitCurves(lfq = x, par = x$par,
@@ -400,4 +402,5 @@ plot.lfq <- function(x,
 
     # frame
     box()
+
 }
