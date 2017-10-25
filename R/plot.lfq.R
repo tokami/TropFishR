@@ -302,8 +302,15 @@ plot.lfq <- function(x,
   bin.lower <- classes - c(bin.width[1], bin.width)/2
   bin.upper <- classes + c(bin.width, bin.width[length(bin.width)])/2
 
-  # bin height scaling
-  sc <- unclass(min(diff(dates)) * hist.sc / max(abs(catch)))
+
+    ## bin height scaling
+    sc <- unclass(min(diff(dates)) * hist.sc / max(abs(catch)))
+    
+    if(any(!is.na(y))){    
+        ## bin height scaling
+        scY <- unclass(min(diff(dates)) * hist.sc / max(abs(catchY)))
+    }
+    
 
   # image colour
   if(is.null(image.col)){
@@ -371,7 +378,7 @@ plot.lfq <- function(x,
                     border = "grey20", lwd = 1)
                 
             }
-        }   
+        }
     }else{
     for(i in seq(length(dates))){
       score.sc <- catch[,i] * sc
