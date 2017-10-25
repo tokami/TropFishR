@@ -404,11 +404,16 @@ catchCurve <- function(param,
     
 
   }
-  if(!is.null(reg_int)){
-    cutterList <- reg_int
-  }
+    
 
-    if(any(unlist(lapply(cutterList,length)) != 2)) stop("You have to provide 2 numbers in reg_int.")
+    if(!is.null(reg_int)){
+        cutterList <- reg_int
+        if(length(cutterList) != 2) stop("You have to provide 2 numbers in reg_int.")
+    }else{
+        if(any(unlist(lapply(cutterList,length)) != 2)) stop("You have to provide 2 numbers in reg_int.")
+    }
+
+    
 
 
     ## define result lists
@@ -421,7 +426,11 @@ catchCurve <- function(param,
 
     for(I in 1:reg_num){
 
-        cutter <- cutterList[[I]]
+        if(class(cutterList) == "list"){
+            cutter <- cutterList[[I]]
+        }else{
+            cutter <- cutterList
+        }
 
         ## calculations + model
         df.CC <- as.data.frame(cbind(xvar,yvar))
@@ -454,17 +463,26 @@ catchCurve <- function(param,
         intercept_lm1List[[I]] <- intercept_lm1
     }
     
-
-
-  #save all in list
-  ret <- c(res,list(
-    xvar = xvar,
-    yvar = yvar,
-    reg_int = cutterList,
-    linear_mod = lm1List,
-    Z =  Z_lm1List,
-    se = SE_Z_lm1List,
-    confidenceInt = conf_Z_lm1List))
+    ##save all in list
+    if(reg_num > 1){
+        ret <- c(res,list(
+                         xvar = xvar,
+                         yvar = yvar,
+                         reg_int = cutterList,
+                         linear_mod = lm1List,
+                         Z =  Z_lm1List,
+                         se = SE_Z_lm1List,
+                         confidenceInt = conf_Z_lm1List))        
+    }else{
+        ret <- c(res,list(
+                         xvar = xvar,
+                         yvar = yvar,
+                         reg_int = unlist(cutterList),
+                         linear_mod = lm1List[[1]],
+                         Z = unlist(Z_lm1List),
+                         se = unlist(SE_Z_lm1List),
+                         confidenceInt = unlist(conf_Z_lm1List)))
+    }
     
     if("M" %in% names(ret) && length(ret$M)==1){
         ret$FM <- lapply(ret$Z, function(x) x - ret$M)

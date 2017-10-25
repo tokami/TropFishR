@@ -243,42 +243,46 @@ lfqModify <- function(lfq, par = NULL,
     }
   }
 
-  # combine results
-  if(is.vector(catch)){
-    catches <- as.vector(catch)
-  }else catches <- as.matrix(catch)
-  res <- list(dates = dates,
-              midLengths = midLengths,
-              catch = catches)
+
+    ## combine results
+    if(is.vector(catch)){
+        catches <- as.vector(catch)
+    }else catches <- as.matrix(catch)
+    
+    res <- list(dates = dates,
+                midLengths = midLengths,
+                catch = catches)
+
+    # add growth parameter if known
+    if(!is.null(par)){
+      res$Linf <- par$Linf
+      res$K <- par$K
+      res$t_anchor <- par$t_anchor
+    }
+
+    if("Linf" %in% names(lfq)) res$Linf <- lfq$Linf
+    if("K" %in% names(lfq)) res$K <- lfq$K
+    if("t0" %in% names(lfq)) res$t0 <- lfq$t0
+    if("t_anchor" %in% names(lfq)) res$t_anchor <- lfq$t_anchor
+    if("C" %in% names(lfq)) res$C <- lfq$C
+    if("ts" %in% names(lfq)) res$ts <- lfq$ts
+    if("M" %in% names(lfq)) res$M <- lfq$M
+    if("Z" %in% names(lfq)) res$Z <- lfq$Z
+    if("FM" %in% names(lfq)) res$FM <- lfq$FM
+    if("E" %in% names(lfq)) res$E <- lfq$E
+    if("FM_calc" %in% names(lfq)) res$FM_calc <- lfq$FM_calc
+    if("a" %in% names(lfq)) res$a <- lfq$a
+    if("b" %in% names(lfq)) res$b <- lfq$b
+    if("L50" %in% names(lfq)) res$L50 <- lfq$L50
+    if("L75" %in% names(lfq)) res$L75 <- lfq$L75
+    if("L95" %in% names(lfq)) res$L95 <- lfq$L95
+    if("s_list" %in% names(lfq)) res$s_list <- lfq$s_list
+
+
     if(class(res) != "lfq"){
         class(res) <- "lfq"
     }
-  ## if(!is.na(bin_size)){class(res) <- "lfq"}
-
-  # add growth parameter if known
-  if(!is.null(par)){
-    res$Linf <- par$Linf
-    res$K <- par$K
-    res$t_anchor <- par$t_anchor
-  }
-
-  if("Linf" %in% names(lfq)) res$Linf <- lfq$Linf
-  if("K" %in% names(lfq)) res$K <- lfq$K
-  if("t0" %in% names(lfq)) res$t0 <- lfq$t0
-  if("t_anchor" %in% names(lfq)) res$t_anchor <- lfq$t_anchor
-  if("C" %in% names(lfq)) res$C <- lfq$C
-  if("ts" %in% names(lfq)) res$ts <- lfq$ts
-  if("M" %in% names(lfq)) res$M <- lfq$M
-  if("Z" %in% names(lfq)) res$Z <- lfq$Z
-  if("FM" %in% names(lfq)) res$FM <- lfq$FM
-  if("E" %in% names(lfq)) res$E <- lfq$E
-  if("FM_calc" %in% names(lfq)) res$FM_calc <- lfq$FM_calc
-  if("a" %in% names(lfq)) res$a <- lfq$a
-  if("b" %in% names(lfq)) res$b <- lfq$b
-  if("L50" %in% names(lfq)) res$L50 <- lfq$L50
-  if("L75" %in% names(lfq)) res$L75 <- lfq$L75
-  if("L95" %in% names(lfq)) res$L95 <- lfq$L95
-  if("s_list" %in% names(lfq)) res$s_list <- lfq$s_list
-
-  return(res)
+    ## if(!is.na(bin_size)){class(res) <- "lfq"}
+    
+    return(res)
 }
