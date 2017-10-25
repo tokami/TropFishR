@@ -33,7 +33,7 @@
 #'
 #' @export
 
-plotYYY <- function(x, xaxis = 'age', plot_selec = FALSE,
+plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
                             col=c('blue',"darkgreen","orange","darkred"),
                             cex = 1.5, xlim = NULL, ylim = NULL, ...){
   pes <- x
