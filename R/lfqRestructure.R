@@ -125,10 +125,15 @@ lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE){
     AF <- NaN*val_string
     nz <- NaN*val_string
 
+    if(n > 1){
+        temp <- seq(val_string)
+    }else{
+        temp <- 1
+    }
     ## Steps A & B - Computation of the moving average
-    for(j in seq(val_string)){
+    for(j in temp){
       idx <- (j-pm):(j+pm)
-      idx <- idx[which(idx %in% seq(val_string))]
+      idx <- idx[which(idx %in% temp)]
       idxn <- idx[-which(idx==j)] # neighbors only
       nz[j] <- sum(val_string[idxn] == 0) + (MA-length(idx)) # number of adjacent zeros
       MA.j <- sum(val_string[idx])/MA
@@ -140,7 +145,6 @@ lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE){
     # Calculate mean quotient
     mprime <- mean(AF, na.rm=TRUE)
 
-
     ## Step C Divide by mean quotient and subtract 1.0
     Fs <- AF / mprime - 1 # restructured frequencies
 
@@ -150,7 +154,8 @@ lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE){
     # replace ultimate length bin with zero if negative
     if(sign(Fs[length(Fs)]) == -1){Fs[length(Fs)] <- 0}
     # divide penultimate length bin by 2 if negative
-    if(sign(Fs[length(Fs)-1]) == -1){Fs[length(Fs)-1] <- Fs[length(Fs)-1]*0.5}
+    if(length(sign(Fs[length(Fs)-1])) > 0 &&
+       sign(Fs[length(Fs)-1]) == -1){Fs[length(Fs)-1] <- Fs[length(Fs)-1]*0.5}
 
     ## Step F - Adjust for Fi
     SPV <- sum(Fs[which(Fs > 0)]) # sum of positive values
@@ -171,41 +176,48 @@ lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE){
     rcounts[val_pos,i] <- Fs
   }
 
-  lfq$rcounts <- rcounts
+    lfq$rcounts <- rcounts
 
-  # create peak matrix
-  prep_mat <- lfq$rcounts
-  prep_mat <- ifelse(prep_mat > 0,1,0)
-  peaks_mat <- NA*prep_mat
-  for(i in seq(ncol(peaks_mat))){
-    vec_peaki <- prep_mat[,i]
-    runs <- rle(vec_peaki)
-    rle_val <- runs$values
-    rle_val[which(rle_val == 1)] <- 1:length(rle_val[which(rle_val == 1)])
-    peaks_mat[,i] <- rep(rle_val, runs$lengths)
-  }
-  maxn.peaks <- max(peaks_mat, na.rm=TRUE)
-  peaks_mat <- peaks_mat + (prep_mat * maxn.peaks * col(peaks_mat))
-  lfq$peaks_mat <- peaks_mat
-
-  # ASP calc
-  sampASP <- NaN*seq(ncol(rcounts))
-  for(i in seq(ncol(rcounts))){
-    # lfq.i <- lfq[i,]
-    tmp <- rle(sign(rcounts[,i]))
-    start.idx <- c(1, cumsum(tmp$lengths[-length(tmp$lengths)])+1)
-    end.idx <- cumsum(tmp$lengths)
-    posrun <- which(tmp$values == 1)
-    peakval <- NaN*posrun
-    for(p in seq(length(posrun))){
-      peakval[p] <- max(rcounts[start.idx[posrun[p]]:end.idx[posrun[p]], i ])
+    # create peak matrix
+    prep_mat <- lfq$rcounts
+    prep_mat <- ifelse(prep_mat > 0,1,0)
+    peaks_mat <- NA*prep_mat
+    for(i in seq(ncol(peaks_mat))){
+      vec_peaki <- prep_mat[,i]
+      runs <- rle(vec_peaki)
+      rle_val <- runs$values
+      rle_val[which(rle_val == 1)] <- 1:length(rle_val[which(rle_val == 1)])
+      peaks_mat[,i] <- rep(rle_val, runs$lengths)
     }
-    sampASP[i] <- sum(peakval)
-  }
-  ASP <- sum(sampASP)
-  lfq$ASP <- ASP
-  lfq$MA <- MA
+    maxn.peaks <- max(peaks_mat, na.rm=TRUE)
+    peaks_mat <- peaks_mat + (prep_mat * maxn.peaks * col(peaks_mat))
+    lfq$peaks_mat <- peaks_mat
 
-  class(lfq) <- "lfq"
-  return(lfq)
+    # ASP calc
+    sampASP <- NaN*seq(ncol(rcounts))
+    
+    for(i in seq(ncol(rcounts))){
+        ## lfq.i <- lfq[i,]
+        tmp <- rle(sign(rcounts[,i]))
+        start.idx <- c(1, cumsum(tmp$lengths[-length(tmp$lengths)])+1)
+        end.idx <- cumsum(tmp$lengths)
+        posrun <- which(tmp$values == 1)
+        peakval <- NaN*posrun
+        if(length(posrun) > 0){
+            for(p in seq(length(posrun))){
+                peakval[p] <- max(rcounts[start.idx[posrun[p]]:end.idx[posrun[p]], i ])
+            }
+            sampASP[i] <- sum(peakval)            
+        }else{
+            sampASP[i] <- 0
+        }
+    
+    }
+    
+    ASP <- sum(sampASP)
+    lfq$ASP <- ASP
+    lfq$MA <- MA
+    
+    class(lfq) <- "lfq"
+    return(lfq)
 }
