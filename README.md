@@ -8,6 +8,8 @@ TropFishR :fishing_pole_and_fish:
 [![GitHub release](https://img.shields.io/github/release/tokami/TropFishR.svg)](https://github.com/tokami/TropFishR/releases)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.495176.svg)](https://doi.org/10.5281/zenodo.495176)
 
+## Package description
+   	
 TropFishR is a collection of fisheries models based on the FAO Manual 
 "Introduction to tropical fish stock assessment" by Sparre and Venema 
 (1998, 1999). Not only scientists working in the tropics will benefit from 
