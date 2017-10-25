@@ -139,9 +139,21 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
               }else{
                   lm1 <- lm1List
               }
-              reg_int <- unlist(reg_intList)
-              Z_lm1 <- unlist(Z_lm1List)
-              SE_Z_lm1 <- unlist(SE_Z_lm1List)
+              if(class(reg_intList)=="list"){
+                  reg_int <- reg_intList[[I]]
+              }else{
+                  reg_int <- reg_intList
+              }
+              if(class(Z_lm1List)=="list"){
+                  Z_lm1 <- Z_lm1List[[I]]
+              }else{
+                  Z_lm1 <- Z_lm1List
+              }
+              if(class(SE_Z_lm1List)=="list"){
+                  SE_Z_lm1 <- SE_Z_lm1List[[I]]
+              }else{
+                  SE_Z_lm1 <- SE_Z_lm1List
+              }
           }
 
           points(x = xplot[reg_int[1]:reg_int[2]], y = yplot[reg_int[1]:reg_int[2]],
@@ -234,9 +246,21 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
               }else{
                   lm1 <- lm1List
               }
-              reg_int <- unlist(reg_intList)
-              Z_lm1 <- unlist(Z_lm1List)
-              SE_Z_lm1 <- unlist(SE_Z_lm1List)
+              if(class(reg_intList)=="list"){
+                  reg_int <- reg_intList[[I]]
+              }else{
+                  reg_int <- reg_intList
+              }
+              if(class(Z_lm1List)=="list"){
+                  Z_lm1 <- Z_lm1List[[I]]
+              }else{
+                  Z_lm1 <- Z_lm1List
+              }
+              if(class(SE_Z_lm1List)=="list"){
+                  SE_Z_lm1 <- SE_Z_lm1List[[I]]
+              }else{
+                  SE_Z_lm1 <- SE_Z_lm1List
+              }              
           }
 
           points(x = xplot[reg_int[1]:reg_int[2]], y = yplot[reg_int[1]:reg_int[2]],
