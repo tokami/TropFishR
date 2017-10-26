@@ -61,6 +61,7 @@
 #' \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).
 #' @param plot.score logical; Plot simulated annealing score progression.
 #'    (Default: plot.score=TRUE)
+#' @param beep logical; should a beep sound be played after completion? Default: TRUE.
 #'
 #' @examples
 #' \donttest{
@@ -152,7 +153,8 @@ ELEFAN_SA <- function(x,
                       agemax = NULL,
                       flagging.out = TRUE,
                       plot = FALSE,
-                      plot.score = TRUE){
+                      plot.score = TRUE,
+                      beep = TRUE){
 
   res <- x
   classes <- res$midLengths
@@ -322,9 +324,11 @@ ELEFAN_SA <- function(x,
     par(op)
   }
 
-  # notify completion
-  beepr::beep(10); beepr::beep(1) # beepr::beep(2)
-
+    ## notify completion
+    if(beep){
+        beepr::beep(10); beepr::beep(1) # beepr::beep(2)
+    }
+    
 
   final_res <- lfqFitCurves(lfq = res,par=pars,flagging.out = flagging.out,
                             agemax = agemax)
