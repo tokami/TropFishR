@@ -36,7 +36,28 @@
 plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
                             col=c('blue',"darkgreen","orange","darkred"),
                             cex = 1.5, xlim = NULL, ylim = NULL, ...){
-  pes <- x
+    pes <- x
+
+    ## growth parameters
+    if("midLengths" %in% names(pes) | xaxis == "length"){
+        if("par" %in% names(pes)){
+            Linf <- pes$par$Linf
+            K <- pes$par$K
+            t0 <- ifelse("t0" %in% names(pes$par), pes$par$t0, 0)
+            C <- ifelse("C" %in% names(pes$par), pes$par$C, 0)
+            ts <- ifelse("ts" %in% names(pes$par), pes$par$ts, 0)            
+        }else{
+            Linf <- pes$Linf
+            K <- pes$K
+            t0 <- ifelse("t0" %in% names(pes), pes$t0, 0)
+            C <- ifelse("C" %in% names(pes), pes$C, 0)
+            ts <- ifelse("ts" %in% names(pes), pes$ts, 0)
+        }
+        
+        if((is.null(Linf) | is.null(K))) stop(noquote(
+                                         "You need to assign values to Linf and K for the catch curve based on length-frequency data!"))
+        }
+    
 
   if(xaxis == 'age'){
     xlabel <- "Age [yrs]"
@@ -165,12 +186,12 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
               temp <- predict(lm1,newdata=data.frame(xvar=temp0))
               if(xaxis == 'length'){
                   if("C" %in% names(pes)){
-                      temp0 <- VBGF(param = list(Linf = pes$Linf,
-                                                 K = pes$K, t0 = pes$t0,
-                                                 C = pes$C, ts = pes$ts), t = temp0)
+                      temp0 <- VBGF(param = list(Linf = Linf,
+                                                 K = K, t0 = t0,
+                                                 C = C, ts = ts), t = temp0)
                   }else{
-                      t0 <- ifelse("t0" %in% names(pes), pes$t0, 0)
-                      temp0 <- VBGF(param = list(Linf = pes$Linf, K = pes$K, t0 = t0), t = temp0)
+                      ## t0 <- ifelse("t0" %in% names(pes), pes$t0, 0)
+                      temp0 <- VBGF(param = list(Linf = Linf, K = K, t0 = t0), t = temp0)
                   }
                   
               }

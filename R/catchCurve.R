@@ -242,13 +242,21 @@ catchCurve <- function(param,
   }
 
   # Length converted catch curve
-  if("midLengths" %in% names(res) == TRUE){
-    Linf <- res$Linf
-    K <- res$K
-    t0 <- ifelse("t0" %in% names(res), res$t0, 0)
-    C <- ifelse("C" %in% names(res), res$C, 0)
-    ts <- ifelse("ts" %in% names(res), res$ts, 0)
-
+    if("midLengths" %in% names(res) == TRUE){
+        if("par" %in% names(res)){
+            Linf <- res$par$Linf
+            K <- res$par$K
+            t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
+            C <- ifelse("C" %in% names(res$par), res$par$C, 0)
+            ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
+        }else{
+            Linf <- res$Linf
+            K <- res$K
+            t0 <- ifelse("t0" %in% names(res), res$t0, 0)
+            C <- ifelse("C" %in% names(res), res$C, 0)
+            ts <- ifelse("ts" %in% names(res), res$ts, 0)
+        }
+        
     if((is.null(Linf) | is.null(K))) stop(noquote(
       "You need to assign values to Linf and K for the catch curve based on length-frequency data!"))
 
