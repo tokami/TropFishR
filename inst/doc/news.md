@@ -21,7 +21,9 @@
 
       - better control over graphical devices with par(),
       when par() defined the default settings are not used
-      -
+      - growth parameters can no be added to lfq lists as "par" elements, this
+      is convenient because this corresponds to the structure of the results
+      from all ELEFAN methods
 
 
 ##### Documentation
@@ -39,6 +41,8 @@
       a straight line from the first to last point of the chosen interval
       - restructering of lfq data was not in line with FiSAT implementation
       - fixing bug in handling of leap years
+      - when merging your lfq data with another list using c() you have to reassign
+      the class "lfq" to the merged object, this has been added in the tutorial
 
 ##### Deprecated & defunct
 

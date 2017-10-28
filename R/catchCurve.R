@@ -416,13 +416,9 @@ catchCurve <- function(param,
 
     if(!is.null(reg_int)){
         cutterList <- reg_int
-        if(length(cutterList) != 2) stop("You have to provide 2 numbers in reg_int.")
-    }else{
-        if(any(unlist(lapply(cutterList,length)) != 2)) stop("You have to provide 2 numbers in reg_int.")
+        if(class(cutterList) != "list" && length(cutterList) != 2) stop("You have to provide 2 numbers in reg_int.")
+        if(class(cutterList) == "list" && any(unlist(lapply(cutterList,length)) != 2)) stop("You have to provide 2 numbers in reg_int.")
     }
-
-    
-
 
     ## define result lists
     lm1List <- vector("list",reg_num)

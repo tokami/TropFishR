@@ -35,7 +35,8 @@
 
 plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
                             col=c('blue',"darkgreen","orange","darkred"),
-                            cex = 1.5, xlim = NULL, ylim = NULL, ...){
+                            cex = 1.5, xlim = NULL, ylim = NULL,
+                            xlab = "default", ylab = "default", ...){
     pes <- x
 
     ## growth parameters
@@ -142,8 +143,14 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
             on.exit(par(opar))
         }
     }
-     
-    #final plot
+
+
+
+    ## use user defined labels if given
+    if(xlab != "default") xlabel = xlab    
+    if(ylab != "default") ylabel = ylab
+    
+    ## final plot
     plot(x = xplot, y = yplot, ylim = ylims,
          xlab = '', xaxt = 'n', ylab = ylabel, xlim = xlims,
          cex = cex)
@@ -249,6 +256,11 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
         }
       }
 
+
+      ## use user defined labels if given
+      if(xlab != "default") xlabel = xlab    
+      if(ylab != "default") ylabel = ylab
+      
       #final plot
       plot(x = xplot, y = yplot, ylim = ylims,
            xlab = xlabel, ylab = ylabel, xlim = xlims,
@@ -289,7 +301,7 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
           lines(xplot[reg_int[1]:reg_int[2]],fitted(lm1), col=col[I], lwd=1.7)
           
           pusr <- par("usr")
-          text(x = pusr[2]*0.85, y = pusr[4]-(pusr[4]/(12*I)), labels = paste("Z =",round(Z_lm1,2),"+/-",
+          text(x = pusr[2]*0.85, y = pusr[4]-(pusr[4]/(12*(1/I))), labels = paste("Z =",round(Z_lm1,2),"+/-",
                                                                 round(SE_Z_lm1,2)), col = col[I])          
           ## mtext(side = 3,line=(reg_num-I+0.3), text = paste("Z =",round(Z_lm1,2),"+/-",
           ##                                                  round(SE_Z_lm1,2)), col = col[I])
