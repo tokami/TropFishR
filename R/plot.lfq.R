@@ -265,7 +265,7 @@ plot.lfq <- function(x,
     if(any(!is.na(y))){
         catchComb <- catch + catchY
         image(
-            x=dates, y=classes, z=t(catchComb), col=image.col, zlim=zlim,
+            x=mergi$dates, y=mergi2$classes, z=t(catchComb), col=image.col, zlim=zlim,
             xaxt="n", xlab = xlab, ylab = ylab, ...)
     }else{
         image(
