@@ -8,7 +8,8 @@ ELEFAN_GA(x, seasonalised = FALSE, low_par = NULL, up_par = NULL,
   popSize = 50, maxiter = 100, run = maxiter, parallel = FALSE,
   pmutation = 0.1, pcrossover = 0.8, elitism = base::max(1, round(popSize
   * 0.05)), MA = 5, addl.sqrt = FALSE, agemax = NULL,
-  flagging.out = TRUE, seed = 1, plot = FALSE, plot.score = TRUE, ...)
+  flagging.out = TRUE, seed = NULL, plot = FALSE, plot.score = TRUE,
+  ...)
 }
 \arguments{
 \item{x}{a list consisting of following parameters:
@@ -86,7 +87,8 @@ ELEFAN in TRUE. Default:TRUE}
 
 \item{seed}{an integer value containing the random number generator state. This
 argument can be used to replicate the results of a GA search. Note that
-if parallel computing is required, the doRNG package must be installed.}
+if parallel computing is required, the doRNG package must be installed.
+(Default: `seed = NULL`)}
 
 \item{plot}{logical; Plot restructured counts with fitted lines using
 \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).}

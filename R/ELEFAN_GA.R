@@ -64,6 +64,7 @@
 #' @param seed an integer value containing the random number generator state. This
 #' argument can be used to replicate the results of a GA search. Note that
 #' if parallel computing is required, the doRNG package must be installed.
+#' (Default: `seed = NULL`)
 #' @param plot logical; Plot restructured counts with fitted lines using
 #' \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).
 #' @param plot.score logical; Plot genetic algorithm fitness progression.
@@ -168,7 +169,7 @@ ELEFAN_GA <- function(
   addl.sqrt = FALSE,
   agemax = NULL,
   flagging.out = TRUE,
-  seed = 1,
+  seed = NULL,
   plot = FALSE,
   plot.score = TRUE,
   ...
