@@ -9,7 +9,7 @@ ELEFAN_GA(x, seasonalised = FALSE, low_par = NULL, up_par = NULL,
   pmutation = 0.1, pcrossover = 0.8, elitism = base::max(1, round(popSize
   * 0.05)), MA = 5, addl.sqrt = FALSE, agemax = NULL,
   flagging.out = TRUE, seed = NULL, plot = FALSE, plot.score = TRUE,
-  ...)
+  beep = FALSE, ...)
 }
 \arguments{
 \item{x}{a list consisting of following parameters:
@@ -94,7 +94,10 @@ if parallel computing is required, the doRNG package must be installed.
 \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).}
 
 \item{plot.score}{logical; Plot genetic algorithm fitness progression.
-(Default: plot.score=TRUE)}
+(Default: plot.score=TRUE).}
+
+\item{beep}{logical; Should termination of function result with an audible
+notifucation sound (Default: FALSE).}
 
 \item{...}{additional parameters to pass to \code{\link[GA]{ga}}}
 }

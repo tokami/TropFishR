@@ -61,6 +61,8 @@
 #' \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).
 #' @param plot.score logical; Plot simulated annealing score progression.
 #'    (Default: plot.score=TRUE)
+#' @param beep logical; Should termination of function result with an audible
+#'    notifucation sound (Default: FALSE).
 #'
 #' @examples
 #' \donttest{
@@ -140,19 +142,22 @@
 #' annealing for global optimization: the GenSA Package. R Journal, 5(1), 13-28.
 #' @export
 
-ELEFAN_SA <- function(x,
-                      seasonalised = FALSE,
-                      init_par = list(Linf = 50, K = 0.5, t_anchor = 0.5, C = 0, ts = 0),
-                      low_par = NULL, #list(Linf = 1, K = 0.01, t_anchor = 0, C = 0, ts = 0),
-                      up_par = NULL, #list(Linf = 1000, K = 10, t_anchor = 1, C = 1, ts = 1),
-                      SA_time = 60 * 1,
-                      SA_temp = 1e5,
-                      verbose = TRUE,
-                      MA = 5, addl.sqrt = FALSE,
-                      agemax = NULL,
-                      flagging.out = TRUE,
-                      plot = FALSE,
-                      plot.score = TRUE){
+ELEFAN_SA <- function(
+  x,
+  seasonalised = FALSE,
+  init_par = list(Linf = 50, K = 0.5, t_anchor = 0.5, C = 0, ts = 0),
+  low_par = NULL,
+  up_par = NULL,
+  SA_time = 60 * 1,
+  SA_temp = 1e5,
+  verbose = TRUE,
+  MA = 5, addl.sqrt = FALSE,
+  agemax = NULL,
+  flagging.out = TRUE,
+  plot = FALSE,
+  plot.score = TRUE,
+  beep = FALSE
+){
 
   res <- x
   classes <- res$midLengths
@@ -250,8 +255,12 @@ ELEFAN_SA <- function(x,
   if(seasonalised){
     # Simulated annealing with seasonalised VBGF
     writeLines(paste(
-      "Simulated annealing is running. \nThis will take approximately", round(SA_time/60,digits=2),"minutes. \nA beep tone will alert completion."
-    ,sep=" "))
+      "Simulated annealing is running. \nThis will take approximately",
+      round(SA_time/60,digits=2),
+      "minutes.",
+      ifelse(beep, "\nA beep tone will alert completion.", ""),
+      sep=" "
+    ))
     flush.console()
     SAfit <- GenSA::GenSA(
       par = c(init_Linf, init_K, init_tanc, init_C, init_ts),
@@ -272,7 +281,13 @@ ELEFAN_SA <- function(x,
     names(pars) <- c("Linf","K","t_anchor", "C", "ts")
   }else{
     # Simulated annealing
-    writeLines(paste("Simulated annealing is running. This takes", round(SA_time/60,digits=2),"minutes. A beep tone will inform you\n when the calculations are done.",sep=" "))
+    writeLines(paste(
+      "Simulated annealing is running. \nThis will take approximately",
+      round(SA_time/60,digits=2),
+      "minutes.",
+      ifelse(beep, "\nA beep tone will alert completion.", ""),
+      sep=" "
+    ))
     flush.console()
     SAfit <- GenSA::GenSA(par = c(init_Linf, init_K, init_tanc),
       fn = SAfun,
@@ -323,7 +338,7 @@ ELEFAN_SA <- function(x,
   }
 
   # notify completion
-  beepr::beep(10); beepr::beep(1) # beepr::beep(2)
+  if(beep){beepr::beep(10); beepr::beep(1)} # beepr::beep(2)
 
 
   final_res <- lfqFitCurves(lfq = res,par=pars,flagging.out = flagging.out,

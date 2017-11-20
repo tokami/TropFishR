@@ -68,7 +68,9 @@
 #' @param plot logical; Plot restructured counts with fitted lines using
 #' \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).
 #' @param plot.score logical; Plot genetic algorithm fitness progression.
-#'    (Default: plot.score=TRUE)
+#'    (Default: plot.score=TRUE).
+#' @param beep logical; Should termination of function result with an audible
+#' notifucation sound (Default: FALSE).
 #' @param ... additional parameters to pass to \code{\link[GA]{ga}}
 #'
 #'
@@ -172,6 +174,7 @@ ELEFAN_GA <- function(
   seed = NULL,
   plot = FALSE,
   plot.score = TRUE,
+  beep = FALSE,
   ...
 ){
 
@@ -249,9 +252,11 @@ ELEFAN_GA <- function(
     max = c(up_Linf, up_K, up_tanc, up_C, up_ts)
 
     writeLines(paste(
-      "Genetic algorithm is running. This might take some time.\n
-      A beep tone will alert completion."
-    ,sep=" "))
+      "Genetic algorithm is running.",
+      "\nThis will take some time.",
+      ifelse(beep, "\nA beep tone will alert completion.", ""),
+      sep=" "
+    ))
     flush.console()
     fit <- GA::ga(
       type = "real-valued",
@@ -271,7 +276,11 @@ ELEFAN_GA <- function(
     max = c(up_Linf, up_K, up_tanc)
 
     writeLines(paste(
-      "Genetic algorithm is running. \nThis will take some time. \nA beep tone will alert completion.",sep=" "))
+      "Genetic algorithm is running.",
+      "\nThis will take some time.",
+      ifelse(beep, "\nA beep tone will alert completion.", ""),
+      sep=" "
+    ))
     flush.console()
     fit <- GA::ga(
       type = "real-valued",
@@ -296,7 +305,7 @@ ELEFAN_GA <- function(
   }
 
   # notify completion
-  beepr::beep(10); beepr::beep(1)
+  if(beep) {beepr::beep(10); beepr::beep(1)}
 
   final_res <- lfqFitCurves(lfq = lfq, par=pars,
                             flagging.out = flagging.out,
