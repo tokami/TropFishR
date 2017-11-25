@@ -199,7 +199,7 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
   if(any(method == "RikhterEfanov")){
     ind <- ind + 1
     M_mat[ind, 1]  <- round(1.521 / ( tm50 ^ 0.720) - 0.155, 3)
-    dimnames(M_mat)[[1]][ind] <- list("Pauly (1980) - Length Equation")
+    dimnames(M_mat)[[1]][ind] <- list("Rikhter and Efanov (1976)")
   }
   if(any(method == "Roff")){
     ind <- ind + 1
