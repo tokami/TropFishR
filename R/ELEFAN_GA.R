@@ -64,10 +64,7 @@
 #' @param seed an integer value containing the random number generator state. This
 #' argument can be used to replicate the results of a GA search. Note that
 #' if parallel computing is required, the doRNG package must be installed.
-<<<<<<< HEAD
 #' (Default: `seed = NULL`)
-=======
->>>>>>> no default printing of score values - potential crash fix
 #' @param monitor a logical or an R function which takes as input the current
 #'                state of the ‘ga-class’ object and show the evolution of the
 #'                search. By default, ‘monitor = FALSE’ so any
