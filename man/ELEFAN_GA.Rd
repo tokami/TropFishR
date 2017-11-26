@@ -8,8 +8,8 @@ ELEFAN_GA(x, seasonalised = FALSE, low_par = NULL, up_par = NULL,
   popSize = 50, maxiter = 100, run = maxiter, parallel = FALSE,
   pmutation = 0.1, pcrossover = 0.8, elitism = base::max(1, round(popSize
   * 0.05)), MA = 5, addl.sqrt = FALSE, agemax = NULL,
-  flagging.out = TRUE, seed = NULL, plot = FALSE, plot.score = TRUE,
-  beep = FALSE, ...)
+  flagging.out = TRUE, seed = NULL, monitor = FALSE, plot = FALSE,
+  plot.score = TRUE, beep = FALSE, ...)
 }
 \arguments{
 \item{x}{a list consisting of following parameters:
@@ -90,6 +90,16 @@ argument can be used to replicate the results of a GA search. Note that
 if parallel computing is required, the doRNG package must be installed.
 (Default: `seed = NULL`)}
 
+\item{monitor}{a logical or an R function which takes as input the current
+state of the ‘ga-class’ object and show the evolution of the
+search. By default, ‘monitor = FALSE’ so any
+output is suppressed. Possible also, the functions
+‘gaMonitor’ or ‘gaMonitor2’ (depending on whether or not is
+an RStudio session) which print the average and best fitness
+values at each iteration. If set to ‘plot’ these information
+are plotted on a graphical device. Other functions can be
+written by the user and supplied as argument.}
+
 \item{plot}{logical; Plot restructured counts with fitted lines using
 \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).}
 
@@ -97,7 +107,7 @@ if parallel computing is required, the doRNG package must be installed.
 (Default: plot.score=TRUE).}
 
 \item{beep}{logical; Should termination of function result with an audible
-notifucation sound (Default: FALSE).}
+notification sound (Default: FALSE).}
 
 \item{...}{additional parameters to pass to \code{\link[GA]{ga}}}
 }

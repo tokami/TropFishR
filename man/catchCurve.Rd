@@ -5,7 +5,7 @@
 \title{Catch curve}
 \usage{
 catchCurve(param, catch_columns = NA, cumulative = FALSE,
-  calc_ogive = FALSE, reg_int = NULL)
+  calc_ogive = FALSE, reg_int = NULL, reg_num = 1)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -30,7 +30,11 @@ calculated from the catch curve (only if \code{cumulative = FALSE})}
 
 \item{reg_int}{instead of using the identity method a range can be determined,
 which is to be used for the regression analysis. If equal to NULL identity method
-is applied (default).}
+is applied (default). For multiple regression lines provide list with the two points
+for the regression line in each element of the list.}
+
+\item{reg_num}{integer indicating how many separate regression lines should be applied to the
+data. Default 1.}
 }
 \value{
 A list with the input parameters and following list objects:

@@ -4,10 +4,9 @@
 \alias{plot.predict_mod}
 \title{Plotting prediction models yield per recruit and Thompson & Bell}
 \usage{
-\method{plot}{predict_mod}(x, type = "ypr", xaxis1 = "FM",
-  yaxis1 = "Y_R.rel", yaxis2 = "B_R.rel", yaxis_iso = "Lc",
-  identify = FALSE, mark = FALSE, contour = TRUE, xlab = NA,
-  ylab1 = NA, ylab2 = NA, ylab3 = NA, ...)
+plot.predict_mod(x, type = "ypr", xaxis1 = "FM", yaxis1 = "Y_R.rel",
+  yaxis2 = "B_R.rel", yaxis_iso = "Lc", identify = FALSE, mark = FALSE,
+  contour = TRUE, xlab = NA, ylab1 = NA, ylab2 = NA, ylab3 = NA, ...)
 }
 \arguments{
 \item{x}{a object of the class 'predict_mod'}

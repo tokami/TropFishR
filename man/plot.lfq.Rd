@@ -4,10 +4,10 @@
 \alias{plot.lfq}
 \title{Plotting of length frequency data (with VBGF curves)}
 \usage{
-\method{plot}{lfq}(x, Fname = "rcounts", par = NULL, agemax = NULL,
-  curve.col = 1, hist.sc = 0.5, hist.col = c("white", "black"),
-  image.col = NULL, region.col = NULL, zlim = NULL,
-  zlimtype = "balanced", date.axis = "traditional",
+plot.lfq(x, Fname = "rcounts", par = NULL, agemax = NULL, rel = FALSE,
+  y = NA, curve.col = 1, hist.sc = 0.5, hist.col = c("white", "black",
+  "orange", "darkgreen"), image.col = NULL, region.col = NULL,
+  zlim = NULL, zlimtype = "balanced", date.axis = "traditional",
   date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by = "months"),
   date.format = "'\%y-\%b", xlab = "", ylab = "Length classes",
   draw = TRUE, ...)
@@ -34,6 +34,13 @@ displayed (default: "rcounts")}
 
 \item{agemax}{maximum age of species; default NULL, then estimated from Linf}
 
+\item{rel}{logical; defines if relative numbers per length class should be plotted (relative to
+the sample size per sampling time, e.g. month). Default: FALSE.}
+
+\item{y}{an optional second list of class "lfq" consisting of same parameters as x. This allows to plot
+samples from different sources (e.g. different fleets) on top of eachother, classes and dates have to
+correspond at least partially. Default is NA.}
+
 \item{curve.col}{colour of growth curves (default: 1)}
 
 \item{hist.sc}{defines the scaling factor to use for maximum histogram extent (x-axis
@@ -42,7 +49,7 @@ to half the distance between closest sample dates (i.e. ensures no overlap and f
 plotting within the plot region).}
 
 \item{hist.col}{vector of 2 values defining coloring to use on negative and positive
-histogram bars (default: hist.col=c("white", "black"))}
+histogram bars (default: hist.col=c("white", "black", "orange", "darkgreen"))}
 
 \item{image.col}{colour of image, by default (NULL) red and blue colours
 are used. To remove image coloring, set image.col=NA.}

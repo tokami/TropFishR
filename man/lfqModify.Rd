@@ -5,7 +5,7 @@
 \title{Modify lfq data for further analysis}
 \usage{
 lfqModify(lfq, par = NULL, bin_size = NA, vectorise_catch = FALSE,
-  plus_group = FALSE)
+  plus_group = FALSE, lfq2 = NA)
 }
 \arguments{
 \item{lfq}{lfq object with dates, midLengths, and catch}
@@ -21,6 +21,9 @@ yearly vectors (default: FALSE).}
 asked to insert the length for the plus group in the console (default: FALSE).
 Instead of inserting the length of the plus group via the console, the value
 can be inserted, e.g. plus_group = 85.5.}
+
+\item{lfq2}{optional second lfq object which will be merged with lfq. This might be interesting for
+fleet specific lfq objects. Default: NA.}
 }
 \value{
 lfq object with rearranged catch matrix (yearly sums) and growth parameters

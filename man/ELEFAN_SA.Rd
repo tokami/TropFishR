@@ -6,9 +6,10 @@
 \usage{
 ELEFAN_SA(x, seasonalised = FALSE, init_par = list(Linf = 50, K = 0.5,
   t_anchor = 0.5, C = 0, ts = 0), low_par = NULL, up_par = NULL,
-  SA_time = 60 * 1, SA_temp = 1e+05, verbose = TRUE, MA = 5,
-  addl.sqrt = FALSE, agemax = NULL, flagging.out = TRUE, plot = FALSE,
-  plot.score = TRUE, beep = FALSE)
+  SA_time = 60 * 1, maxit = NULL, nb.stop.improvement = NULL,
+  SA_temp = 1e+05, verbose = TRUE, MA = 5, addl.sqrt = FALSE,
+  agemax = NULL, flagging.out = TRUE, plot = FALSE, plot.score = TRUE,
+  beep = FALSE)
 }
 \arguments{
 \item{x}{a list consisting of following parameters:
@@ -59,6 +60,13 @@ NULL the following default values are used:
 }}
 
 \item{SA_time}{numeric; Maximum running time in seconds (default : 60 * 1).}
+
+\item{maxit}{Integer. Maximum number of iterations of the
+algorithm. Default is NULL.}
+
+\item{nb.stop.improvement}{Integer. The program will stop when
+there is no any improvement in ‘nb.stop.improvement’
+steps. Default is NULL}
 
 \item{SA_temp}{numeric; Initial value for temperature (default : 1e5).}
 
