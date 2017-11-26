@@ -14,6 +14,8 @@
 #'      symbols should be magnified relative to the default.
 #' @param xlim limits of x axis
 #' @param ylim limits of y axis
+#' @param xlab label of x axis. Default display by setting to "default".
+#' @param ylab label of y axis. Default display by setting to "default".
 #' @param ... standard parameters of plot function
 #'
 #' @examples
@@ -26,6 +28,8 @@
 #' @details A function to plot the results of the catchCurve model.
 #'
 #' @importFrom graphics mtext par plot points segments text title
+#' @importFrom grDevices dev.cur
+#' @importFrom stats fitted
 #'
 #' @references
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
@@ -46,7 +50,7 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
             K <- pes$par$K
             t0 <- ifelse("t0" %in% names(pes$par), pes$par$t0, 0)
             C <- ifelse("C" %in% names(pes$par), pes$par$C, 0)
-            ts <- ifelse("ts" %in% names(pes$par), pes$par$ts, 0)            
+            ts <- ifelse("ts" %in% names(pes$par), pes$par$ts, 0)
         }else{
             Linf <- pes$Linf
             K <- pes$K
@@ -54,11 +58,11 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
             C <- ifelse("C" %in% names(pes), pes$C, 0)
             ts <- ifelse("ts" %in% names(pes), pes$ts, 0)
         }
-        
+
         if((is.null(Linf) | is.null(K))) stop(noquote(
                                          "You need to assign values to Linf and K for the catch curve based on length-frequency data!"))
         }
-    
+
 
   if(xaxis == 'age'){
     xlabel <- "Age [yrs]"
@@ -76,7 +80,7 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
   if(xaxis == 'length'){
     xplot <- pes$midLengths
     xlabel <- "Length [cm]"
-    if("t_midL" %in% names(pes)){    
+    if("t_midL" %in% names(pes)){
         xplotAGE <- pes$t_midL
     }
   }
@@ -102,7 +106,7 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
   mini <- min(unlist(reg_intList))
   temp <- lapply(reg_intList, function(x) grep(mini,x))
   ind <- sapply(temp, function(x) length(x) > 0)
-  cutter <- unlist(reg_intList[ind])  
+  cutter <- unlist(reg_intList[ind])
 
 
   #for final plot
@@ -132,14 +136,14 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
     if (dev.cur()==1){ # If plot is not open
         opar <- par(mfrow=c(2,1), xpd = FALSE,
                     mar = c(1.2, 4, 1, 1) + 0.1,
-                    oma = c(5, 0.5, 1, 2) + 0.1)        
+                    oma = c(5, 0.5, 1, 2) + 0.1)
         on.exit(par(opar))
     }
     if (dev.cur()==2){ # If plot is open, check if it is a 1x1 plot
         if (all(par()$mfrow == c(2, 1))){
             opar <- par(mfrow=c(2,1), xpd = FALSE,
                         mar = c(1.2, 4, 1, 1) + 0.1,
-                        oma = c(5, 0.5, 1, 2) + 0.1)            
+                        oma = c(5, 0.5, 1, 2) + 0.1)
             on.exit(par(opar))
         }
     }
@@ -147,14 +151,14 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
 
 
     ## use user defined labels if given
-    if(xlab != "default") xlabel = xlab    
+    if(xlab != "default") xlabel = xlab
     if(ylab != "default") ylabel = ylab
-    
+
     ## final plot
     plot(x = xplot, y = yplot, ylim = ylims,
          xlab = '', xaxt = 'n', ylab = ylabel, xlim = xlims,
          cex = cex)
-    
+
     for(I in 1:reg_num){
           if(reg_num > 1){
               lm1 <- lm1List[[I]]
@@ -200,7 +204,7 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
                       ## t0 <- ifelse("t0" %in% names(pes), pes$t0, 0)
                       temp0 <- VBGF(param = list(Linf = Linf, K = K, t0 = t0), t = temp0)
                   }
-                  
+
               }
               lines(temp0,temp, col=col[I], lwd=1.7, lty=2)
           }
@@ -213,8 +217,8 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
 ##          mtext(side = 3, line = (reg_num-I+0.3),  text = paste("Z =",round(Z_lm1,2),"+/-",
 ##                                                                round(SE_Z_lm1,2)), col = col[I])
     }
-    
-  
+
+
 
     plot(pes$Sest ~ xplot, type ='o', xlab = xlabel, xlim = xlims,
          ylab = "Probability of capture")
@@ -234,7 +238,7 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
         #text(y=-0.12, x=pes$t50, labels = "t50", col = 'red', xpd=TRUE)
         mtext(text = "t50",side = 1, at = pes$t50,line = 0.3, col = 'red', xpd=TRUE)
     }
-    
+
 
 
 
@@ -258,9 +262,9 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
 
 
       ## use user defined labels if given
-      if(xlab != "default") xlabel = xlab    
+      if(xlab != "default") xlabel = xlab
       if(ylab != "default") ylabel = ylab
-      
+
       #final plot
       plot(x = xplot, y = yplot, ylim = ylims,
            xlab = xlabel, ylab = ylabel, xlim = xlims,
@@ -293,16 +297,16 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
                   SE_Z_lm1 <- SE_Z_lm1List[[I]]
               }else{
                   SE_Z_lm1 <- SE_Z_lm1List
-              }              
+              }
           }
 
           points(x = xplot[reg_int[1]:reg_int[2]], y = yplot[reg_int[1]:reg_int[2]],
                  pch = 19, col = col[I], cex = cex)
           lines(xplot[reg_int[1]:reg_int[2]],fitted(lm1), col=col[I], lwd=1.7)
-          
+
           pusr <- par("usr")
           text(x = pusr[2]*0.85, y = pusr[4]-(pusr[4]/(12*(1/I))), labels = paste("Z =",round(Z_lm1,2),"+/-",
-                                                                round(SE_Z_lm1,2)), col = col[I])          
+                                                                round(SE_Z_lm1,2)), col = col[I])
           ## mtext(side = 3,line=(reg_num-I+0.3), text = paste("Z =",round(Z_lm1,2),"+/-",
           ##                                                  round(SE_Z_lm1,2)), col = col[I])
     }

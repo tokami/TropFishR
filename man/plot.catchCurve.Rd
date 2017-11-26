@@ -4,9 +4,9 @@
 \alias{plot.catchCurve}
 \title{Plotting catch curve}
 \usage{
-plot.catchCurve(x, xaxis = "age", plot_selec = FALSE, col = c("blue",
-  "darkgreen", "orange", "darkred"), cex = 1.5, xlim = NULL, ylim = NULL,
-  xlab = "default", ylab = "default", ...)
+\method{plot}{catchCurve}(x, xaxis = "age", plot_selec = FALSE,
+  col = c("blue", "darkgreen", "orange", "darkred"), cex = 1.5,
+  xlim = NULL, ylim = NULL, xlab = "default", ylab = "default", ...)
 }
 \arguments{
 \item{x}{A list of the class \code{"catchCurve"} containing the results of the
@@ -27,6 +27,10 @@ symbols should be magnified relative to the default.}
 \item{xlim}{limits of x axis}
 
 \item{ylim}{limits of y axis}
+
+\item{xlab}{label of x axis. Default display by setting to "default".}
+
+\item{ylab}{label of y axis. Default display by setting to "default".}
 
 \item{...}{standard parameters of plot function}
 }

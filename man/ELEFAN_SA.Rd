@@ -65,7 +65,7 @@ NULL the following default values are used:
 algorithm. Default is NULL.}
 
 \item{nb.stop.improvement}{Integer. The program will stop when
-there is no any improvement in ‘nb.stop.improvement’
+there is no any improvement in 'nb.stop.improvement'
 steps. Default is NULL}
 
 \item{SA_temp}{numeric; Initial value for temperature (default : 1e5).}
