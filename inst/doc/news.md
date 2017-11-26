@@ -2,8 +2,8 @@
 
 ##### New features
 
-      - ELEFAN 4 times faster with more efficient calculations
-      - missing seed values in ELEFAN added
+      - Due to more efficient matrix calculations ELEFAN is 4 times faster 
+      - missing seed values were added in ELEFAN_GA()
       - plot.lfq() allows now to plot relative frequencies, this is
       in particular useful in cases where one sampling time has a high sample size
       - plot.catchCurve() allows now to plot results according to length rather
@@ -21,7 +21,7 @@
 
       - better control over graphical devices with par(),
       when par() defined the default settings are not used
-      - growth parameters can no be added to lfq lists as "par" elements, this
+      - growth parameters can now be added to lfq lists as "par" elements, this
       is convenient because this corresponds to the structure of the results
       from all ELEFAN methods
 
@@ -32,6 +32,7 @@
       how to import in R and TropFishR
       - updated tutorial vignette
       - more informative error and warning messages for many functions added
+      - document with news and changes about package version was added
 
 ##### Bug fixes
 
@@ -43,13 +44,7 @@
       - fixing bug in handling of leap years
       - when merging your lfq data with another list using c() you have to reassign
       the class "lfq" to the merged object, this has been added in the tutorial
+      - beep sound was causing R crashes on windows computers and was set OFF by default
 
 ##### Deprecated & defunct
 
-
-
-      
-### TropFishR 1.1.4
-
-
-    not kept track off
