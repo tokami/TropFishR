@@ -79,7 +79,7 @@
 #' @param plot.score logical; Plot genetic algorithm fitness progression.
 #'    (Default: plot.score=TRUE).
 #' @param beep logical; Should termination of function result with an audible
-#' notifucation sound (Default: FALSE).
+#' notification sound (Default: FALSE).
 #' @param ... additional parameters to pass to \code{\link[GA]{ga}}
 #'
 #'

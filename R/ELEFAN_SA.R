@@ -46,6 +46,11 @@
 #'   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 0);
 #' }
 #' @param SA_time numeric; Maximum running time in seconds (default : 60 * 1).
+#' @param maxit Integer. Maximum number of iterations of the
+#'              algorithm. Default is NULL.
+#' @param nb.stop.improvement Integer. The program will stop when
+#'              there is no any improvement in ‘nb.stop.improvement’
+#'              steps. Default is NULL
 #' @param SA_temp numeric; Initial value for temperature (default : 1e5).
 #' @param verbose logical; TRUE means that messages from the algorithm
 #'    are shown (default : TRUE).
@@ -149,6 +154,8 @@ ELEFAN_SA <- function(
   low_par = NULL,
   up_par = NULL,
   SA_time = 60 * 1,
+  maxit = NULL,
+  nb.stop.improvement = NULL,  
   SA_temp = 1e5,
   verbose = TRUE,
   MA = 5, addl.sqrt = FALSE,
@@ -252,6 +259,15 @@ ELEFAN_SA <- function(
     return(-Lt$fESP)
   }
 
+
+    ## control list
+    control <- list(temperature = SA_temp,
+                    verbose = verbose)
+    if(!is.null(SA_time)) control$max.time = SA_time
+    if(!is.null(maxit)) control$maxit = maxit
+    if(!is.null(nb.stop.improvement)) control$nb.stop.improvement
+    
+
   if(seasonalised){
     # Simulated annealing with seasonalised VBGF
     writeLines(paste(
@@ -269,11 +285,7 @@ ELEFAN_SA <- function(
       upper = c(up_Linf, up_K, up_tanc, up_C, up_ts),
       agemax = agemax,
       flagging.out = flagging.out,
-      control = list(
-        max.time = SA_time,
-        temperature = SA_temp,
-        verbose = verbose
-      ),
+      control = control,
       lfq = res
     )
 
@@ -295,11 +307,7 @@ ELEFAN_SA <- function(
       upper = c(up_Linf, up_K, up_tanc),
       agemax = agemax,
       flagging.out = flagging.out,
-      control = list(
-        max.time = SA_time,
-        temperature = SA_temp,
-        verbose = verbose
-      ),
+      control = control,
       lfq = res
     )
 

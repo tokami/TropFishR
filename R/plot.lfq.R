@@ -234,8 +234,8 @@ plot.lfq <- function(x,
     sc <- unclass(min(diff(dates)) * hist.sc / max(abs(catch)))
 
     if(any(!is.na(y))){    
-    ## bin height scaling
-    scY <- unclass(min(diff(dates)) * hist.sc / max(abs(catchY)))
+        ## bin height scaling
+        scY <- unclass(min(diff(dates)) * hist.sc / max(abs(catchY)))
     }
     
 
