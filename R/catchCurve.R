@@ -28,6 +28,10 @@
 #'    for the regression line in each element of the list.
 #' @param reg_num integer indicating how many separate regression lines should be applied to the
 #'    data. Default 1.
+#' @param auto logical; no interactive functions used instead regression line is chosen
+#'    automatically. Default = FALSE
+#' @param plot logical; should a plot be displayed? Default = TRUE
+#' 
 #'
 #' @keywords function mortality Z catchCurve
 #'
@@ -175,7 +179,9 @@ catchCurve <- function(param,
                        cumulative = FALSE,
                        calc_ogive = FALSE,
                        reg_int = NULL,
-                       reg_num = 1
+                       reg_num = 1,
+                       auto = FALSE,
+                       plot = TRUE
                        ){
 
   res <- param
@@ -375,7 +381,7 @@ catchCurve <- function(param,
 
     cutterList <- vector("list", reg_num)
   #identify plot
-  if(is.null(reg_int)){
+  if(is.null(reg_int) & !auto){
     writeLines("Please choose the minimum and maximum point in the graph \nto include for the regression line!")
     flush.console()
     for(I in 1:reg_num){
@@ -418,6 +424,14 @@ catchCurve <- function(param,
         cutterList <- reg_int
         if(class(cutterList) != "list" && length(cutterList) != 2) stop("You have to provide 2 numbers in reg_int.")
         if(class(cutterList) == "list" && any(unlist(lapply(cutterList,length)) != 2)) stop("You have to provide 2 numbers in reg_int.")
+    }
+
+    if(auto){
+        yvar2 <- as.numeric(yvar)
+        xvar2 <- xvar[which(yvar2 > 0.2)]
+        cutter <- c(which(yvar2 == max(as.numeric(yvar2),na.rm=TRUE))+1, which(xvar2 == max(xvar2,na.rm=TRUE)))
+        cutterList <- list()
+        cutterList[[1]] <- cutter
     }
 
     ## define result lists
@@ -562,10 +576,10 @@ catchCurve <- function(param,
         if(exists("L95")) names(ret2)[which(ret2 %in% L95)] <- "L95"
 
         class(ret2) <- "catchCurve"
-        plot(ret2, plot_selec=TRUE)
+        if(plot) plot(ret2, plot_selec=TRUE)
         return(ret2)
       }else {
-        plot(ret)
+        if(plot) plot(ret)
         return(ret)
       }
 }
