@@ -20,6 +20,7 @@
 #' using dynamic biomass models and analysis of length frequency of the Sky Emperor
 #' (\emph{Lethrinus mahsena}). Fisheries Training Program The United Nations University, 61
 #'
+#' @method plot prod_mod_ts
 #' @export
 
 plot.prod_mod_ts <- function(x, correlation_plots = FALSE, ...){

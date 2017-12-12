@@ -141,6 +141,7 @@
 #' The Collected Works of John W. Tukey philosophy and principles of data analysis:
 #' 1965-1986 (Vol. 4, pp. 517-549). Monterey, CA, USA: Wadsworth & Brooks/Cole
 #'
+#' @method plot lfq
 #' @export
 
 plot.lfq <- function(x,

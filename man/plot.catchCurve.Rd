@@ -4,9 +4,9 @@
 \alias{plot.catchCurve}
 \title{Plotting catch curve}
 \usage{
-plot.catchCurve(x, xaxis = "age", plot_selec = FALSE, col = c("blue",
-  "darkgreen", "orange", "darkred"), cex = 1.5, xlim = NULL, ylim = NULL,
-  xlab = "default", ylab = "default", ...)
+\method{plot}{catchCurve}(x, xaxis = "age", plot_selec = FALSE,
+  col = c("blue", "darkgreen", "orange", "darkred"), cex = 1.5,
+  xlim = NULL, ylim = NULL, xlab = "default", ylab = "default", ...)
 }
 \arguments{
 \item{x}{A list of the class \code{"catchCurve"} containing the results of the

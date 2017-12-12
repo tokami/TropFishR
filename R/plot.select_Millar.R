@@ -41,6 +41,7 @@
 #'  using log-linear models. \emph{ICES Journal of Marine Science: Journal du Conseil},
 #'  54(3), 471-477.
 #'
+#' @method plot select_Millar
 #' @export
 
 

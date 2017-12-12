@@ -4,7 +4,7 @@
 \alias{plot.prod_mod_ts}
 \title{Plotting time series production models}
 \usage{
-plot.prod_mod_ts(x, correlation_plots = FALSE, ...)
+\method{plot}{prod_mod_ts}(x, correlation_plots = FALSE, ...)
 }
 \arguments{
 \item{x}{a object of the class "prod_mod_ts",}
