@@ -91,8 +91,6 @@ square-root transformation of positive values according to Brey et al. (1988).
 \item{plot.score}{logical; Plot simulated annealing score progression.
 (Default: plot.score=TRUE)}
 
-\item{beep}{logical; Should termination of function result with an audible
-notifucation sound (Default: FALSE).}
 }
 \value{
 A list with the input parameters and following list objects:

@@ -106,9 +106,6 @@ written by the user and supplied as argument.}
 \item{plot.score}{logical; Plot genetic algorithm fitness progression.
 (Default: plot.score=TRUE).}
 
-\item{beep}{logical; Should termination of function result with an audible
-notification sound (Default: FALSE).}
-
 \item{...}{additional parameters to pass to \code{\link[GA]{ga}}}
 }
 \value{
