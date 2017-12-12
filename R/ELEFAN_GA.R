@@ -78,8 +78,6 @@
 #' \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).
 #' @param plot.score logical; Plot genetic algorithm fitness progression.
 #'    (Default: plot.score=TRUE).
-#' @param beep logical; Should termination of function result with an audible
-#' notification sound (Default: FALSE).
 #' @param ... additional parameters to pass to \code{\link[GA]{ga}}
 #'
 #'
@@ -184,7 +182,6 @@ ELEFAN_GA <- function(
   monitor = FALSE,
   plot = FALSE,
   plot.score = TRUE,
-  beep = FALSE,
   ...
 ){
 
@@ -260,7 +257,7 @@ ELEFAN_GA <- function(
   if(seasonalised){
     min = c(low_Linf, low_K, low_tanc, low_C, low_ts)
     max = c(up_Linf, up_K, up_tanc, up_C, up_ts)
-    writeLines("Genetic algorithm is running. This might take some time. \nA beep tone will alert completion.")
+    writeLines("Genetic algorithm is running. This might take some time.")
     flush.console()
     fit <- GA::ga(
       type = "real-valued",
@@ -279,7 +276,7 @@ ELEFAN_GA <- function(
   }else{
     min = c(low_Linf, low_K, low_tanc)
     max = c(up_Linf, up_K, up_tanc)
-    writeLines("Genetic algorithm is running. This might take some time. \nA beep tone will alert completion.")
+    writeLines("Genetic algorithm is running. This might take some time.")
     flush.console()
     fit <- GA::ga(
       type = "real-valued",
@@ -303,9 +300,6 @@ ELEFAN_GA <- function(
   if(plot.score){
     GA::plot(fit)
   }
-
-  # notify completion
-  if(beep) {beepr::beep(10); beepr::beep(1)}
 
   final_res <- lfqFitCurves(lfq = lfq, par=pars,
                             flagging.out = flagging.out,
