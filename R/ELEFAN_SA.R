@@ -160,7 +160,7 @@ ELEFAN_SA <- function(
   agemax = NULL,
   flagging.out = TRUE,
   plot = FALSE,
-  plot.score = TRUE,
+  plot.score = TRUE
 ){
 
   res <- x
