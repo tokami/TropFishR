@@ -7,7 +7,7 @@ output:
   fig_caption: yes
 number_sections: yes
 vignette: >
-  %\VignetteIndexEntry{tutorial}
+  %\VignetteIndexEntry{StockAssessmentTutorial}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 bibliography: TropFishR.bib
