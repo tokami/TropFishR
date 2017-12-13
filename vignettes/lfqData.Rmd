@@ -129,7 +129,7 @@ The function `read.table()` allows to read and load many different file formats 
 
 
 ##*Conclusion*
-This vignette demonstrates the first step in the application of **`TropFishR`**, the arrangement of your length measurements in a spreadsheet (or text file) and the import into R. Nevertheless, this step is important and several requests motivated me to write this vignette. How you can use **`TropFishR`** for the further analysis of your data is demonstrated in the detailed [**tutorial**](https://cran.r-project.org/web/packages/TropFishR/vignettes/tutorial.html).
+This vignette demonstrates the first step in the application of **`TropFishR`**, the arrangement of your length measurements in a spreadsheet (or text file) and the import into R. Nevertheless, this step is important and several requests motivated me to write this vignette. How you can use **`TropFishR`** for the further analysis of your data is demonstrated in the detailed [**tutorial**](https://rawgit.com/tokami/TropFishR/master/inst/doc/tutorial.html).
 
 
 
