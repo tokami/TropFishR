@@ -78,8 +78,7 @@
 #' \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).
 #' @param plot.score logical; Plot genetic algorithm fitness progression.
 #'    (Default: plot.score=TRUE).
-#' @param beep logical; Should termination of function result with an audible
-#' notifucation sound (Default: FALSE).
+#' @param beep logical; should a beep sound be played after completion? Default: TRUE.
 #' @param ... additional parameters to pass to \code{\link[GA]{ga}}
 #'
 #'
@@ -299,10 +298,12 @@ ELEFAN_GA <- function(
     names(pars) <- c("Linf", "K", "t_anchor")
   }
 
+
   # Fitness graph
   if(plot.score){
     GA::plot(fit)
   }
+
 
   # notify completion
   if(beep) {beepr::beep(10); beepr::beep(1)}
@@ -329,3 +330,5 @@ ELEFAN_GA <- function(
   }
   return(ret)
 }
+
+

@@ -46,6 +46,11 @@
 #'   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 0);
 #' }
 #' @param SA_time numeric; Maximum running time in seconds (default : 60 * 1).
+#' @param maxit Integer. Maximum number of iterations of the
+#'              algorithm. Default is NULL.
+#' @param nb.stop.improvement Integer. The program will stop when
+#'              there is no any improvement in ‘nb.stop.improvement’
+#'              steps. Default is NULL
 #' @param SA_temp numeric; Initial value for temperature (default : 1e5).
 #' @param verbose logical; TRUE means that messages from the algorithm
 #'    are shown (default : TRUE).
@@ -61,8 +66,7 @@
 #' \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).
 #' @param plot.score logical; Plot simulated annealing score progression.
 #'    (Default: plot.score=TRUE)
-#' @param beep logical; Should termination of function result with an audible
-#'    notifucation sound (Default: FALSE).
+#' @param beep logical; should a beep sound be played after completion? Default: TRUE.
 #'
 #' @examples
 #' \donttest{
@@ -142,6 +146,7 @@
 #' annealing for global optimization: the GenSA Package. R Journal, 5(1), 13-28.
 #' @export
 
+<<<<<<< HEAD
 ELEFAN_SA <- function(
   x,
   seasonalised = FALSE,
@@ -252,6 +257,13 @@ ELEFAN_SA <- function(
     return(-Lt$fESP)
   }
 
+    ## control list
+    control <- list(temperature = SA_temp,
+                    verbose = verbose)
+    if(!is.null(SA_time)) control$max.time = SA_time
+    if(!is.null(maxit)) control$maxit = maxit
+    if(!is.null(nb.stop.improvement)) control$nb.stop.improvement
+   
   if(seasonalised){
     # Simulated annealing with seasonalised VBGF
     writeLines(paste(
@@ -269,11 +281,7 @@ ELEFAN_SA <- function(
       upper = c(up_Linf, up_K, up_tanc, up_C, up_ts),
       agemax = agemax,
       flagging.out = flagging.out,
-      control = list(
-        max.time = SA_time,
-        temperature = SA_temp,
-        verbose = verbose
-      ),
+      control = control,
       lfq = res
     )
 
@@ -295,11 +303,7 @@ ELEFAN_SA <- function(
       upper = c(up_Linf, up_K, up_tanc),
       agemax = agemax,
       flagging.out = flagging.out,
-      control = list(
-        max.time = SA_time,
-        temperature = SA_temp,
-        verbose = verbose
-      ),
+      control = control,
       lfq = res
     )
 
@@ -339,7 +343,6 @@ ELEFAN_SA <- function(
 
   # notify completion
   if(beep){beepr::beep(10); beepr::beep(1)} # beepr::beep(2)
-
 
   final_res <- lfqFitCurves(lfq = res,par=pars,flagging.out = flagging.out,
                             agemax = agemax)
