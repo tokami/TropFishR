@@ -21,7 +21,7 @@ the FAO manual.
 
     
 ## News
-You can find detailed descriptions of new features, bug fixes, other changes of specific package versions [here](https://rawgit.com/tokami/TropFishR/smallImpros/inst/doc/news.html).
+You can find detailed descriptions of new features, bug fixes, other changes of specific package versions [here](https://rawgit.com/tokami/TropFishR/master/inst/doc/news.html).
 
      
 ## Installation
@@ -46,7 +46,7 @@ how to cite this package.
 ## Vignettes
 A [tutorial](https://rawgit.com/tokami/TropFishR/master/inst/doc/tutorial.html)
 demonstrates the use of some of the main functions of TropFishR for a 
-single-species stock assessment with length-frequency data. The [second vignette](https://rawgit.com/tokami/TropFishR/smallImpros/inst/doc/lfqData.html) gives a brief description of LFQ data and illustrates how files with raw length measurements (e.g. excel files) can be imported into R and trimmed for the use with TropFishR.
+single-species stock assessment with length-frequency data. The [second vignette](https://rawgit.com/tokami/TropFishR/master/inst/doc/lfqData.html) gives a brief description of LFQ data and illustrates how files with raw length measurements (e.g. excel files) can be imported into R and trimmed for the use with TropFishR.
 
 
 ## Questions / Issues
@@ -63,7 +63,7 @@ In case you have questions or find bugs, please report on
   (306.2, Rev. 2). 94 p. [link](http://www.fao.org/docrep/w5448e/w5448e00.htm)
   3. Mildenberger, T. K., Taylor, M. H. and Wolff, M., 2017. TropFishR: an
   R package for fisheries analysis with length-frequency data. Methods in 
-  Ecology and Evolution. doi:10.1111/2041-210X.12791 
+  Ecology and Evolution, 8: 1520-1527. doi:10.1111/2041-210X.12791 
   [link](https://doi.org/10.1111/2041-210X.12791)
   4. Taylor, M. H., and Mildenberger, T. K., 2017. Extending electronic 
   length frequency analysis in R. Fisheries Management and Ecology, 24:330-338. 
