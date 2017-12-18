@@ -5,7 +5,8 @@
 \title{Catch curve}
 \usage{
 catchCurve(param, catch_columns = NA, cumulative = FALSE,
-  calc_ogive = FALSE, reg_int = NULL, reg_num = 1)
+  calc_ogive = FALSE, reg_int = NULL, reg_num = 1, auto = FALSE,
+  plot = TRUE)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -35,6 +36,11 @@ for the regression line in each element of the list.}
 
 \item{reg_num}{integer indicating how many separate regression lines should be applied to the
 data. Default 1.}
+
+\item{auto}{logical; no interactive functions used instead regression line is chosen
+automatically. Default = FALSE}
+
+\item{plot}{logical; should a plot be displayed? Default = TRUE}
 }
 \value{
 A list with the input parameters and following list objects:

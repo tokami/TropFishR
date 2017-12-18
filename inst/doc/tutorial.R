@@ -45,7 +45,7 @@ res_PW <- powell_wetherall(param = synLFQ7a,
                            catch_columns = 1:ncol(synLFQ7a$catch),
                            reg_int = c(10,30))
 # show results
-paste("Linf =",round(res_PW$Linf_est), "Â±", round(res_PW$se_Linf))
+paste("Linf =",round(res_PW$Linf_est), "±", round(res_PW$se_Linf))
 
 ## ---- include=TRUE, eval = FALSE, echo=TRUE------------------------------
 #  # ELEFAN with K-Scan
