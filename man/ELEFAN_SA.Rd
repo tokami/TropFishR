@@ -8,8 +8,7 @@ ELEFAN_SA(x, seasonalised = FALSE, init_par = list(Linf = 50, K = 0.5,
   t_anchor = 0.5, C = 0, ts = 0), low_par = NULL, up_par = NULL,
   SA_time = 60 * 1, maxit = NULL, nb.stop.improvement = NULL,
   SA_temp = 1e+05, verbose = TRUE, MA = 5, addl.sqrt = FALSE,
-  agemax = NULL, flagging.out = TRUE, plot = FALSE, plot.score = TRUE,
-  beep = FALSE)
+  agemax = NULL, flagging.out = TRUE, plot = FALSE, plot.score = TRUE)
 }
 \arguments{
 \item{x}{a list consisting of following parameters:
@@ -90,9 +89,6 @@ square-root transformation of positive values according to Brey et al. (1988).
 
 \item{plot.score}{logical; Plot simulated annealing score progression.
 (Default: plot.score=TRUE)}
-
-\item{beep}{logical; Should termination of function result with an audible
-notifucation sound (Default: FALSE).}
 }
 \value{
 A list with the input parameters and following list objects:

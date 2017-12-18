@@ -141,6 +141,7 @@
 #' The Collected Works of John W. Tukey philosophy and principles of data analysis:
 #' 1965-1986 (Vol. 4, pp. 517-549). Monterey, CA, USA: Wadsworth & Brooks/Cole
 #'
+#' @method plot lfq
 #' @export
 
 plot.lfq <- function(x,
@@ -208,7 +209,7 @@ plot.lfq <- function(x,
         }
         catchY <- temp
     }
-    
+
     ## display relative catches (relative to number of samples per month)
     if(rel){
         catchrel <- catch
@@ -225,7 +226,7 @@ plot.lfq <- function(x,
                 catchrelY[,i] <- catchY[,i]/colSums(catchY, na.rm = TRUE)[i]
             }
             catchY <- catchrelY
-            catchY[is.nan(catchY)] <- 0            
+            catchY[is.nan(catchY)] <- 0
         }
     }
 
@@ -233,16 +234,14 @@ plot.lfq <- function(x,
     ## bin height scaling
     sc <- unclass(min(diff(dates)) * hist.sc / max(abs(catch)))
 
-    if(any(!is.na(y))){    
+    if(any(!is.na(y))){
         ## bin height scaling
         scY <- unclass(min(diff(dates)) * hist.sc / max(abs(catchY)))
     }
-    
 
     bin.width <- diff(classes)
     bin.lower <- classes - c(bin.width[1], bin.width)/2
     bin.upper <- classes + c(bin.width, bin.width[length(bin.width)])/2
-
 
     # image colour
     if(is.null(image.col)){
@@ -270,7 +269,7 @@ plot.lfq <- function(x,
     }else{
         image(
             x=dates, y=classes, z=t(catch), col=image.col, zlim=zlim,
-            xaxt="n", xlab = xlab, ylab = ylab, ...)        
+            xaxt="n", xlab = xlab, ylab = ylab, ...)
     }
 
     if(!is.null(region.col)){
@@ -294,73 +293,12 @@ plot.lfq <- function(x,
       year_ticks <- dates_for_years[year_pre]
       mtext(side = 1, at = year_ticks, text = year, line = 2.5)
     }
-        
-
-  bin.width <- diff(classes)
-  bin.lower <- classes - c(bin.width[1], bin.width)/2
-  bin.upper <- classes + c(bin.width, bin.width[length(bin.width)])/2
-
-
-    ## bin height scaling
-    sc <- unclass(min(diff(dates)) * hist.sc / max(abs(catch)))
-    
-    if(any(!is.na(y))){    
-        ## bin height scaling
-        scY <- unclass(min(diff(dates)) * hist.sc / max(abs(catchY)))
-    }
-    
-
-  # image colour
-  if(is.null(image.col)){
-    pal <- colorRampPalette(c(rgb(1,0.8,0.8), rgb(1,1,1), rgb(0.8,0.8,1)))
-    image.col <- pal(21)
-  }
-  if(!is.null(region.col)){
-    image.col <- NA
-  }
-
-  # zlim value + type
-  if(is.null(zlim) & zlimtype == "balanced"){
-    zlim = c(-1,1) * max(abs(catch), na.rm=TRUE)
-  }
-  if(is.null(zlim) & zlimtype == "range"){
-    zlim = range(catch, na.rm = TRUE)
-  }
-
-  # Initial plot
-  image(
-    x=dates, y=classes, z=t(catch), col=image.col, zlim=zlim,
-    xaxt="n", xlab = xlab, ylab = ylab, ...
-  )
-
-  if(!is.null(region.col)){
-    usr <- par()$usr
-    if(par()$xlog) usr[1:2] <- 10^usr[1:2]
-    if(par()$ylog) usr[3:4] <- 10^usr[3:4]
-    rect(usr[1], usr[3], usr[2], usr[4], col=region.col)
-  }
-
-  # add time axis
-  if(date.axis == "modern"){
-    axis.Date(side = 1, x=dates, at=date.at, format = date.format)
-  }else if(date.axis == "traditional"){
-    axis.Date(side = 1, x = dates, at = date.at, format = "%b")
-    year <- seq(min(as.numeric(format(dates, "%Y"))), max(as.numeric(format(dates, "%Y"))), 1)
-    date_seq <- seq.Date(dates[1],dates[length(dates)], by = "month")
-    date_label <- format(date_seq, "%m")
-    year_pre <- which(date_label %in% "01")
-    if(!(1 %in% year_pre)) year_pre <- c(1,which(date_label %in% "01"))
-    dates_for_years <- as.Date(paste(format(date_seq,"%Y"),date_label,"01",sep="-"))
-    year_ticks <- dates_for_years[year_pre]
-    mtext(side = 1, at = year_ticks, text = year, line = 2.5)
-  }
-
 
     ## Histograms
     if(any(!is.na(y))){
         bin.width <- diff(mergi2$classes)
         bin.lower <- mergi2$classes - c(bin.width[1], bin.width)/2
-        bin.upper <- mergi2$classes + c(bin.width, bin.width[length(bin.width)])/2        
+        bin.upper <- mergi2$classes + c(bin.width, bin.width[length(bin.width)])/2
         for(i in seq(length(mergi$dates))){
             score.sc <- catch[,i] * sc
             score.scY <- catchY[,i] * scY
@@ -375,7 +313,7 @@ plot.lfq <- function(x,
                     y = c(bin.lower[j], bin.upper[j], bin.upper[j], bin.lower[j]),
                     col = hist.col[(score.scY[j]>0)+3],
                     border = "grey20", lwd = 1)
-                
+
             }
         }
     }else{

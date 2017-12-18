@@ -15,10 +15,6 @@ knitr::opts_chunk$set(echo = TRUE,
 ## ---- echo = TRUE, include = TRUE, eval = FALSE--------------------------
 #  install.packages("TropFishR", repos = "https://cran.rstudio.com/")
 
-## ---- echo = TRUE, include = TRUE, eval = FALSE--------------------------
-#  install.packages("devtools")
-#  devtools::install_github("tokami/TropFishR")
-
 ## ---- eval=TRUE,echo=TRUE------------------------------------------------
 library(TropFishR)
 
@@ -33,7 +29,7 @@ set.seed(1)
 synLFQ7a <- lfqModify(synLFQ7, bin_size = 4)
 
 # plot raw and restructured LFQ data
-lfqbin <- lfqRestructure(synLFQ7a, MA = 5, addl.sqrt = TRUE)
+lfqbin <- lfqRestructure(synLFQ7a, MA = 5, addl.sqrt = FALSE)
 opar <- par(mfrow = c(2,1), mar = c(2,5,2,3), oma = c(2,0,0,0))
 plot(lfqbin, Fname = "catch", date.axis = "modern")
 plot(lfqbin, Fname = "rcounts", date.axis = "modern")
@@ -89,7 +85,7 @@ paste("Linf =",round(res_PW$Linf_est), "±", round(res_PW$se_Linf))
 ## ----Figure 4,  fig.height=5, fig.width=5, eval=TRUE, results="hide", fig.cap="Score graph of the ELEFAN method with simulated annealing. Green dots indicate the runnning minimum value of the cost function, while blue dots indicate the mean score of each iteration. The red line shows the decline of the 'temperature' value, which describes the probability of accepting worse solutions as the parameter space is explored."----
 # run ELEFAN with simulated annealing
 res_SA <- ELEFAN_SA(synLFQ7a, SA_time = 60*0.5, SA_temp = 6e5,
-                    MA = 5, seasonalised = TRUE, addl.sqrt = TRUE,
+                    MA = 5, seasonalised = TRUE, addl.sqrt = FALSE,
                     init_par = list(Linf = 129, K = 0.5, t_anchor = 0.5, C=0.5, ts = 0.5),
                     low_par = list(Linf = 119, K = 0.01, t_anchor = 0, C = 0, ts = 0),
                     up_par = list(Linf = 139, K = 1, t_anchor = 1, C = 1, ts = 1))
@@ -123,14 +119,14 @@ res_SA$par; res_SA$Rn_max
 
 ## ----Figure 5, fig.height=5, fig.width=5, eval=TRUE, results="hide", fig.cap="Score graph of the ELEFAN method with genetic algorithms. Green dots indicate the runnning maximum value of the fitness function, while blue dots indicate the mean score of each iteration."----
 # run ELEFAN with genetic algorithm
-res_GA <- ELEFAN_GA(synLFQ7a, MA = 5, seasonalised = TRUE, maxiter = 30, addl.sqrt = TRUE,
+res_GA <- ELEFAN_GA(synLFQ7a, MA = 5, seasonalised = TRUE, maxiter = 50, addl.sqrt = FALSE,
                     low_par = list(Linf = 119, K = 0.01, t_anchor = 0, C = 0, ts = 0),
-                    up_par = list(Linf = 129, K = 1, t_anchor = 1, C = 1, ts = 1),
+                    up_par = list(Linf = 139, K = 1, t_anchor = 1, C = 1, ts = 1),
                     monitor = FALSE)
 # show results
 res_GA$par; res_GA$Rn_max
 
-## ----Figure 6, echo = TRUE, fig.cap="Graphical fit of estimated and true growth curves plotted through the length frequency data. The growth curves with the true values are displayed in grey, while the blue and lightblue curves represent the curves of ELEFAN_SA and ELEFAN_GA, respectively."----
+## ----Figure 6, echo = TRUE, fig.cap="Graphical fit of estimated and true growth curves plotted through the length frequency data. The growth curves with the true values are displayed in grey, while the blue and green curves represent the curves of ELEFAN_SA and ELEFAN_GA, respectively."----
 # plot LFQ and growth curves
 plot(lfqbin, Fname = "rcounts",date.axis = "modern", ylim=c(0,130))
 lt <- lfqFitCurves(synLFQ7a, par = list(Linf=123, K=0.2, t_anchor=0.25, C=0.3, ts=0),
@@ -138,27 +134,27 @@ lt <- lfqFitCurves(synLFQ7a, par = list(Linf=123, K=0.2, t_anchor=0.25, C=0.3, t
 # lt <- lfqFitCurves(synLFQ7, par = res_RSA$par,
 #                    draw = TRUE, col = "goldenrod1", lty = 1, lwd=1.5)
 lt <- lfqFitCurves(synLFQ7a, par = res_SA$par,
-                   draw = TRUE, col = "blue", lty = 1, lwd=1.5)
+                   draw = TRUE, col = "darkblue", lty = 1, lwd=1.5)
 lt <- lfqFitCurves(synLFQ7a, par = res_GA$par,
-                   draw = TRUE, col = "lightblue", lty = 1, lwd=1.5)
+                   draw = TRUE, col = "darkgreen", lty = 1, lwd=1.5)
 
 ## ------------------------------------------------------------------------
 # assign estimates to the data list
-synLFQ7a <- c(synLFQ7a, res_GA$par)
+synLFQ7a <- c(synLFQ7a, res_SA$par)
 class(synLFQ7a) <- "lfq"
 
 ## ---- echo=TRUE----------------------------------------------------------
 # estimation of M
-Ms <- M_empirical(Linf = res_GA$par$Linf, K_l = res_GA$par$K, method = "Then_growth")
+Ms <- M_empirical(Linf = res_SA$par$Linf, K_l = res_SA$par$K, method = "Then_growth")
 synLFQ7a$M <- as.numeric(Ms)
 # show results
 paste("M =", as.numeric(Ms))
 
 ## ----Figure 7,echo=TRUE, fig.width=6, fig.height=5, fig.cap="Catch curve with selected points for the regression analysis and in the second panel the selection ogive with age at first capture.", message = FALSE, warning=FALSE----
-# summarise catch matrix into vector
-synLFQ7b <- lfqModify(synLFQ7a, vectorise_catch = TRUE)
+# summarise catch matrix into vector and add plus group which is smaller than Linf
+synLFQ7b <- lfqModify(synLFQ7a, vectorise_catch = TRUE, plus_group = 118)
 # run catch curve
-res_cc <- catchCurve(synLFQ7b, reg_int = c(9,28), calc_ogive = TRUE)
+res_cc <- catchCurve(synLFQ7b, reg_int = c(9,27), calc_ogive = TRUE)
 # assign estimates to the data list
 synLFQ7b$Z <- res_cc$Z
 synLFQ7b$FM <- as.numeric(synLFQ7b$Z - synLFQ7b$M)
@@ -171,8 +167,7 @@ paste("E =",round(synLFQ7b$E,2))
 paste("L50 =",round(res_cc$L50,2))
 
 ## ----Figure 8, echo=TRUE, fig.cap="Results of Jones' cohort analysis (CA).", message=FALSE,warning=FALSE----
-# add plus group which is smaller than Linf
-synLFQ7c <- lfqModify(synLFQ7b, plus_group = 122)
+synLFQ7c <- synLFQ7b
 
 # assign length-weight parameters to the data list
 synLFQ7c$a <- 0.015

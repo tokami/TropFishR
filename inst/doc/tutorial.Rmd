@@ -31,19 +31,11 @@ knitr::opts_chunk$set(echo = TRUE,
 This tutorial illustrates the application of the **`TropFishR`** package to perform a single-species fish stock assessment with length frequency (LFQ) data. According to @Sparre1998b, this includes following steps: (1) estimation of biological stock characteristics (growth and natural mortality), (2) exploration of fisheries aspects (exploitation rate and selectivity), (3) assessment of stock size and status. The order of the methods is important as they build upon each other in a sequential way. Data from literature might be used to skip a step in this workflow or to compare them to the outcomes of this routine. 
 
 ###*Installing TropFishR*
-The current version of **`TropFishR`** (v1.1.4) requires R $>= 3.0.0$ and can be downloaded from CRAN as follows:
+The current version of **`TropFishR`** (v1.2) requires R $>= 3.0.0$ and can be downloaded from CRAN as follows:
 
 ```{r, echo = TRUE, include = TRUE, eval = FALSE}
 install.packages("TropFishR", repos = "https://cran.rstudio.com/")
 ```
-
-The development version (v1.1.5) can be downloaded from Github.
-
-```{r, echo = TRUE, include = TRUE, eval = FALSE}
-install.packages("devtools")
-devtools::install_github("tokami/TropFishR")
-```
-
 The package is loaded into the R environment with:
 
 ```{r, eval=TRUE,echo=TRUE}
@@ -72,7 +64,7 @@ set.seed(1)
 synLFQ7a <- lfqModify(synLFQ7, bin_size = 4)
 
 # plot raw and restructured LFQ data
-lfqbin <- lfqRestructure(synLFQ7a, MA = 5, addl.sqrt = TRUE)
+lfqbin <- lfqRestructure(synLFQ7a, MA = 5, addl.sqrt = FALSE)
 opar <- par(mfrow = c(2,1), mar = c(2,5,2,3), oma = c(2,0,0,0))
 plot(lfqbin, Fname = "catch", date.axis = "modern")
 plot(lfqbin, Fname = "rcounts", date.axis = "modern")
@@ -147,7 +139,7 @@ Note that RSA does not allow to optimise over the parameters C and $t_s$ of the 
 ```{r Figure 4,  fig.height=5, fig.width=5, eval=TRUE, results="hide", fig.cap="Score graph of the ELEFAN method with simulated annealing. Green dots indicate the runnning minimum value of the cost function, while blue dots indicate the mean score of each iteration. The red line shows the decline of the 'temperature' value, which describes the probability of accepting worse solutions as the parameter space is explored."}
 # run ELEFAN with simulated annealing
 res_SA <- ELEFAN_SA(synLFQ7a, SA_time = 60*0.5, SA_temp = 6e5,
-                    MA = 5, seasonalised = TRUE, addl.sqrt = TRUE,
+                    MA = 5, seasonalised = TRUE, addl.sqrt = FALSE,
                     init_par = list(Linf = 129, K = 0.5, t_anchor = 0.5, C=0.5, ts = 0.5),
                     low_par = list(Linf = 119, K = 0.01, t_anchor = 0, C = 0, ts = 0),
                     up_par = list(Linf = 139, K = 1, t_anchor = 1, C = 1, ts = 1))
@@ -187,20 +179,20 @@ Depending on the number of sampling times (columns in the catch matrix) and the 
 
 ```{r Figure 5, fig.height=5, fig.width=5, eval=TRUE, results="hide", fig.cap="Score graph of the ELEFAN method with genetic algorithms. Green dots indicate the runnning maximum value of the fitness function, while blue dots indicate the mean score of each iteration."}
 # run ELEFAN with genetic algorithm
-res_GA <- ELEFAN_GA(synLFQ7a, MA = 5, seasonalised = TRUE, maxiter = 30, addl.sqrt = TRUE,
+res_GA <- ELEFAN_GA(synLFQ7a, MA = 5, seasonalised = TRUE, maxiter = 50, addl.sqrt = FALSE,
                     low_par = list(Linf = 119, K = 0.01, t_anchor = 0, C = 0, ts = 0),
-                    up_par = list(Linf = 129, K = 1, t_anchor = 1, C = 1, ts = 1),
+                    up_par = list(Linf = 139, K = 1, t_anchor = 1, C = 1, ts = 1),
                     monitor = FALSE)
 # show results
 res_GA$par; res_GA$Rn_max
 ```
 
-The generation number of the ELEFAN_GA was set to only 10 generations (argument 'maxiter'), which returns following results: $L_{inf}$ = `r {round(res_GA$par$Linf,2)}`, K = `r {round(res_GA$par$K,2)}`, $t_{anchor}$ = `r {round(res_GA$par$t_anchor,2)}`, C = `r {round(res_GA$par$C,2)}`, and $t_s$ = `r {round(res_GA$par$ts,2)}` with a score value ($Rn_{max}$) of `r {round(res_GA$Rn_max,2)}`. As with ELEFAN_SA the generation number was hold down due to the vignette format and should be increased in order to find more stable results.
+The generation number of the ELEFAN_GA was set to only 50 generations (argument 'maxiter'), which returns following results: $L_{inf}$ = `r {round(res_GA$par$Linf,2)}`, K = `r {round(res_GA$par$K,2)}`, $t_{anchor}$ = `r {round(res_GA$par$t_anchor,2)}`, C = `r {round(res_GA$par$C,2)}`, and $t_s$ = `r {round(res_GA$par$ts,2)}` with a score value ($Rn_{max}$) of `r {round(res_GA$Rn_max,2)}`. As with ELEFAN_SA the generation number was hold down due to the vignette format and should be increased in order to find more stable results.
 According to [@Pauly1980] it is not possible to estimate $t_{0}$ (theoretical age at length zero) from LFQ data alone. However, this parameter does not influence results of the methods of the traditional stock assessment workflow (catch curve, VPA/CA, and yield per recruit model) and can be set to zero (Mildenberger, unpublished). The ELEFAN methods in this package do not return starting points as FiSAT II users might be used to. Instead, they return the parameter "t_anchor", which describes the fraction of the year where yearly repeating growth curves cross length equal to zero; for example a value of 0.25 refers to April 1st of any year. The maximum age is estimated within the ELEFAN function: it is the age when length is 0.95 $L_{inf}$. However, this value can also be fixed with the argument "agemax", when alternative information about the maximum age of the fish species is available.
 
 The fit of estimated growth parameters can also be explored visually and indicates high similarity with true growth curves and a good fit through the peaks of the LFQ data.
 
-```{r Figure 6, echo = TRUE, fig.cap="Graphical fit of estimated and true growth curves plotted through the length frequency data. The growth curves with the true values are displayed in grey, while the blue and lightblue curves represent the curves of ELEFAN_SA and ELEFAN_GA, respectively."}
+```{r Figure 6, echo = TRUE, fig.cap="Graphical fit of estimated and true growth curves plotted through the length frequency data. The growth curves with the true values are displayed in grey, while the blue and green curves represent the curves of ELEFAN_SA and ELEFAN_GA, respectively."}
 # plot LFQ and growth curves
 plot(lfqbin, Fname = "rcounts",date.axis = "modern", ylim=c(0,130))
 lt <- lfqFitCurves(synLFQ7a, par = list(Linf=123, K=0.2, t_anchor=0.25, C=0.3, ts=0),
@@ -208,16 +200,16 @@ lt <- lfqFitCurves(synLFQ7a, par = list(Linf=123, K=0.2, t_anchor=0.25, C=0.3, t
 # lt <- lfqFitCurves(synLFQ7, par = res_RSA$par,
 #                    draw = TRUE, col = "goldenrod1", lty = 1, lwd=1.5)
 lt <- lfqFitCurves(synLFQ7a, par = res_SA$par,
-                   draw = TRUE, col = "blue", lty = 1, lwd=1.5)
+                   draw = TRUE, col = "darkblue", lty = 1, lwd=1.5)
 lt <- lfqFitCurves(synLFQ7a, par = res_GA$par,
-                   draw = TRUE, col = "lightblue", lty = 1, lwd=1.5)
+                   draw = TRUE, col = "darkgreen", lty = 1, lwd=1.5)
 ```
 
 For further analysis, we use the outcomes of the simulated annealing approach by adding them to the Thumbprint Emperor data list.
 
 ```{r}
 # assign estimates to the data list
-synLFQ7a <- c(synLFQ7a, res_GA$par)
+synLFQ7a <- c(synLFQ7a, res_SA$par)
 class(synLFQ7a) <- "lfq"
 ```
 
@@ -226,7 +218,7 @@ The instantaneous natural mortality rate (M) is an influential parameter of stoc
 
 ```{r, echo=TRUE}
 # estimation of M
-Ms <- M_empirical(Linf = res_GA$par$Linf, K_l = res_GA$par$K, method = "Then_growth")
+Ms <- M_empirical(Linf = res_SA$par$Linf, K_l = res_SA$par$K, method = "Then_growth")
 synLFQ7a$M <- as.numeric(Ms)
 # show results
 paste("M =", as.numeric(Ms))
@@ -240,10 +232,10 @@ In order to estimate the level of exploitation, knowledge on fishing mortality (
 Total mortality rate is estimated with a sample of the catch representative for the whole year. Besides, changing the bin size, the function `lfqModify` allows to rearrange the catch matrix in the required format (catch vector per year) and to pool the largest length classes with only a few individuals into a plus group (necessary later for the cohort analysis). As with the Powell-Wetherall method, the `reg_int` argument is necessary to avoid the interactive plotting function (more information in `help(catchCurve)`). The argument `calc_ogive` allows the estimation of the selection ogive.
 
 ```{r Figure 7,echo=TRUE, fig.width=6, fig.height=5, fig.cap="Catch curve with selected points for the regression analysis and in the second panel the selection ogive with age at first capture.", message = FALSE, warning=FALSE}
-# summarise catch matrix into vector
-synLFQ7b <- lfqModify(synLFQ7a, vectorise_catch = TRUE)
+# summarise catch matrix into vector and add plus group which is smaller than Linf
+synLFQ7b <- lfqModify(synLFQ7a, vectorise_catch = TRUE, plus_group = 118)
 # run catch curve
-res_cc <- catchCurve(synLFQ7b, reg_int = c(9,28), calc_ogive = TRUE)
+res_cc <- catchCurve(synLFQ7b, reg_int = c(9,27), calc_ogive = TRUE)
 # assign estimates to the data list
 synLFQ7b$Z <- res_cc$Z
 synLFQ7b$FM <- as.numeric(synLFQ7b$Z - synLFQ7b$M)
@@ -263,8 +255,7 @@ The catch curve analysis returns a Z value of `r {round(synLFQ7b$Z,2)}` $year^{-
 The stock size and fishing mortality per length class can be estimated with Jones' length converted cohort analysis [CA, @Jones1984] - a modification of Pope's virtual population analysis (VPA) for LFQ data. It requires the estimates from preceeding analysis and in addition the parameters a and b of the allometric length-weight relationship^[Here the true parameters of a = 0.015 and b = 3 are used assuming that this was calculated from length-weight data.]. Furthermore, CA needs an estimate for the terminal fishing mortality (`terminal_F`), which was set here to the result of the catch curve minus natural mortality (`r {round(synLFQ7b$FM,2)}`^[For a discussion on this parameter see @Hilborn1992]). The cohort analysis estimates the stock size based on the total catches, it is therefore necessary that the catch vector is representative for the full stock and for all fisheries catches targeting this stock. The argument "catch_corFac" can be used to raise the catches to be yearly or spatially representative. Here I assume that all fisheries targeting the stock were sampled and the catch during the four missing months corresponds to the average monthly catch (`catch_corFac` = (1 + 4/12)). The use of the function lfqModify with the argument "plus_group" is necessary as CA does not allow length classes larger than $L_{inf}$. If the argument "plus_group" is set to `TRUE` only, the function shows the catches per length class and asks the user to enter a length class corresponding to the length class of the new "plus group". If "plus_group" is set to a numeric (here 122, which is just below $L_{inf}$), the plus group is created at this length class (numeric has to correspond to existing length class in vector "midLengths").
 
 ```{r Figure 8, echo=TRUE, fig.cap="Results of Jones' cohort analysis (CA).", message=FALSE,warning=FALSE}
-# add plus group which is smaller than Linf
-synLFQ7c <- lfqModify(synLFQ7b, plus_group = 122)
+synLFQ7c <- synLFQ7b
 
 # assign length-weight parameters to the data list
 synLFQ7c$a <- 0.015
@@ -316,7 +307,7 @@ Please note that the resolution of the $L_c$ and F changes is quite low and the 
 
 ##*Summary*
 For management purposes, fish stock assessments are mainly conducted for single species or stocks, which describe the manamgent units of a population. There is much to be gained from multi-species and ecosystem models, but data requirements and complexity make them often unsuitable for deriving management advice. For data-poor fisheries, a traditional fish stock assessment solely based on length-frequency (LFQ) data of one year (as presented here) is particularly useful. LFQ data comes with many advantages over long time series of catch and effort or catch-at-age data [@Mildenberger2016].
-In this exercise, the exploitation rate and results of the yield per recruit models indicate slight overfishing. The exploration of stock status and fisheries characteristics can of course be extended, but go beyond the scope of this tutorial, which is thought to help getting started with the **`TropFishR`** package. Further details about functions and their arguments can be found in the help files of the functions (`help(...)` or `?..`, where the dots refer to any function of the package). Also the two publications by @Mildenberger2016 and by @Taylor2016 provide more details about the functionality and context of the package.
+In this exercise, the exploitation rate and results of the yield per recruit models indicate that the fiseries is close to sustainable exploitation. The exploration of stock status and fisheries characteristics can of course be extended, but go beyond the scope of this tutorial, which is thought to help getting started with the **`TropFishR`** package. Further details about functions and their arguments can be found in the help files of the functions (`help(...)` or `?..`, where the dots refer to any function of the package). Also the two publications by @Mildenberger2016 and by @Taylor2016 provide more details about the functionality and context of the package.
 
 
 ##*Author's comment*

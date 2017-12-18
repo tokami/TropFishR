@@ -28,8 +28,11 @@ bibentry(
   ),
   journal = "Methods in Ecology and Evolution",
   year = "2017",
-  pages = "n/a--n/a",
+  volume = "8",
+  number = "11",
+  pages = "1520--1527",
   doi = "10.1111/2041-210X.12791",
+  url = "http://dx.doi.org/10.1111/2041-210X.12791",
   issn = "2041-210X"
 )
 

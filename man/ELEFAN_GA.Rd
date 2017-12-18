@@ -9,7 +9,7 @@ ELEFAN_GA(x, seasonalised = FALSE, low_par = NULL, up_par = NULL,
   pmutation = 0.1, pcrossover = 0.8, elitism = base::max(1, round(popSize
   * 0.05)), MA = 5, addl.sqrt = FALSE, agemax = NULL,
   flagging.out = TRUE, seed = NULL, monitor = FALSE, plot = FALSE,
-  plot.score = TRUE, beep = FALSE, ...)
+  plot.score = TRUE, ...)
 }
 \arguments{
 \item{x}{a list consisting of following parameters:
@@ -105,9 +105,6 @@ written by the user and supplied as argument.}
 
 \item{plot.score}{logical; Plot genetic algorithm fitness progression.
 (Default: plot.score=TRUE).}
-
-\item{beep}{logical; Should termination of function result with an audible
-notification sound (Default: FALSE).}
 
 \item{...}{additional parameters to pass to \code{\link[GA]{ga}}}
 }
