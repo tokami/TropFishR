@@ -402,17 +402,19 @@ ELEFAN <- function(
                             flagging.out = flagging.out,
                             agemax = agemax)
 
-  ret <- c(res,list(score_mat = score_mat,
-                    t_anchor_mat = ESP_tanch_L,
-                    ncohort = final_res$ncohort,
-                    agemax = final_res$agemax,
-                    par = pars,
-                    Rn_max = Rn_max))
-  class(ret) <- "lfq"
+  # Results
+  res$ncohort = final_res$ncohort
+  res$agemax = final_res$agemax
+  res$par <- pars
+  res$fESP <- Rn_max
+  res$Rn_max <- Rn_max
+
+
+  class(res) <- "lfq"
   if(plot){
-    plot(ret, Fname = "rcounts")
-    Lt <- lfqFitCurves(ret, par = pars, draw=TRUE)
+    plot(res, Fname = "rcounts")
+    Lt <- lfqFitCurves(res, par = pars, draw=TRUE)
   }
-  return(ret)
+  return(res)
 }
 

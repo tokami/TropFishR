@@ -97,7 +97,7 @@ alba3 <- ELEFAN_SA(
   up_par = list(Linf=PW$confidenceInt_Linf[2], K=4, t_anchor=1, ts=1, C=1), 
   SA_temp = 2e5,
   SA_time = 60,
-  maxit = 300,
+  maxit = 400,
   MA = 7,
   plot.score = TRUE, 
   verbose = FALSE
@@ -117,8 +117,8 @@ alba4 <- ELEFAN_GA(
   up_par = list(Linf=PW$confidenceInt_Linf[2], K=4, t_anchor=1, ts=1, C=1), 
   popSize = 60,
   pmutation = 0.2,
-  maxiter = 50,
-  run = 10,
+  maxiter = 100,
+  run = 20,
   MA = 7,
   plot.score = TRUE, 
   monitor = FALSE,
@@ -139,8 +139,8 @@ alba5 <- ELEFAN_GA(
   up_par = list(Linf=PW$confidenceInt_Linf[2], K=4, t_anchor=1, ts=1, C=1), 
   popSize = 60,
   pmutation = 0.2,
-  maxiter = 50,
-  run = 10,
+  maxiter = 100,
+  run = 20,
   MA = 7,
   plot.score = TRUE, 
   monitor = FALSE,
@@ -162,19 +162,18 @@ synLFQ4 <- ELEFAN_GA(
   up_par = list(Linf=110, K=1, t_anchor=1, ts=1, C=1), 
   popSize = 60,
   pmutation = 0.2,
-  maxiter = 50,
-  run = 10,
+  maxiter = 100,
+  run = 20,
   MA = 11,
   plot.score = TRUE, 
   monitor = FALSE,
   parallel = TRUE
 )
 
-
 ## ------------------------------------------------------------------------
 tmp <- as.data.frame(rbind(unlist(true_par), unlist(synLFQ4$par)))
 rownames(tmp) <- c("true", "estimated")
-tmp$Rn <- c(synLFQ4$Rn_max, lfqFitCurves(synLFQ4, par = true_par)$Rn_max)
+tmp$Rn <- c(synLFQ4$Rn_max,  lfqFitCurves(synLFQ4, par = true_par)$Rn_max)
 tmp <- round(tmp,3)
 tmp
 
@@ -183,4 +182,20 @@ plot(synLFQ4, draw = FALSE)
 tmp <- lfqFitCurves(synLFQ4, par = true_par, col=8, lty=1, draw = TRUE)
 tmp <- lfqFitCurves(synLFQ4, par = synLFQ4$par, col=4, lty=2, draw = TRUE)
 legend("top", ncol=2, legend = c("true", "estimated"), col=c(8,4), lty=c(1,2))
+
+## ------------------------------------------------------------------------
+synLFQ4 <- ELEFAN_GA(
+  x = synLFQ4, 
+  seasonalised = TRUE, 
+  low_par = list(Linf=70, K=0.1, t_anchor=0, ts=0, C=0),
+  up_par = list(Linf=110, K=1, t_anchor=1, ts=1, C=1), 
+  popSize = 60,
+  pmutation = function(...) GA::ga_pmutation(..., p0=0.5, p=0.1),
+  maxiter = 100,
+  run = 20,
+  MA = 11,
+  plot.score = TRUE, 
+  monitor = FALSE,
+  parallel = TRUE
+)
 

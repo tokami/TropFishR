@@ -348,15 +348,15 @@ ELEFAN_SA <- function(
   pars$phiL <- phiL
 
   # Results
-  ret <- c(res, list(ncohort = final_res$ncohort,
-                     agemax = final_res$agemax,
-                     par = pars,
-                     #cost_value = SAfit$value,
-                     Rn_max = abs(SAfit$value)))
-  class(ret) <- "lfq"
+  res$ncohort <- final_res$ncohort
+  res$agemax <- final_res$agemax
+  res$par <- pars
+  res$fESP <- abs(SAfit$value)
+  res$Rn_max <- abs(SAfit$value)
+
   if(plot){
-    plot(ret, Fname = "rcounts")
-    Lt <- lfqFitCurves(ret, par = pars, draw=TRUE)
+    plot(res, Fname = "rcounts")
+    Lt <- lfqFitCurves(res, par = res$pars, draw=TRUE)
   }
-  return(ret)
+  return(res)
 }
