@@ -157,7 +157,7 @@ PW$confidenceInt_Linf
 However, the Powell-Wetherall approach has been criticized for providing unreliable results in cases where lfq data spans a small range of length classes, or in severely depleted populations where large individuals are rare. Therefore, the results should be used with caution. 
 
 Another approach may be to inform first guesstimates of Linf from other data sources, and allow ELEFAN a significant range of values for searching during VBGF fitting. @froese_empirical_2000 also showed strong correlation between the largest individuals (Lmax) and Linf, 
-$$ \log(L_\infty) = 0.044 + 0.9841 * \log(Lmax) $$
+$$ \log(L_\infty) = 0.044 + 0.9841 * \log(L_{max}) $$
 , but Lmax may also be difficult to obtain in highly exploited populations.   
 
 
