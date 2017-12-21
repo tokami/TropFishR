@@ -157,7 +157,7 @@ PW$confidenceInt_Linf
 However, the Powell-Wetherall approach has been criticized for providing unreliable results in cases where lfq data spans a small range of length classes, or in severely depleted populations where large individuals are rare. Therefore, the results should be used with caution. 
 
 Another approach may be to inform first guesstimates of Linf from other data sources, and allow ELEFAN a significant range of values for searching during VBGF fitting. @froese_empirical_2000 also showed strong correlation between the largest individuals (Lmax) and Linf, 
-$$ \log(L_\infty) = 0.044 + 0.9841 * \log(Lmax) $$
+$$ \log(L_\infty) = 0.044 + 0.9841 * \log(L_{max}) $$
 , but Lmax may also be difficult to obtain in highly exploited populations.   
 
 
@@ -349,7 +349,7 @@ legend("top", ncol=2, legend = c("true", "estimated"), col=c(8,4), lty=c(1,2))
 
 ## Variable mutation probability
 
-In most cases, using constant mutation probability setting (`pmutation`) is sufficient to achieve a good fit with `ELEFAN_GA`. Nevertheless, it may be desired to use a variable setting to adjust the periods of random versus focused searching. The `GA` package has a built in function (`ga_pmutation`)that allows for a decreasing pmutation rate over the iteration time (see `?pmutation` for further information).
+In most cases, using constant mutation probability setting (`pmutation`) is sufficient to achieve a good fit with `ELEFAN_GA`. Nevertheless, it may be desired to use a variable setting to adjust the periods of random versus focused searching. The `GA` package has a built in function (`ga_pmutation`) that allows for a decreasing pmutation rate over the iteration time (see `?GA::pmutation` for further information).
 
 The following example uses `ELEFAN_GA` with a variable mutation rate, which starts at 0.5 and decreases to 0.1. This gradual focusing of pmutation rates in a way mimics the decreasing temperature of simulated annealing.
 

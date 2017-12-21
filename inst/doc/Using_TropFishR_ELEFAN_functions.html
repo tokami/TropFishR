@@ -333,7 +333,7 @@ tmp &lt;- lfqFitCurves(alba, par = list(Linf=11, K=2.5, t_anchor=0.5),
 <pre class="r"><code>PW$confidenceInt_Linf</code></pre>
 <pre><code>## [1]  8.977609 13.704995</code></pre>
 <p>However, the Powell-Wetherall approach has been criticized for providing unreliable results in cases where lfq data spans a small range of length classes, or in severely depleted populations where large individuals are rare. Therefore, the results should be used with caution.</p>
-<p>Another approach may be to inform first guesstimates of Linf from other data sources, and allow ELEFAN a significant range of values for searching during VBGF fitting. <span class="citation">Froese and Binohlan (2000)</span> also showed strong correlation between the largest individuals (Lmax) and Linf, <span class="math display">\[ \log(L_\infty) = 0.044 + 0.9841 * \log(Lmax) \]</span> , but Lmax may also be difficult to obtain in highly exploited populations.</p>
+<p>Another approach may be to inform first guesstimates of Linf from other data sources, and allow ELEFAN a significant range of values for searching during VBGF fitting. <span class="citation">Froese and Binohlan (2000)</span> also showed strong correlation between the largest individuals (Lmax) and Linf, <span class="math display">\[ \log(L_\infty) = 0.044 + 0.9841 * \log(L_{max}) \]</span> , but Lmax may also be difficult to obtain in highly exploited populations.</p>
 </div>
 <div id="growth-constant-k" class="section level2">
 <h2><span class="header-section-number">4.2</span> Growth constant (K)</h2>
@@ -509,7 +509,7 @@ legend(&quot;top&quot;, ncol=2, legend = c(&quot;true&quot;, &quot;estimated&quo
 </div>
 <div id="variable-mutation-probability" class="section level2">
 <h2><span class="header-section-number">5.4</span> Variable mutation probability</h2>
-<p>In most cases, using constant mutation probability setting (<code>pmutation</code>) is sufficient to achieve a good fit with <code>ELEFAN_GA</code>. Nevertheless, it may be desired to use a variable setting to adjust the periods of random versus focused searching. The <code>GA</code> package has a built in function (<code>ga_pmutation</code>)that allows for a decreasing pmutation rate over the iteration time (see <code>?pmutation</code> for further information).</p>
+<p>In most cases, using constant mutation probability setting (<code>pmutation</code>) is sufficient to achieve a good fit with <code>ELEFAN_GA</code>. Nevertheless, it may be desired to use a variable setting to adjust the periods of random versus focused searching. The <code>GA</code> package has a built in function (<code>ga_pmutation</code>) that allows for a decreasing pmutation rate over the iteration time (see <code>?GA::pmutation</code> for further information).</p>
 <p>The following example uses <code>ELEFAN_GA</code> with a variable mutation rate, which starts at 0.5 and decreases to 0.1. This gradual focusing of pmutation rates in a way mimics the decreasing temperature of simulated annealing.</p>
 <pre class="r"><code>synLFQ4 &lt;- ELEFAN_GA(
   x = synLFQ4, 
