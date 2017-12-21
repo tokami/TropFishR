@@ -324,11 +324,9 @@ synLFQ4 <- ELEFAN_GA(
   monitor = FALSE,
   parallel = TRUE
 )
-
 ```
 
-In this case, the *true* values are very well estimated
-
+In this case, the *true* values are very well estimated:
 
 ```{r}
 tmp <- as.data.frame(rbind(unlist(true_par), unlist(synLFQ4$par)))
@@ -345,6 +343,29 @@ tmp <- lfqFitCurves(synLFQ4, par = true_par, col=8, lty=1, draw = TRUE)
 tmp <- lfqFitCurves(synLFQ4, par = synLFQ4$par, col=4, lty=2, draw = TRUE)
 legend("top", ncol=2, legend = c("true", "estimated"), col=c(8,4), lty=c(1,2))
 ```
+
+
+## Variable mutation probability
+
+The `GA` package allows one to  
+```{r}
+synLFQ4 <- ELEFAN_GA(
+  x = synLFQ4, 
+  seasonalised = TRUE, 
+  low_par = list(Linf=70, K=0.1, t_anchor=0, ts=0, C=0),
+  up_par = list(Linf=110, K=1, t_anchor=1, ts=1, C=1), 
+  popSize = 60,
+  pmutation = function(...) GA::ga_pmutation(..., p0=0.5, p=0.1),
+  maxiter = 100,
+  run = 20,
+  MA = 11,
+  plot.score = TRUE, 
+  monitor = FALSE,
+  parallel = TRUE
+)
+```
+
+
 
 # Best practices
 
