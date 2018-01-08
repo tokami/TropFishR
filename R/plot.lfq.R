@@ -145,23 +145,23 @@
 #' @export
 
 plot.lfq <- function(x,
-                     Fname = "rcounts",  # alternative : "catch"
-                     par = NULL,
-                     agemax = NULL,
-                     rel = FALSE,
-                     y = NA,
-                     curve.col = 1,
-                     hist.sc = 0.5,
-                     hist.col = c("white", "black", "orange","darkgreen"),
-                     image.col = NULL,
-                     region.col = NULL,
-                     zlim = NULL,
-                     zlimtype = "balanced",   # alternative : "range"
-                     date.axis = "traditional",  # alternative : "modern"
-                     date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by="months"),
-                     date.format = "'%y-%b", xlab = "", ylab = "Length classes",
-                     draw = TRUE,
-                     ...){
+  Fname = "rcounts",  # alternative : "catch"
+  par = NULL,
+  agemax = NULL,
+  rel = FALSE,
+  y = NA,
+  curve.col = 1,
+  hist.sc = 0.5,
+  hist.col = c("white", "black", "orange","darkgreen"),
+  image.col = NULL,
+  region.col = NULL,
+  zlim = NULL,
+  zlimtype = "balanced",   # alternative : "range"
+  date.axis = "traditional",  # alternative : "modern"
+  date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by="months"),
+  date.format = "'%y-%b", xlab = "", ylab = "Length classes",
+  draw = TRUE,
+  ...){
 
     dates <- x$dates
     classes <- x$midLengths

@@ -268,7 +268,7 @@ ELEFAN_GA <- function(
       flagging.out = flagging.out,
       popSize = popSize, maxiter = maxiter, run = run, parallel = parallel,
       pmutation = pmutation, pcrossover = pcrossover, elitism = elitism,
-      seed = seed, monitor = FALSE,
+      seed = seed, monitor = monitor,
       ...
     )
     pars <- as.list(fit@solution[1,])
@@ -289,7 +289,7 @@ ELEFAN_GA <- function(
       popSize = popSize, maxiter = maxiter, run = run, parallel = parallel,
       pmutation = pmutation, pcrossover = pcrossover, elitism = elitism,
       seed = seed,
-      monitor = FALSE,
+      monitor = monitor,
       ...
     )
     pars <- as.list(fit@solution[1,])
@@ -301,25 +301,25 @@ ELEFAN_GA <- function(
     GA::plot(fit)
   }
 
-  final_res <- lfqFitCurves(lfq = lfq, par=pars,
-                            flagging.out = flagging.out,
-                            agemax = agemax)
+  final_res <- lfqFitCurves(
+    lfq = lfq, par=pars,
+    flagging.out = flagging.out,
+    agemax = agemax)
 
   # growth performance index
   phiL <- log10(pars$K) + 2 * log10(pars$Linf)
   pars$phiL <- phiL
 
   # Results
-  ret <- c(lfq, list(ncohort = final_res$ncohort,
-                     agemax = final_res$agemax,
-                     par = pars,
-                     #fitnessValue = fit@fitnessValue,
-                     Rn_max = fit@fitnessValue))
+  lfq$ncohort <- final_res$ncohort
+  lfq$agemax <- final_res$agemax
+  lfq$par <- pars
+  lfq$fESP <- fit@fitnessValue
+  lfq$Rn_max <- fit@fitnessValue
 
-  class(ret) <- "lfq"
   if(plot){
-    plot(ret, Fname = "rcounts")
-    Lt <- lfqFitCurves(ret, par = pars, draw=TRUE)
+    plot(lfq, Fname = "rcounts")
+    Lt <- lfqFitCurves(lfq, par = lfq$pars, draw=TRUE)
   }
-  return(ret)
+  return(lfq)
 }
