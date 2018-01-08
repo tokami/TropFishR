@@ -1,5 +1,26 @@
-### TropFishR 1.2
+### TropFishR 1.2.1
+    
+---
+	
+##### Documentation
+      - A new vignette has been added to the package. The vignette "ELEFANTutorial" outlines
+      all ELEFAN functions available in TropFishR in detail.
+      
+      
+##### Bug fixes
+      - The ELEFAN functions did not overwrite any element of the lfq object but instead
+      concatinated parameters onto the object. This can have unintended side effects, e.g. if several
+      growth parameters are saved in the lfq object and the plotting functions are called.
+      Now, the application of ELEFAN functions overwrites any growth parameters in the lfq object.
 
+      
+<br><br>
+
+	
+### TropFishR 1.2
+    
+---
+	
 ##### New features
 
       - Due to more efficient matrix computations ELEFAN is 2-4 times faster as before

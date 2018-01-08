@@ -119,8 +119,28 @@ $(document).ready(function () {
 </div>
 
 
+<div id="tropfishr-1.2.1" class="section level3">
+<h3>TropFishR 1.2.1</h3>
+<hr />
+<div id="documentation" class="section level5">
+<h5>Documentation</h5>
+<pre><code>  - A new vignette has been added to the package. The vignette &quot;ELEFANTutorial&quot; outlines
+  all ELEFAN functions available in TropFishR in detail.
+  
+  </code></pre>
+</div>
+<div id="bug-fixes" class="section level5">
+<h5>Bug fixes</h5>
+<pre><code>  - The ELEFAN functions did not overwrite any element of the lfq object but instead
+  concatinated parameters onto the object. This can have unintended side effects, e.g. if several
+  growth parameters are saved in the lfq object and the plotting functions are called.
+  Now, the application of ELEFAN functions overwrites any growth parameters in the lfq object.</code></pre>
+<p><br><br></p>
+</div>
+</div>
 <div id="tropfishr-1.2" class="section level3">
 <h3>TropFishR 1.2</h3>
+<hr />
 <div id="new-features" class="section level5">
 <h5>New features</h5>
 <pre><code>  - Due to more efficient matrix computations ELEFAN is 2-4 times faster as before
@@ -143,7 +163,7 @@ $(document).ready(function () {
   - growth parameters can now be added to lfq lists as &quot;par&quot; elements, this
   is convenient as it is in line with the results of the ELEFAN methods</code></pre>
 </div>
-<div id="documentation" class="section level5">
+<div id="documentation-1" class="section level5">
 <h5>Documentation</h5>
 <pre><code>  - new vignette with a short description of lfq data and
   how to import lfq data into R 
@@ -151,7 +171,7 @@ $(document).ready(function () {
   - more informative error and warning messages for many functions
   - document with news and changes about package version was added</code></pre>
 </div>
-<div id="bug-fixes" class="section level5">
+<div id="bug-fixes-1" class="section level5">
 <h5>Bug fixes</h5>
 <pre><code>  - crash report of ELEFAN_GA with interactive sessions (Rstudio) fixed
   and more stable on windows
