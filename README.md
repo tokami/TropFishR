@@ -1,12 +1,5 @@
-TropFishR :fishing_pole_and_fish:
+TropFishR
 =====
-
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
-[![Build Status](https://api.travis-ci.org/tokami/TropFishR.svg?branch=master)](https://travis-ci.org/tokami/TropFishR)
-[![CRAN version](http://www.r-pkg.org/badges/version/TropFishR)](https://cran.r-project.org/package=TropFishR) 
-[![CRAN Downloads](http://cranlogs.r-pkg.org/badges/TropFishR)](https://cran.r-project.org/package=TropFishR)
-[![GitHub release](https://img.shields.io/github/release/tokami/TropFishR.svg)](https://github.com/tokami/TropFishR/releases)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.495176.svg)](https://doi.org/10.5281/zenodo.495176)
 
 ## Package description
    	
@@ -44,9 +37,9 @@ how to cite this package.
 
 
 ## Vignettes
-A [tutorial](https://rawgit.com/tokami/TropFishR/master/inst/doc/tutorial.html)
-demonstrates the use of some of the main functions of TropFishR for a 
-single-species stock assessment with length-frequency data. The [second vignette](https://rawgit.com/tokami/TropFishR/master/inst/doc/lfqData.html) gives a brief description of LFQ data and illustrates how files with raw length measurements (e.g. excel files) can be imported into R and trimmed for the use with TropFishR.
+The [tutorial](https://cran.r-project.org/package=TropFishR/vignettes/tutorial.html)
+demonstrates the use of the main functions of TropFishR for a 
+single-species stock assessment with length-frequency data. The [second vignette](https://cran.r-project.org/package=TropFishR/vignettes/lfqData.html) gives a brief description of LFQ data and illustrates how files with raw length measurements (e.g. excel files) can be imported into R and trimmed for the use with TropFishR. The vignette [ELEFANTutorial](https://cran.r-project.org/package=TropFishR/vignettes/Using_TropFishR_ELEFAN_functions.html) demonstrates the ELEFAN functions available in TropFishR in detail and discusses best practices.
 
 
 ## Questions / Issues
