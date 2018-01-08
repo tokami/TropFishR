@@ -167,7 +167,7 @@ synLFQ4 <- ELEFAN_GA(
   MA = 11,
   plot.score = TRUE, 
   monitor = FALSE,
-  parallel = TRUE
+  parallel = FALSE
 )
 
 ## ------------------------------------------------------------------------
@@ -196,6 +196,6 @@ synLFQ4 <- ELEFAN_GA(
   MA = 11,
   plot.score = TRUE, 
   monitor = FALSE,
-  parallel = TRUE
+  parallel = FALSE
 )
 

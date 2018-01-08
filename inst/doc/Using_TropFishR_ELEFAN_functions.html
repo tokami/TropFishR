@@ -315,7 +315,7 @@ alba5 &lt;-<span class="st"> </span><span class="kw">ELEFAN_GA</span>(
 <h3><span class="header-section-number">5.3.2</span> A synthetic example</h3>
 <p>For the synthetic lfq dataset <code>synLFQ4</code>, the soVBGF parameters used in its generation are known:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">true_par &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">Linf =</span> <span class="dv">80</span>, <span class="dt">K =</span> <span class="fl">0.5</span>, <span class="dt">t_anchor =</span> <span class="fl">0.25</span>,<span class="dt">C =</span> <span class="fl">0.75</span>,  <span class="dt">ts =</span> <span class="fl">0.5</span>, <span class="dt">phiL =</span> <span class="fl">3.51</span>)</code></pre></div>
-<p>The dataset is significantly more detailed (72 length bins, 25 time samples) than <code>alba</code> (14 length bins, 7 time samples), and thus will take longer to solve. For this reason a parallelized search was used to speed computation time. From the previous work presented by <span class="citation">Taylor and Mildenberger (2017)</span>, we know that a moving average setting of <code>MA = 11</code> is appropriate for this lfq data.</p>
+<p>The dataset is significantly more detailed (72 length bins, 25 time samples) than <code>alba</code> (14 length bins, 7 time samples), and thus will take longer to solve. For such large lfq data sets, solution time may be reduced through use of parallel computing (i.e. <code>parallel = TRUE</code>). From the previous work presented by <span class="citation">Taylor and Mildenberger (2017)</span>, we know that a moving average setting of <code>MA = 11</code> is appropriate for this lfq data.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">1</span>)
 synLFQ4 &lt;-<span class="st"> </span><span class="kw">ELEFAN_GA</span>(
   <span class="dt">x =</span> synLFQ4, 
@@ -329,7 +329,7 @@ synLFQ4 &lt;-<span class="st"> </span><span class="kw">ELEFAN_GA</span>(
   <span class="dt">MA =</span> <span class="dv">11</span>,
   <span class="dt">plot.score =</span> <span class="ot">TRUE</span>, 
   <span class="dt">monitor =</span> <span class="ot">FALSE</span>,
-  <span class="dt">parallel =</span> <span class="ot">TRUE</span>
+  <span class="dt">parallel =</span> <span class="ot">FALSE</span>
 )</code></pre></div>
 <pre><code>## Genetic algorithm is running. This might take some time. 
 ## A beep tone will alert completion.</code></pre>
@@ -340,10 +340,43 @@ synLFQ4 &lt;-<span class="st"> </span><span class="kw">ELEFAN_GA</span>(
 tmp<span class="op">$</span>Rn &lt;-<span class="st"> </span><span class="kw">c</span>(synLFQ4<span class="op">$</span>Rn_max,  <span class="kw">lfqFitCurves</span>(synLFQ4, <span class="dt">par =</span> true_par)<span class="op">$</span>Rn_max)
 tmp &lt;-<span class="st"> </span><span class="kw">round</span>(tmp,<span class="dv">3</span>)
 tmp</code></pre></div>
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":["Linf"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["K"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["t_anchor"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["C"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["ts"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["phiL"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["Rn"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"80.000","2":"0.500","3":"0.250","4":"0.75","5":"0.500","6":"3.51","7":"0.514"},{"1":"79.345","2":"0.491","3":"0.221","4":"0.78","5":"0.504","6":"3.49","7":"0.514"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
+<div class="kable-table">
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">Linf</th>
+<th align="right">K</th>
+<th align="right">t_anchor</th>
+<th align="right">C</th>
+<th align="right">ts</th>
+<th align="right">phiL</th>
+<th align="right">Rn</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>true</td>
+<td align="right">80.000</td>
+<td align="right">0.500</td>
+<td align="right">0.250</td>
+<td align="right">0.75</td>
+<td align="right">0.500</td>
+<td align="right">3.51</td>
+<td align="right">0.514</td>
+</tr>
+<tr class="even">
+<td>estimated</td>
+<td align="right">79.345</td>
+<td align="right">0.491</td>
+<td align="right">0.221</td>
+<td align="right">0.78</td>
+<td align="right">0.504</td>
+<td align="right">3.49</td>
+<td align="right">0.514</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(synLFQ4, <span class="dt">draw =</span> <span class="ot">FALSE</span>) 
 tmp &lt;-<span class="st"> </span><span class="kw">lfqFitCurves</span>(synLFQ4, <span class="dt">par =</span> true_par, <span class="dt">col=</span><span class="dv">8</span>, <span class="dt">lty=</span><span class="dv">1</span>, <span class="dt">draw =</span> <span class="ot">TRUE</span>)
@@ -368,7 +401,7 @@ tmp &lt;-<span class="st"> </span><span class="kw">lfqFitCurves</span>(synLFQ4, 
   <span class="dt">MA =</span> <span class="dv">11</span>,
   <span class="dt">plot.score =</span> <span class="ot">TRUE</span>, 
   <span class="dt">monitor =</span> <span class="ot">FALSE</span>,
-  <span class="dt">parallel =</span> <span class="ot">TRUE</span>
+  <span class="dt">parallel =</span> <span class="ot">FALSE</span>
 )</code></pre></div>
 <pre><code>## Genetic algorithm is running. This might take some time. 
 ## A beep tone will alert completion.</code></pre>
