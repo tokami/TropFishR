@@ -1,6 +1,14 @@
-TropFishR
+TropFishR :fishing_pole_and_fish:
 =====
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
+[![Build Status](https://api.travis-ci.org/tokami/TropFishR.svg?branch=master)](https://travis-ci.org/tokami/TropFishR)
+[![CRAN version](http://www.r-pkg.org/badges/version/TropFishR)](https://cran.r-project.org/package=TropFishR) 
+[![CRAN Downloads](http://cranlogs.r-pkg.org/badges/TropFishR)](https://cran.r-project.org/package=TropFishR)
+[![GitHub release](https://img.shields.io/github/release/tokami/TropFishR.svg)](https://github.com/tokami/TropFishR/releases)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.495176.svg)](https://doi.org/10.5281/zenodo.495176)
+
+	
 ## Package description
    	
 TropFishR is a collection of fisheries models based on the FAO Manual 
