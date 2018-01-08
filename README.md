@@ -47,7 +47,7 @@ how to cite this package.
 ## Vignettes
 The [tutorial](https://cran.r-project.org/package=TropFishR/vignettes/tutorial.html)
 demonstrates the use of the main functions of TropFishR for a 
-single-species stock assessment with length-frequency data. The [second vignette](https://cran.r-project.org/package=TropFishR/vignettes/lfqData.html) gives a brief description of LFQ data and illustrates how files with raw length measurements (e.g. excel files) can be imported into R and trimmed for the use with TropFishR. The vignette [ELEFANTutorial](https://cran.r-project.org/package=TropFishR/vignettes/Using_TropFishR_ELEFAN_functions.html) demonstrates the ELEFAN functions available in TropFishR in detail and discusses best practices.
+single-species stock assessment with length-frequency data. The [second vignette](https://cran.r-project.org/package=TropFishR/vignettes/lfqData.html) gives a brief description of LFQ data and illustrates how files with raw length measurements (e.g. excel files) can be imported into R and trimmed for the use with TropFishR. The vignette [ELEFANTutorial](https://rawgit.com/tokami/TropFishR/master/inst/doc/Using_TropFishR_ELEFAN_functions.html) demonstrates the ELEFAN functions available in TropFishR in detail and discusses best practices.
 
 
 ## Questions / Issues
