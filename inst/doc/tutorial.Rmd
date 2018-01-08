@@ -3,11 +3,16 @@ title: "Single-species fish stock assessment with TropFishR"
 author: "Tobias K. Mildenberger"
 date: "`r Sys.Date()`"
 output:
-  rmarkdown::html_vignette:
-  fig_caption: yes
-number_sections: yes
+    rmarkdown::html_vignette:
+    fig_caption: yes
+    number_sections: true
+    df_print: paged
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapsed: false  
 vignette: >
-  %\VignetteIndexEntry{tutorial}
+  %\VignetteIndexEntry{StockAssessmentTutorial}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 bibliography: TropFishR.bib

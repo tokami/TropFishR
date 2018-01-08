@@ -3,19 +3,18 @@ title: "Using the TropFishR ELEFAN functions"
 author: "Marc H. Taylor"
 date: "`r Sys.Date()`"
 output: 
-  rmarkdown::html_document:
+  rmarkdown::html_vignette:
     fig_caption: yes
     number_sections: true
     df_print: paged
-    toc: true
-    toc_depth: 2
     toc_float:
       collapsed: false
+      depth: 2
 vignette: >
-  %\VignetteIndexEntry{tutorial}
+  %\VignetteIndexEntry{ELEFANTutorial}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-bibliography: Using_TropFishR_ELEFAN_functions.bib
+bibliography: TropFishR.bib
 ---
 
 
@@ -28,7 +27,7 @@ knitr::opts_chunk$set(
 ```
 
 # Introduction
-The following tutorial outlines the use of the ELEFAN functions available in TropFishR [@mildenberger_tropfishr_2017; @mildenberger_tropfishr:_2017] (`ELEFAN`, `ELEFAN_GA`, and `ELEFAN_SA`). These functions can be used to estimate growth model parameters from length-frequency (lfq) data. The ability to convert length to age is the initial step in length-based stock assessment, and underpins subsequent analyses (see the [TropFishR tutorial](https://cran.r-project.org/package=TropFishR/vignettes/tutorial.html) for a broader overview of length-based stock assessment).
+The following tutorial outlines the use of the ELEFAN functions available in TropFishR [@mildenberger_tropfishr:_2017; @Mildenberger2016] (`ELEFAN`, `ELEFAN_GA`, and `ELEFAN_SA`). These functions can be used to estimate growth model parameters from length-frequency (lfq) data. The ability to convert length to relative age is the initial step in length-based stock assessment, and underpins subsequent analyses (see the [TropFishR tutorial](https://cran.r-project.org/package=TropFishR/vignettes/tutorial.html) for a broader overview of length-based stock assessment).
 
 The growth model presently implemented within TropFishR is the von Bertalanffy growth function (VBGF),
 
@@ -64,7 +63,7 @@ TropFishR also offers users the ability to model inter-annual variability in gro
 
 $$ L_{t} = L_{\infty} (1-\exp(-(K(t-t_0)+S(t)-S(t_0)))), $$
 
-where $S(t) = (CK/2\pi)\sin 2\pi(t−t_s)$, $C$ is a constant indicating the amplitude of the oscillation, typically ranging from 0 to 1 (a value >1 implies periods of shrinkage, which is rare), and $t_s$ is the fraction of a year (relative to the age of recruitment,$t=0$) where the sine wave oscillation begins (i.e. turns positive). In TropFishR, these additional oscillation parameters are written as `C` and `ts`.  
+where $S(t) = (CK/2\pi)\sin 2\pi(t−t_s)$, $C$ is a constant indicating the amplitude of the oscillation, typically ranging from 0 to 1 (a value $>1$ implies periods of shrinkage, which is rare), and $t_s$ is the fraction of a year (relative to the age of recruitment, $t=0$) where the sine wave oscillation begins (i.e. turns positive). In TropFishR, these additional oscillation parameters are written as `C` and `ts`.  
 
 The following plot demonstrates the effect of variable $C$ settings:
 
@@ -120,7 +119,7 @@ plot(alba, hist.sc = 0.75)
 ```
 
 ## Scoring of VGBF parameter combinations
-Depending on the restructuring settings, the distribution and amplitude of positive and negative scoring bins will be effected. The scoring procedure used in TropFishR follows that of FiSAT II, as outlined by @gayanilo_fao-iclarm_1997. For a given set of VBGF parameters, yearly repeating growth curves are drawn through the lfq data. Scoring is based on the concept of "peaks", which are runs of positive or negative scoring bins. Each peak takes the value of the largest absolute value contained within. 
+Depending on the restructuring settings, the distribution and amplitude of positive and negative scoring bins will be affected. The scoring procedure used in TropFishR follows that of FiSAT II, as outlined by @gayanilo_fao-iclarm_1997. For a given set of VBGF parameters, yearly repeating growth curves are drawn through the lfq data. Scoring is based on the concept of "peaks", which are runs of positive or negative scoring bins. Each peak takes the value of the largest absolute value contained within. 
 
 The sum of all positive peaks is called the "available sum of peaks" (ASP), which represents a maximum possible score (if no negative bins are crossed). The "estimated sum of peaks" (ESP) is the sum of peak values crossed by the growth curves, with the caveat that positively crossed bins are only counted once (i.e. "flagged out") while negatively crossed bins are counted every time they are hit [@pauly_improving_1985]. 
 
@@ -146,7 +145,7 @@ In ELEFAN, *time* is used rather than *age*, and the point where the growth curv
 ## Asymptotic length (Linf)
 Linf has been a historically difficult parameter to estimate with ELEFAN due to low counts at large sizes. One recommendation is to approximate Linf outside of ELEFAN, e.g. via a *Powell-Wetherall* plot, which may help to refine searches to a smaller range of possible values. We will see later that several maxima (high scoring regions) of the parameter search space can make the selection of a "best" combination difficult, so searches restricted to sensible values is recommended. 
 
-TropFishR includes the function `powell_wetherall`, which can be used to estimate Linf, including confidence intervals. The selection of length classes to include in the regression should be restricted to fully-exploited sizes that contain relatively large frequencies. In this example, both the smallest and largest sizes have been excluded, which results in Linf = 11.74 and a confidence interval between 9.90 and 13.58. 
+TropFishR includes the function `powell_wetherall`, which can be used to estimate Linf, including confidence intervals. The selection of length classes to include in the regression should be restricted to fully-exploited sizes that contain relatively large frequencies. In this example, both the smallest and largest sizes have been excluded, which results in Linf = 11.74cm and a confidence interval between 9.90 and 13.58cm. 
 
 ```{r}
 PW <- powell_wetherall(alba, catch_columns = 1:7, reg_int = c(2,9) )
@@ -185,7 +184,7 @@ alba2$Rn_max
 ```
 
 In the above plot, the highest Rn score is denoted by a red star symbol(*), although there exists a larger area of relatively similar scores. This is typical of an RSA plot, where a plateau of higher scores often forms
- along a banana-shaped area of negatively correlated K and Linf values, which generally follows an isoline of the growth performance index ($\phi' = \log(K)+ 2\log(L_{\infty})$). In the best case, a single maxima will stand out, revealing the best parameter combination, however this is usually rare. Nevertheless, a wide range of values can be visualized, allowing for reduced ranges in subsequent RSAs or refined searches via other algorithms (see following section below). 
+ along a banana-shaped area of negatively correlated K and Linf values, which generally follows an isocline of the growth performance index ($\phi' = \log(K)+ 2\log(L_{\infty})$). In the best case, a single maxima will stand out, revealing the best parameter combination, however this is usually rare. Nevertheless, a wide range of values can be visualized, allowing for reduced ranges in subsequent RSAs or refined searches via other algorithms (see following section below). 
 
 The resulting best scoring combination is added to the lfq object in the `par` element, allowing for direct visualization via `plot.lfq`. In the following plot, the bin designated for crossing is denoted by a red star symbol(*):
 ```{r}
@@ -269,9 +268,9 @@ plot(alba4)
 
 ## Seasonally-oscillating growth
 
-ELEFAN also offers searching based on the soVBGF, although these values must be fixed (e.g. in RSA), and thus their estimation must be derived from other methods. Including all 5 possible parameter combinations of the soVBGF (`Linf`, `K`, `t_anchor`, `C`, and `ts`) would require an exponentially higher number of calculations, making the approach impractical. To the contrary, both `ELEFAN_SA` and `ELEFAN_GA` allow for easy incorporation of these parameters in a more optimized search. Again, algorithms search for all parameters along a continuous scale.
+The traditional ELEFAN functions also offer searching based on the soVBGF, although these values must be fixed (e.g. in RSA), and thus their estimation must be derived from other methods. Including all 5 possible parameter combinations of the soVBGF (`Linf`, `K`, `t_anchor`, `C`, and `ts`) would require an exponentially higher number of calculations, making the approach impractical. To the contrary, both `ELEFAN_SA` and `ELEFAN_GA` allow for easy incorporation of these parameters in a more optimized search. Again, algorithms search for all parameters along a continuous scale.
 
-The following examples demonstrate fitting of soVBGF to both `alba` and a synthetically-generated lfq dataset (`synLFQ4`) using `ELEFAN_GA`. The main additions to the functions arguments are to set `seasonalized = TRUE` and to include lower and upper bounds for `ts`and `C` in `low_par` and `up_par`, respectively. Unless there is evidence to restrict these parameters, bounds spanning the full range of the parameters (i.e. between 0 and 1) are recommended.
+The following examples demonstrate fitting of soVBGF to both `alba` and a synthetically-generated lfq dataset (`synLFQ4`) using `ELEFAN_GA`. The main additions to the functions arguments are to set `seasonalized = TRUE` and to include lower and upper bounds for `ts` and `C` in `low_par` and `up_par`, respectively. Unless there is evidence to restrict these parameters, bounds spanning the full range of the parameters (i.e. between 0 and 1) are recommended.
 
 
 ### alba
@@ -299,7 +298,7 @@ plot(alba5)
 In the case of the `alba` dataset, no real improvement in Rn is observed for the soVBGF fit (`alba5$Rn_max`) over that of the VBGF fit (`alba4$Rn_max`). Although no statistical test is (yet) available for selecting one model over the other, the lack of sufficient improvement would seem to suggest selecting the simpler VBGF model.
 
 
-### A syntheic example
+### A synthetic example
 For the synthetic lfq dataset `synLFQ4`, the soVBGF parameters used in its generation are known: 
 ```{r}
 true_par <- list(Linf = 80, K = 0.5, t_anchor = 0.25,C = 0.75,  ts = 0.5, phiL = 3.51)
