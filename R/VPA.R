@@ -378,9 +378,21 @@ VPA <- function(param,
       if(length(classes) != length(catch)) stop("Midlengths and catch do not have the same length!")
     }
 
-    Linf <- res$Linf
-    K <- res$K
-    t0 <- ifelse(is.null(res$t0),0,res$t0)
+      
+    if("par" %in% names(res)){
+        Linf <- res$par$Linf
+        K <- res$par$K
+        t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
+        C <- ifelse("C" %in% names(res$par), res$par$C, 0)
+        ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
+    }else{
+        Linf <- res$Linf
+        K <- res$K
+        t0 <- ifelse("t0" %in% names(res), res$t0, 0)
+        C <- ifelse("C" %in% names(res), res$C, 0)
+        ts <- ifelse("ts" %in% names(res), res$ts, 0)
+    }
+      
     if(!("a" %in% names(res)) | !("b" %in% names(res))) stop("VPA requires information about the length-weight relationship. Please provide 'a' and 'b' estimates in res.")
     a <- res$a
     b <- res$b
