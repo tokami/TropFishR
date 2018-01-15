@@ -27,6 +27,7 @@
 #'    "RikhterEfanov", "Roff", "Then_growth", or "Then_tmax".
 #'    Please refer to Details to see which input parameters
 #'    are required by each method.
+#' @param boot an object of class 'lfqBoot'
 #'
 #' @keywords function mortality M
 #'
@@ -34,11 +35,18 @@
 #' M_empirical(Linf = 80, K_l = 0.5, temp = 25, tmax = 30,
 #'      method = c("Pauly_Linf","Hoenig"))
 #'
+#' ## bootstrapping application of M
+#' ## coming soon
+#'
 #' @source https://cran.r-project.org/web/packages/fishmethods/index.html
 #'
 #' @details Function adapted from the mortality function of the fishmethods package
 #'     by Gary A. Nelson
-#'     (https://cran.r-project.org/web/packages/fishmethods/index.html).
+#'     (https://cran.r-project.org/web/packages/fishmethods/index.html). The function allows to
+#'     be applied to a the results of the bootstrapping ELEFAN functions. This can be done by providing
+#'     the 'lfqBoot' object by use of the argument \code{boot}. So far only the methods 'Pauly_Linf' and
+#'     'Then_growth' can be used.
+#' 
 #'
 #' Depending on the method different input parameters are required:
 #' \itemize{
@@ -105,125 +113,186 @@
 M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
                         temp = NULL, tmax = NULL, tm50 = NULL, GSI = NULL,
                         Wdry = NULL, Wwet = NULL, Bl = NULL,
-                        schooling = FALSE, method){
+                        schooling = FALSE, method, boot = NULL){
 
-  if (any(method == "AlversonCarney") & any(is.null(tmax), is.null(K_l)))
-    stop("AlversonCarney requires K_l and tmax")
-  if (any(method == "Gislason") & any(is.null(Linf), is.null(K_l), is.null(Bl)))
-    stop("Gislason requires Linf, K_l, and Bl")
-  if (any(method == "GundersonDygert") & is.null(GSI))
-    stop("GundersonDygert requires GSI")
-  if (any(method == "Hoenig") & is.null(tmax))
-    stop("Hoenig requires tmax")
-  if (any(method == "Lorenzen") & is.null(Wwet))
-    stop("Lorenzen requires Wwet")
-  if (any(method == "Pauly_Linf") & any(is.null(Linf), is.null(K_l), is.null(temp)))
-    stop("Pauly_Linf requires Linf, K_l, and temp")
-  if (any(method == "Pauly_Winf") & any(is.null(Winf), is.null(K_w), is.null(temp)))
-    stop("Pauly_Winf requires Winf, K_w, and temp")
-  if (any(method == "PetersonWroblewski") & is.null(Wdry))
-    stop("PetersonWroblewski requires Wdry")
-  if (any(method == "RikhterEfanov") & any(is.null(tm50)))
-    stop("RikhterEfanov requires K_l and tm50")
-  if (any(method == "Roff") & any(is.null(tm50), is.null(K_l)))
-    stop("Roff requires K_l and tm50")
-  if (any(method == "Then_tmax") & any(is.null(tmax)))
-    stop("Then_max requires tmax")
-  if (any(method == "Then_growth") & any(is.null(Linf), is.null(K_l)))
-    stop("Then_growth requires Linf and K_l")
+    if(is.null(boot) || class(boot) != "lfqBoot"){
+        if (any(method == "AlversonCarney") & any(is.null(tmax), is.null(K_l)))
+          stop("AlversonCarney requires K_l and tmax")
+        if (any(method == "Gislason") & any(is.null(Linf), is.null(K_l), is.null(Bl)))
+          stop("Gislason requires Linf, K_l, and Bl")
+        if (any(method == "GundersonDygert") & is.null(GSI))
+          stop("GundersonDygert requires GSI")
+        if (any(method == "Hoenig") & is.null(tmax))
+          stop("Hoenig requires tmax")
+        if (any(method == "Lorenzen") & is.null(Wwet))
+          stop("Lorenzen requires Wwet")
+        if (any(method == "Pauly_Linf") & any(is.null(Linf), is.null(K_l), is.null(temp)))
+          stop("Pauly_Linf requires Linf, K_l, and temp")
+        if (any(method == "Pauly_Winf") & any(is.null(Winf), is.null(K_w), is.null(temp)))
+          stop("Pauly_Winf requires Winf, K_w, and temp")
+        if (any(method == "PetersonWroblewski") & is.null(Wdry))
+          stop("PetersonWroblewski requires Wdry")
+        if (any(method == "RikhterEfanov") & any(is.null(tm50)))
+          stop("RikhterEfanov requires K_l and tm50")
+        if (any(method == "Roff") & any(is.null(tm50), is.null(K_l)))
+          stop("Roff requires K_l and tm50")
+        if (any(method == "Then_tmax") & any(is.null(tmax)))
+          stop("Then_max requires tmax")
+        if (any(method == "Then_growth") & any(is.null(Linf), is.null(K_l)))
+          stop("Then_growth requires Linf and K_l")
 
-  n <- length(method)
-  if (any(method == "Hoenig"))
-    n <- n + 1
-  M_mat <- matrix(NA, n, 1L)
-  dimnames(M_mat) <- list(rep(NA, n), c("M"))
-  ind <- 0
+        n <- length(method)
+        if (any(method == "Hoenig"))
+          n <- n + 1
+        M_mat <- matrix(NA, n, 1L)
+        dimnames(M_mat) <- list(rep(NA, n), c("M"))
+        ind <- 0
 
-  if(any(method == "AlversonCarney")){
-    ind <- ind + 1
-    # Alverson and Carney (1975)
-    M_mat[ind, 1]  <- round((3 * K_l)/(exp(K_l * (0.38 * tmax)) - 1), 3)
-    dimnames(M_mat)[[1]][ind] <- list("Alverson and Carney (1975)")
-  }
-  #if(any(method == "Gislason")){
-  #  ind <- ind + 1
-  #  # Gislason et al. (2010)
-  #  M_mat[ind, 1]  <- round(exp(0.55 - 1.61 * log(Bl) + 1.44 * log(Linf) + log(K_l)), 3)
-  #  dimnames(M_mat)[[1]][ind] <- list("Gislason et al. (2010)")
-  #}
-  if(any(method == "GundersonDygert")){
-    ind <- ind + 1
-    # Gunderson and Dygert (1988)
-    M <- round(0.03 + 1.68 * GSI, 3)
-    dimnames(M_mat)[[1]][ind] <- list("Gunderson and Dygert (1988)")
-  }
-  if(any(method == "Hoenig")){
-    ind <- ind + 1
-    # Hoenig (1983) - Joint Equation
-    M_mat[ind, 1]  <- round(4.22/(tmax^0.982), 3)
-    dimnames(M_mat)[[1]][ind] <- list("Hoenig (1983) - Joint Equation")
+        if(any(method == "AlversonCarney")){
+          ind <- ind + 1
+          # Alverson and Carney (1975)
+          M_mat[ind, 1]  <- round((3 * K_l)/(exp(K_l * (0.38 * tmax)) - 1), 3)
+          dimnames(M_mat)[[1]][ind] <- list("Alverson and Carney (1975)")
+        }
+        #if(any(method == "Gislason")){
+        #  ind <- ind + 1
+        #  # Gislason et al. (2010)
+        #  M_mat[ind, 1]  <- round(exp(0.55 - 1.61 * log(Bl) + 1.44 * log(Linf) + log(K_l)), 3)
+        #  dimnames(M_mat)[[1]][ind] <- list("Gislason et al. (2010)")
+        #}
+        if(any(method == "GundersonDygert")){
+          ind <- ind + 1
+          # Gunderson and Dygert (1988)
+          M <- round(0.03 + 1.68 * GSI, 3)
+          dimnames(M_mat)[[1]][ind] <- list("Gunderson and Dygert (1988)")
+        }
+        if(any(method == "Hoenig")){
+          ind <- ind + 1
+          # Hoenig (1983) - Joint Equation
+          M_mat[ind, 1]  <- round(4.22/(tmax^0.982), 3)
+          dimnames(M_mat)[[1]][ind] <- list("Hoenig (1983) - Joint Equation")
 
-    ind <- ind + 1
-    # Hoenig (1983) - Fish Equation
-    M_mat[ind, 1]  <- round(exp(1.46 - 1.01 * log(tmax)), 3)
-    dimnames(M_mat)[[1]][ind] <- list("Hoenig (1983) - Fish Equation")
-  }
-  if(any(method == "Lorenzen")){
-    ind <- ind + 1
-    # Lorenzen (1996)
-    M_mat[ind, 1]  <- round(3 * (Wwet^-0.288), 3)
-    dimnames(M_mat)[[1]][ind] <- list("Lorenzen (1996)")
-  }
-  if(any(method == "Pauly_Linf")){
-    ind <- ind + 1
-    M_mat[ind, 1]  <- round(10^(-0.0066 - 0.279 * log10(Linf) + 0.6543 * log10(K_l) + 0.4634 * log10(temp)), 3)  #exp( -0.0152 - 0.279 * log(Linf) + 0.6543 * log(K) + 0.463 * log(temp))
-    dimnames(M_mat)[[1]][ind] <- list("Pauly (1980) - Length Equation")
-    if(schooling == TRUE){
-      M_mat[ind, 1] <- 0.8 * M_mat[ind, 1]
+          ind <- ind + 1
+          # Hoenig (1983) - Fish Equation
+          M_mat[ind, 1]  <- round(exp(1.46 - 1.01 * log(tmax)), 3)
+          dimnames(M_mat)[[1]][ind] <- list("Hoenig (1983) - Fish Equation")
+        }
+        if(any(method == "Lorenzen")){
+          ind <- ind + 1
+          # Lorenzen (1996)
+          M_mat[ind, 1]  <- round(3 * (Wwet^-0.288), 3)
+          dimnames(M_mat)[[1]][ind] <- list("Lorenzen (1996)")
+        }
+        if(any(method == "Pauly_Linf")){
+          ind <- ind + 1
+          M_mat[ind, 1]  <- round(10^(-0.0066 - 0.279 * log10(Linf) + 0.6543 * log10(K_l) + 0.4634 * log10(temp)), 3)  #exp( -0.0152 - 0.279 * log(Linf) + 0.6543 * log(K) + 0.463 * log(temp))
+          dimnames(M_mat)[[1]][ind] <- list("Pauly (1980) - Length Equation")
+          if(schooling == TRUE){
+            M_mat[ind, 1] <- 0.8 * M_mat[ind, 1]
+          }
+        }
+        if(any(method == "Pauly_Winf")){
+          ind <- ind + 1
+          M_mat[ind, 1]  <- round(10^(-0.2107 - 0.0824 * log10(Winf) + 0.6757 * log10(K_w) + 0.4627 * log10(temp)), 3)  #exp( -0.2107 - 0.0824 * log(Winf) + 0.6757 * log(K) + 0.4627 * log(temp))
+          dimnames(M_mat)[[1]][ind] <- list("Pauly (1980) - Weight Equation")
+          if(schooling == TRUE){
+            M_mat[ind, 1] <- 0.8 * M_mat[ind, 1]
+          }
+        }
+        if(any(method == "PetersonWroblewski")){
+          ind <- ind + 1
+          # Peterson and Wroblewski (1984)
+          M_mat[ind, 1]  <- round(1.92 * (Wdry^-0.25), 3)
+          dimnames(M_mat)[[1]][ind] <- list("Peterson and Wroblewski (1984)")
+        }
+        if(any(method == "RikhterEfanov")){
+          ind <- ind + 1
+          M_mat[ind, 1]  <- round(1.521 / ( tm50 ^ 0.720) - 0.155, 3)
+          dimnames(M_mat)[[1]][ind] <- list("Rikhter and Efanov (1976)")
+        }
+        if(any(method == "Roff")){
+          ind <- ind + 1
+          # Roff (1984)
+          M_mat[ind, 1]  <- round((3 * K_l)/(exp(K_l * tm50) - 1), 3)
+          dimnames(M_mat)[[1]][ind] <- list("Roff (1984)")
+        }
+        if (any(method == "Then_tmax")) {
+          ind <- ind + 1
+          M_mat[ind, 1]  <- round(4.899 * tmax^-0.916, 3)
+          dimnames(M_mat)[[1]][ind] <- list("Then (2015) - tmax")
+        }
+        if (any(method == "Then_growth")) {
+          ind <- ind + 1
+          M_mat[ind, 1]  <- round(4.118 * (K_l^0.73) * (Linf^-0.33), 3)
+          dimnames(M_mat)[[1]][ind] <- list("Then (2015) - growth")
+        }
+        if (any(method == "Gislason")) {
+          Ml <- round(exp(0.55 - 1.61 * log(Bl) + 1.44 *
+                                       log(Linf) + log(K_l)), 3)
+          M_mat <- as.data.frame(matrix(c(Bl,Ml),byrow = FALSE,ncol=2))
+          colnames(M_mat) <- c("Bl","Ml")
+        }
+        return(M_mat)        
+
+        
+    }else{
+
+        ## calculations with bootstrapped ELEFAN results
+        bootOut <- boot
+        bootRaw <- boot$bootRaw
+        
+        if (any(method == "Pauly_Linf") & any(is.null(bootRaw$Linf), is.null(bootRaw$K), is.null(temp)))
+          stop("Pauly_Linf requires temp and a boot object with columns Linf and K")
+        if (any(method == "Then_growth") & any(is.null(bootRaw$Linf), is.null(bootRaw$K)))
+          stop("Then_growth requires a boot object with columns Linf and K")        
+
+        
+        if(any(method == "Pauly_Linf")){
+            Ms <- round(10^(-0.0066 - 0.279 * log10(bootRaw$Linf) +
+                            0.6543 * log10(bootRaw$K) + 0.4634 * log10(temp)), 3)
+            if(schooling == TRUE){
+                Ms <- 0.8 * Ms
+            }                
+            bootRaw[,ncol(bootRaw)+1]  <- Ms
+            colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)], "M_Pauly")
+        }
+        if (any(method == "Then_growth")) {
+            bootRaw[,ncol(bootRaw)+1] <- round(4.118 * (bootRaw$K^0.73) * (bootRaw$Linf^-0.33), 3)
+            colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)], "M_Then")            
+        }
+
+        tmp <- as.data.frame(bootRaw[,(ncol(boot$bootRaw)+1:length(method))])
+
+        ## max density and CIS
+        resMaxDen <- vector("numeric", ncol(tmp))
+        ciList <- vector("list", ncol(tmp))
+        for(i in seq(length(method))){
+            ## max densities
+            x <- ks::kde(tmp[,i])
+            ind <- which(x$estimate > x$cont["99%"])
+            resMaxDen[i] <- mean(x$eval.points[ind])
+            ## confidence intervals
+            CItxt <- paste0(round(5), "%")
+            inCI <- rle( x$estimate > x$cont[CItxt] )
+            start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
+            end.idx <- cumsum(inCI$lengths)
+            limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
+            ciList[[i]] <- limCI
+        }
+
+        resCIs <- cbind(boot$bootCIs,t(do.call(rbind,ciList)))
+        colnames(resCIs) <- colnames(bootRaw)
+        rownames(resCIs) <- c("lo","up")
+        resMaxDen <- c(boot$bootMaxDen, resMaxDen)
+        names(resMaxDen) <- names(bootRaw)
+
+        ret <- list()
+        ret$bootRaw <- bootRaw
+        ret$bootMaxDen <- resMaxDen
+        ret$bootCIs <- resCIs
+
+        class(ret) <- "lfqBoot"        
+        return(ret)
     }
-  }
-  if(any(method == "Pauly_Winf")){
-    ind <- ind + 1
-    M_mat[ind, 1]  <- round(10^(-0.2107 - 0.0824 * log10(Winf) + 0.6757 * log10(K_w) + 0.4627 * log10(temp)), 3)  #exp( -0.2107 - 0.0824 * log(Winf) + 0.6757 * log(K) + 0.4627 * log(temp))
-    dimnames(M_mat)[[1]][ind] <- list("Pauly (1980) - Weight Equation")
-    if(schooling == TRUE){
-      M_mat[ind, 1] <- 0.8 * M_mat[ind, 1]
-    }
-  }
-  if(any(method == "PetersonWroblewski")){
-    ind <- ind + 1
-    # Peterson and Wroblewski (1984)
-    M_mat[ind, 1]  <- round(1.92 * (Wdry^-0.25), 3)
-    dimnames(M_mat)[[1]][ind] <- list("Peterson and Wroblewski (1984)")
-  }
-  if(any(method == "RikhterEfanov")){
-    ind <- ind + 1
-    M_mat[ind, 1]  <- round(1.521 / ( tm50 ^ 0.720) - 0.155, 3)
-    dimnames(M_mat)[[1]][ind] <- list("Rikhter and Efanov (1976)")
-  }
-  if(any(method == "Roff")){
-    ind <- ind + 1
-    # Roff (1984)
-    M_mat[ind, 1]  <- round((3 * K_l)/(exp(K_l * tm50) - 1), 3)
-    dimnames(M_mat)[[1]][ind] <- list("Roff (1984)")
-  }
-  if (any(method == "Then_tmax")) {
-    ind <- ind + 1
-    M_mat[ind, 1]  <- round(4.899 * tmax^-0.916, 3)
-    dimnames(M_mat)[[1]][ind] <- list("Then (2015) - tmax")
-  }
-  if (any(method == "Then_growth")) {
-    ind <- ind + 1
-    M_mat[ind, 1]  <- round(4.118 * (K_l^0.73) * (Linf^-0.33), 3)
-    dimnames(M_mat)[[1]][ind] <- list("Then (2015) - growth")
-  }
-  if (any(method == "Gislason")) {
-    Ml <- round(exp(0.55 - 1.61 * log(Bl) + 1.44 *
-                                 log(Linf) + log(K_l)), 3)
-    M_mat <- as.data.frame(matrix(c(Bl,Ml),byrow = FALSE,ncol=2))
-    colnames(M_mat) <- c("Bl","Ml")
-  }
 
-
-  return(M_mat)
 }
