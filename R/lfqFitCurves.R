@@ -210,6 +210,7 @@ lfqFitCurves <- function(lfq,
   lfq$fASP <- fASP
   lfq$fESP <- fESP
   lfq$Rn_max <- fESP
+  lfq$par <- par
 
   return(lfq)
 }

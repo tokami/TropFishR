@@ -13,21 +13,22 @@
 #' @param seasonalised logical; indicating if the seasonalised von Bertalanffy
 #'    growth function should be applied (default: FALSE).
 #' @param init_par a list providing the Initial values for the components to be
-#' optimized. When set to NULL the following default values are used:
+#' optimized. When set to NULL, intial values are chosen randomly according to a
+#' uniform distribution between `low_par` and `up_par` limits.
+#' following default values are used:
 #'  \itemize{
-#'   \item \strong{Linf} length infinity in cm (default is the maximum
-#'   length class in the data),
-#'   \item \strong{K} curving coefficient (default: 0.5),
+#'   \item \strong{Linf} length infinity in cm,
+#'   \item \strong{K} curving coefficient,
 #'   \item \strong{t_anchor} time point anchoring growth curves in year-length
-#'   coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0.5),
-#'   \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 0),
-#'   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 0);
+#'   coordinate system, corrsponds to peak spawning month (range: 0 to 1),
+#'   \item \strong{C} amplitude of growth oscillation (range: 0 to 1),
+#'   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1);
 #' }
 #' @param low_par a list providing the lower bounds for components. When set to
 #' NULL the following default values are used:
 #'  \itemize{
 #'   \item \strong{Linf} length infinity in cm (default is calculated from maximum
-#'   length class in the data),
+#'   length class in the data * 0.5),
 #'   \item \strong{K} curving coefficient (default: 0.01),
 #'   \item \strong{t_anchor} time point anchoring growth curves in year-length
 #'   coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0),
@@ -38,12 +39,12 @@
 #' NULL the following default values are used:
 #'  \itemize{
 #'   \item \strong{Linf} length infinity in cm (default is calculated from maximum
-#'   length class in the data),
-#'   \item \strong{K} curving coefficient (default: 0.01),
+#'   length class in the data * 1.5),
+#'   \item \strong{K} curving coefficient (default: 3),
 #'   \item \strong{t_anchor} time point anchoring growth curves in year-length
-#'   coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0),
-#'   \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 0),
-#'   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 0);
+#'   coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 1),
+#'   \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 1),
+#'   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 1);
 #' }
 #' @param SA_time numeric; Maximum running time in seconds (default : 60 * 1).
 #' @param maxit Integer. Maximum number of iterations of the
@@ -73,9 +74,10 @@
 #' data(synLFQ4)
 #' plot(synLFQ4, Fname="catch")
 #'
-#' # ELEFAN_SA (takes approximately 2 minutes)
-#' output <- ELEFAN_SA(synLFQ4, SA_time = 60*2, seasonalised = TRUE, MA = 11,
-#'   init_par = list(Linf = 75, K = 0.5, t_anchor = 0.5, C = 0.5, ts = 0.5),
+#' # ELEFAN_SA
+#' set.seed(1)
+#' output <- ELEFAN_SA(synLFQ4, SA_time = 5, maxit = 300, seasonalised = TRUE, MA = 11,
+#'   init_par = NULL,
 #'   low_par = list(Linf = 70, K = 0.3, t_anchor = 0, C = 0, ts = 0),
 #'   up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1))
 #' output$par
@@ -86,12 +88,12 @@
 #'
 #' # or
 #' plot(output, draw = FALSE)
-#' lfqFitCurves(output, col=1, par=output$par, draw=TRUE)$ESP
+#' lfqFitCurves(output, col=1, par=output$par, draw=TRUE)$Rn_max
 #'
 #' # compare to original parameters
 #' tmp <- lfqFitCurves(output, col=4, lty=1,
 #'    par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0.5), draw=TRUE)
-#' tmp$fESP
+#' tmp$Rn_max
 #' output$Rn_max
 #' }
 #'
@@ -148,7 +150,7 @@
 ELEFAN_SA <- function(
   x,
   seasonalised = FALSE,
-  init_par = list(Linf = 50, K = 0.5, t_anchor = 0.5, C = 0, ts = 0),
+  init_par = NULL,
   low_par = NULL,
   up_par = NULL,
   SA_time = 60 * 1,
@@ -170,8 +172,13 @@ ELEFAN_SA <- function(
 
 
   # initial parameters
-  init_par_ALL <- list(Linf = Linf_est,
-                       K = 0.5, t_anchor = 0.5, C = 0, ts = 0)
+  init_par_ALL <- list(
+    Linf = runif(1, min = Linf_est*0.5, max = Linf_est*1.5),
+    K = runif(1, min = 0.01, max = 3),
+    t_anchor = runif(1, min = 0, max = 1),
+    C = runif(1, min = 0, max = 1),
+    ts = runif(1, min = 0, max = 1)
+  )
   init_Linf <- ifelse("Linf" %in% names(init_par),
                       get("Linf", init_par),
                       get("Linf", init_par_ALL))
@@ -212,7 +219,7 @@ ELEFAN_SA <- function(
 
   # upper parameter bounds
   up_par_ALL <- list(Linf = Linf_est * 1.5,
-                     K = 1,
+                     K = 3,
                      t_anchor = 1,
                      C = 1,
                      ts = 1)

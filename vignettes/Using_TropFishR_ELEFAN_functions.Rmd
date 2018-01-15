@@ -324,12 +324,12 @@ synLFQ4 <- ELEFAN_GA(
 )
 ```
 
-In this case, the *true* values are very well estimated:
+In this case, the *true* values are very well estimated, and the solution vene has a higher Rn than that calculated with the true soVBGF parameters:
 
 ```{r}
 tmp <- as.data.frame(rbind(unlist(true_par), unlist(synLFQ4$par)))
 rownames(tmp) <- c("true", "estimated")
-tmp$Rn <- c(synLFQ4$Rn_max,  lfqFitCurves(synLFQ4, par = true_par)$Rn_max)
+tmp$Rn <- c(lfqFitCurves(synLFQ4, par = true_par)$Rn_max, synLFQ4$Rn_max)
 tmp <- round(tmp,3)
 tmp
 ```
