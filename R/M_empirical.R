@@ -95,7 +95,7 @@
 #' Peterson, I. and J. S. Wroblewski. 1984. Mortality rate of fishes in the
 #' pelagic ecosystem. Can. J. Fish. Aquat. Sci. 41: 1117-1120.
 #'
-#' Rikhter, V.A., and V.N. Efanov, 1976. On one of the approaches to estimation of natural
+#'pp Rikhter, V.A., and V.N. Efanov, 1976. On one of the approaches to estimation of natural
 #' mortality of fish populations. \emph{ICNAF Res.Doc.}, 76/VI/8: 12p.
 #'
 #' Roff, D. A. 1984. The evolution of life history parameters in teleosts.
@@ -290,6 +290,7 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
         ret$bootRaw <- bootRaw
         ret$bootMaxDen <- resMaxDen
         ret$bootCIs <- resCIs
+        ret$seed <- boot$seed
 
         class(ret) <- "lfqBoot"        
         return(ret)
