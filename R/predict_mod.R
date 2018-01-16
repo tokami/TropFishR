@@ -525,7 +525,7 @@ predict_mod <- function(param, type, FM_change = NA,
               df_loop_Es <- data.frame(Lc = ifelse(!is.null(Lci),Lci,NA),
                                        tc = ifelse(!is.null(tci),tci,NA),
                                        F01 = FM_change[N01],
-                                       Fmsy = FM_change[Nmsy])
+                                       Fmax = FM_change[Nmsy])
               if(length(B_R.percent) > 0) df_loop_Es$F05 <- FM_change[N05]
               # df_loop_Es$Fmax <- FM_change[Nmax]
               df_loop_Es$E01 <- E[N01]
@@ -831,7 +831,7 @@ predict_mod <- function(param, type, FM_change = NA,
             df_loop_Es <- data.frame(Lc = ifelse(!is.null(Lci),Lci,NA),
                                      tc = ifelse(!is.null(tci),tci,NA),
                                      F01 = FM_change[N01],
-                                     Fmsy = FM_change[Nmsy])
+                                     Fmax = FM_change[Nmsy])
             if(length(B_R.percent) > 0) df_loop_Es$F05 <- FM_change[N05]   # WHY NECESSARY????
             # df_loop_Es$Fmax <- FM_change[Nmax]
             df_loop_Es$E01 <- E[N01]
@@ -1015,12 +1015,12 @@ predict_mod <- function(param, type, FM_change = NA,
             if(!is.null(Lc[1]) & !is.null(tc[1])){
               df_Es <- data.frame(Lc = Lc,
                                   tc = tc,
-                                  Fmsy = FM_change[Nmsy],
+                                  Fmax = FM_change[Nmsy],
                                   F05 = FM_change[N05],
                                   Emsy = E_change[Nmsy],
                                   E05 = E_change[N05])
             }else{
-              df_Es <- data.frame(Fmsy = FM_change[Nmsy],
+              df_Es <- data.frame(Fmax = FM_change[Nmsy],
                                   F05 = FM_change[N05],
                                   Emsy = E_change[Nmsy],
                                   E05 = E_change[N05])
@@ -1186,12 +1186,12 @@ predict_mod <- function(param, type, FM_change = NA,
             if((!is.null(Lc[1]) & !is.null(tc[1])) | (!is.na(Lc[1]) & !is.na(tc[1])) ){
               df_Es <- data.frame(Lc = Lc,
                                   tc = tc,
-                                  Fmsy = FM_change[Nmsy],
+                                  Fmax = FM_change[Nmsy],
                                   F05 = FM_change[N05],
                                   Emsy = E_change[Nmsy],
                                   E05 = E_change[N05])
             }else{
-              df_Es <- data.frame(Fmsy = FM_change[Nmsy],
+              df_Es <- data.frame(Fmax = FM_change[Nmsy],
                                   F05 = FM_change[N05],
                                   Emsy = E_change[Nmsy],
                                   E05 = E_change[N05])
