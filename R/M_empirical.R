@@ -115,7 +115,69 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
                         Wdry = NULL, Wwet = NULL, Bl = NULL,
                         schooling = FALSE, method, boot = NULL){
 
-    if(is.null(boot) || class(boot) != "lfqBoot"){
+    if(!is.null(boot) & class(boot) == "lfqBoot"){
+        ## calculations with bootstrapped ELEFAN results
+        bootOut <- boot
+        bootRaw <- boot$bootRaw
+        
+        if (any(method == "Pauly_Linf") & any(is.null(bootRaw$Linf), is.null(bootRaw$K), is.null(temp)))
+          stop("Pauly_Linf requires temp and a boot object with columns Linf and K")
+        if (any(method == "Then_growth") & any(is.null(bootRaw$Linf), is.null(bootRaw$K)))
+          stop("Then_growth requires a boot object with columns Linf and K")        
+
+        
+        if(any(method == "Pauly_Linf")){
+            Ms <- round(10^(-0.0066 - 0.279 * log10(bootRaw$Linf) +
+                            0.6543 * log10(bootRaw$K) + 0.4634 * log10(temp)), 3)
+            if(schooling == TRUE){
+                Ms <- 0.8 * Ms
+            }                
+            bootRaw[,ncol(bootRaw)+1]  <- Ms
+            colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)], "M_Pauly")
+        }
+        if (any(method == "Then_growth")) {
+            bootRaw[,ncol(bootRaw)+1] <- round(4.118 * (bootRaw$K^0.73) * (bootRaw$Linf^-0.33), 3)
+            colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)], "M_Then")            
+        }
+
+        tmp <- as.data.frame(bootRaw[,(ncol(boot$bootRaw)+1:length(method))])
+
+        ## max density and CIS
+        resMaxDen <- vector("numeric", ncol(tmp))
+        ciList <- vector("list", ncol(tmp))
+        for(i in seq(length(method))){
+            ## max densities
+            x <- ks::kde(tmp[,i])
+            ind <- which(x$estimate > x$cont["99%"])
+            resMaxDen[i] <- mean(x$eval.points[ind])
+            ## confidence intervals
+            CItxt <- paste0(round(5), "%")
+            inCI <- rle( x$estimate > x$cont[CItxt] )
+            start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
+            end.idx <- cumsum(inCI$lengths)
+            limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
+            ciList[[i]] <- limCI
+        }
+
+        resCIs <- cbind(boot$bootCIs,t(do.call(rbind,ciList)))
+        colnames(resCIs) <- colnames(bootRaw)
+        rownames(resCIs) <- c("lo","up")
+        resMaxDen <- c(boot$bootMaxDen, resMaxDen)
+        names(resMaxDen) <- names(bootRaw)
+
+        ret <- list()
+        ret$bootRaw <- bootRaw
+        ret$bootMaxDen <- resMaxDen
+        ret$bootCIs <- resCIs
+        ret$seed <- boot$seed
+
+        class(ret) <- "lfqBoot"        
+        return(ret)
+
+    }else if(!is.null(boot) & class(boot) != "lfqBoot"){
+        stop("You provided an object for boot, but it does not have class 'lfqBoot'. Please check.")
+    }else{
+
         if (any(method == "AlversonCarney") & any(is.null(tmax), is.null(K_l)))
           stop("AlversonCarney requires K_l and tmax")
         if (any(method == "Gislason") & any(is.null(Linf), is.null(K_l), is.null(Bl)))
@@ -232,68 +294,8 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
           M_mat <- as.data.frame(matrix(c(Bl,Ml),byrow = FALSE,ncol=2))
           colnames(M_mat) <- c("Bl","Ml")
         }
-        return(M_mat)        
+        return(M_mat)                
 
-        
-    }else{
-
-        ## calculations with bootstrapped ELEFAN results
-        bootOut <- boot
-        bootRaw <- boot$bootRaw
-        
-        if (any(method == "Pauly_Linf") & any(is.null(bootRaw$Linf), is.null(bootRaw$K), is.null(temp)))
-          stop("Pauly_Linf requires temp and a boot object with columns Linf and K")
-        if (any(method == "Then_growth") & any(is.null(bootRaw$Linf), is.null(bootRaw$K)))
-          stop("Then_growth requires a boot object with columns Linf and K")        
-
-        
-        if(any(method == "Pauly_Linf")){
-            Ms <- round(10^(-0.0066 - 0.279 * log10(bootRaw$Linf) +
-                            0.6543 * log10(bootRaw$K) + 0.4634 * log10(temp)), 3)
-            if(schooling == TRUE){
-                Ms <- 0.8 * Ms
-            }                
-            bootRaw[,ncol(bootRaw)+1]  <- Ms
-            colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)], "M_Pauly")
-        }
-        if (any(method == "Then_growth")) {
-            bootRaw[,ncol(bootRaw)+1] <- round(4.118 * (bootRaw$K^0.73) * (bootRaw$Linf^-0.33), 3)
-            colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)], "M_Then")            
-        }
-
-        tmp <- as.data.frame(bootRaw[,(ncol(boot$bootRaw)+1:length(method))])
-
-        ## max density and CIS
-        resMaxDen <- vector("numeric", ncol(tmp))
-        ciList <- vector("list", ncol(tmp))
-        for(i in seq(length(method))){
-            ## max densities
-            x <- ks::kde(tmp[,i])
-            ind <- which(x$estimate > x$cont["99%"])
-            resMaxDen[i] <- mean(x$eval.points[ind])
-            ## confidence intervals
-            CItxt <- paste0(round(5), "%")
-            inCI <- rle( x$estimate > x$cont[CItxt] )
-            start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
-            end.idx <- cumsum(inCI$lengths)
-            limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
-            ciList[[i]] <- limCI
-        }
-
-        resCIs <- cbind(boot$bootCIs,t(do.call(rbind,ciList)))
-        colnames(resCIs) <- colnames(bootRaw)
-        rownames(resCIs) <- c("lo","up")
-        resMaxDen <- c(boot$bootMaxDen, resMaxDen)
-        names(resMaxDen) <- names(bootRaw)
-
-        ret <- list()
-        ret$bootRaw <- bootRaw
-        ret$bootMaxDen <- resMaxDen
-        ret$bootCIs <- resCIs
-        ret$seed <- boot$seed
-
-        class(ret) <- "lfqBoot"        
-        return(ret)
     }
 
 }
