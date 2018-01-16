@@ -1,3 +1,32 @@
+### TropFishR 2.0
+    
+---
+
+##### New features
+
+      - New functions with bootstrapping
+      - Existing funtions with bootstrapping option
+
+
+##### User-visible changes
+
+      - The reference level labelled Fmsy in the function 'predict_mod()' is now labelled Fmax, as
+      this description is more appropriate (reference level which maximises the yield per recruit
+      function according to underlying ypr model)
+      -
+
+		
+##### Documentation
+      - new publication with evaluation and demonstration of bootstrapped LFQ assessment
+      
+      
+##### Bug fixes
+      -
+      
+      
+<br><br>
+
+
 ### TropFishR 1.2.1
     
 ---
