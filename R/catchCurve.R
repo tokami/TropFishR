@@ -30,6 +30,9 @@
 #'    data. Default 1.
 #' @param auto logical; no interactive functions used instead regression line is chosen
 #'    automatically. Default = FALSE
+#' @param boot an object of class 'lfqBoot'
+#' @param natMort optional argument; name of column with natural mortality estimates
+#'    for application to 'lfqBoot' object
 #' @param plot logical; should a plot be displayed? Default = TRUE
 #' 
 #'
@@ -67,6 +70,10 @@
 #' data(synLFQ3)
 #' output <- catchCurve(synLFQ3, calc_ogive = TRUE)
 #' summary(output$linear_mod_sel)
+#'
+#' #_______________________________________________
+#' # Catch curve with results from bootstrapped ELEFAN
+#' # coming soon
 #'  }
 #'
 #' # the same with predefined selection for regression line:
@@ -181,405 +188,565 @@ catchCurve <- function(param,
                        reg_int = NULL,
                        reg_num = 1,
                        auto = FALSE,
+                       boot = NULL,
+                       natMort = NULL,
                        plot = TRUE
                        ){
 
-  res <- param
+    ## catch curve with bootstrapping ELEFAN results
+    if(!is.null(boot) & class(boot) == "lfqBoot"){
 
-  if("midLengths" %in% names(res)) classes <- as.character(res$midLengths)
-  if("age" %in% names(res)) classes <- as.character(res$age)
-  # create column without plus group (sign) if present
-  classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
-  classes.num <- as.numeric(classes.num[,1])
+        bootOut <- boot
+        bootRaw <- boot$bootRaw
 
-  constant_dt <- FALSE
-  if(is.na(catch_columns[1]) & (class(res$catch) == 'matrix' |
-     class(res$catch) == 'data.frame')){
-    writeLines("Please be aware that you provided the catch as a matrix without specifiying any columns for \n the analysis. In this case the methods applies by default the catch curve with constant \n parameter system (refer to the help file for more information).")
-    flush.console()
-    constant_dt <- TRUE
-    catch <- res$catch
-  }
 
-  # non cumulative catch curve
-  if(cumulative == FALSE){
-    if(is.na(catch_columns[1]) & constant_dt == FALSE) catch <- res$catch
-    if(!is.na(catch_columns[1])){
-      catchmat <- res$catch[,(catch_columns)]
-      if(length(catch_columns) > 1){
-        catch <- rowSums(catchmat, na.rm = TRUE)
-      }else catch <- catchmat
-    }
-  }
-  #  cumulative catch curve
-  if(cumulative){
-    if(is.na(catch_columns[1])) catch <- rev(cumsum(rev(res$catch)))
-    if(!is.na(catch_columns[1])){
-      catchmat <- res$catch[,(catch_columns)]
-      if(length(catch_columns) > 1){
-        catchpre <- rowSums(catchmat, na.rm = TRUE)
-      }else catchpre <- catchmat
-      catch <- rev(cumsum(rev(catchpre)))
-      #catch <- rev(cumsum(rev(res$catch[,(catch_columns)])))
-    }
-  }
-
-  # Error message if catch and age do not have same length
-  #   Linearised catch curve with constant time intervals
-  if(constant_dt){
-    if("midLengths" %in% names(res) == TRUE) stop(noquote(
-      "The catch curve with constant time interval is not applicable to length-frequency data. Please provide a catch vector."))
-
-    #if(length(classes) != length(catch[,1])) stop(noquote(
-    #  "Age/length classes and catch matrix do not have the same length!"))
-
-    if(length(classes) != length(diag(as.matrix(catch)))) writeLines("Age/length classes and the real cohort in the catch matrix \ndo not have the same length. The missing age/length \nclasses will be omitted.")
-
-    # Aged based Catch curve
-    if("age" %in% names(res) == TRUE){
-      #find cohort to analyse
-      real.cohort <- diag(as.matrix(catch))
-      catch <- c(real.cohort, rep(NA,length(classes.num) - length(real.cohort)))
-    }
-
-  }else if(class(catch) == 'numeric'){
-    if(length(classes) != length(catch)) stop(noquote(
-      "Age/length classes and catch vector do not have the same length!"))
-  }
-
-  # Length converted catch curve
-    if("midLengths" %in% names(res) == TRUE){
-        if("par" %in% names(res)){
-            Linf <- res$par$Linf
-            K <- res$par$K
-            t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
-            C <- ifelse("C" %in% names(res$par), res$par$C, 0)
-            ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
-        }else{
-            Linf <- res$Linf
-            K <- res$K
-            t0 <- ifelse("t0" %in% names(res), res$t0, 0)
-            C <- ifelse("C" %in% names(res), res$C, 0)
-            ts <- ifelse("ts" %in% names(res), res$ts, 0)
-        }
+        if (any(is.null(bootRaw$Linf), is.null(bootRaw$K), is.null(temp)))
+          stop("LCCC with boot requires a boot object with columns Linf and K")
         
-    if((is.null(Linf) | is.null(K))) stop(noquote(
-      "You need to assign values to Linf and K for the catch curve based on length-frequency data!"))
 
-    #calculate size class interval
-    midLengths <- classes.num
-    interval <- midLengths[2] - midLengths[1]
-
-    # L and t of lower length classes
-    lowerLengths <- midLengths - (interval / 2)
-    if("C" %in% names(res) & "ts" %in% names(res)){
-        t_L1 <- VBGF(param = list(Linf = Linf, K = K, t0 = t0, C=C, ts=ts), L = lowerLengths)
-    }else{
-        t_L1 <- VBGF(param = list(Linf = Linf, K = K, t0 = t0), L = lowerLengths)
-    }
-    ## t0 - (1/K) * log(1 - (lowerLengths / Linf))
-
-    # delta t
-    dt <- rep(NA,length(midLengths))
-    for(x1 in 1:(length(dt)-1)){
-      dt[x1] <- t_L1[x1+1] - t_L1[x1]
-    }
-
-    # x varaible
-    #ln (Linf - L)
-    ln_Linf_L <- log(Linf - lowerLengths)
-    ## t of midlengths
-    if("C" %in% names(res) & "ts" %in% names(res)){
-        t_midL <- VBGF(param = list(Linf = Linf, K = K, t0 = t0, C=C, ts=ts), L = midLengths)
-    }else{
-        t_midL <- VBGF(param = list(Linf = Linf, K = K, t0 = t0), L = midLengths)
-    }
-    ## t0 - (1/K) * log(1 - (midLengths / Linf))
-
-    # y variable
-    #ln C(L1,Linf)
-    lnC <- log(catch)
-    # ln( Catch / delta t)
-    lnC_dt <- log(catch / dt)
-    lnC_dt[which(lnC_dt == -Inf)] <- NA   ### OR zero???
-
-    if(cumulative == FALSE){
-      xvar = t_midL
-      yvar = lnC_dt
-      xname = "t_midL"
-      yname = "lnC_dt"
-      xlabel = "Relative age [yrs]"
-      ylabel = "ln(C/dt)"
-    }
-
-    if(cumulative){
-      xvar = ln_Linf_L
-      yvar = lnC
-      xname = "ln_Linf_L"
-      yname = "lnC"
-      xlabel = "ln (Linf - L)"
-      ylabel = "ln C(L, Linf)"
-    }
-  }
-
-  # Aged based Catch curve
-  if("age" %in% names(res) == TRUE){
-    # delta t
-    if(constant_dt == FALSE){
-      dt <- rep(NA,length(classes.num))
-      for(x1 in 1:(length(dt)-1)){
-        dt[x1] <- classes.num[x1+1] - classes.num[x1]
-      }
-    }
-    if(constant_dt) dt <- rep(classes.num[2] - classes.num[1], length(classes.num))
-
-    # x variable
-    # (t + dt) / 2   ==   x
-    if(cumulative == FALSE) tplusdt_2 <- classes.num + (dt / 2)
-    if(cumulative) tplusdt_2 <- classes.num
-
-    # y variable
-    #ln C(L1,Linf)
-    lnC <- log(catch)
-    # ln( Catch / delta t)     ==    y
-    lnC_dt <- log(catch / dt)
-
-
-    if(constant_dt){
-      xvar = classes.num
-      xname = "classes.num"
-      xlabel = "Age [yrs]"
-      yvar = lnC
-      yname = "lnC"
-      ylabel = "ln C(t, inf)"
-    }
-
-    if(cumulative == FALSE & constant_dt == FALSE){
-      xvar = tplusdt_2
-      xname = "tplusdt_2"
-      xlabel = "Age [yrs]"
-      yvar = lnC_dt
-      yname = "lnC_dt"
-      ylabel = "ln(C/dt)"
-    }
-
-    if(cumulative){
-      xvar = tplusdt_2
-      xname = "tplusdt_2"
-      xlabel = "Age [yrs]"
-      yvar = lnC
-      yname = "lnC"
-      ylabel = "ln C(t, inf)"
-    }
-  }
-
-  #for plot
-  #minY <- ifelse(min(yvar,na.rm=TRUE) < 0, min(yvar,na.rm=TRUE),0)
-  minY <- min(yvar,na.rm=TRUE)
-  maxY <- max(yvar,na.rm=TRUE) + 1
-    xlims <- c(0, max(xvar,na.rm=TRUE))
-
-    cutterList <- vector("list", reg_num)
-  #identify plot
-  if(is.null(reg_int) & !auto){
-    writeLines("Please choose the minimum and maximum point in the graph \nto include for the regression line!")
-    flush.console()
-    for(I in 1:reg_num){
-
-        dev.new()#noRStudioGD = TRUE)
-        op <- par(mfrow = c(1,1),
-                  c(5, 4, 4, 2) + 0.1,
-                  oma = c(2, 1, 0, 1) + 0.1)
-        plot(x = xvar,y = yvar, ylim = c(minY,maxY), xlim = xlims,
-             xlab = xlabel, ylab = ylabel, type = "n")
+        Zs <- vector("numeric",nrow(bootRaw))
+        ## seZ[i] <- vector("numeric",nrow(bootRaw))
+        ## confZ[i] <- vector("numeric",nrow(bootRaw))
         
-        ## plot previous regression lines when using multiple regression lines
-        if(I > 1){
-            for(II in 1:(I-1)){
-                points(xvar[cutterList[[II]]],yvar[cutterList[[II]]], col="darkgreen", pch=16)
-                lines(xvar[cutterList[[II]]],yvar[cutterList[[II]]], col="darkgreen", lwd=2)
+        for(i in 1:nrow(bootRaw)){
+
+            set.seed(boot$seed[i])
+            lfqTemp <- lfqPermutate(param)
+            lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE)
+
+            catch <- lfqLoop$catch
+
+            classes <- as.character(lfqLoop$midLengths)
+            classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
+            classes.num <- as.numeric(classes.num[,1])            
+
+            ##calculate size class interval
+            midLengths <- classes.num
+            interval <- midLengths[2] - midLengths[1]            
+
+            ## L and t of lower length classes
+            lowerLengths <- midLengths - (interval / 2)
+            if("C" %in% names(bootRaw) & "ts" %in% names(bootRaw)){
+                t_L1 <- VBGF(param = list(Linf = bootRaw$Linf[i], K = bootRaw$K[i],
+                                          t0 = 0, C=bootRaw$C[i], ts=bootRaw$ts[i]), L = lowerLengths)
+            }else{
+                t_L1 <- VBGF(param = list(Linf = bootRaw$Linf[i], K = bootRaw$K[i],
+                                          t0 = 0), L = lowerLengths)
             }
+            ## t0 - (1/K) * log(1 - (lowerLengths / Linf))
+
+            # delta t
+            dt <- rep(NA,length(midLengths))
+            for(x1 in 1:(length(dt)-1)){
+              dt[x1] <- t_L1[x1+1] - t_L1[x1]
+            }
+
+            # x varaible
+            #ln (Linf - L)
+            ln_Linf_L <- log(bootRaw$Linf[i] - lowerLengths)
+            ## t of midlengths
+            if("C" %in% names(bootRaw) & "ts" %in% names(bootRaw)){
+                t_midL <- VBGF(param = list(Linf = bootRaw$Linf[i], K = bootRaw$K[i],
+                                            t0 = 0, C=bootRaw$C[i], ts=bootRaw$ts[i]), L = midLengths)
+            }else{
+                t_midL <- VBGF(param = list(Linf = bootRaw$Linf[i], K = bootRaw$K[i],
+                                            t0 = 0), L = midLengths)
+            }
+            ## t0 - (1/K) * log(1 - (midLengths / Linf))
+
+            # y variable
+            #ln C(L1,Linf)
+            lnC <- log(catch)
+            # ln( Catch / delta t)
+            lnC_dt <- log(catch / dt)
+            lnC_dt[which(lnC_dt == -Inf)] <- NA   ### OR zero???
+
+            if(cumulative == FALSE){
+              xvar = t_midL
+              yvar = lnC_dt
+            }
+            if(cumulative){
+              xvar = ln_Linf_L
+              yvar = lnC
+            }
+
+            yvar2 <- as.numeric(yvar)
+            xvar2 <- xvar[which(yvar2 > 0.2)]
+            cutter <- c(which(yvar2 == max(as.numeric(yvar2),na.rm=TRUE))+1, which(xvar2 == max(xvar2,na.rm=TRUE)))
+
+            ## calculations + model
+            df.CC <- as.data.frame(cbind(xvar,yvar))
+            df.CC.cut <- df.CC[cutter[1]:cutter[2],]
+            lm1 <- lm(yvar ~ xvar, data = df.CC.cut)
+            sum_lm1 <- summary(lm1)
+            r_lm1 <- sum_lm1$r.squared
+            intercept_lm1 <- sum_lm1$coefficients[1]
+            slope_lm1 <- sum_lm1$coefficients[2]
+            se_slope_lm1 <- sum_lm1$coefficients[4]
+
+            ## fit of regression line
+            lm1.fit <- sum_lm1$r.squared
+            Z_lm1 <- abs(slope_lm1)
+            SE_Z_lm1 <- abs(se_slope_lm1)
+            confi <-  abs(se_slope_lm1) * qt(0.975,sum_lm1$df[2])
+            conf_Z_lm1 <- Z_lm1 + c(-confi,confi)
+
+            ## special case when cumulative and length-frequency data
+            if(cumulative & "midLengths" %in% names(res) == TRUE){
+              Z_lm1 <- Z_lm1 * K
+              SE_Z_lm1 <- SE_Z_lm1 * K
+            }
+
+            Zs[i] <- Z_lm1
+            ## seZ[i] <- SE_Z_lm1
+            ## confZ[i] <- conf_Z_lm1
         }
-        mtext(side = 3, "Click on two numbers. Escape to Quit.",
-              xpd = NA, cex = 1.25)
-        text(xvar, yvar, labels=as.character(order(xvar)), cex= 0.7)
-        cutter <- identify(x = xvar, y = yvar,
-                           labels = order(xvar), n=2, col = "red")
-        par(op)
-
-        if(is.na(cutter[1]) | is.nan(cutter[1]) |
-           is.na(cutter[2]) | is.nan(cutter[2]) ) stop(noquote("You did not choose any points in the graph. Please re-run the function and choose points in the graph!"))
-
-        dev.off()
-
-        ## save results to list
-        cutterList[[I]] <- cutter
-    }
-    
-
-  }
-    
-
-    if(!is.null(reg_int)){
-        cutterList <- reg_int
-        if(class(cutterList) != "list" && length(cutterList) != 2) stop("You have to provide 2 numbers in reg_int.")
-        if(class(cutterList) == "list" && any(unlist(lapply(cutterList,length)) != 2)) stop("You have to provide 2 numbers in reg_int.")
-    }
-
-    if(auto){
-        yvar2 <- as.numeric(yvar)
-        xvar2 <- xvar[which(yvar2 > 0.2)]
-        cutter <- c(which(yvar2 == max(as.numeric(yvar2),na.rm=TRUE))+1, which(xvar2 == max(xvar2,na.rm=TRUE)))
-        cutterList <- list()
-        cutterList[[1]] <- cutter
-    }
-
-    ## define result lists
-    lm1List <- vector("list",reg_num)
-    Z_lm1List <- vector("list",reg_num)
-    SE_Z_lm1List <- vector("list",reg_num)
-    conf_Z_lm1List <- vector("list",reg_num)
-    intercept_lm1List <- vector("list",reg_num)
-
-
-    for(I in 1:reg_num){
-
-        if(class(cutterList) == "list"){
-            cutter <- cutterList[[I]]
+        bootRaw[,(ncol(bootRaw)+1)] <- Zs
+        colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)],"Z")        
+        
+        ## estimate FM if M in data frame
+        if(!is.null(natMort) & natMort %in% colnames(bootRaw)){
+            bootRaw[,(ncol(bootRaw)+1)] <- bootRaw$Z - bootRaw[,(colnames(bootRaw) == natMort)]
+            colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)],"FM")            
+            tmp <- as.data.frame(bootRaw[,(ncol(boot$bootRaw)+(1:2))])
+            nx <- 2
         }else{
-            cutter <- cutterList
+            tmp <- as.data.frame(bootRaw[,(ncol(boot$bootRaw)+1)])
+            nx <- 1
         }
-
-        ## calculations + model
-        df.CC <- as.data.frame(cbind(xvar,yvar))
-        df.CC.cut <- df.CC[cutter[1]:cutter[2],]
-        lm1 <- lm(yvar ~ xvar, data = df.CC.cut)
-        sum_lm1 <- summary(lm1)
-        r_lm1 <- sum_lm1$r.squared
-        intercept_lm1 <- sum_lm1$coefficients[1]
-        slope_lm1 <- sum_lm1$coefficients[2]
-        se_slope_lm1 <- sum_lm1$coefficients[4]
-
-        ## fit of regression line
-        lm1.fit <- sum_lm1$r.squared
-        Z_lm1 <- abs(slope_lm1)
-        SE_Z_lm1 <- abs(se_slope_lm1)
-        confi <-  abs(se_slope_lm1) * qt(0.975,sum_lm1$df[2])
-        conf_Z_lm1 <- Z_lm1 + c(-confi,confi)
-
-        ## special case when cumulative and length-frequency data
-        if(cumulative & "midLengths" %in% names(res) == TRUE){
-          Z_lm1 <- Z_lm1 * K
-          SE_Z_lm1 <- SE_Z_lm1 * K
+        
+        ## max density and CIS
+        resMaxDen <- vector("numeric", ncol(tmp))
+        ciList <- vector("list", ncol(tmp))
+        for(i in seq(nx)){
+            ## max densities
+            x <- ks::kde(tmp[,i])
+            ind <- which(x$estimate > x$cont["99%"])
+            resMaxDen[i] <- mean(x$eval.points[ind])
+            ## confidence intervals
+            CItxt <- paste0(round(5), "%")
+            inCI <- rle( x$estimate > x$cont[CItxt] )
+            start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
+            end.idx <- cumsum(inCI$lengths)
+            limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
+            ciList[[i]] <- limCI
         }
+        resCIs <- cbind(boot$bootCIs,t(do.call(rbind,ciList)))
+        colnames(resCIs) <- colnames(bootRaw)
+        rownames(resCIs) <- c("lo","up")
+        resMaxDen <- c(boot$bootMaxDen, resMaxDen)
+        names(resMaxDen) <- names(bootRaw)
 
-        ## save results to lists
-        lm1List[[I]] <- lm1
-        Z_lm1List[[I]] <- Z_lm1
-        SE_Z_lm1List[[I]] <- SE_Z_lm1
-        conf_Z_lm1List[[I]] <- conf_Z_lm1
-        intercept_lm1List[[I]] <- intercept_lm1
-    }
-    
-    ##save all in list
-    if(reg_num > 1){
-        ret <- c(res,list(
-                         xvar = xvar,
-                         yvar = yvar,
-                         reg_int = cutterList,
-                         linear_mod = lm1List,
-                         Z =  Z_lm1List,
-                         se = SE_Z_lm1List,
-                         confidenceInt = conf_Z_lm1List))        
-    }else{
-        ret <- c(res,list(
-                         xvar = xvar,
-                         yvar = yvar,
-                         reg_int = unlist(cutterList),
-                         linear_mod = lm1List[[1]],
-                         Z = unlist(Z_lm1List),
-                         se = unlist(SE_Z_lm1List),
-                         confidenceInt = unlist(conf_Z_lm1List)))
-    }
-    
-    if("M" %in% names(ret) && length(ret$M)==1){
-        ret$FM <- lapply(ret$Z, function(x) x - ret$M)
-    }
-    names(ret)[names(ret) == "xvar"] <- xname
-    names(ret)[names(ret) == "yvar"] <- yname
-    class(ret) <- "catchCurve"
+        ret <- list()
+        ret$bootRaw <- bootRaw
+        ret$bootMaxDen <- resMaxDen
+        ret$bootCIs <- resCIs
+        ret$seed <- boot$seed
 
-  # Calculate selection ogive from catch curve and add to ret
-  if(calc_ogive & cumulative) stop(noquote("It is not possible to estimate the selection ogive for the cumulative catch curve."))
-    if(calc_ogive){
-
-        ## Assumption that Z of smallest selected individuals is most appropriate
-        mini <- min(unlist(cutterList))
-        temp <- lapply(cutterList, function(x) grep(mini,x))
-        ind <- sapply(temp, function(x) length(x) > 0)
-        cutter <- unlist(cutterList[ind])
-
-
-        ## only use part of catch and t which is not fully exploited by the gear
-        t_ogive <- xvar[1:(cutter[1]-1)]
-        dt_ogive <- dt[1:(cutter[1]-1)]
-        if("age" %in% names(res) == TRUE &
-           class(catch) == 'matrix' | class(catch) == 'data.frame'){
-          catch_ogive <- catch[1:(cutter[1]-1)] ## catch.cohort
-        }else catch_ogive <- catch[1:(cutter[1]-1)]
-
-
-        # calculate observed selection ogive
-        Sobs <- catch_ogive/(dt_ogive * exp(unlist(intercept_lm1List[ind]) - unlist(Z_lm1List[ind]) * t_ogive))
-
-        # dependent vairable in following regression analysis
-        ln_1_S_1 <- log((1/Sobs) - 1)
-
-        # get rid of Inf
-        ln_1_S_1[which(ln_1_S_1 == Inf)] <- NA
-        t_ogive[which(t_ogive == Inf)] <- NA
-
-        #regression analysis to caluclate T1 and T2
-        mod_ogive <- lm(ln_1_S_1 ~ t_ogive, na.action = na.omit)
-        sum_lm_ogive <- summary(mod_ogive)
-        T1 <- sum_lm_ogive$coefficients[1]
-        T2 <- abs(sum_lm_ogive$coefficients[2])
-
-        # calculate estimated selection ogive
-        Sest <- 1/(1+exp(T1 - T2*xvar))
-
-        # selection parameters
-        t50 <- T1/T2
-        t75 <- (T1 + log(3))/T2
-        t95 <-  (T1 - log((1 / 0.95) - 1)) / T2
-        if(!is.null(res$Linf) & !is.null(res$K)){
-          if(is.null(res$t0)) t0 = 0
-          L50 <- Linf*(1-exp(-K*(t50-t0)))
-          L75 <- Linf*(1-exp(-K*(t75-t0)))
-          L95 <- Linf*(1-exp(-K*(t95-t0)))
-        }
-
-        ret2 <- c(ret,list(
-          intercept = intercept_lm1,
-          linear_mod_sel = mod_ogive,
-          Sobs = Sobs,
-          ln_1_S_1 = ln_1_S_1,
-          Sest = Sest,
-          t50 = t50,
-          t75 = t75,
-          t95 = t95))
-        if(exists("L50")) ret2$L50 = L50
-        if(exists("L75")) ret2$L75 = L75
-        if(exists("L95")) ret2$L95 = L95
-        if(exists("L50")) names(ret2)[which(ret2 %in% L50)] <- "L50"
-        if(exists("L75")) names(ret2)[which(ret2 %in% L75)] <- "L75"
-        if(exists("L95")) names(ret2)[which(ret2 %in% L95)] <- "L95"
-
-        class(ret2) <- "catchCurve"
-        if(plot) plot(ret2, plot_selec=TRUE)
-        return(ret2)
-      }else {
-        if(plot) plot(ret)
+        class(ret) <- "lfqBoot"
         return(ret)
-      }
+
+    }else if(!is.null(boot) & class(boot) != "lfqBoot"){
+        stop("You provided an object for boot, but it does not have class 'lfqBoot'. Please check.")
+    }else{
+
+        res <- param
+
+        if("midLengths" %in% names(res)) classes <- as.character(res$midLengths)
+        if("age" %in% names(res)) classes <- as.character(res$age)
+        # create column without plus group (sign) if present
+        classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
+        classes.num <- as.numeric(classes.num[,1])
+
+        constant_dt <- FALSE
+        if(is.na(catch_columns[1]) & (class(res$catch) == 'matrix' |
+           class(res$catch) == 'data.frame')){
+          writeLines("Please be aware that you provided the catch as a matrix without specifiying any columns for \n the analysis. In this case the methods applies by default the catch curve with constant \n parameter system (refer to the help file for more information).")
+          flush.console()
+          constant_dt <- TRUE
+          catch <- res$catch
+        }
+
+        # non cumulative catch curve
+        if(cumulative == FALSE){
+          if(is.na(catch_columns[1]) & constant_dt == FALSE) catch <- res$catch
+          if(!is.na(catch_columns[1])){
+            catchmat <- res$catch[,(catch_columns)]
+            if(length(catch_columns) > 1){
+              catch <- rowSums(catchmat, na.rm = TRUE)
+            }else catch <- catchmat
+          }
+        }
+        #  cumulative catch curve
+        if(cumulative){
+          if(is.na(catch_columns[1])) catch <- rev(cumsum(rev(res$catch)))
+          if(!is.na(catch_columns[1])){
+            catchmat <- res$catch[,(catch_columns)]
+            if(length(catch_columns) > 1){
+              catchpre <- rowSums(catchmat, na.rm = TRUE)
+            }else catchpre <- catchmat
+            catch <- rev(cumsum(rev(catchpre)))
+            #catch <- rev(cumsum(rev(res$catch[,(catch_columns)])))
+          }
+        }
+
+        # Error message if catch and age do not have same length
+        #   Linearised catch curve with constant time intervals
+        if(constant_dt){
+          if("midLengths" %in% names(res) == TRUE) stop(noquote(
+            "The catch curve with constant time interval is not applicable to length-frequency data. Please provide a catch vector."))
+
+          #if(length(classes) != length(catch[,1])) stop(noquote(
+          #  "Age/length classes and catch matrix do not have the same length!"))
+
+          if(length(classes) != length(diag(as.matrix(catch)))) writeLines("Age/length classes and the real cohort in the catch matrix \ndo not have the same length. The missing age/length \nclasses will be omitted.")
+
+          # Aged based Catch curve
+          if("age" %in% names(res) == TRUE){
+            #find cohort to analyse
+            real.cohort <- diag(as.matrix(catch))
+            catch <- c(real.cohort, rep(NA,length(classes.num) - length(real.cohort)))
+          }
+
+        }else if(class(catch) == 'numeric'){
+          if(length(classes) != length(catch)) stop(noquote(
+            "Age/length classes and catch vector do not have the same length!"))
+        }        
+
+        # Length converted catch curve
+          if("midLengths" %in% names(res) == TRUE){
+              if("par" %in% names(res)){
+                  Linf <- res$par$Linf
+                  K <- res$par$K
+                  t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
+                  C <- ifelse("C" %in% names(res$par), res$par$C, 0)
+                  ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
+              }else{
+                  Linf <- res$Linf
+                  K <- res$K
+                  t0 <- ifelse("t0" %in% names(res), res$t0, 0)
+                  C <- ifelse("C" %in% names(res), res$C, 0)
+                  ts <- ifelse("ts" %in% names(res), res$ts, 0)
+              }
+
+          if((is.null(Linf) | is.null(K))) stop(noquote(
+            "You need to assign values to Linf and K for the catch curve based on length-frequency data!"))
+
+          #calculate size class interval
+          midLengths <- classes.num
+          interval <- midLengths[2] - midLengths[1]
+
+          # L and t of lower length classes
+          lowerLengths <- midLengths - (interval / 2)
+          if("C" %in% names(res) & "ts" %in% names(res)){
+              t_L1 <- VBGF(param = list(Linf = Linf, K = K, t0 = t0, C=C, ts=ts), L = lowerLengths)
+          }else{
+              t_L1 <- VBGF(param = list(Linf = Linf, K = K, t0 = t0), L = lowerLengths)
+          }
+          ## t0 - (1/K) * log(1 - (lowerLengths / Linf))
+
+          # delta t
+          dt <- rep(NA,length(midLengths))
+          for(x1 in 1:(length(dt)-1)){
+            dt[x1] <- t_L1[x1+1] - t_L1[x1]
+          }
+
+          # x varaible
+          #ln (Linf - L)
+          ln_Linf_L <- log(Linf - lowerLengths)
+          ## t of midlengths
+          if("C" %in% names(res) & "ts" %in% names(res)){
+              t_midL <- VBGF(param = list(Linf = Linf, K = K, t0 = t0, C=C, ts=ts), L = midLengths)
+          }else{
+              t_midL <- VBGF(param = list(Linf = Linf, K = K, t0 = t0), L = midLengths)
+          }
+          ## t0 - (1/K) * log(1 - (midLengths / Linf))
+
+          # y variable
+          #ln C(L1,Linf)
+          lnC <- log(catch)
+          # ln( Catch / delta t)
+          lnC_dt <- log(catch / dt)
+          lnC_dt[which(lnC_dt == -Inf)] <- NA   ### OR zero???
+
+          if(cumulative == FALSE){
+            xvar = t_midL
+            yvar = lnC_dt
+            xname = "t_midL"
+            yname = "lnC_dt"
+            xlabel = "Relative age [yrs]"
+            ylabel = "ln(C/dt)"
+          }
+
+          if(cumulative){
+            xvar = ln_Linf_L
+            yvar = lnC
+            xname = "ln_Linf_L"
+            yname = "lnC"
+            xlabel = "ln (Linf - L)"
+            ylabel = "ln C(L, Linf)"
+          }
+        }
+
+        # Aged based Catch curve
+        if("age" %in% names(res) == TRUE){
+          # delta t
+          if(constant_dt == FALSE){
+            dt <- rep(NA,length(classes.num))
+            for(x1 in 1:(length(dt)-1)){
+              dt[x1] <- classes.num[x1+1] - classes.num[x1]
+            }
+          }
+          if(constant_dt) dt <- rep(classes.num[2] - classes.num[1], length(classes.num))
+
+          # x variable
+          # (t + dt) / 2   ==   x
+          if(cumulative == FALSE) tplusdt_2 <- classes.num + (dt / 2)
+          if(cumulative) tplusdt_2 <- classes.num
+
+          # y variable
+          #ln C(L1,Linf)
+          lnC <- log(catch)
+          # ln( Catch / delta t)     ==    y
+          lnC_dt <- log(catch / dt)
+
+
+          if(constant_dt){
+            xvar = classes.num
+            xname = "classes.num"
+            xlabel = "Age [yrs]"
+            yvar = lnC
+            yname = "lnC"
+            ylabel = "ln C(t, inf)"
+          }
+
+          if(cumulative == FALSE & constant_dt == FALSE){
+            xvar = tplusdt_2
+            xname = "tplusdt_2"
+            xlabel = "Age [yrs]"
+            yvar = lnC_dt
+            yname = "lnC_dt"
+            ylabel = "ln(C/dt)"
+          }
+
+          if(cumulative){
+            xvar = tplusdt_2
+            xname = "tplusdt_2"
+            xlabel = "Age [yrs]"
+            yvar = lnC
+            yname = "lnC"
+            ylabel = "ln C(t, inf)"
+          }
+        }
+
+        #for plot
+        #minY <- ifelse(min(yvar,na.rm=TRUE) < 0, min(yvar,na.rm=TRUE),0)
+        minY <- min(yvar,na.rm=TRUE)
+        maxY <- max(yvar,na.rm=TRUE) + 1
+          xlims <- c(0, max(xvar,na.rm=TRUE))
+
+          cutterList <- vector("list", reg_num)
+        #identify plot
+        if(is.null(reg_int) & !auto){
+          writeLines("Please choose the minimum and maximum point in the graph \nto include for the regression line!")
+          flush.console()
+          for(I in 1:reg_num){
+
+              dev.new()#noRStudioGD = TRUE)
+              op <- par(mfrow = c(1,1),
+                        c(5, 4, 4, 2) + 0.1,
+                        oma = c(2, 1, 0, 1) + 0.1)
+              plot(x = xvar,y = yvar, ylim = c(minY,maxY), xlim = xlims,
+                   xlab = xlabel, ylab = ylabel, type = "n")
+
+              ## plot previous regression lines when using multiple regression lines
+              if(I > 1){
+                  for(II in 1:(I-1)){
+                      points(xvar[cutterList[[II]]],yvar[cutterList[[II]]], col="darkgreen", pch=16)
+                      lines(xvar[cutterList[[II]]],yvar[cutterList[[II]]], col="darkgreen", lwd=2)
+                  }
+              }
+              mtext(side = 3, "Click on two numbers. Escape to Quit.",
+                    xpd = NA, cex = 1.25)
+              text(xvar, yvar, labels=as.character(order(xvar)), cex= 0.7)
+              cutter <- identify(x = xvar, y = yvar,
+                                 labels = order(xvar), n=2, col = "red")
+              par(op)
+
+              if(is.na(cutter[1]) | is.nan(cutter[1]) |
+                 is.na(cutter[2]) | is.nan(cutter[2]) ) stop(noquote("You did not choose any points in the graph. Please re-run the function and choose points in the graph!"))
+
+              dev.off()
+
+              ## save results to list
+              cutterList[[I]] <- cutter
+          }
+
+
+        }
+
+
+          if(!is.null(reg_int)){
+              cutterList <- reg_int
+              if(class(cutterList) != "list" && length(cutterList) != 2) stop("You have to provide 2 numbers in reg_int.")
+              if(class(cutterList) == "list" && any(unlist(lapply(cutterList,length)) != 2)) stop("You have to provide 2 numbers in reg_int.")
+          }
+
+          if(auto){
+              yvar2 <- as.numeric(yvar)
+              xvar2 <- xvar[which(yvar2 > 0.2)]
+              cutter <- c(which(yvar2 == max(as.numeric(yvar2),na.rm=TRUE))+1, which(xvar2 == max(xvar2,na.rm=TRUE)))
+              cutterList <- list()
+              cutterList[[1]] <- cutter
+          }
+
+          ## define result lists
+          lm1List <- vector("list",reg_num)
+          Z_lm1List <- vector("list",reg_num)
+          SE_Z_lm1List <- vector("list",reg_num)
+          conf_Z_lm1List <- vector("list",reg_num)
+          intercept_lm1List <- vector("list",reg_num)
+
+
+          for(I in 1:reg_num){
+
+              if(class(cutterList) == "list"){
+                  cutter <- cutterList[[I]]
+              }else{
+                  cutter <- cutterList
+              }
+
+              ## calculations + model
+              df.CC <- as.data.frame(cbind(xvar,yvar))
+              df.CC.cut <- df.CC[cutter[1]:cutter[2],]
+              lm1 <- lm(yvar ~ xvar, data = df.CC.cut)
+              sum_lm1 <- summary(lm1)
+              r_lm1 <- sum_lm1$r.squared
+              intercept_lm1 <- sum_lm1$coefficients[1]
+              slope_lm1 <- sum_lm1$coefficients[2]
+              se_slope_lm1 <- sum_lm1$coefficients[4]
+
+              ## fit of regression line
+              lm1.fit <- sum_lm1$r.squared
+              Z_lm1 <- abs(slope_lm1)
+              SE_Z_lm1 <- abs(se_slope_lm1)
+              confi <-  abs(se_slope_lm1) * qt(0.975,sum_lm1$df[2])
+              conf_Z_lm1 <- Z_lm1 + c(-confi,confi)
+
+              ## special case when cumulative and length-frequency data
+              if(cumulative & "midLengths" %in% names(res) == TRUE){
+                Z_lm1 <- Z_lm1 * K
+                SE_Z_lm1 <- SE_Z_lm1 * K
+              }
+
+              ## save results to lists
+              lm1List[[I]] <- lm1
+              Z_lm1List[[I]] <- Z_lm1
+              SE_Z_lm1List[[I]] <- SE_Z_lm1
+              conf_Z_lm1List[[I]] <- conf_Z_lm1
+              intercept_lm1List[[I]] <- intercept_lm1
+          }
+
+          ##save all in list
+          if(reg_num > 1){
+              ret <- c(res,list(
+                               xvar = xvar,
+                               yvar = yvar,
+                               reg_int = cutterList,
+                               linear_mod = lm1List,
+                               Z =  Z_lm1List,
+                               se = SE_Z_lm1List,
+                               confidenceInt = conf_Z_lm1List))        
+          }else{
+              ret <- c(res,list(
+                               xvar = xvar,
+                               yvar = yvar,
+                               reg_int = unlist(cutterList),
+                               linear_mod = lm1List[[1]],
+                               Z = unlist(Z_lm1List),
+                               se = unlist(SE_Z_lm1List),
+                               confidenceInt = unlist(conf_Z_lm1List)))
+          }
+
+          if("M" %in% names(ret) && length(ret$M)==1){
+              ret$FM <- lapply(ret$Z, function(x) x - ret$M)
+          }
+          names(ret)[names(ret) == "xvar"] <- xname
+          names(ret)[names(ret) == "yvar"] <- yname
+          class(ret) <- "catchCurve"
+
+        # Calculate selection ogive from catch curve and add to ret
+        if(calc_ogive & cumulative) stop(noquote("It is not possible to estimate the selection ogive for the cumulative catch curve."))
+          if(calc_ogive){
+
+              ## Assumption that Z of smallest selected individuals is most appropriate
+              mini <- min(unlist(cutterList))
+              temp <- lapply(cutterList, function(x) grep(mini,x))
+              ind <- sapply(temp, function(x) length(x) > 0)
+              cutter <- unlist(cutterList[ind])
+
+
+              ## only use part of catch and t which is not fully exploited by the gear
+              t_ogive <- xvar[1:(cutter[1]-1)]
+              dt_ogive <- dt[1:(cutter[1]-1)]
+              if("age" %in% names(res) == TRUE &
+                 class(catch) == 'matrix' | class(catch) == 'data.frame'){
+                catch_ogive <- catch[1:(cutter[1]-1)] ## catch.cohort
+              }else catch_ogive <- catch[1:(cutter[1]-1)]
+
+
+              # calculate observed selection ogive
+              Sobs <- catch_ogive/(dt_ogive * exp(unlist(intercept_lm1List[ind]) - unlist(Z_lm1List[ind]) * t_ogive))
+
+              # dependent vairable in following regression analysis
+              ln_1_S_1 <- log((1/Sobs) - 1)
+
+              # get rid of Inf
+              ln_1_S_1[which(ln_1_S_1 == Inf)] <- NA
+              t_ogive[which(t_ogive == Inf)] <- NA
+
+              #regression analysis to caluclate T1 and T2
+              mod_ogive <- lm(ln_1_S_1 ~ t_ogive, na.action = na.omit)
+              sum_lm_ogive <- summary(mod_ogive)
+              T1 <- sum_lm_ogive$coefficients[1]
+              T2 <- abs(sum_lm_ogive$coefficients[2])
+
+              # calculate estimated selection ogive
+              Sest <- 1/(1+exp(T1 - T2*xvar))
+
+              # selection parameters
+              t50 <- T1/T2
+              t75 <- (T1 + log(3))/T2
+              t95 <-  (T1 - log((1 / 0.95) - 1)) / T2
+              if(!is.null(res$Linf) & !is.null(res$K)){
+                if(is.null(res$t0)) t0 = 0
+                L50 <- Linf*(1-exp(-K*(t50-t0)))
+                L75 <- Linf*(1-exp(-K*(t75-t0)))
+                L95 <- Linf*(1-exp(-K*(t95-t0)))
+              }
+
+              ret2 <- c(ret,list(
+                intercept = intercept_lm1,
+                linear_mod_sel = mod_ogive,
+                Sobs = Sobs,
+                ln_1_S_1 = ln_1_S_1,
+                Sest = Sest,
+                t50 = t50,
+                t75 = t75,
+                t95 = t95))
+              if(exists("L50")) ret2$L50 = L50
+              if(exists("L75")) ret2$L75 = L75
+              if(exists("L95")) ret2$L95 = L95
+              if(exists("L50")) names(ret2)[which(ret2 %in% L50)] <- "L50"
+              if(exists("L75")) names(ret2)[which(ret2 %in% L75)] <- "L75"
+              if(exists("L95")) names(ret2)[which(ret2 %in% L95)] <- "L95"
+
+              class(ret2) <- "catchCurve"
+              if(plot) plot(ret2, plot_selec=TRUE)
+              return(ret2)
+            }else {
+              if(plot) plot(ret)
+              return(ret)
+            }
+    }
 }
