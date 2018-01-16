@@ -589,7 +589,7 @@ predict_mod <- function(param, type, FM_change = NA,
         ciList <- vector("list", ncol(tmp))
         for(i in seq(nx)){
             ## max densities
-            x <- ks::kde(tmp[,i])
+            x <- ks::kde(as.numeric(na.omit(tmp[,i])))                        
             ind <- which(x$estimate > x$cont["99%"])
             resMaxDen[i] <- mean(x$eval.points[ind])
             ## confidence intervals

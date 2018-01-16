@@ -147,7 +147,7 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
         ciList <- vector("list", ncol(tmp))
         for(i in seq(length(method))){
             ## max densities
-            x <- ks::kde(tmp[,i])
+            x <- ks::kde(as.numeric(na.omit(tmp[,i])))                        
             ind <- which(x$estimate > x$cont["99%"])
             resMaxDen[i] <- mean(x$eval.points[ind])
             ## confidence intervals
