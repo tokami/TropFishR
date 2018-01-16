@@ -200,7 +200,7 @@ catchCurve <- function(param,
         bootRaw <- boot$bootRaw
 
 
-        if (any(is.null(bootRaw$Linf), is.null(bootRaw$K), is.null(temp)))
+        if (any(is.null(bootRaw$Linf), is.null(bootRaw$K)))
           stop("LCCC with boot requires a boot object with columns Linf and K")
         
 
