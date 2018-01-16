@@ -169,11 +169,25 @@ VPA <- function(param,
             
             lfqTemp <- lfqPermutate(param)
             lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE)
+
+
+            ## for automatic plus group creation
+            classes <- as.character(lfqLoop$midLengths)            
+            # create column without plus group (sign) if present
+            classes.num <- do.call(rbind, strsplit(classes, split="\\+"))
+            classes.num <- as.numeric(classes.num[,1])
+
+            #calculate size class interval
+            interval <- classes.num[2] - classes.num[1]
+
+            # lower and upper length vectors
+            lowerLength <- classes.num - (interval / 2)
+            upperLength <- classes.num + (interval / 2)            
             
-            if(bootRaw$Linf[i] < max(lfqLoop$midLengths)){
+            if(bootRaw$Linf[i] < max(upperLength)){
                 lfqLoop <- lfqModify(lfqLoop,
                                   plus_group =
-                                      lfqLoop$midLengths[which.min(abs(lfqLoop$midLengths -
+                                      lfqLoop$midLengths[which.min(abs(upperLength -
                                                                        floor(bootRaw$Linf[i])))])
                 plus_group <- TRUE
             }else{
@@ -195,11 +209,10 @@ VPA <- function(param,
             terminalE <- terminalF / (terminalF + M_vec[length(M_vec)])            
             terminalZ <- terminalF + M_vec[length(M_vec)]
 
-            
             catch <- lfqLoop$catch            
             # correct catch with raising factor
             if(!is.na(catch_corFac)) catch_cor <- catch * catch_corFac
-            if(is.na(catch_corFac)) catch_cor <- catch
+            if(is.na(catch_corFac)) catch_cor <- catch            
 
             classes <- as.character(lfqLoop$midLengths)            
             # create column without plus group (sign) if present
@@ -211,7 +224,7 @@ VPA <- function(param,
 
             # lower and upper length vectors
             lowerLength <- classes.num - (interval / 2)
-            upperLength <- classes.num + (interval / 2)
+            upperLength <- classes.num + (interval / 2)                        
             if(plus_group) upperLength[length(upperLength)] <- Linf
 
             #Mean body weight
