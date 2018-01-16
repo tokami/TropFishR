@@ -205,8 +205,8 @@ catchCurve <- function(param,
         
 
         Zs <- vector("numeric",nrow(bootRaw))
-        ## seZ[i] <- vector("numeric",nrow(bootRaw))
-        ## confZ[i] <- vector("numeric",nrow(bootRaw))
+        ## seZ <- vector("numeric",nrow(bootRaw))
+        ## confZ <- vector("numeric",nrow(bootRaw))
         
         for(i in 1:nrow(bootRaw)){
 
