@@ -86,6 +86,7 @@ data(synLFQ5)
 res <- lfqRestructure(synLFQ5, MA=11)
 plot(res)
 tmp <- lfqFitCurves(res, par=list(Linf=80,K=0.5,t_anchor=0.25), draw=TRUE)
+tmp$Rn_max
 
 }
 \references{

@@ -45,6 +45,7 @@
 #' res <- lfqRestructure(synLFQ5, MA=11)
 #' plot(res)
 #' tmp <- lfqFitCurves(res, par=list(Linf=80,K=0.5,t_anchor=0.25), draw=TRUE)
+#' tmp$Rn_max
 #'
 #' @details \code{t_anchor} subsitutes the starting point from known from Fisat 2.
 #'    This parameter is necessary for anchoring the growth curves on the time axis.
@@ -163,7 +164,6 @@ lfqFitCurves <- function(lfq,
   grd <- expand.grid(Lt=lfq$midLengths, t=date2yeardec(lfq$dates))
   grd$Fs <- c(lfq$rcounts)  # turn matrix into 1-D vector
   grd$cohort_peaks <- c(lfq$peaks_mat) # turn matrix into 1-D vector
-  grd$hit <- 0 # empty vector to record bins that are "hit" by a growth curve
   bin.width <- diff(lfq$midLengths) # bin width (should allow for uneven bin sizes)
   grd$bin.lower <- lfq$midLengths - (c(bin.width[1], bin.width)/2) # upper bin limit
   grd$bin.upper <- lfq$midLengths + (c(bin.width, bin.width[length(bin.width)])/2) # lower bin limit
@@ -175,31 +175,26 @@ lfqFitCurves <- function(lfq,
     outer(X = c(grd$bin.upper), Y = Lt$Lt, FUN = ">"
   )
 
-  tmp2 <- apply(X = tmp, MARGIN = 1, FUN = sum, na.rm = TRUE)
-  if(flagging.out){
-    grd$hit <- tmp2
-  } else {
-    grd$hit <- as.numeric(tmp2 > 0)
-  }
+  grd$hits <- apply(X = tmp, MARGIN = 1, FUN = sum, na.rm = TRUE)
 
-  # Count only one crossing of positive peaks within a cohort peak
+  # if flagging = TRUE, rescore hits according to pos/neg crossing rule
+  grd$cross_count <- grd$hits
   if(flagging.out){
-    ch <- unique(grd$cohort_peaks)
-    if(0 %in% ch) ch <- ch[-which(0 %in% ch)]
-    for(ci in seq(length(ch))){
-      chi <- ch[ci]
-      peaki <- which(grd$cohort_peaks == chi)
-      dpch <- grd$hit[peaki]
-      if(sum(dpch, na.rm = TRUE) > 1){
-        grd$hit[peaki] <- 0
-        maxi <- which.max(grd$Fs[peaki])
-        grd$hit[peaki[maxi]] <- 1
+    ct <- unique(grd$cohort_peaks) # unique positive peaks
+    if(0 %in% ct) ct <- ct[-which(0 %in% ct)]
+    for(i in seq(ct)){
+      ct.i <- ct[i]
+      peak.i <- which(grd$cohort_peaks == ct.i)
+      hits.i <- grd$hits[peak.i]
+      if(sum(hits.i, na.rm=TRUE) > 1){ # if positive peak crossed more than once, only largest crossed value is scored
+        max.i <- which.max(grd$Fs[peak.i]*(hits.i>0)) # which crossed bin has the highest score
+        grd$cross_count[peak.i[-max.i]] <- 0 # set non-max value crossings to zero
+        grd$cross_count[peak.i[max.i]] <- 1 # set max value crossing to one
       }
     }
   }
 
-
-  ESP <- sum(grd$Fs * grd$hit, na.rm = TRUE)
+  ESP <- sum(grd$Fs * grd$cross_count, na.rm = TRUE)
   fASP <- ESP/lfq$ASP
   fESP <- (10^(ESP/lfq$ASP)) /10
 

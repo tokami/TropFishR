@@ -47,7 +47,7 @@
 #' setting to TRUE may substantially improve required calculation time. Use of
 #' this functionality requires the following packages: parallel, doParallel.
 #' @param pmutation the probability of mutation in a parent chromosome.
-#' Usually mutation occurs with a small probability, and by default is set to 0.1.
+#' Usually mutation occurs with a small probability, and by default is set to 0.2.
 #' @param pcrossover the probability of crossover between pairs of chromosomes.
 #' Typically this is a large value and by default is set to 0.8.
 #' @param elitism the number of best fitness individuals to survive at each generation.
@@ -127,8 +127,8 @@
 #' #   consider adding the argument 'parallel=TRUE'
 #' #   to reduce computation time)
 #' output <- ELEFAN_GA(synLFQ4, seasonalised = TRUE,
-#'    low_par = list(Linf = 70, K = 0.25, t_anchor = 0, C = 0, ts= 0),
-#'    up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1),
+#'    low_par = list(Linf = 70, K = 0.1, t_anchor = 0, C = 0, ts= 0),
+#'    up_par = list(Linf = 90, K = 1, t_anchor = 1, C = 1, ts = 1),
 #'    popSize = 40, maxiter = 50, run = 20,
 #'    MA = 11, plot = TRUE, seed = 1111)
 #' output$par
@@ -171,7 +171,7 @@ ELEFAN_GA <- function(
   maxiter = 100,
   run = maxiter,
   parallel = FALSE,
-  pmutation = 0.1,
+  pmutation = 0.2,
   pcrossover = 0.8,
   elitism = base::max(1, round(popSize*0.05)),
   MA = 5,
@@ -319,7 +319,7 @@ ELEFAN_GA <- function(
 
   if(plot){
     plot(lfq, Fname = "rcounts")
-    Lt <- lfqFitCurves(lfq, par = lfq$pars, draw=TRUE)
+    Lt <- lfqFitCurves(lfq, par = lfq$par, draw=TRUE)
   }
   return(lfq)
 }
