@@ -51,6 +51,8 @@
 #' @param plot logical; if TRUE results are displayed graphically
 #' @param mark logical; if value of choosen points should be displayed in graph (default: TRUE)
 #' @param hide.progressbar logical; should progressbar be displayed or hidden? (Default: FALSE)
+#' @param boot an object of class 'lfqBoot'
+#' @param natMort name of column with natural mortalites for bootstrapping application of VPA
 #'
 #' @keywords function prediction ypr
 #'
@@ -121,6 +123,10 @@
 #'      type = 'ThompBell', s_list = select.list)
 #' plot(output, xaxis1 = "FM", yaxis_iso = "Lc", yaxis1 = "B_R", mark = TRUE)
 #'
+#' #______________________________________
+#' # YPR with bootstrapping
+#' # coming soon!
+#' 
 #'
 #' @details The Thompson and Bell model incorporates an iteration step simulating the
 #'    stock by means
@@ -279,637 +285,976 @@ predict_mod <- function(param, type, FM_change = NA,
                         stock_size_1 = NA, age_unit = 'year', curr.E = NA,
                         curr.Lc = NA,
                         plus_group = NA, Lmin = NA, Lincr = NA, plot = FALSE, mark = TRUE,
-                        hide.progressbar = FALSE){
-  res <- param
-  res$FM_relative = FM_relative
+                        hide.progressbar = FALSE,
+                        boot = NULL,
+                        natMort = NULL){
 
-  # Beverton and Holt's ypr
-  if(type == "ypr"){
-    if(FM_relative) stop(noquote("ypr does not work with relative changes in FM, please provide absolute values."))
-    M <- res$M
-    K <- res$K
-    t0 <- ifelse(!is.null(res$t0),res$t0,0)
-    a <- res$a  # might be NULL
-    b <- res$b  # might be NULL
-    Winf <- res$Winf  # might be NULL
-    Linf <- res$Linf # might be NULL
-    if("Linf" %in% names(res) & "a" %in% names(res) & "b" %in% names(res)){
-      Winf <- a * (Linf ^ b)
-    }
-    #Linf <- ifelse(!is.null(res$Linf),res$Linf, exp(log(Winf/a)/b))
-    # REALLY ? maybe without Linf: then message that Winf has to exist
-    #if(is.null(Linf) | is.na(Linf)) stop("Either Linf or Winf with a and b has to be provided!")
-    #if(is.null(Winf)) Winf <-  a * Linf ^ b  ###exp((log(Linf) - a)/b) # might still be NULL
-    # or              Winf <- exp(log(Linf-a)/b)
+    ## VPA with bootstrapping ELEFAN results
+    if(!is.null(boot) & class(boot) == "lfqBoot"){
 
-    if(length(FM_change) == 1 & is.na(FM_change[1]) &
-       length(E_change) == 1 & is.na(E_change[1])){
-      FM_change <- seq(0,10,0.1)
-      print(noquote("No fishing mortality (FM_change) or exploitation rate (E_change) was provided, a default range for fishing mortality of 0 to 10 is used."))
-    }
-
-    # transfer E_change into F_change if provided
-    # if(length(FM_change) == 1 & is.na(FM_change[1]) & length(E_change) != 1 & !is.na(E_change[1])){
-    #   FM_change <- (E_change * M) / (1 - E_change)
-    #   FM_change[FM_change == Inf] <- (0.9999 * M) / (1 - 0.9999)
-    # }
-    if(length(FM_change) == 1 & is.na(FM_change[1]) &
-       length(E_change) != 1 & !is.na(E_change[1])){
-      E_change <- E_change[E_change <= 0.9]
-      FM_change <- (E_change * M) / (1 - E_change)
-    }
-
-    # Recruitment  - knife edge
-    tr <- res$tr   # might be NULL
-    Lr <- res$Lr   # might be NULL
-    if(is.null(tr) & is.null(Lr)) stop("Either the age or the length at recruitment (tr or Lr) has to be provided in param!")
-    if(!is.null(Linf)){
-      if(is.null(tr)) tr <- VBGF(L=Lr,param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lr,Linf=Linf,K=K,t0=t0)
-      if(is.null(Lr)) Lr <- VBGF(t=tr,param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tr,Linf=Linf,K=K,t0=t0)
-    }
+        bootOut <- boot
+        bootRaw <- boot$bootRaw
 
 
-    # Selectivity - knife edge or with selctivtiy ogive
-    tc <- res$tc   # might be NULL
-    Lc <- res$Lc   # might be NULL
-    if(is.null(tc) & is.null(Lc)){
-      if("L50" %in% s_list) Lc <- s_list$L50
-      if("Lc" %in% s_list) Lc <- s_list$Lc
-      #if(!("Lc" %in% s_list) & !("L50" %in% s_list))stop("Either the age or the length at first capture (tc or Lc) has to be provided in param! \n Or provide a Lc value in s_list!")
-    }
-    if(!is.null(Linf)){
-      if(is.null(tc) & !is.null(Lc)) tc <- VBGF(L=Lc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc,Linf=Linf,K=K,t0=t0)
-      if(is.null(Lc) & !is.null(tc)) Lc <- VBGF(t=tc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tc,Linf=Linf,K=K,t0=t0)
-      if(is.null(tc_change) & !is.null(Lc_change)) tc_change <- VBGF(L=Lc_change, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc_change,Linf=Linf,K=K,t0=t0)
-      if(is.null(Lc_change) & !is.null(tc_change)) Lc_change <- VBGF(t=tc_change, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tc_change,Linf=Linf,K=K,t0=t0)
-    }
-    tc <- c(tc,tc_change)
-    Lc <- c(Lc,Lc_change)
+        if (any(is.null(bootRaw$Linf), is.null(bootRaw$K)))
+            stop("YPR with boot requires a boot object with columns Linf and K")
 
-    if(length(s_list) > 1){
-      selecType <- s_list$selecType
+        if(!("a" %in% names(param)) | !("b" %in% names(param)))
+            stop("YPR requires information about the length-weight relationship. Please provide 'a' and 'b' estimates in param.")
+        a <- param$a
+        b <- param$b
+
+
+        if(!("Lr" %in% names(param)) | !("Lc" %in% names(param)))
+            stop("YPR requires information about the length at recruitment and length at first capture. Please provide 'Lr' and 'Lc' estimates in param.")
+        Lr <- param$Lr
+        Lc <- param$Lc       
+        
+
+        F01 <- vector("numeric",nrow(bootRaw))
+        Fmax <- vector("numeric",nrow(bootRaw))
+        F05 <- vector("numeric",nrow(bootRaw))
+        ypr <- vector("numeric",nrow(bootRaw))
+        yprrel <- vector("numeric",nrow(bootRaw))
+        bpr <- vector("numeric",nrow(bootRaw))
+        bprrel <- vector("numeric",nrow(bootRaw))         
+        for(bi in 1:nrow(bootRaw)){
+
+            set.seed(boot$seed[bi])
+            
+            lfqTemp <- lfqPermutate(param)
+            lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE)
+            
+
+            Linf <- bootRaw$Linf[bi]
+            K <- bootRaw$K[bi]
+            t_anchor <- bootRaw$t_anchor[bi]
+            C <- bootRaw$C[bi]
+            ts <- bootRaw$ts[bi]
+            t0 <- 0
+            
+            if(!(natMort %in% names(bootRaw))) stop("Please provide a natural mortality estimate 'M' in the boot object.")
+            M <- bootRaw[bi,which(colnames(bootRaw) == natMort)] ## vector with Ms not yet implemented for boot YPR
+
+            if(!("FM" %in% names(bootRaw)))
+                stop("Please provide a fishing mortality estimate 'FM' in the boot object.")
+            FM <- bootRaw$FM[bi]
+
+            if(!("Z" %in% names(bootRaw)))
+                stop("Please provide a total mortality estimate 'Z' in the boot object.")
+            Z <- bootRaw$Z[bi]
+
+            catch <- lfqLoop$catch            
+
+
+            if(FM_relative) stop(noquote("ypr does not work with relative changes in FM, please provide absolute values."))
+
+
+            Winf <- a * (Linf ^ b)
+
+
+            if(length(FM_change) == 1 & is.na(FM_change[1]) &
+               length(E_change) == 1 & is.na(E_change[1])){
+              FM_change <- seq(0,10,0.1)
+              print(noquote("No fishing mortality (FM_change) or exploitation rate (E_change) was provided, a default range for fishing mortality of 0 to 10 is used."))
+            }
+
+            if(length(FM_change) == 1 & is.na(FM_change[1]) &
+               length(E_change) != 1 & !is.na(E_change[1])){
+              E_change <- E_change[E_change <= 0.9]
+              FM_change <- (E_change * M) / (1 - E_change)
+            }
+
+            # Recruitment  - knife edge
+            tr <- param$tr   # might be NULL
+            Lr <- param$Lr   # might be NULL
+            if(is.null(tr) & is.null(Lr)) stop("Either the age or the length at recruitment (tr or Lr) has to be provided in param!")
+            if(!is.null(Linf)){
+              if(is.null(tr)) tr <- VBGF(L=Lr,param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lr,Linf=Linf,K=K,t0=t0)
+              if(is.null(Lr)) Lr <- VBGF(t=tr,param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tr,Linf=Linf,K=K,t0=t0)
+            }
+
+
+            # Selectivity - knife edge or with selctivtiy ogive
+            tc <- param$tc   # might be NULL
+            Lc <- param$Lc   # might be NULL
+            if(is.null(tc) & is.null(Lc)){
+              if("L50" %in% s_list) Lc <- s_list$L50
+              if("Lc" %in% s_list) Lc <- s_list$Lc
+              #if(!("Lc" %in% s_list) & !("L50" %in% s_list))stop("Either the age or the length at first capture (tc or Lc) has to be provided in param! \n Or provide a Lc value in s_list!")
+            }
+            if(!is.null(Linf)){
+              if(is.null(tc) & !is.null(Lc)) tc <- VBGF(L=Lc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc,Linf=Linf,K=K,t0=t0)
+              if(is.null(Lc) & !is.null(tc)) Lc <- VBGF(t=tc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tc,Linf=Linf,K=K,t0=t0)
+              if(is.null(tc_change) & !is.null(Lc_change)) tc_change <- VBGF(L=Lc_change, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc_change,Linf=Linf,K=K,t0=t0)
+              if(is.null(Lc_change) & !is.null(tc_change)) Lc_change <- VBGF(t=tc_change, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tc_change,Linf=Linf,K=K,t0=t0)
+            }
+            tc <- c(tc,tc_change)
+            Lc <- c(Lc,Lc_change)
+
+            if(length(s_list) > 1){
+              selecType <- s_list$selecType
+            }else{
+              selecType <- "knife_edge"
+            }
+
+
+            # HEART
+            list_Lc_runs <- vector("list", length(Lc))
+            list_Es <- vector("list", length(Lc))
+
+            if(is.null(Lc)) Lc_tc <- tc else Lc_tc <- Lc
+            for(i in 1:length(Lc_tc)){
+
+              Lci <- Lc[i]
+              tci <- tc[i]
+
+              Z <- (M + FM_change)
+              E <- FM_change/Z
+
+              # KNIFE EDGE
+              if(length(s_list) == 1 ){#| selecType == "knife_edge"){
+                input <- list(Linf=Linf,
+                              Winf = Winf,
+                              K = K,
+                              M = M,
+                              t0 = t0,
+                              tr = tr,
+                              tc = tci)
+                output <- ypr(input, FM_change)
+                B_R <- output$br
+                Y_R <- output$yr
+                B_R.rel <- output$rbr
+                Y_R.rel <- output$ryr
+                deri <- output$derivative
+              }
+
+              # SELECTION OGIVE
+              if(length(s_list) > 1 ){#& selecType != "knife_edge"){
+                if("midLengths" %in% names(param)){
+                  classes <- as.character(param$midLengths)
+                  # create column without plus group (sign) if present
+                  classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
+                  classes.num <- as.numeric(classes.num[,1])
+                  Lt <- classes.num
+                  # Lincr <- param$midLengths[2] - param$midLengths[1]
+                  # Lmin <- param$midLengths[1] - (Lincr/2)
+                }
+                if(!"midLengths" %in% names(param)){
+                  if(is.na(Lmin) | is.na(Lincr)) writeLines("No midpoints of length classes are provided. This can be done using Lmin and Lincr or by a \n midLengths element in param. A standard range from 1cm to Linf * 0.98 by 2cm is assumed")
+                  Lmin <- ifelse(is.na(Lmin), 1, Lmin)
+                  Lincr <- ifelse(is.na(Lincr), 2, Lincr)
+                  # mid length vector
+                  Lt <- seq(Lmin,(Linf*0.98),Lincr)
+                } # make Lt fixed except depending on Linf and as detailed as possible, e.g. Lincr = 0.5 (takes a long time)
+
+                # selectivity
+                P <- select_ogive(s_list, Lt =  Lt, Lc = Lci)
+
+                input <- list(Linf = ifelse(length(Linf) > 0, Linf, NA),
+                              Winf = ifelse(length(Winf) > 0, Winf, NA),
+                              K = K,
+                              M = M,
+                              t0 = t0,
+                              tr = tr,
+                              tc = tci)
+                output <- ypr_sel(input, FM_change, Lt, P)
+
+                # relative yield and biomass per recruit
+                B_R.rel <- output$rbr
+                Y_R.rel <- output$ryr
+                # derivative
+                deri <- output$derivative
+
+                #test
+                Y_R <- Y_R.rel * Winf * exp(M * (tr - t0))
+                B_R <- B_R.rel * Winf * exp(M * (tr - t0))
+
+                # biased because only prints P for largest Lc value
+                #if(i == length(Lc)) plot(Lt, P, type = 'l', ylab = 'Prob of capture',
+                #                         main = 'Selectivity function')
+              }
+
+
+              # virgin biomass
+              if(0 %in% FM_change){
+                Bv_R <- B_R[FM_change == 0]
+              }else{
+                Bv_R <- B_R[FM_change == min(FM_change,na.rm = TRUE)]
+                writeLines(paste0("Biomass was not estimated for a fishing mortality (FM) of 0, thus the virgin biomass corresponds to a FM of ",min(FM_change,na.rm = TRUE)))
+              }
+
+              #biomass in percetage of virgin biomass
+              B_R.percent <- round((B_R / Bv_R ) * 100, digits = 1)
+
+              #mean age in annual yield
+              Ty <- (1 / Z) + tci
+
+              #mean length in the annual yield
+              S <- exp(-K * (tci - t0))         # the same:    S <- 1 - (Lci/Linf)
+              Ly <- Linf * (1 - ((Z*S)/(Z+K)))
+
+              #mean weight in annual yield
+              Wy <- (Z) * Winf *
+                ((1/Z) - ((3*S)/(Z+K)) +
+                   ((3*(S^2))/(Z+(2*K))) - ((S^3)/(Z + (3*K))))
+
+
+              results.PBH <- data.frame(FM = FM_change,
+                                        E = E)
+              if(length(Ty) > 0) results.PBH$Ty <- Ty
+              if(length(Ly) > 0) results.PBH$Ly <- Ly
+              if(length(Wy) > 0) results.PBH$Wy <- Wy
+
+              results.PBH$Y_R.rel <- Y_R.rel
+              results.PBH$B_R.rel <- B_R.rel
+
+              # WHY NECESSARY???
+              if(length(Y_R) > 0) results.PBH$Y_R = Y_R
+              if(length(B_R) > 0) results.PBH$B_R = B_R
+              if(length(B_R.percent) > 0) results.PBH$B_R.percent = B_R.percent
+
+              list_Lc_runs[[i]] <- results.PBH                
+
+              # reference points
+              Nmsy <- which.max(Y_R.rel)  #  should be the same as which.min(abs(deri)) which is also labelled Nmax
+              deri_pot <- deri[1:Nmsy]
+              N01 <- which.min(abs(deri_pot - (deri[1] * 0.1)))
+              N05 <- which.min(abs(B_R.percent - 50))  #which.min(abs(deri - (deri[1] * 0.5)))
+
+              df_loop_Es <- data.frame(Lc = ifelse(!is.null(Lci),Lci,NA),
+                                       tc = ifelse(!is.null(tci),tci,NA),
+                                       F01 = FM_change[N01],
+                                       Fmax = FM_change[Nmsy])
+              if(length(B_R.percent) > 0) df_loop_Es$F05 <- FM_change[N05]
+              # df_loop_Es$Fmax <- FM_change[Nmax]
+              df_loop_Es$E01 <- E[N01]
+              df_loop_Es$Emsy <- E[Nmsy]
+              if(length(B_R.percent) > 0) df_loop_Es$E05 <- E[N05] 
+              # df_loop_Es$Emax <- E[Nmax]
+
+              list_Es[[i]] <- df_loop_Es
+            }
+
+            curr.E <- F/Z
+            curr.Lc <- Lc
+            curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf,K=K,t0=t0))
+            # current exploitation rate
+            curr.F = (M * curr.E)/(1-curr.E)  # curr.F <- (M * curr.E)/(1-curr.E)
+            tmpList <- list(Linf=Linf,
+                            Winf = Winf,
+                            K = K,
+                            M = M,
+                            t0 = t0,
+                            tr = tr,
+                            tc = curr.tc)
+            if(length(s_list) == 1 | selecType == "knife_edge"){
+              tmpRES <- ypr(param = tmpList, FM_change = curr.F)
+            }
+            if(length(s_list) > 1 & selecType != "knife_edge"){
+              P <- select_ogive(s_list, Lt =  Lt, Lc = curr.Lc)
+              tmpRES <- ypr_sel(param = tmpList, FM_change = curr.F, Lt, P)
+              tmpRES$yr <- tmpRES$ryr * Winf * exp(M * (tr - t0))
+              tmpRES$br <- tmpRES$rbr * Winf * exp(M * (tr - t0))
+            }
+
+                      
+            F01[bi] <- FM_change[N01]
+            Fmax[bi] <- FM_change[Nmsy]
+            if(length(B_R.percent) > 0){
+                F05[bi] <- FM_change[N05]
+            }else{
+                F05[bi] <- NA
+            }
+            ypr[bi] <- tmpRES$yr
+            yprrel[bi] <- tmpRES$ryr
+            bpr[bi] <- tmpRES$br
+            bprrel[bi] <- tmpRES$rbr
+        }
+        
+        bootRaw <- cbind(bootRaw, data.frame(F01,Fmax,F05,ypr,yprrel,
+                                             bpr,bprrel))
+##        colnames(bootRaw) <- c(colnames(bootRaw)[-((ncol(bootRaw)-6):ncol(bootRaw))],
+##                               c("F01","Fmax","F05","ypr","yprrel","bpr","bprrel"))
+
+        tmp <- as.data.frame(bootRaw[,(ncol(boot$bootRaw)+(1:7))])
+
+        idx <- apply(tmp, 2, function(x) all(x == 0 | is.na(x) | x == 1))
+        tmp <- tmp[,!idx]
+        nx <- ncol(tmp)
+
+
+        ## max density and CIS
+        resMaxDen <- vector("numeric", ncol(tmp))
+        ciList <- vector("list", ncol(tmp))
+        for(i in seq(nx)){
+            ## max densities
+            x <- ks::kde(as.numeric(na.omit(tmp[,i])))                        
+            ind <- which(x$estimate > x$cont["99%"])
+            resMaxDen[i] <- mean(x$eval.points[ind])
+            ## confidence intervals
+            CItxt <- paste0(round(5), "%")
+            inCI <- rle( x$estimate > x$cont[CItxt] )
+            start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
+            end.idx <- cumsum(inCI$lengths)
+            limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
+            ciList[[i]] <- limCI
+        }
+        resCIs <- cbind(boot$bootCIs,t(do.call(rbind,ciList)))
+        colnames(resCIs) <- c(colnames(bootRaw)[-((ncol(bootRaw)-6):ncol(bootRaw))],
+                              colnames(tmp))
+        rownames(resCIs) <- c("lo","up")
+        resMaxDen <- c(boot$bootMaxDen, resMaxDen)
+        names(resMaxDen) <- c(colnames(bootRaw)[-((ncol(bootRaw)-6):ncol(bootRaw))],
+                              colnames(tmp))        
+
+
+        ret <- list()
+        ret$bootRaw <- bootRaw
+        ret$bootMaxDen <- resMaxDen
+        ret$bootCIs <- resCIs
+        ret$seed <- boot$seed
+
+        class(ret) <- "lfqBoot"
+        return(ret)
+
+    }else if(!is.null(boot) & class(boot) != "lfqBoot"){
+        stop("You provided an object for boot, but it does not have class 'lfqBoot'. Please check.")
     }else{
-      selecType <- "knife_edge"
-    }
+
+        res <- param
+        res$FM_relative = FM_relative
+
+        # Beverton and Holt's ypr
+        if(type == "ypr"){
+          if(FM_relative) stop(noquote("ypr does not work with relative changes in FM, please provide absolute values."))
+          M <- res$M
+          K <- res$K
+          t0 <- ifelse(!is.null(res$t0),res$t0,0)
+          a <- res$a  # might be NULL
+          b <- res$b  # might be NULL
+          Winf <- res$Winf  # might be NULL
+          Linf <- res$Linf # might be NULL
+          if("Linf" %in% names(res) & "a" %in% names(res) & "b" %in% names(res)){
+            Winf <- a * (Linf ^ b)
+          }
+          #Linf <- ifelse(!is.null(res$Linf),res$Linf, exp(log(Winf/a)/b))
+          # REALLY ? maybe without Linf: then message that Winf has to exist
+          #if(is.null(Linf) | is.na(Linf)) stop("Either Linf or Winf with a and b has to be provided!")
+          #if(is.null(Winf)) Winf <-  a * Linf ^ b  ###exp((log(Linf) - a)/b) # might still be NULL
+          # or              Winf <- exp(log(Linf-a)/b)
+
+          if(length(FM_change) == 1 & is.na(FM_change[1]) &
+             length(E_change) == 1 & is.na(E_change[1])){
+            FM_change <- seq(0,10,0.1)
+            print(noquote("No fishing mortality (FM_change) or exploitation rate (E_change) was provided, a default range for fishing mortality of 0 to 10 is used."))
+          }
+
+          # transfer E_change into F_change if provided
+          # if(length(FM_change) == 1 & is.na(FM_change[1]) & length(E_change) != 1 & !is.na(E_change[1])){
+          #   FM_change <- (E_change * M) / (1 - E_change)
+          #   FM_change[FM_change == Inf] <- (0.9999 * M) / (1 - 0.9999)
+          # }
+          if(length(FM_change) == 1 & is.na(FM_change[1]) &
+             length(E_change) != 1 & !is.na(E_change[1])){
+            E_change <- E_change[E_change <= 0.9]
+            FM_change <- (E_change * M) / (1 - E_change)
+          }
+
+          # Recruitment  - knife edge
+          tr <- res$tr   # might be NULL
+          Lr <- res$Lr   # might be NULL
+          if(is.null(tr) & is.null(Lr)) stop("Either the age or the length at recruitment (tr or Lr) has to be provided in param!")
+          if(!is.null(Linf)){
+            if(is.null(tr)) tr <- VBGF(L=Lr,param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lr,Linf=Linf,K=K,t0=t0)
+            if(is.null(Lr)) Lr <- VBGF(t=tr,param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tr,Linf=Linf,K=K,t0=t0)
+          }
 
 
-    # HEART
-    list_Lc_runs <- vector("list", length(Lc))
-    list_Es <- vector("list", length(Lc))
+          # Selectivity - knife edge or with selctivtiy ogive
+          tc <- res$tc   # might be NULL
+          Lc <- res$Lc   # might be NULL
+          if(is.null(tc) & is.null(Lc)){
+            if("L50" %in% s_list) Lc <- s_list$L50
+            if("Lc" %in% s_list) Lc <- s_list$Lc
+            #if(!("Lc" %in% s_list) & !("L50" %in% s_list))stop("Either the age or the length at first capture (tc or Lc) has to be provided in param! \n Or provide a Lc value in s_list!")
+          }
+          if(!is.null(Linf)){
+            if(is.null(tc) & !is.null(Lc)) tc <- VBGF(L=Lc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc,Linf=Linf,K=K,t0=t0)
+            if(is.null(Lc) & !is.null(tc)) Lc <- VBGF(t=tc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tc,Linf=Linf,K=K,t0=t0)
+            if(is.null(tc_change) & !is.null(Lc_change)) tc_change <- VBGF(L=Lc_change, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc_change,Linf=Linf,K=K,t0=t0)
+            if(is.null(Lc_change) & !is.null(tc_change)) Lc_change <- VBGF(t=tc_change, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tc_change,Linf=Linf,K=K,t0=t0)
+          }
+          tc <- c(tc,tc_change)
+          Lc <- c(Lc,Lc_change)
 
-    # show progress bar only if the loop has more than 1 runs
-    if (!hide.progressbar) {
-     nlk <- length(Lc)
-     if(nlk > 1){
-       pb <- txtProgressBar(min=1, max=nlk, style=3)
-       counter <- 1
-     }
-    }
+          if(length(s_list) > 1){
+            selecType <- s_list$selecType
+          }else{
+            selecType <- "knife_edge"
+          }
 
-    if(is.null(Lc)) Lc_tc <- tc else Lc_tc <- Lc
-    for(i in 1:length(Lc_tc)){
 
-      Lci <- Lc[i]
-      tci <- tc[i]
+          # HEART
+          list_Lc_runs <- vector("list", length(Lc))
+          list_Es <- vector("list", length(Lc))
 
-      Z <- (M + FM_change)
-      E <- FM_change/Z
+          # show progress bar only if the loop has more than 1 runs
+          if (!hide.progressbar) {
+           nlk <- length(Lc)
+           if(nlk > 1){
+             pb <- txtProgressBar(min=1, max=nlk, style=3)
+             counter <- 1
+           }
+          }
 
-      # KNIFE EDGE
-      if(length(s_list) == 1 ){#| selecType == "knife_edge"){
-        input <- list(Linf=Linf,
-                      Winf = Winf,
-                      K = K,
-                      M = M,
-                      t0 = t0,
-                      tr = tr,
-                      tc = tci)
-        output <- ypr(input, FM_change)
-        B_R <- output$br
-        Y_R <- output$yr
-        B_R.rel <- output$rbr
-        Y_R.rel <- output$ryr
-        deri <- output$derivative
-      }
+          if(is.null(Lc)) Lc_tc <- tc else Lc_tc <- Lc
+          for(i in 1:length(Lc_tc)){
 
-      # SELECTION OGIVE
-      if(length(s_list) > 1 ){#& selecType != "knife_edge"){
-        if("midLengths" %in% names(res)){
-          classes <- as.character(res$midLengths)
+            Lci <- Lc[i]
+            tci <- tc[i]
+
+            Z <- (M + FM_change)
+            E <- FM_change/Z
+
+            # KNIFE EDGE
+            if(length(s_list) == 1 ){#| selecType == "knife_edge"){
+              input <- list(Linf=Linf,
+                            Winf = Winf,
+                            K = K,
+                            M = M,
+                            t0 = t0,
+                            tr = tr,
+                            tc = tci)
+              output <- ypr(input, FM_change)
+              B_R <- output$br
+              Y_R <- output$yr
+              B_R.rel <- output$rbr
+              Y_R.rel <- output$ryr
+              deri <- output$derivative
+            }
+
+            # SELECTION OGIVE
+            if(length(s_list) > 1 ){#& selecType != "knife_edge"){
+              if("midLengths" %in% names(res)){
+                classes <- as.character(res$midLengths)
+                # create column without plus group (sign) if present
+                classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
+                classes.num <- as.numeric(classes.num[,1])
+                Lt <- classes.num
+                # Lincr <- res$midLengths[2] - res$midLengths[1]
+                # Lmin <- res$midLengths[1] - (Lincr/2)
+              }
+              if(!"midLengths" %in% names(res)){
+                if(is.na(Lmin) | is.na(Lincr)) writeLines("No midpoints of length classes are provided. This can be done using Lmin and Lincr or by a \n midLengths element in param. A standard range from 1cm to Linf * 0.98 by 2cm is assumed")
+                Lmin <- ifelse(is.na(Lmin), 1, Lmin)
+                Lincr <- ifelse(is.na(Lincr), 2, Lincr)
+                # mid length vector
+                Lt <- seq(Lmin,(Linf*0.98),Lincr)
+              } # make Lt fixed except depending on Linf and as detailed as possible, e.g. Lincr = 0.5 (takes a long time)
+
+              # selectivity
+              P <- select_ogive(s_list, Lt =  Lt, Lc = Lci)
+
+              input <- list(Linf = ifelse(length(Linf) > 0, Linf, NA),
+                            Winf = ifelse(length(Winf) > 0, Winf, NA),
+                            K = K,
+                            M = M,
+                            t0 = t0,
+                            tr = tr,
+                            tc = tci)
+              output <- ypr_sel(input, FM_change, Lt, P)
+
+              # relative yield and biomass per recruit
+              B_R.rel <- output$rbr
+              Y_R.rel <- output$ryr
+              # derivative
+              deri <- output$derivative
+
+              #test
+              Y_R <- Y_R.rel * Winf * exp(M * (tr - t0))
+              B_R <- B_R.rel * Winf * exp(M * (tr - t0))
+
+              # biased because only prints P for largest Lc value
+              #if(i == length(Lc)) plot(Lt, P, type = 'l', ylab = 'Prob of capture',
+              #                         main = 'Selectivity function')
+            }
+
+
+            # virgin biomass
+            if(0 %in% FM_change){
+              Bv_R <- B_R[FM_change == 0]
+            }else{
+              Bv_R <- B_R[FM_change == min(FM_change,na.rm = TRUE)]
+              writeLines(paste0("Biomass was not estimated for a fishing mortality (FM) of 0, thus the virgin biomass corresponds to a FM of ",min(FM_change,na.rm = TRUE)))
+            }
+
+            #biomass in percetage of virgin biomass
+            B_R.percent <- round((B_R / Bv_R ) * 100, digits = 1)
+
+            #mean age in annual yield
+            Ty <- (1 / Z) + tci
+
+            #mean length in the annual yield
+            S <- exp(-K * (tci - t0))         # the same:    S <- 1 - (Lci/Linf)
+            Ly <- Linf * (1 - ((Z*S)/(Z+K)))
+
+            #mean weight in annual yield
+            Wy <- (Z) * Winf *
+              ((1/Z) - ((3*S)/(Z+K)) +
+                 ((3*(S^2))/(Z+(2*K))) - ((S^3)/(Z + (3*K))))
+
+
+            results.PBH <- data.frame(FM = FM_change,
+                                      E = E)
+            if(length(Ty) > 0) results.PBH$Ty <- Ty
+            if(length(Ly) > 0) results.PBH$Ly <- Ly
+            if(length(Wy) > 0) results.PBH$Wy <- Wy
+
+            results.PBH$Y_R.rel <- Y_R.rel
+            results.PBH$B_R.rel <- B_R.rel
+
+            # WHY NECESSARY???
+            if(length(Y_R) > 0) results.PBH$Y_R = Y_R
+            if(length(B_R) > 0) results.PBH$B_R = B_R
+            if(length(B_R.percent) > 0) results.PBH$B_R.percent = B_R.percent
+
+            list_Lc_runs[[i]] <- results.PBH
+
+
+            # reference points
+            Nmsy <- which.max(Y_R.rel)  #  should be the same as which.min(abs(deri)) which is also labelled Nmax
+            deri_pot <- deri[1:Nmsy]
+            N01 <- which.min(abs(deri_pot - (deri[1] * 0.1)))
+            N05 <- which.min(abs(B_R.percent - 50))  #which.min(abs(deri - (deri[1] * 0.5)))
+
+            df_loop_Es <- data.frame(Lc = ifelse(!is.null(Lci),Lci,NA),
+                                     tc = ifelse(!is.null(tci),tci,NA),
+                                     F01 = FM_change[N01],
+                                     Fmax = FM_change[Nmsy])
+            if(length(B_R.percent) > 0) df_loop_Es$F05 <- FM_change[N05]   # WHY NECESSARY????
+            # df_loop_Es$Fmax <- FM_change[Nmax]
+            df_loop_Es$E01 <- E[N01]
+            df_loop_Es$Emsy <- E[Nmsy]
+            if(length(B_R.percent) > 0) df_loop_Es$E05 <- E[N05]    # WHY NECESSARY????
+            # df_loop_Es$Emax <- E[Nmax]
+
+            list_Es[[i]] <- df_loop_Es
+
+            # update counter and progress bar
+            if (!hide.progressbar) {
+             if(nlk > 1){
+              setTxtProgressBar(pb, counter)
+              counter <- counter + 1
+             }
+            }
+          }
+
+          df_Es <- do.call(rbind,list_Es)
+
+          names(list_Lc_runs) <- paste0("Lc_", Lc_tc)   # names(list_tc_runs) <- tc
+          ret <- c(res,list(FM_change = FM_change,
+                            Lc = Lc,
+                            tc = tc,
+                            list_Lc_runs = list_Lc_runs,   #   list_tc_runs = list_tc_runs,
+                            df_Es = df_Es))   #   df_Es = df_Es,
+
+
+          if(!is.na(curr.E) & !is.na(curr.Lc)){
+            curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf,K=K,t0=t0))
+            # current exploitation rate
+            curr.F = (M * curr.E)/(1-curr.E)  # curr.F <- (M * curr.E)/(1-curr.E)
+            tmpList <- list(Linf=Linf,
+                            Winf = Winf,
+                            K = K,
+                            M = M,
+                            t0 = t0,
+                            tr = tr,
+                            tc = curr.tc)
+            if(length(s_list) == 1 | selecType == "knife_edge"){
+              tmpRES <- ypr(param = tmpList, FM_change = curr.F)
+            }
+            if(length(s_list) > 1 & selecType != "knife_edge"){
+              P <- select_ogive(s_list, Lt =  Lt, Lc = curr.Lc)
+              tmpRES <- ypr_sel(param = tmpList, FM_change = curr.F, Lt, P)
+              tmpRES$yr <- tmpRES$ryr * Winf * exp(M * (tr - t0))
+              tmpRES$br <- tmpRES$rbr * Winf * exp(M * (tr - t0))
+            }
+
+            df_currents <- data.frame(curr.Lc = curr.Lc,
+                                      curr.tc = curr.tc,
+                                      curr.E = curr.E,
+                                      curr.F = curr.F,
+                                      curr.YPR = tmpRES$yr,        #ypr(curr.F, curr.Lc_tc)       #, type = "length"),           # curr.YPR = ypr(curr.F, curr.Lc_tc, type = "age"),
+                                      curr.YPR.rel = tmpRES$ryr,     #ypr.rel(curr.F, curr.Lc_tc),   #, type = "length"),   # curr.YPR.rel = ypr.rel(curr.F, curr.Lc_tc, type = "age"),
+                                      curr.BPR = tmpRES$br,         #bpr(curr.F, curr.Lc_tc),           #, type = "length"),           # curr.BPR = bpr(curr.F, curr.Lc_tc, type = "age"),
+                                      curr.BPR.rel = tmpRES$rbr)     #bpr.rel(curr.F, curr.Lc_tc))   #, type = "length"))   # curr.BPR.rel = bpr.rel(curr.F, curr.Lc_tc, type = "age"))
+            ret$currents <- df_currents
+          }
+        }
+
+        # Thompson and Bell model
+        if(type == "ThompBell"){
+          meanWeight <- res$meanWeight
+          meanValue <- res$meanValue
+
+          #mortalities
+          FM <- res$FM
+          if(is.null(res$M) & is.null(res$Z)) stop(noquote("Either M or Z (in 'param') has to be provided!"))
+          if(!is.null(res$M)){
+            nM <- res$M
+            Z <- FM + nM
+          }else{
+            Z <- res$Z
+            nM <- Z - FM
+          }
+
+          Linf <- res$Linf
+          K <- res$K
+          t0 <- ifelse("t0" %in% names(res),res$t0,0)
+
+          # Selectivity - knife edge or with selctivtiy ogive
+          tc <- res$tc   # might be NULL
+          Lc <- res$Lc   # might be NULL
+          if(is.null(tc) & is.null(Lc)){
+            if("L50" %in% s_list) Lc <- s_list$L50
+            if("Lc" %in% s_list) Lc <- s_list$Lc
+            #if(!("Lc" %in% s_list) & !("L50" %in% s_list))stop("Either the age or the length at first capture (tc or Lc) has to be provided in param! \n Or provide a Lc value in s_list!")
+          }
+          if(!is.null(Linf)){
+            if(is.null(tc) & !is.null(Lc)) tc <- VBGF(L=Lc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc,Linf=Linf,K=K,t0=t0)
+            if(is.null(Lc) & !is.null(tc)) Lc <- VBGF(t=tc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tc,Linf=Linf,K=K,t0=t0)
+            if(is.null(tc_change) & !is.null(Lc_change)) tc_change <- VBGF(L=Lc_change, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc_change,Linf=Linf,K=K,t0=t0)
+            if(is.null(Lc_change) & !is.null(tc_change)) Lc_change <- VBGF(t=tc_change, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tc_change,Linf=Linf,K=K,t0=t0)
+          }
+          tc <- c(tc,tc_change)
+          Lc <- c(Lc,Lc_change)
+
+          # age based
+          if('age' %in% names(res)) classes <- as.character(res$age)
+          # length based
+          if('midLengths' %in% names(res)) classes <- as.character(res$midLengths)
+
           # create column without plus group (sign) if present
           classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
           classes.num <- as.numeric(classes.num[,1])
-          Lt <- classes.num
-          # Lincr <- res$midLengths[2] - res$midLengths[1]
-          # Lmin <- res$midLengths[1] - (Lincr/2)
-        }
-        if(!"midLengths" %in% names(res)){
-          if(is.na(Lmin) | is.na(Lincr)) writeLines("No midpoints of length classes are provided. This can be done using Lmin and Lincr or by a \n midLengths element in param. A standard range from 1cm to Linf * 0.98 by 2cm is assumed")
-          Lmin <- ifelse(is.na(Lmin), 1, Lmin)
-          Lincr <- ifelse(is.na(Lincr), 2, Lincr)
-          # mid length vector
-          Lt <- seq(Lmin,(Linf*0.98),Lincr)
-        } # make Lt fixed except depending on Linf and as detailed as possible, e.g. Lincr = 0.5 (takes a long time)
 
-        # selectivity
-        P <- select_ogive(s_list, Lt =  Lt, Lc = Lci)
-
-        input <- list(Linf = ifelse(length(Linf) > 0, Linf, NA),
-                      Winf = ifelse(length(Winf) > 0, Winf, NA),
-                      K = K,
-                      M = M,
-                      t0 = t0,
-                      tr = tr,
-                      tc = tci)
-        output <- ypr_sel(input, FM_change, Lt, P)
-
-        # relative yield and biomass per recruit
-        B_R.rel <- output$rbr
-        Y_R.rel <- output$ryr
-        # derivative
-        deri <- output$derivative
-
-        #test
-        Y_R <- Y_R.rel * Winf * exp(M * (tr - t0))
-        B_R <- B_R.rel * Winf * exp(M * (tr - t0))
-
-        # biased because only prints P for largest Lc value
-        #if(i == length(Lc)) plot(Lt, P, type = 'l', ylab = 'Prob of capture',
-        #                         main = 'Selectivity function')
-      }
-
-
-      # virgin biomass
-      if(0 %in% FM_change){
-        Bv_R <- B_R[FM_change == 0]
-      }else{
-        Bv_R <- B_R[FM_change == min(FM_change,na.rm = TRUE)]
-        writeLines(paste0("Biomass was not estimated for a fishing mortality (FM) of 0, thus the virgin biomass corresponds to a FM of ",min(FM_change,na.rm = TRUE)))
-      }
-
-      #biomass in percetage of virgin biomass
-      B_R.percent <- round((B_R / Bv_R ) * 100, digits = 1)
-
-      #mean age in annual yield
-      Ty <- (1 / Z) + tci
-
-      #mean length in the annual yield
-      S <- exp(-K * (tci - t0))         # the same:    S <- 1 - (Lci/Linf)
-      Ly <- Linf * (1 - ((Z*S)/(Z+K)))
-
-      #mean weight in annual yield
-      Wy <- (Z) * Winf *
-        ((1/Z) - ((3*S)/(Z+K)) +
-           ((3*(S^2))/(Z+(2*K))) - ((S^3)/(Z + (3*K))))
-
-
-      results.PBH <- data.frame(FM = FM_change,
-                                E = E)
-      if(length(Ty) > 0) results.PBH$Ty <- Ty
-      if(length(Ly) > 0) results.PBH$Ly <- Ly
-      if(length(Wy) > 0) results.PBH$Wy <- Wy
-
-      results.PBH$Y_R.rel <- Y_R.rel
-      results.PBH$B_R.rel <- B_R.rel
-
-      # WHY NECESSARY???
-      if(length(Y_R) > 0) results.PBH$Y_R = Y_R
-      if(length(B_R) > 0) results.PBH$B_R = B_R
-      if(length(B_R.percent) > 0) results.PBH$B_R.percent = B_R.percent
-
-      list_Lc_runs[[i]] <- results.PBH
-
-
-      # reference points
-      Nmsy <- which.max(Y_R.rel)  #  should be the same as which.min(abs(deri)) which is also labelled Nmax
-      deri_pot <- deri[1:Nmsy]
-      N01 <- which.min(abs(deri_pot - (deri[1] * 0.1)))
-      N05 <- which.min(abs(B_R.percent - 50))  #which.min(abs(deri - (deri[1] * 0.5)))
-
-      df_loop_Es <- data.frame(Lc = ifelse(!is.null(Lci),Lci,NA),
-                               tc = ifelse(!is.null(tci),tci,NA),
-                               F01 = FM_change[N01],
-                               Fmsy = FM_change[Nmsy])
-      if(length(B_R.percent) > 0) df_loop_Es$F05 <- FM_change[N05]   # WHY NECESSARY????
-      # df_loop_Es$Fmax <- FM_change[Nmax]
-      df_loop_Es$E01 <- E[N01]
-      df_loop_Es$Emsy <- E[Nmsy]
-      if(length(B_R.percent) > 0) df_loop_Es$E05 <- E[N05]    # WHY NECESSARY????
-      # df_loop_Es$Emax <- E[Nmax]
-
-      list_Es[[i]] <- df_loop_Es
-
-      # update counter and progress bar
-      if (!hide.progressbar) {
-       if(nlk > 1){
-        setTxtProgressBar(pb, counter)
-        counter <- counter + 1
-       }
-      }
-    }
-
-    df_Es <- do.call(rbind,list_Es)
-
-    names(list_Lc_runs) <- paste0("Lc_", Lc_tc)   # names(list_tc_runs) <- tc
-    ret <- c(res,list(FM_change = FM_change,
-                      Lc = Lc,
-                      tc = tc,
-                      list_Lc_runs = list_Lc_runs,   #   list_tc_runs = list_tc_runs,
-                      df_Es = df_Es))   #   df_Es = df_Es,
-
-
-    if(!is.na(curr.E) & !is.na(curr.Lc)){
-      curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf,K=K,t0=t0))
-      # current exploitation rate
-      curr.F = (M * curr.E)/(1-curr.E)  # curr.F <- (M * curr.E)/(1-curr.E)
-      tmpList <- list(Linf=Linf,
-                      Winf = Winf,
-                      K = K,
-                      M = M,
-                      t0 = t0,
-                      tr = tr,
-                      tc = curr.tc)
-      if(length(s_list) == 1 | selecType == "knife_edge"){
-        tmpRES <- ypr(param = tmpList, FM_change = curr.F)
-      }
-      if(length(s_list) > 1 & selecType != "knife_edge"){
-        P <- select_ogive(s_list, Lt =  Lt, Lc = curr.Lc)
-        tmpRES <- ypr_sel(param = tmpList, FM_change = curr.F, Lt, P)
-        tmpRES$yr <- tmpRES$ryr * Winf * exp(M * (tr - t0))
-        tmpRES$br <- tmpRES$rbr * Winf * exp(M * (tr - t0))
-      }
-
-      df_currents <- data.frame(curr.Lc = curr.Lc,
-                                curr.tc = curr.tc,
-                                curr.E = curr.E,
-                                curr.F = curr.F,
-                                curr.YPR = tmpRES$yr,        #ypr(curr.F, curr.Lc_tc)       #, type = "length"),           # curr.YPR = ypr(curr.F, curr.Lc_tc, type = "age"),
-                                curr.YPR.rel = tmpRES$ryr,     #ypr.rel(curr.F, curr.Lc_tc),   #, type = "length"),   # curr.YPR.rel = ypr.rel(curr.F, curr.Lc_tc, type = "age"),
-                                curr.BPR = tmpRES$br,         #bpr(curr.F, curr.Lc_tc),           #, type = "length"),           # curr.BPR = bpr(curr.F, curr.Lc_tc, type = "age"),
-                                curr.BPR.rel = tmpRES$rbr)     #bpr.rel(curr.F, curr.Lc_tc))   #, type = "length"))   # curr.BPR.rel = bpr.rel(curr.F, curr.Lc_tc, type = "age"))
-      ret$currents <- df_currents
-    }
-  }
-
-  # Thompson and Bell model
-  if(type == "ThompBell"){
-    meanWeight <- res$meanWeight
-    meanValue <- res$meanValue
-
-    #mortalities
-    FM <- res$FM
-    if(is.null(res$M) & is.null(res$Z)) stop(noquote("Either M or Z (in 'param') has to be provided!"))
-    if(!is.null(res$M)){
-      nM <- res$M
-      Z <- FM + nM
-    }else{
-      Z <- res$Z
-      nM <- Z - FM
-    }
-
-    Linf <- res$Linf
-    K <- res$K
-    t0 <- ifelse("t0" %in% names(res),res$t0,0)
-
-    # Selectivity - knife edge or with selctivtiy ogive
-    tc <- res$tc   # might be NULL
-    Lc <- res$Lc   # might be NULL
-    if(is.null(tc) & is.null(Lc)){
-      if("L50" %in% s_list) Lc <- s_list$L50
-      if("Lc" %in% s_list) Lc <- s_list$Lc
-      #if(!("Lc" %in% s_list) & !("L50" %in% s_list))stop("Either the age or the length at first capture (tc or Lc) has to be provided in param! \n Or provide a Lc value in s_list!")
-    }
-    if(!is.null(Linf)){
-      if(is.null(tc) & !is.null(Lc)) tc <- VBGF(L=Lc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc,Linf=Linf,K=K,t0=t0)
-      if(is.null(Lc) & !is.null(tc)) Lc <- VBGF(t=tc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tc,Linf=Linf,K=K,t0=t0)
-      if(is.null(tc_change) & !is.null(Lc_change)) tc_change <- VBGF(L=Lc_change, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc_change,Linf=Linf,K=K,t0=t0)
-      if(is.null(Lc_change) & !is.null(tc_change)) Lc_change <- VBGF(t=tc_change, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tc_change,Linf=Linf,K=K,t0=t0)
-    }
-    tc <- c(tc,tc_change)
-    Lc <- c(Lc,Lc_change)
-
-    # age based
-    if('age' %in% names(res)) classes <- as.character(res$age)
-    # length based
-    if('midLengths' %in% names(res)) classes <- as.character(res$midLengths)
-
-    # create column without plus group (sign) if present
-    classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
-    classes.num <- as.numeric(classes.num[,1])
-
-    if(length(FM_change) == 1 & is.na(FM_change[1]) &
-       length(E_change) == 1 & is.na(E_change[1])){
-      FM_change <- seq(0,10,0.1)
-      print(noquote("No fishing mortality (FM_change) or exploitation rate (E_change) \nwas provided, a default range for the absolute \nfishing mortality of 0 to 10 is used."))
-    }
-
-    # transfer E_change into F_change if provided
-    if(length(FM_change) == 1 & is.na(FM_change[1]) &
-       length(E_change) != 1 & !is.na(E_change[1])){
-      E_change <- E_change[E_change <= 0.9]
-      FM_change <- (E_change * nM) / (1 - E_change)
-    }
-    if(length(E_change) == 1 & is.na(E_change[1])){
-      E_change <- FM_change / (FM_change + nM)
-    }
-
-    Lt <- classes.num  # if age in names(res) Lt here is age because classes.num = age
-
-
-    # Only FM change provided without Lc_tc change
-    if((is.null(tc_change) & is.null(Lc_change))){  #  | length(s_list) == 1){
-
-      #if(is.null(res$FM) | length(res$FM) == 1) stop(noquote("Please provide fishing mortality FM (in 'param') as a vector per size class!"))
-
-      if(is.null(res$FM)) stop(noquote("Please provide fishing mortality FM (in 'param')!"))
-      if(length(res$FM) == 1){
-        if(length(s_list) > 1 | !is.null(Lc[1])){
-          print(noquote("Fishing mortality per length class not povided, using selectivity information to derive fishing mortality per length class."))
-          if(length(s_list) == 1){
-            s_list <- list(selecType = "knife_edge", L50 = Lc[1])
+          if(length(FM_change) == 1 & is.na(FM_change[1]) &
+             length(E_change) == 1 & is.na(E_change[1])){
+            FM_change <- seq(0,10,0.1)
+            print(noquote("No fishing mortality (FM_change) or exploitation rate (E_change) \nwas provided, a default range for the absolute \nfishing mortality of 0 to 10 is used."))
           }
-          sel <- select_ogive(s_list, Lt = Lt)
-          FM <- res$FM * sel
-        }else{
-          stop(noquote("Please provide either fishing mortality FM (in 'param') per length class or a Lc value!"))
-        }
-      }
+
+          # transfer E_change into F_change if provided
+          if(length(FM_change) == 1 & is.na(FM_change[1]) &
+             length(E_change) != 1 & !is.na(E_change[1])){
+            E_change <- E_change[E_change <= 0.9]
+            FM_change <- (E_change * nM) / (1 - E_change)
+          }
+          if(length(E_change) == 1 & is.na(E_change[1])){
+            E_change <- FM_change / (FM_change + nM)
+          }
+
+          Lt <- classes.num  # if age in names(res) Lt here is age because classes.num = age
 
 
-      #prediction based on f_change
-      if(!FM_relative){
-        pred_mat <- as.matrix(FM/max(FM, na.rm = TRUE)) %*% FM_change
-      }
-      if(FM_relative){
-        pred_mat <- as.matrix(FM) %*% FM_change
-      }
+          # Only FM change provided without Lc_tc change
+          if((is.null(tc_change) & is.null(Lc_change))){  #  | length(s_list) == 1){
+
+            #if(is.null(res$FM) | length(res$FM) == 1) stop(noquote("Please provide fishing mortality FM (in 'param') as a vector per size class!"))
+
+            if(is.null(res$FM)) stop(noquote("Please provide fishing mortality FM (in 'param')!"))
+            if(length(res$FM) == 1){
+              if(length(s_list) > 1 | !is.null(Lc[1])){
+                print(noquote("Fishing mortality per length class not povided, using selectivity information to derive fishing mortality per length class."))
+                if(length(s_list) == 1){
+                  s_list <- list(selecType = "knife_edge", L50 = Lc[1])
+                }
+                sel <- select_ogive(s_list, Lt = Lt)
+                FM <- res$FM * sel
+              }else{
+                stop(noquote("Please provide either fishing mortality FM (in 'param') per length class or a Lc value!"))
+              }
+            }
 
 
-      pred_res_list <- list()
-      for(x7 in 1:length(FM_change)){
-        param$Z <- pred_mat[,x7] + nM
-        param$FM <- pred_mat[,x7]
-        resL <- stock_sim(param, age_unit = age_unit,
-                          stock_size_1 = stock_size_1, plus_group = plus_group)
-        pred_res_list[[x7]] <- resL$totals
-      }
-
-      pred_res_df <- do.call(rbind, pred_res_list)
-      pred_res_df$FM_change <- FM_change
-      pred_res_df$E_change <- E_change
-
-      res2 <- pred_res_df
-      res3 <- c(res,res2)
-
-      # reference points
-      Bper <- rep(NA,length(pred_res_df$meanB))
-      Bper[1] <- 100
-      for(ix in 2:length(Bper)){
-        Bper[ix] <- pred_res_df$meanB[ix]/pred_res_df$meanB[1] * 100
-      }
-      N05 <- which.min(abs(Bper - 50))
-      Nmsy <- which.max(pred_res_df$totY)
-
-      if(!is.null(Lc[1]) & !is.null(tc[1])){
-        df_Es <- data.frame(Lc = Lc,
-                            tc = tc,
-                            Fmsy = FM_change[Nmsy],
-                            F05 = FM_change[N05],
-                            Emsy = E_change[Nmsy],
-                            E05 = E_change[N05])
-      }else{
-        df_Es <- data.frame(Fmsy = FM_change[Nmsy],
-                            F05 = FM_change[N05],
-                            Emsy = E_change[Nmsy],
-                            E05 = E_change[N05])
-      }
+            #prediction based on f_change
+            if(!FM_relative){
+              pred_mat <- as.matrix(FM/max(FM, na.rm = TRUE)) %*% FM_change
+            }
+            if(FM_relative){
+              pred_mat <- as.matrix(FM) %*% FM_change
+            }
 
 
-      ret <- c(res3, list(df_Es = df_Es))
+            pred_res_list <- list()
+            for(x7 in 1:length(FM_change)){
+              param$Z <- pred_mat[,x7] + nM
+              param$FM <- pred_mat[,x7]
+              resL <- stock_sim(param, age_unit = age_unit,
+                                stock_size_1 = stock_size_1, plus_group = plus_group)
+              pred_res_list[[x7]] <- resL$totals
+            }
+
+            pred_res_df <- do.call(rbind, pred_res_list)
+            pred_res_df$FM_change <- FM_change
+            pred_res_df$E_change <- E_change
+
+            res2 <- pred_res_df
+            res3 <- c(res,res2)
+
+            # reference points
+            Bper <- rep(NA,length(pred_res_df$meanB))
+            Bper[1] <- 100
+            for(ix in 2:length(Bper)){
+              Bper[ix] <- pred_res_df$meanB[ix]/pred_res_df$meanB[1] * 100
+            }
+            N05 <- which.min(abs(Bper - 50))
+            Nmsy <- which.max(pred_res_df$totY)
+
+            if(!is.null(Lc[1]) & !is.null(tc[1])){
+              df_Es <- data.frame(Lc = Lc,
+                                  tc = tc,
+                                  Fmax = FM_change[Nmsy],
+                                  F05 = FM_change[N05],
+                                  Emsy = E_change[Nmsy],
+                                  E05 = E_change[N05])
+            }else{
+              df_Es <- data.frame(Fmax = FM_change[Nmsy],
+                                  F05 = FM_change[N05],
+                                  Emsy = E_change[Nmsy],
+                                  E05 = E_change[N05])
+            }
 
 
-      if(!is.na(curr.E)){
-        if(!is.na(curr.Lc)){
-          curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf, K=K, t0=t0))
-        }else curr.tc <- NA
-        # current exploitation rate
-        curr.F = (nM * curr.E)/(1-curr.E)
+            ret <- c(res3, list(df_Es = df_Es))
 
-        if(is.na(curr.Lc)){
-          sel <- (FM / max(FM,na.rm=TRUE))
-        }else if(!is.na(curr.Lc)){
-          s_list <- list(selecType = "knife_edge", L50 = curr.Lc)
-          Lt <- res$midLengths
-          sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
-        }
-        if(length(s_list) != 1){
-          Lt <- res$midLengths
-          sel <- select_ogive(s_list, Lt = Lt)
-        }
 
-        mati <- sel * curr.F
-        param.loop <- res
-        param.loop$FM <- mati
-        param.loop$Z <- mati + nM
-        res2 <- stock_sim(param = param.loop, age_unit = age_unit,
-                          stock_size_1 = stock_size_1, plus_group=plus_group)
-        mati2 <- res2$totals
+            if(!is.na(curr.E)){
+              if(!is.na(curr.Lc)){
+                curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf, K=K, t0=t0))
+              }else curr.tc <- NA
+              # current exploitation rate
+              curr.F = (nM * curr.E)/(1-curr.E)
 
-        df_currents <- data.frame(curr.Lc = curr.Lc,
-                                  curr.tc = curr.tc,
-                                  curr.E = curr.E,
-                                  curr.F = curr.F,
-                                  curr.C = mati2$totC,
-                                  curr.Y = mati2$totY,
-                                  curr.V = mati2$totV,
-                                  curr.B = mati2$meanB)
-        ret$currents <- df_currents
-      }
-    }
+              if(is.na(curr.Lc)){
+                sel <- (FM / max(FM,na.rm=TRUE))
+              }else if(!is.na(curr.Lc)){
+                s_list <- list(selecType = "knife_edge", L50 = curr.Lc)
+                Lt <- res$midLengths
+                sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
+              }
+              if(length(s_list) != 1){
+                Lt <- res$midLengths
+                sel <- select_ogive(s_list, Lt = Lt)
+              }
 
-    # FM and Lc_tc change provided
-    if(!is.null(tc_change) | !is.null(Lc_change)){
-      # instead of s_list the outcome of one of the other select functions?
+              mati <- sel * curr.F
+              param.loop <- res
+              param.loop$FM <- mati
+              param.loop$Z <- mati + nM
+              res2 <- stock_sim(param = param.loop, age_unit = age_unit,
+                                stock_size_1 = stock_size_1, plus_group=plus_group)
+              mati2 <- res2$totals
 
-      if(length(s_list) == 1){
-        s_list <- list(selecType = "knife_edge", L50 = Lc[1])
-      }
-      sel <- select_ogive(s_list, Lt = Lt) #classes.num
+              df_currents <- data.frame(curr.Lc = curr.Lc,
+                                        curr.tc = curr.tc,
+                                        curr.E = curr.E,
+                                        curr.F = curr.F,
+                                        curr.C = mati2$totC,
+                                        curr.Y = mati2$totY,
+                                        curr.V = mati2$totV,
+                                        curr.B = mati2$meanB)
+              ret$currents <- df_currents
+            }
+          }
 
-      sel.list <- list()
-      for(x19 in 1:length(Lc)){
-        sel.list[[x19]] <- select_ogive(s_list, Lt = Lt, Lc = Lc[x19]) #classes.num
-      }
-      Lc_mat <- do.call(cbind,sel.list)
-      colnames(Lc_mat) <- Lc
+          # FM and Lc_tc change provided
+          if(!is.null(tc_change) | !is.null(Lc_change)){
+            # instead of s_list the outcome of one of the other select functions?
 
-      Lc_mat_FM <- Lc_mat   #max(FM, na.rm=TRUE)  # with one it should correspond to actual fishing mortality not to change in mortality (x factor)
+            if(length(s_list) == 1){
+              s_list <- list(selecType = "knife_edge", L50 = Lc[1])
+            }
+            sel <- select_ogive(s_list, Lt = Lt) #classes.num
 
-      #list with FM_Lc_matrices per FM_change
-      FM_Lc_com_mat.list <- list()
-      if(!FM_relative){
-        for(x20 in 1:length(colnames(Lc_mat_FM))){
-          FM_Lc_com_mat.list[[x20]] <- as.matrix(Lc_mat_FM[,x20]) %*% FM_change
-          colnames(FM_Lc_com_mat.list[[x20]]) <- FM_change
-        }
-      }
-      if(FM_relative){
-        for(x20 in 1:length(colnames(Lc_mat_FM))){
-          FM_Lc_com_mat.list[[x20]] <- as.matrix(Lc_mat_FM[,x20] * FM) %*% FM_change
-          colnames(FM_Lc_com_mat.list[[x20]]) <- FM_change
-        }
-      }
+            sel.list <- list()
+            for(x19 in 1:length(Lc)){
+              sel.list[[x19]] <- select_ogive(s_list, Lt = Lt, Lc = Lc[x19]) #classes.num
+            }
+            Lc_mat <- do.call(cbind,sel.list)
+            colnames(Lc_mat) <- Lc
 
-      param.loop <- res
+            Lc_mat_FM <- Lc_mat   #max(FM, na.rm=TRUE)  # with one it should correspond to actual fishing mortality not to change in mortality (x factor)
 
-      pred.FM_Lc_com_res_loopC_list <- vector("list",length(FM_Lc_com_mat.list))
-      pred.FM_Lc_com_res_loopY_list <- vector("list",length(FM_Lc_com_mat.list))
-      pred.FM_Lc_com_res_loopB_list <- vector("list",length(FM_Lc_com_mat.list))
-      pred.FM_Lc_com_res_loopV_list <- vector("list",length(FM_Lc_com_mat.list))
+            #list with FM_Lc_matrices per FM_change
+            FM_Lc_com_mat.list <- list()
+            if(!FM_relative){
+              for(x20 in 1:length(colnames(Lc_mat_FM))){
+                FM_Lc_com_mat.list[[x20]] <- as.matrix(Lc_mat_FM[,x20]) %*% FM_change
+                colnames(FM_Lc_com_mat.list[[x20]]) <- FM_change
+              }
+            }
+            if(FM_relative){
+              for(x20 in 1:length(colnames(Lc_mat_FM))){
+                FM_Lc_com_mat.list[[x20]] <- as.matrix(Lc_mat_FM[,x20] * FM) %*% FM_change
+                colnames(FM_Lc_com_mat.list[[x20]]) <- FM_change
+              }
+            }
 
-      if (!hide.progressbar) {
-        nlk <- prod(length(FM_Lc_com_mat.list),dim(FM_Lc_com_mat.list[[1]])[2])
-        pb <- txtProgressBar(min=1, max=nlk, style=3)
-        counter <- 1
-      }
+            param.loop <- res
 
-      for(x21 in 1:length(FM_Lc_com_mat.list)){  #loop for length of list == Lc changes
-        mati <- FM_Lc_com_mat.list[[x21]]
+            pred.FM_Lc_com_res_loopC_list <- vector("list",length(FM_Lc_com_mat.list))
+            pred.FM_Lc_com_res_loopY_list <- vector("list",length(FM_Lc_com_mat.list))
+            pred.FM_Lc_com_res_loopB_list <- vector("list",length(FM_Lc_com_mat.list))
+            pred.FM_Lc_com_res_loopV_list <- vector("list",length(FM_Lc_com_mat.list))
 
-        pred.FM_Lc_com_res_loop1_list <- list()
-        for(x22 in 1:dim(mati)[2]){
+            if (!hide.progressbar) {
+              nlk <- prod(length(FM_Lc_com_mat.list),dim(FM_Lc_com_mat.list[[1]])[2])
+              pb <- txtProgressBar(min=1, max=nlk, style=3)
+              counter <- 1
+            }
 
-          param.loop$FM <- mati[,x22]
-          param.loop$Z <- mati[,x22] + nM
-          res2 <- stock_sim(param = param.loop, age_unit = age_unit,
-                            stock_size_1 = stock_size_1, plus_group=plus_group)
-          pred.FM_Lc_com_res_loop1_list[[x22]] <- res2$totals
+            for(x21 in 1:length(FM_Lc_com_mat.list)){  #loop for length of list == Lc changes
+              mati <- FM_Lc_com_mat.list[[x21]]
 
-          # update counter and progress bar
-          if (!hide.progressbar) {
-          setTxtProgressBar(pb, counter)
-          counter <- counter + 1
+              pred.FM_Lc_com_res_loop1_list <- list()
+              for(x22 in 1:dim(mati)[2]){
+
+                param.loop$FM <- mati[,x22]
+                param.loop$Z <- mati[,x22] + nM
+                res2 <- stock_sim(param = param.loop, age_unit = age_unit,
+                                  stock_size_1 = stock_size_1, plus_group=plus_group)
+                pred.FM_Lc_com_res_loop1_list[[x22]] <- res2$totals
+
+                # update counter and progress bar
+                if (!hide.progressbar) {
+                setTxtProgressBar(pb, counter)
+                counter <- counter + 1
+                }
+              }
+              prev_mat <- do.call(rbind, pred.FM_Lc_com_res_loop1_list)
+              prev_matC <- prev_mat[,'totC']
+              prev_matY <- prev_mat[,'totY']
+              prev_matB <- prev_mat[,'meanB']
+              prev_matV <- prev_mat[,'totV']
+
+              pred.FM_Lc_com_res_loopC_list[[x21]] <- prev_matC
+              pred.FM_Lc_com_res_loopY_list[[x21]] <- prev_matY
+              pred.FM_Lc_com_res_loopB_list[[x21]] <- prev_matB
+              pred.FM_Lc_com_res_loopV_list[[x21]] <- prev_matV
+            }
+
+            #for catch
+            mat_FM_Lc_com.C <- do.call(rbind, pred.FM_Lc_com_res_loopC_list)
+            rownames(mat_FM_Lc_com.C) <- Lc
+            colnames(mat_FM_Lc_com.C) <- FM_change
+
+            #for yield
+            mat_FM_Lc_com.Y <- do.call(rbind, pred.FM_Lc_com_res_loopY_list)
+            rownames(mat_FM_Lc_com.Y) <- Lc
+            colnames(mat_FM_Lc_com.Y) <- FM_change
+
+            #for biomass
+            mat_FM_Lc_com.B <- do.call(rbind, pred.FM_Lc_com_res_loopB_list)
+            rownames(mat_FM_Lc_com.B) <- Lc
+            colnames(mat_FM_Lc_com.B) <- FM_change
+
+            #for value
+            mat_FM_Lc_com.V <- do.call(rbind, pred.FM_Lc_com_res_loopV_list)
+            rownames(mat_FM_Lc_com.V) <- Lc
+            colnames(mat_FM_Lc_com.V) <- FM_change
+
+            # transvers matrices for plotting (the opposite arrangement from book)
+            mat_FM_Lc_com.C <- t(mat_FM_Lc_com.C)
+            mat_FM_Lc_com.Y <- t(mat_FM_Lc_com.Y)
+            mat_FM_Lc_com.B <- t(mat_FM_Lc_com.B)
+            mat_FM_Lc_com.V <- t(mat_FM_Lc_com.V)
+
+            # reference points
+            mat_FM_Lc_com.Bper <- matrix(NA,ncol=dim(mat_FM_Lc_com.B)[2],
+                                                 nrow=dim(mat_FM_Lc_com.B)[1])
+            mat_FM_Lc_com.Bper[1,] <- 100
+            for(ix in 2:dim(mat_FM_Lc_com.B)[1]){
+              mat_FM_Lc_com.Bper[ix,] <- mat_FM_Lc_com.B[ix,]/mat_FM_Lc_com.B[1,] *100
+            }
+            N05 <- apply(mat_FM_Lc_com.Bper, MARGIN = 2,
+                         FUN = function(x) which.min(abs(x - 50)))
+
+            Nmsy <- apply(mat_FM_Lc_com.Y, MARGIN = 2, FUN = which.max)
+
+            if((!is.null(Lc[1]) & !is.null(tc[1])) | (!is.na(Lc[1]) & !is.na(tc[1])) ){
+              df_Es <- data.frame(Lc = Lc,
+                                  tc = tc,
+                                  Fmax = FM_change[Nmsy],
+                                  F05 = FM_change[N05],
+                                  Emsy = E_change[Nmsy],
+                                  E05 = E_change[N05])
+            }else{
+              df_Es <- data.frame(Fmax = FM_change[Nmsy],
+                                  F05 = FM_change[N05],
+                                  Emsy = E_change[Nmsy],
+                                  E05 = E_change[N05])
+            }
+
+
+            ret <- c(res,
+                     list(FM_change = FM_change,
+                          # FM_relative = FM_relative,
+                          E_change = E_change,
+                          Lc_change = Lc_change,
+                          tc_change = tc_change,
+                          Lt = Lt,
+                          sel = sel,
+                          mat_FM_Lc_com.C = mat_FM_Lc_com.C,
+                          mat_FM_Lc_com.Y = mat_FM_Lc_com.Y,
+                          mat_FM_Lc_com.V = mat_FM_Lc_com.V,
+                          mat_FM_Lc_com.B = mat_FM_Lc_com.B,
+                          df_Es = df_Es))
+
+
+            if(!is.na(curr.E)){
+              if(!is.na(curr.Lc)){
+                curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf, K=K, t0=t0))
+              }else curr.tc <- NA
+
+              # current exploitation rate
+              curr.F = (nM * curr.E)/(1-curr.E)
+
+              if(is.na(curr.Lc)){
+                sel <- FM / max(FM, na.rm = TRUE)
+              }else if(!is.na(curr.Lc) | length(s_list) == 1){
+                s_list <- list(selecType = "knife_edge", L50 = curr.Lc)
+                sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
+              }else if(!is.na(curr.Lc) | length(s_list) != 1){
+                sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
+              }
+              mati <- sel * curr.F
+              param.loop <- res
+              param.loop$FM <- mati
+              param.loop$Z <- mati + nM
+              res2 <- stock_sim(param.loop, age_unit,
+                                stock_size_1, plus_group=plus_group)
+              mati2 <- res2$totals
+
+              df_currents <- data.frame(curr.Lc = curr.Lc,
+                                        curr.tc = curr.tc,
+                                        curr.E = curr.E,
+                                        curr.F = curr.F,
+                                        curr.C = mati2$totC,
+                                        curr.Y = mati2$totY,
+                                        curr.V = mati2$totV,
+                                        curr.B = mati2$meanB)
+              ret$currents <- df_currents
+            }
           }
         }
-        prev_mat <- do.call(rbind, pred.FM_Lc_com_res_loop1_list)
-        prev_matC <- prev_mat[,'totC']
-        prev_matY <- prev_mat[,'totY']
-        prev_matB <- prev_mat[,'meanB']
-        prev_matV <- prev_mat[,'totV']
 
-        pred.FM_Lc_com_res_loopC_list[[x21]] <- prev_matC
-        pred.FM_Lc_com_res_loopY_list[[x21]] <- prev_matY
-        pred.FM_Lc_com_res_loopB_list[[x21]] <- prev_matB
-        pred.FM_Lc_com_res_loopV_list[[x21]] <- prev_matV
-      }
+        # return results and plot
+        class(ret) <- "predict_mod"
+        if(plot) plot(ret, mark = mark)
 
-      #for catch
-      mat_FM_Lc_com.C <- do.call(rbind, pred.FM_Lc_com_res_loopC_list)
-      rownames(mat_FM_Lc_com.C) <- Lc
-      colnames(mat_FM_Lc_com.C) <- FM_change
-
-      #for yield
-      mat_FM_Lc_com.Y <- do.call(rbind, pred.FM_Lc_com_res_loopY_list)
-      rownames(mat_FM_Lc_com.Y) <- Lc
-      colnames(mat_FM_Lc_com.Y) <- FM_change
-
-      #for biomass
-      mat_FM_Lc_com.B <- do.call(rbind, pred.FM_Lc_com_res_loopB_list)
-      rownames(mat_FM_Lc_com.B) <- Lc
-      colnames(mat_FM_Lc_com.B) <- FM_change
-
-      #for value
-      mat_FM_Lc_com.V <- do.call(rbind, pred.FM_Lc_com_res_loopV_list)
-      rownames(mat_FM_Lc_com.V) <- Lc
-      colnames(mat_FM_Lc_com.V) <- FM_change
-
-      # transvers matrices for plotting (the opposite arrangement from book)
-      mat_FM_Lc_com.C <- t(mat_FM_Lc_com.C)
-      mat_FM_Lc_com.Y <- t(mat_FM_Lc_com.Y)
-      mat_FM_Lc_com.B <- t(mat_FM_Lc_com.B)
-      mat_FM_Lc_com.V <- t(mat_FM_Lc_com.V)
-
-      # reference points
-      mat_FM_Lc_com.Bper <- matrix(NA,ncol=dim(mat_FM_Lc_com.B)[2],
-                                           nrow=dim(mat_FM_Lc_com.B)[1])
-      mat_FM_Lc_com.Bper[1,] <- 100
-      for(ix in 2:dim(mat_FM_Lc_com.B)[1]){
-        mat_FM_Lc_com.Bper[ix,] <- mat_FM_Lc_com.B[ix,]/mat_FM_Lc_com.B[1,] *100
-      }
-      N05 <- apply(mat_FM_Lc_com.Bper, MARGIN = 2,
-                   FUN = function(x) which.min(abs(x - 50)))
-
-      Nmsy <- apply(mat_FM_Lc_com.Y, MARGIN = 2, FUN = which.max)
-
-      if((!is.null(Lc[1]) & !is.null(tc[1])) | (!is.na(Lc[1]) & !is.na(tc[1])) ){
-        df_Es <- data.frame(Lc = Lc,
-                            tc = tc,
-                            Fmsy = FM_change[Nmsy],
-                            F05 = FM_change[N05],
-                            Emsy = E_change[Nmsy],
-                            E05 = E_change[N05])
-      }else{
-        df_Es <- data.frame(Fmsy = FM_change[Nmsy],
-                            F05 = FM_change[N05],
-                            Emsy = E_change[Nmsy],
-                            E05 = E_change[N05])
-      }
-
-
-      ret <- c(res,
-               list(FM_change = FM_change,
-                    # FM_relative = FM_relative,
-                    E_change = E_change,
-                    Lc_change = Lc_change,
-                    tc_change = tc_change,
-                    Lt = Lt,
-                    sel = sel,
-                    mat_FM_Lc_com.C = mat_FM_Lc_com.C,
-                    mat_FM_Lc_com.Y = mat_FM_Lc_com.Y,
-                    mat_FM_Lc_com.V = mat_FM_Lc_com.V,
-                    mat_FM_Lc_com.B = mat_FM_Lc_com.B,
-                    df_Es = df_Es))
-
-
-      if(!is.na(curr.E)){
-        if(!is.na(curr.Lc)){
-          curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf, K=K, t0=t0))
-        }else curr.tc <- NA
-
-        # current exploitation rate
-        curr.F = (nM * curr.E)/(1-curr.E)
-
-        if(is.na(curr.Lc)){
-          sel <- FM / max(FM, na.rm = TRUE)
-        }else if(!is.na(curr.Lc) | length(s_list) == 1){
-          s_list <- list(selecType = "knife_edge", L50 = curr.Lc)
-          sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
-        }else if(!is.na(curr.Lc) | length(s_list) != 1){
-          sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
-        }
-        mati <- sel * curr.F
-        param.loop <- res
-        param.loop$FM <- mati
-        param.loop$Z <- mati + nM
-        res2 <- stock_sim(param.loop, age_unit,
-                          stock_size_1, plus_group=plus_group)
-        mati2 <- res2$totals
-
-        df_currents <- data.frame(curr.Lc = curr.Lc,
-                                  curr.tc = curr.tc,
-                                  curr.E = curr.E,
-                                  curr.F = curr.F,
-                                  curr.C = mati2$totC,
-                                  curr.Y = mati2$totY,
-                                  curr.V = mati2$totV,
-                                  curr.B = mati2$meanB)
-        ret$currents <- df_currents
-      }
+        return(ret)
     }
-  }
-
-  # return results and plot
-  class(ret) <- "predict_mod"
-  if(plot) plot(ret, mark = mark)
-  return(ret)
+    
 }
