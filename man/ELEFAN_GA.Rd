@@ -159,11 +159,12 @@ plot(synLFQ4, Fname="catch")
 # (if using a multicore processor,
 #   consider adding the argument 'parallel=TRUE'
 #   to reduce computation time)
+set.seed(1)
 output <- ELEFAN_GA(synLFQ4, seasonalised = TRUE,
    low_par = list(Linf = 70, K = 0.1, t_anchor = 0, C = 0, ts= 0),
-   up_par = list(Linf = 90, K = 1, t_anchor = 1, C = 1, ts = 1),
-   popSize = 40, maxiter = 50, run = 20,
-   MA = 11, plot = TRUE, seed = 1111)
+   up_par = list(Linf = 110, K = 1, t_anchor = 1, C = 1, ts = 1),
+   popSize = 60, maxiter = 100, run = 20,
+   MA = 11, plot = TRUE)
 output$par
 output$ASP
 output$Rn_max

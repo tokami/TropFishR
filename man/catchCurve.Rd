@@ -6,7 +6,7 @@
 \usage{
 catchCurve(param, catch_columns = NA, cumulative = FALSE,
   calc_ogive = FALSE, reg_int = NULL, reg_num = 1, auto = FALSE,
-  plot = TRUE)
+  boot = NULL, natMort = NULL, plot = TRUE)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -39,6 +39,11 @@ data. Default 1.}
 
 \item{auto}{logical; no interactive functions used instead regression line is chosen
 automatically. Default = FALSE}
+
+\item{boot}{an object of class 'lfqBoot'}
+
+\item{natMort}{optional argument; name of column with natural mortality estimates
+for application to 'lfqBoot' object}
 
 \item{plot}{logical; should a plot be displayed? Default = TRUE}
 }
@@ -132,6 +137,10 @@ catchCurve(synCAA2, cumulative = TRUE)
 data(synLFQ3)
 output <- catchCurve(synLFQ3, calc_ogive = TRUE)
 summary(output$linear_mod_sel)
+
+#_______________________________________________
+# Catch curve with results from bootstrapped ELEFAN
+# coming soon
  }
 
 # the same with predefined selection for regression line:
