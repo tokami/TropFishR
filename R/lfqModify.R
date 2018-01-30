@@ -259,6 +259,7 @@ lfqModify <- function(lfq, par = NULL,
       res$K <- par$K
       res$t_anchor <- par$t_anchor
     }
+    if("par" %in% names(lfq)) res$par <- lfq$par
 
     if("Linf" %in% names(lfq)) res$Linf <- lfq$Linf
     if("K" %in% names(lfq)) res$K <- lfq$K
