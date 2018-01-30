@@ -732,7 +732,8 @@ catchCurve <- function(param,
               t50 <- T1/T2
               t75 <- (T1 + log(3))/T2
               t95 <-  (T1 - log((1 / 0.95) - 1)) / T2
-              if(!is.null(res$Linf) & !is.null(res$K)){
+              if((!is.null(res$Linf) & !is.null(res$K)) | ("par" %in% names(res) &&
+                 (!is.null(res$par$Linf) & !is.null(res$par$K)))){
                 if(is.null(res$t0)) t0 = 0
                 L50 <- Linf*(1-exp(-K*(t50-t0)))
                 L75 <- Linf*(1-exp(-K*(t75-t0)))
