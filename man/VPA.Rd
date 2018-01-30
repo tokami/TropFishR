@@ -6,7 +6,8 @@
 \usage{
 VPA(param, catch_columns = NA, catch_unit = NA, catch_corFac = NA,
   terminalF = NA, terminalE = NA, analysis_type = "VPA",
-  algorithm = "new", plus_group = TRUE, plot = FALSE)
+  algorithm = "new", plus_group = TRUE, plot = FALSE, boot = NULL,
+  natMort = NULL)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -52,6 +53,10 @@ while \code{"old"} uses the algorithm described by Sparre and Venema (1998).}
 \item{plus_group}{logical; indicating if the last length group is a plus group (default: TRUE).}
 
 \item{plot}{logical; indicating whether a plot should be printed}
+
+\item{boot}{an object of class 'lfqBoot'}
+
+\item{natMort}{name of column with natural mortalites for bootstrapping application of VPA}
 }
 \value{
 A list with the input parameters and following list objects:
@@ -125,6 +130,10 @@ VPA(hake, terminalE = 0.5, analysis_type = "VPA", plot = TRUE,
 data(hake)
 VPA(hake, terminalE = 0.5, analysis_type = "CA", plot = TRUE,
    catch_unit = "'000", plus_group = TRUE)
+
+#_______________________________________________
+# VPA with bootstrapping
+# coming soon!
 
 }
 \references{

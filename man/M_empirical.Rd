@@ -9,7 +9,7 @@ https://cran.r-project.org/web/packages/fishmethods/index.html
 \usage{
 M_empirical(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
   temp = NULL, tmax = NULL, tm50 = NULL, GSI = NULL, Wdry = NULL,
-  Wwet = NULL, Bl = NULL, schooling = FALSE, method)
+  Wwet = NULL, Bl = NULL, schooling = FALSE, method, boot = NULL)
 }
 \arguments{
 \item{Linf}{infinite total length (TL) from a von Bertalanffy
@@ -48,6 +48,8 @@ be employed: "AlversonCarney", "Gislason" (size dependent mortality estimates), 
 "RikhterEfanov", "Roff", "Then_growth", or "Then_tmax".
 Please refer to Details to see which input parameters
 are required by each method.}
+
+\item{boot}{an object of class 'lfqBoot'}
 }
 \value{
 A matrix of M estimates.
@@ -59,7 +61,11 @@ Functions to calculate the instantaneous natural mortality rate (M)
 \details{
 Function adapted from the mortality function of the fishmethods package
     by Gary A. Nelson
-    (https://cran.r-project.org/web/packages/fishmethods/index.html).
+    (https://cran.r-project.org/web/packages/fishmethods/index.html). The function allows to
+    be applied to a the results of the bootstrapping ELEFAN functions. This can be done by providing
+    the 'lfqBoot' object by use of the argument \code{boot}. So far only the methods 'Pauly_Linf' and
+    'Then_growth' can be used.
+
 
 Depending on the method different input parameters are required:
 \itemize{
@@ -82,6 +88,9 @@ If accounting for schooling behaviour M is multiplied by 0.8 according to
 \examples{
 M_empirical(Linf = 80, K_l = 0.5, temp = 25, tmax = 30,
      method = c("Pauly_Linf","Hoenig"))
+
+## bootstrapping application of M
+## coming soon
 
 }
 \references{
@@ -111,7 +120,7 @@ Pauly, D., 1983. Some simple methods for the assessment of tropical fish stocks.
 Peterson, I. and J. S. Wroblewski. 1984. Mortality rate of fishes in the
 pelagic ecosystem. Can. J. Fish. Aquat. Sci. 41: 1117-1120.
 
-Rikhter, V.A., and V.N. Efanov, 1976. On one of the approaches to estimation of natural
+pp Rikhter, V.A., and V.N. Efanov, 1976. On one of the approaches to estimation of natural
 mortality of fish populations. \emph{ICNAF Res.Doc.}, 76/VI/8: 12p.
 
 Roff, D. A. 1984. The evolution of life history parameters in teleosts.

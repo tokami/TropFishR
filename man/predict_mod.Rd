@@ -8,7 +8,7 @@ predict_mod(param, type, FM_change = NA, E_change = NA,
   FM_relative = FALSE, Lc_change = NULL, tc_change = NULL, s_list = NA,
   stock_size_1 = NA, age_unit = "year", curr.E = NA, curr.Lc = NA,
   plus_group = NA, Lmin = NA, Lincr = NA, plot = FALSE, mark = TRUE,
-  hide.progressbar = FALSE)
+  hide.progressbar = FALSE, boot = NULL, natMort = NULL)
 }
 \arguments{
 \item{param}{a list consisting of following parameters (not all are required):
@@ -74,6 +74,10 @@ run. Not required for "knife_edge" selection type}
 \item{mark}{logical; if value of choosen points should be displayed in graph (default: TRUE)}
 
 \item{hide.progressbar}{logical; should progressbar be displayed or hidden? (Default: FALSE)}
+
+\item{boot}{an object of class 'lfqBoot'}
+
+\item{natMort}{name of column with natural mortalites for bootstrapping application of VPA}
 }
 \value{
 A list with the input parameters and dependent on the model type following
@@ -233,6 +237,10 @@ output <- predict_mod(param = hake, FM_change = seq(0,2,0.1),
      curr.E = 0.4, curr.Lc = 50,
      type = 'ThompBell', s_list = select.list)
 plot(output, xaxis1 = "FM", yaxis_iso = "Lc", yaxis1 = "B_R", mark = TRUE)
+
+#______________________________________
+# YPR with bootstrapping
+# coming soon!
 
 
 }

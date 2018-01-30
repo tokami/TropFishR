@@ -170,7 +170,7 @@ In TropFishR, RSA is conducted using the `ELEFAN` function. Specifically, a sequ
 alba2 <- ELEFAN(
   x = alba,  MA = 7,
   Linf_range = seq(7, 20, length.out = 30),
-  K_range = exp(seq(log(0.1),log(4), length.out = 30)),
+  K_range = exp(seq(log(0.1),log(5), length.out = 30)),
   method = "cross",
   cross.date = alba$dates[3], 
   cross.midLength = alba$midLengths[5], 
@@ -294,7 +294,33 @@ alba5$Rn_max
 plot(alba5)
 ```
 
-In the case of the `alba` dataset, no real improvement in Rn is observed for the soVBGF fit (`alba5$Rn_max`) over that of the VBGF fit (`alba4$Rn_max`). Although no statistical test is (yet) available for selecting one model over the other, the lack of sufficient improvement would seem to suggest selecting the simpler VBGF model.
+As an illustration of the fitted soVBGF parameters, the instantaneous values of *K* through time can be calculated according to @munro_estimation_1982. The values oscillate around the mean fitted value, `K`, with `ts` reflecting the time of year when instantaneous K is at a maximum.   
+
+```{r}
+obj <- alba5
+time <- date2yeardec(obj$dates)
+t <- seq(floor(min(time)), ceiling(max(time)),0.01)
+PAR <- obj$par
+PAR$t_anchor <- PAR$t_anchor + floor(min(time))
+
+Lt <- VBGF(param = PAR, t = t)
+Kt <- (log(PAR$Linf-Lt[-length(t)]) - log(PAR$Linf-Lt[-1]))/0.01
+plot((t[-1]+t[-length(t)])/2, Kt, t="l", ylim=range(Kt)+(c(-1,1)*dist(range(Kt)*0.1)), xlab = "", ylab=bquote(K[t]))
+abline(h=PAR$K, lty=2, col=8)
+tmin <- (PAR$ts+1.5)%%1
+tmax <- (PAR$ts+1)%%1
+points(x = floor(min(t))+1+c(tmin,tmax), y = range(Kt))
+abline(v = floor(min(t))+1+c(tmin,tmax), lty=2, col=c(2,3))
+text(x = floor(min(t))+1 + tmax, y = max(Kt), labels = bquote(t[max] == .(sprintf(fmt = "%.2f",round(tmax,2)))~.(paste0("(",format(yeardec2date(tmax), "%b-%d"),")"))), pos=3, srt=90, offset = -5)
+text(x = floor(min(t))+1 + tmin, y = min(Kt), labels = bquote(t[min] == .(sprintf(fmt = "%.2f",round(tmin,2)))~.(paste0("(",format(yeardec2date(tmin), "%b-%d"),")"))), pos=3, srt=90, offset = 05)
+mtext("Instantaneous growth rate (K)", side=3, line=0.25)
+```
+
+
+In the case of the `alba` dataset, no improvement in Rn is observed for the soVBGF fit (`alba5$Rn_max`) over that of the VBGF fit (`alba4$Rn_max`). Unformtunately, no statistical test is (yet) available for selecting one model over the other. Other information about the species and its environment may be required in order to justify the inclusion of seasonally-oscillating growth; for example, does the period of stronger growth (`ts`) coincide with known changes in the environment? In cases where fitting the soVBGF does not markedly improve Rn, selecting the simpler VBGF model may be advisable.
+
+
+
 
 
 ### A synthetic example
@@ -324,7 +350,10 @@ synLFQ4 <- ELEFAN_GA(
 )
 ```
 
-In this case, the *true* values are very well estimated, and the solution vene has a higher Rn than that calculated with the true soVBGF parameters:
+
+
+
+In this case, the *true* values are very well estimated, and the solution even has a higher Rn than that calculated with the true soVBGF parameters:
 
 ```{r}
 tmp <- as.data.frame(rbind(unlist(true_par), unlist(synLFQ4$par)))
@@ -377,11 +406,11 @@ The following list highlights some existing best practices for using the ELEFAN 
     + should contain relatively high counts that are representative of the length distribution of the population (in the best case) or catches.
     + should be sampled at regular intervals throughout the year, and at roughly the same sampling effort.
     + should cover a substantial degree of small length classes, as their relatively higher numbers and more apparent growth will aid in the fitting of the VBGF. A general rule-of-thumb could be that the smallest bins should start at at least 25\% of Linf.
-* `MA`setting
+* `MA` setting
     + should approximate the number of bins spanning the width of a cohort following recruitment.
 * Optimization settings
-    + should allow for sufficient coverage of the full parameter search space during the initial, more randomized part of search (i.e. `SA_temp` argument in`ELEFAN_SA`; `popSize` and `pmutation` arguments in `ELEFAN_GA`).
-    + should allow for sufficient search time during later iterations / generations so that parameter space containing local maxima are fully explored (i.e. `SA_time` and `maxit` arguments in`ELEFAN_SA`; `maxiter`, `elitism`, and `run` arguments in `ELEFAN_GA`).
+    + should allow for sufficient coverage of the full parameter search space during the initial, more randomized part of search (i.e. `SA_temp` argument in `ELEFAN_SA`; `popSize` and `pmutation` arguments in `ELEFAN_GA`).
+    + should allow for sufficient search time during later iterations / generations so that parameter space containing local maxima are fully explored (i.e. `SA_time` and `maxit` arguments in `ELEFAN_SA`; `maxiter`, `elitism`, and `run` arguments in `ELEFAN_GA`).
 
 
 
