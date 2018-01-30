@@ -214,6 +214,10 @@ catchCurve <- function(param,
             lfqTemp <- lfqPermutate(param)
             lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE)
 
+            ## error if lfq data spans several years!
+            if(class(lfqLoop$catch) == "matrix") stop("The lfq data spans several years, please subset for one year at a time!")
+            
+
             catch <- lfqLoop$catch
 
             classes <- as.character(lfqLoop$midLengths)
@@ -270,6 +274,16 @@ catchCurve <- function(param,
               yvar = lnC
             }
 
+            
+            ## remove all NAs and Infs
+            temp <- cbind(xvar,yvar)
+            temp <- as.matrix(na.exclude(temp))
+            temp <- temp[(!(temp[,1] == Inf | temp[,1] == -Inf)),]
+            temp <- temp[(!(temp[,2] == Inf | temp[,2] == -Inf)),]
+            xvar <- temp[,1]
+            yvar <- temp[,2]
+
+            ## cut
             yvar2 <- as.numeric(yvar)
             xvar2 <- xvar[which(yvar2 > 0.2)]
             cutter <- c(which(yvar2 == max(as.numeric(yvar2),na.rm=TRUE))+1, which(xvar2 == max(xvar2,na.rm=TRUE)))
@@ -292,7 +306,7 @@ catchCurve <- function(param,
             conf_Z_lm1 <- Z_lm1 + c(-confi,confi)
 
             ## special case when cumulative and length-frequency data
-            if(cumulative & "midLengths" %in% names(res) == TRUE){
+            if(cumulative & "midLengths" %in% names(param) == TRUE){
               Z_lm1 <- Z_lm1 * K
               SE_Z_lm1 <- SE_Z_lm1 * K
             }
