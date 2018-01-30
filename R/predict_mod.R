@@ -583,22 +583,28 @@ predict_mod <- function(param, type, FM_change = NA,
         tmp <- tmp[,!idx]
         nx <- ncol(tmp)
 
+        ?try
 
         ## max density and CIS
         resMaxDen <- vector("numeric", ncol(tmp))
         ciList <- vector("list", ncol(tmp))
         for(i in seq(nx)){
             ## max densities
-            x <- ks::kde(as.numeric(na.omit(tmp[,i])))                        
-            ind <- which(x$estimate > x$cont["99%"])
-            resMaxDen[i] <- mean(x$eval.points[ind])
-            ## confidence intervals
-            CItxt <- paste0(round(5), "%")
-            inCI <- rle( x$estimate > x$cont[CItxt] )
-            start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
-            end.idx <- cumsum(inCI$lengths)
-            limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
-            ciList[[i]] <- limCI
+            x <- try(ks::kde(as.numeric(na.omit(tmp[,i]))), TRUE)
+            if(class(x) != "try-error"){
+                ind <- which(x$estimate > x$cont["99%"])
+                resMaxDen[i] <- mean(x$eval.points[ind])
+                ## confidence intervals
+                CItxt <- paste0(round(5), "%")
+                inCI <- rle( x$estimate > x$cont[CItxt] )
+                start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
+                end.idx <- cumsum(inCI$lengths)
+                limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
+                ciList[[i]] <- limCI
+            }else{
+                resMaxDen[i] <- NA
+                ciList[[i]] <- NA                
+            }
         }
         resCIs <- cbind(boot$bootCIs,t(do.call(rbind,ciList)))
         colnames(resCIs) <- c(colnames(bootRaw)[-((ncol(bootRaw)-6):ncol(bootRaw))],
