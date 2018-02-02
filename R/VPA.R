@@ -392,6 +392,7 @@ VPA <- function(param,
             start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
             end.idx <- cumsum(inCI$lengths)
             limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
+            limCI[limCI < 0] <- 0
             ciList[[i]] <- limCI
         }
         resCIs <- cbind(boot$bootCIs,t(do.call(rbind,ciList)))
