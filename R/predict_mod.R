@@ -618,7 +618,6 @@ predict_mod <- function(param, type, FM_change = NA,
         names(resMaxDen) <- c(colnames(bootRaw)[-((ncol(bootRaw)-6):ncol(bootRaw))],
                               colnames(tmp))        
 
-
         ret <- list()
         ret$bootRaw <- bootRaw
         ret$bootMaxDen <- resMaxDen
