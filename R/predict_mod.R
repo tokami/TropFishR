@@ -460,6 +460,7 @@ predict_mod <- function(param, type, FM_change = NA,
                               tc = tci)
                 output <- ypr_sel(input, FM_change, Lt, P)
 
+
                 # relative yield and biomass per recruit
                 B_R.rel <- output$rbr
                 Y_R.rel <- output$ryr
@@ -536,7 +537,7 @@ predict_mod <- function(param, type, FM_change = NA,
               list_Es[[i]] <- df_loop_Es
             }
 
-            curr.E <- F/Z
+            curr.E <- FM/Z
             curr.Lc <- Lc
             curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf,K=K,t0=t0))
             # current exploitation rate
@@ -548,6 +549,7 @@ predict_mod <- function(param, type, FM_change = NA,
                             t0 = t0,
                             tr = tr,
                             tc = curr.tc)
+            
             if(length(s_list) == 1 | selecType == "knife_edge"){
               tmpRES <- ypr(param = tmpList, FM_change = curr.F)
             }
@@ -558,7 +560,6 @@ predict_mod <- function(param, type, FM_change = NA,
               tmpRES$br <- tmpRES$rbr * Winf * exp(M * (tr - t0))
             }
 
-                      
             F01[bi] <- FM_change[N01]
             Fmax[bi] <- FM_change[Nmsy]
             if(length(B_R.percent) > 0){
@@ -582,8 +583,6 @@ predict_mod <- function(param, type, FM_change = NA,
         idx <- apply(tmp, 2, function(x) all(x == 0 | is.na(x) | x == 1))
         tmp <- tmp[,!idx]
         nx <- ncol(tmp)
-
-        ?try
 
         ## max density and CIS
         resMaxDen <- vector("numeric", ncol(tmp))
