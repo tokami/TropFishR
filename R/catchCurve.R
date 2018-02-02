@@ -207,6 +207,10 @@ catchCurve <- function(param,
         Zs <- vector("numeric",nrow(bootRaw))
         ## seZ <- vector("numeric",nrow(bootRaw))
         ## confZ <- vector("numeric",nrow(bootRaw))
+        t50s <- vector("numeric", nrow(bootRaw))
+        t75s <- vector("numeric", nrow(bootRaw))
+        L50s <- vector("numeric", nrow(bootRaw))
+        L75s <- vector("numeric", nrow(bootRaw))        
         
         for(i in 1:nrow(bootRaw)){
 
@@ -314,6 +318,53 @@ catchCurve <- function(param,
             Zs[i] <- Z_lm1
             ## seZ[i] <- SE_Z_lm1
             ## confZ[i] <- conf_Z_lm1
+
+            if(calc_ogive){
+              ## Assumption that Z of smallest selected individuals is most appropriate
+              mini <- min(cutter)
+
+              ## only use part of catch and t which is not fully exploited by the gear
+              t_ogive <- xvar[1:(cutter[1]-1)]
+              dt_ogive <- dt[1:(cutter[1]-1)]
+              catch_ogive <- catch[1:(cutter[1]-1)]
+
+              ## it could be that the smallest length is already fully exploited
+                if(length(catch_ogive) < 2){
+                  t50s[i] <- t75s[i] <- t_ogive ## assuming knife edge
+                  t0 <- 0
+                  L50s[i] <- L75s[i] <- bootRaw$Linf[i]*(1-exp(-bootRaw$K[i]*(t50s[i]-t0)))
+              }else{
+                  ## calculate observed selection ogive
+                  Sobs <- catch_ogive/(dt_ogive *
+                                       exp(unlist(intercept_lm1) -
+                                           unlist(Z_lm1) * t_ogive))
+
+                  # dependent vairable in following regression analysis
+                  ln_1_S_1 <- log((1/Sobs) - 1)
+
+                  # get rid of Inf
+                  ln_1_S_1[which(ln_1_S_1 == Inf)] <- NA
+                  t_ogive[which(t_ogive == Inf)] <- NA
+
+                  #regression analysis to caluclate T1 and T2
+                  mod_ogive <- lm(ln_1_S_1 ~ t_ogive, na.action = na.omit)
+                  sum_lm_ogive <- summary(mod_ogive)
+                  T1 <- sum_lm_ogive$coefficients[1]
+                  T2 <- abs(sum_lm_ogive$coefficients[2])
+
+                  # calculate estimated selection ogive
+                  Sest <- 1/(1+exp(T1 - T2*xvar))
+
+                  # selection parameters
+                  t50s[i] <- T1/T2
+                  t75s[i] <- (T1 + log(3))/T2
+##                  t95 <-  (T1 - log((1 / 0.95) - 1)) / T2
+                  t0 <- 0                  
+                  L50s[i] <- bootRaw$Linf[i]*(1-exp(-bootRaw$K[i]*(t50s[i]-t0)))
+                  L75s[i] <- bootRaw$Linf[i]*(1-exp(-bootRaw$K[i]*(t75s[i]-t0)))
+##                  L95 <- bootRaw$Linf[i]*(1-exp(-bootRaw$K[i]*(t95-t0)))
+              }
+            }
         }
         bootRaw[,(ncol(bootRaw)+1)] <- Zs
         colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)],"Z")        
@@ -328,22 +379,40 @@ catchCurve <- function(param,
             tmp <- as.data.frame(bootRaw[,(ncol(boot$bootRaw)+1)])
             nx <- 1
         }
-        
+        ## estimate L50 and L75 if calc_ogive
+        if(calc_ogive){
+            bootRaw[,(ncol(bootRaw)+1)] <- L50s
+            bootRaw[,(ncol(bootRaw)+1)] <- L75s            
+            colnames(bootRaw) <- c(colnames(bootRaw)[-(((ncol(bootRaw)-1):ncol(bootRaw)))],"L50","L75")
+            tmp <- cbind(tmp,as.data.frame(bootRaw[,((ncol(bootRaw)-1):ncol(bootRaw))]))
+            nx <- nx + 2
+        }
+
         ## max density and CIS
         resMaxDen <- vector("numeric", ncol(tmp))
         ciList <- vector("list", ncol(tmp))
         for(i in seq(nx)){
             ## max densities
-            x <- ks::kde(as.numeric(na.omit(tmp[,i])))            
-            ind <- which(x$estimate > x$cont["99%"])
-            resMaxDen[i] <- mean(x$eval.points[ind])
-            ## confidence intervals
-            CItxt <- paste0(round(5), "%")
-            inCI <- rle( x$estimate > x$cont[CItxt] )
-            start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
-            end.idx <- cumsum(inCI$lengths)
-            limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
-            ciList[[i]] <- limCI
+            x <- try(ks::kde(as.numeric(na.omit(tmp[,i]))), TRUE)
+            if(class(x) != "try-error"){
+                ind <- which(x$estimate > x$cont["99%"])
+                resMaxDen[i] <- mean(x$eval.points[ind])
+                ## confidence intervals
+                CItxt <- paste0(round(5), "%")
+                inCI <- rle( x$estimate > x$cont[CItxt] )
+                start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
+                end.idx <- cumsum(inCI$lengths)
+                limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
+                ciList[[i]] <- limCI                
+            }else{
+                if(length(unique(as.character(tmp[,i]))) == 1 && all(!is.na(tmp[,i]))){
+                    resMaxDen[i] <- unique(tmp[,i])
+                    ciList[[i]] <- NA
+                }else{
+                    resMaxDen[i] <- NA
+                    ciList[[i]] <- NA
+                }
+            }
         }
         resCIs <- cbind(boot$bootCIs,t(do.call(rbind,ciList)))
         colnames(resCIs) <- colnames(bootRaw)
