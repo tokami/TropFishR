@@ -601,8 +601,13 @@ predict_mod <- function(param, type, FM_change = NA,
                 limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
                 ciList[[i]] <- limCI
             }else{
-                resMaxDen[i] <- NA
-                ciList[[i]] <- NA                
+                if(length(unique(as.character(tmp[,i]))) == 1 && all(!is.na(tmp[,i]))){
+                    resMaxDen[i] <- unique(tmp[,i])
+                    ciList[[i]] <- NA
+                }else{
+                    resMaxDen[i] <- NA
+                    ciList[[i]] <- NA
+                }
             }
         }
         resCIs <- cbind(boot$bootCIs,t(do.call(rbind,ciList)))
