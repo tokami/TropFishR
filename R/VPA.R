@@ -253,7 +253,7 @@ VPA <- function(param,
             }else if(!is.na(catch_unit)){
               stop(paste0(catch_unit, " not known. Please use either 'tons' or 'kg' for catch in weight or NA, '000, or '000000 for catch in numbers."))
             }else{
-              writeLines("You did not specify catch_unit. The Method assumes that catch is provided in numbers!")
+              ## writeLines("You did not specify catch_unit. The Method assumes that catch is provided in numbers!")
               catch_numbers <- catch_cor
             }
 
@@ -263,7 +263,7 @@ VPA <- function(param,
             # t of lower upper classes
             t_L2 <- t0 - (1/K) * log(1 - (upperLength / Linf))
             if(upperLength[length(upperLength)] > Linf){
-              writeLines(noquote("Upper limit of last length class is larger than Linf, \nconsider creating lower plus group or set the argument plus_group = TRUE."))
+              ## writeLines(noquote("Upper limit of last length class is larger than Linf, \nconsider creating lower plus group or set the argument plus_group = TRUE."))
             }
 
             # delta t

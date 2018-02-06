@@ -609,7 +609,8 @@ predict_mod <- function(param, type, FM_change = NA,
                 inCI <- rle( x$estimate > x$cont[CItxt] )
                 start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
                 end.idx <- cumsum(inCI$lengths)
-                limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
+                limCI <- range(x$eval.points[start.idx[min(which(inCI$values),na.rm=TRUE)]:
+                                             end.idx[max(which(inCI$values),na.rm=TRUE)]])
                 ciList[[i]] <- limCI
             }else{
                 if(all(!is.na(tmp[,i]))){
