@@ -13,7 +13,7 @@
 #'   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
 #'   \item \code{M}: natural mortality [1/year] (numeric value or vector of identical
 #'      length than midLengths),
-#'   \item \code{a}: length-weight relationship coefficent (W = a * L^b; for kg/cm3),
+#'   \item \code{a}: length-weight relationship coefficent (W = a * L^b),
 #'   \item \code{b}: length-weight relationship coefficent (W = a * L^b),
 #'   \item \code{catch}: catch as vector for pseudo cohort analysis,
 #'      or a matrix with catches of subsequent years to follow a real cohort.
@@ -30,6 +30,8 @@
 #'   a whole year.
 #' @param terminalF the fishing mortality rate of the last age/length group.
 #' @param terminalE the exploitation rate of the last age/length group.
+#' @param LW_unit a character indicating the unit of the LWa parameter, either "kg" for
+#'    kg/cm3 or "g" for g/cm3. Default is "g".
 #' @param analysis_type determines which type of assessment should be done,
 #'   options: "VPA" for age or length-based Virtual Population Analysis, "CA" for age- or length-based
 #'   Cohort Analysis. Default is "VPA".
@@ -142,6 +144,7 @@
 VPA <- function(param,
                 catch_columns = NA, catch_unit = NA, catch_corFac = NA,
                 terminalF = NA, terminalE = NA,
+                LW_unit = "g",
                 analysis_type = "VPA", algorithm = "new",
                 plus_group = TRUE, plot = FALSE,
                 boot = NULL, natMort = NULL){
@@ -159,7 +162,11 @@ VPA <- function(param,
         if(!("a" %in% names(param)) | !("b" %in% names(param)))
             stop("VPA requires information about the length-weight relationship. Please provide 'a' and 'b' estimates in param.")
         a <- param$a
-        b <- param$b        
+        b <- param$b
+        ## this makes sure that a is always in kg/cm3 = and therefore meanBodyWeight is always in kg
+        if(LW_unit == "g"){
+            a <- a / 1000
+        }
         
 
         N <- vector("numeric",nrow(bootRaw))
@@ -246,7 +253,7 @@ VPA <- function(param,
             }else if(!is.na(catch_unit)){
               stop(paste0(catch_unit, " not known. Please use either 'tons' or 'kg' for catch in weight or NA, '000, or '000000 for catch in numbers."))
             }else{
-              warning("You did not specify catch_unit. The Method assumes that catch is provided in numbers!")
+              writeLines("You did not specify catch_unit. The Method assumes that catch is provided in numbers!")
               catch_numbers <- catch_cor
             }
 
@@ -443,8 +450,14 @@ VPA <- function(param,
           }
 
           if(!("a" %in% names(res)) | !("b" %in% names(res))) stop("VPA requires information about the length-weight relationship. Please provide 'a' and 'b' estimates in param.")
-          a <- res$a
-          b <- res$b
+
+            a <- res$a
+            b <- res$b
+            ## this makes sure that a is always in kg/cm3 = and therefore meanBodyWeight is always in kg
+            if(LW_unit == "g"){
+                a <- a / 1000
+            }
+            
           if(!("M" %in% names(res))) stop("Please provide a natural mortality estimate 'M' in res.")
           M <- res$M
           if(length(M) == length(classes)){
