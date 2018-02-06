@@ -48,6 +48,8 @@
 #' @param Lincr arbitrary length increment between length groups for estimation of
 #'    selection ogive. The smaller the higher the resolution but the slower the model
 #'    run. Not required for "knife_edge" selection type
+#' @param LW_unit a character indicating the unit of the LWa parameter, either "kg" for
+#'    kg/cm3 or "g" for g/cm3. Default is "g".
 #' @param plot logical; if TRUE results are displayed graphically
 #' @param mark logical; if value of choosen points should be displayed in graph (default: TRUE)
 #' @param hide.progressbar logical; should progressbar be displayed or hidden? (Default: FALSE)
@@ -284,7 +286,9 @@ predict_mod <- function(param, type, FM_change = NA,
                         s_list = NA,
                         stock_size_1 = NA, age_unit = 'year', curr.E = NA,
                         curr.Lc = NA,
-                        plus_group = NA, Lmin = NA, Lincr = NA, plot = FALSE, mark = TRUE,
+                        plus_group = NA, Lmin = NA, Lincr = NA,
+                        LW_unit = "g",
+                        plot = FALSE, mark = TRUE,
                         hide.progressbar = FALSE,
                         boot = NULL,
                         natMort = NULL){
@@ -303,6 +307,10 @@ predict_mod <- function(param, type, FM_change = NA,
             stop("YPR requires information about the length-weight relationship. Please provide 'a' and 'b' estimates in param.")
         a <- param$a
         b <- param$b
+        ## this makes sure that a is always in kg/cm3 = and therefore meanBodyWeight is always in kg
+        if(LW_unit == "g"){
+            a <- a / 1000
+        }        
 
 
         if(!("Lr" %in% names(param)) | !("Lc" %in% names(param)))
@@ -485,8 +493,8 @@ predict_mod <- function(param, type, FM_change = NA,
                 writeLines(paste0("Biomass was not estimated for a fishing mortality (FM) of 0, thus the virgin biomass corresponds to a FM of ",min(FM_change,na.rm = TRUE)))
               }
 
-              #biomass in percetage of virgin biomass
-              B_R.percent <- round((B_R / Bv_R ) * 100, digits = 1)
+              ##biomass in percetage of virgin biomass
+                B_R.percent <- round((B_R / Bv_R ) * 100, digits = 1)
 
               #mean age in annual yield
               Ty <- (1 / Z) + tci
@@ -521,7 +529,8 @@ predict_mod <- function(param, type, FM_change = NA,
               Nmsy <- which.max(Y_R.rel)  #  should be the same as which.min(abs(deri)) which is also labelled Nmax
               deri_pot <- deri[1:Nmsy]
               N01 <- which.min(abs(deri_pot - (deri[1] * 0.1)))
-              N05 <- which.min(abs(B_R.percent - 50))  #which.min(abs(deri - (deri[1] * 0.5)))
+                N05 <- which.min(abs(B_R.percent - 50))  #which.min(abs(deri - (deri[1] * 0.5)))
+
 
               df_loop_Es <- data.frame(Lc = ifelse(!is.null(Lci),Lci,NA),
                                        tc = ifelse(!is.null(tci),tci,NA),
@@ -562,6 +571,7 @@ predict_mod <- function(param, type, FM_change = NA,
 
             F01[bi] <- FM_change[N01]
             Fmax[bi] <- FM_change[Nmsy]
+            
             if(length(B_R.percent) > 0){
                 F05[bi] <- FM_change[N05]
             }else{
@@ -584,6 +594,7 @@ predict_mod <- function(param, type, FM_change = NA,
         tmp <- tmp[,!idx]
         nx <- ncol(tmp)
 
+
         ## max density and CIS
         resMaxDen <- vector("numeric", ncol(tmp))
         ciList <- vector("list", ncol(tmp))
@@ -601,8 +612,10 @@ predict_mod <- function(param, type, FM_change = NA,
                 limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
                 ciList[[i]] <- limCI
             }else{
-                if(length(unique(as.character(tmp[,i]))) == 1 && all(!is.na(tmp[,i]))){
-                    resMaxDen[i] <- unique(tmp[,i])
+                if(all(!is.na(tmp[,i]))){
+                    tmp5 <- tmp[,i]
+                    tmp6 <- names(table(tmp5))[which.max(table(tmp5))]
+                    resMaxDen[i] <- tmp6                    
                     ciList[[i]] <- NA
                 }else{
                     resMaxDen[i] <- NA
@@ -642,6 +655,10 @@ predict_mod <- function(param, type, FM_change = NA,
           t0 <- ifelse(!is.null(res$t0),res$t0,0)
           a <- res$a  # might be NULL
           b <- res$b  # might be NULL
+          ## this makes sure that a is always in kg/cm3 = and therefore meanBodyWeight is always in kg
+          if(LW_unit == "g"){
+              a <- a / 1000
+          }                  
           Winf <- res$Winf  # might be NULL
           Linf <- res$Linf # might be NULL
           if("Linf" %in% names(res) & "a" %in% names(res) & "b" %in% names(res)){
