@@ -398,9 +398,14 @@ VPA <- function(param,
             inCI <- rle( x$estimate > x$cont[CItxt] )
             start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
             end.idx <- cumsum(inCI$lengths)
-            limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
-            limCI[limCI < 0] <- 0
+            limCI <- try(range(x$eval.points[start.idx[min(which(inCI$values),na.rm=TRUE)]:
+                                         end.idx[max(which(inCI$values),na.rm=TRUE)]]))
+            if(class(limCI) != "try-error"){  ## haven't quite figured out why limCI can give NA, but either all of x$eval.points or all of start.idx or end.idx are NA...
+            limCI[limCI < 0] <- 0                
             ciList[[i]] <- limCI
+            }else{
+                ciList[[i]] <- c(NA,NA)
+            }            
         }
         resCIs <- cbind(boot$bootCIs,t(do.call(rbind,ciList)))
         colnames(resCIs) <- colnames(bootRaw)

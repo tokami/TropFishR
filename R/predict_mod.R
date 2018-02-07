@@ -609,9 +609,13 @@ predict_mod <- function(param, type, FM_change = NA,
                 inCI <- rle( x$estimate > x$cont[CItxt] )
                 start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
                 end.idx <- cumsum(inCI$lengths)
-                limCI <- range(x$eval.points[start.idx[min(which(inCI$values),na.rm=TRUE)]:
-                                             end.idx[max(which(inCI$values),na.rm=TRUE)]])
-                ciList[[i]] <- limCI
+                limCI <- try(range(x$eval.points[start.idx[min(which(inCI$values),na.rm=TRUE)]:
+                                                 end.idx[max(which(inCI$values),na.rm=TRUE)]]))
+                if(class(limCI) != "try-error"){  ## haven't quite figured out why limCI can give NA, but either all of x$eval.points or all of start.idx or end.idx are NA...
+                    ciList[[i]] <- limCI
+                }else{
+                    ciList[[i]] <- c(NA,NA)
+                }
             }else{
                 if(all(!is.na(tmp[,i]))){
                     tmp5 <- tmp[,i]
