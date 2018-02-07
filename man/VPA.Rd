@@ -5,7 +5,7 @@
 \title{Virtual Population Analysis (VPA)}
 \usage{
 VPA(param, catch_columns = NA, catch_unit = NA, catch_corFac = NA,
-  terminalF = NA, terminalE = NA, analysis_type = "VPA",
+  terminalF = NA, terminalE = NA, LW_unit = "g", analysis_type = "VPA",
   algorithm = "new", plus_group = TRUE, plot = FALSE, boot = NULL,
   natMort = NULL)
 }
@@ -19,7 +19,7 @@ VPA(param, catch_columns = NA, catch_unit = NA, catch_corFac = NA,
   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
   \item \code{M}: natural mortality [1/year] (numeric value or vector of identical
      length than midLengths),
-  \item \code{a}: length-weight relationship coefficent (W = a * L^b; for kg/cm3),
+  \item \code{a}: length-weight relationship coefficent (W = a * L^b),
   \item \code{b}: length-weight relationship coefficent (W = a * L^b),
   \item \code{catch}: catch as vector for pseudo cohort analysis,
      or a matrix with catches of subsequent years to follow a real cohort.
@@ -41,6 +41,9 @@ a whole year.}
 \item{terminalF}{the fishing mortality rate of the last age/length group.}
 
 \item{terminalE}{the exploitation rate of the last age/length group.}
+
+\item{LW_unit}{a character indicating the unit of the LWa parameter, either "kg" for
+kg/cm3 or "g" for g/cm3. Default is "g".}
 
 \item{analysis_type}{determines which type of assessment should be done,
 options: "VPA" for age or length-based Virtual Population Analysis, "CA" for age- or length-based

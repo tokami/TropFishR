@@ -7,8 +7,8 @@
 predict_mod(param, type, FM_change = NA, E_change = NA,
   FM_relative = FALSE, Lc_change = NULL, tc_change = NULL, s_list = NA,
   stock_size_1 = NA, age_unit = "year", curr.E = NA, curr.Lc = NA,
-  plus_group = NA, Lmin = NA, Lincr = NA, plot = FALSE, mark = TRUE,
-  hide.progressbar = FALSE, boot = NULL, natMort = NULL)
+  plus_group = NA, Lmin = NA, Lincr = NA, LW_unit = "g", plot = FALSE,
+  mark = TRUE, hide.progressbar = FALSE, boot = NULL, natMort = NULL)
 }
 \arguments{
 \item{param}{a list consisting of following parameters (not all are required):
@@ -68,6 +68,9 @@ for "knife_edge" selection type}
 \item{Lincr}{arbitrary length increment between length groups for estimation of
 selection ogive. The smaller the higher the resolution but the slower the model
 run. Not required for "knife_edge" selection type}
+
+\item{LW_unit}{a character indicating the unit of the LWa parameter, either "kg" for
+kg/cm3 or "g" for g/cm3. Default is "g".}
 
 \item{plot}{logical; if TRUE results are displayed graphically}
 
