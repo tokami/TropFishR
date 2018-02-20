@@ -378,12 +378,16 @@ predict_mod <- function(param, type, FM_change = NA,
             Lr <- param$Lr   # might be NULL
             if(is.null(tr) & is.null(Lr)) stop("Either the age or the length at recruitment (tr or Lr) has to be provided in param!")
             if(!is.null(Linf)){
-              if(is.null(tr)) tr <- VBGF(L=Lr,param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lr,Linf=Linf,K=K,t0=t0)
-              if(is.null(Lr)) Lr <- VBGF(t=tr,param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tr,Linf=Linf,K=K,t0=t0)
+                if(is.null(tr)) tr <- VBGF(L=Lr,
+                                           param = list(Linf=Linf,K=K,t0=t0,ts=ts,C=C))
+                ## VBGF(L=Lr,Linf=Linf,K=K,t0=t0)
+                if(is.null(Lr)) Lr <- VBGF(t=tr,
+                                           param = list(Linf=Linf,K=K,t0=t0,ts=ts,C=C))
+                ## VBGF(t=tr,Linf=Linf,K=K,t0=t0)
             }
 
 
-            # Selectivity - knife edge or with selctivtiy ogive
+            ## Selectivity - knife edge or with selctivtiy ogive
             tc <- param$tc   # might be NULL
             Lc <- param$Lc   # might be NULL
             if(is.null(tc) & is.null(Lc)){
@@ -392,20 +396,36 @@ predict_mod <- function(param, type, FM_change = NA,
               #if(!("Lc" %in% s_list) & !("L50" %in% s_list))stop("Either the age or the length at first capture (tc or Lc) has to be provided in param! \n Or provide a Lc value in s_list!")
             }
             if(!is.null(Linf)){
-              if(is.null(tc) & !is.null(Lc)) tc <- VBGF(L=Lc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc,Linf=Linf,K=K,t0=t0)
-              if(is.null(Lc) & !is.null(tc)) Lc <- VBGF(t=tc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tc,Linf=Linf,K=K,t0=t0)
-              if(is.null(tc_change) & !is.null(Lc_change)) tc_change <- VBGF(L=Lc_change, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc_change,Linf=Linf,K=K,t0=t0)
-              if(is.null(Lc_change) & !is.null(tc_change)) Lc_change <- VBGF(t=tc_change, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tc_change,Linf=Linf,K=K,t0=t0)
+                if(is.null(tc) & !is.null(Lc)) tc <- VBGF(L=Lc, param = list(Linf=Linf,K=K,t0=t0,ts=ts,C=C))
+                ## VBGF(L=Lc,Linf=Linf,K=K,t0=t0)
+                if(is.null(Lc) & !is.null(tc)) Lc <- VBGF(t=tc, param = list(Linf=Linf,K=K,t0=t0,ts=ts,C=C))
+                ## VBGF(t=tc,Linf=Linf,K=K,t0=t0)
+                if(is.null(tc_change) & !is.null(Lc_change))
+                    tc_change <- VBGF(L=Lc_change,
+                                      param = list(Linf=Linf,K=K,t0=t0,ts=ts,C=C))
+                ## VBGF(L=Lc_change,Linf=Linf,K=K,t0=t0)
+                if(is.null(Lc_change) & !is.null(tc_change))
+                    Lc_change <- VBGF(t=tc_change,
+                                      param = list(Linf=Linf,K=K,t0=t0,ts=ts,C=C))
+                ## VBGF(t=tc_change,Linf=Linf,K=K,t0=t0)
             }
             tc <- c(tc,tc_change)
             Lc <- c(Lc,Lc_change)
 
-            if(length(s_list) > 1){
-              selecType <- s_list$selecType
+            ## checking for L50/L75 estimation in catch curve
+            if(is.na(s_list) & "L50" %in% names(bootRaw) & "L75" %in% names(bootRaw)){
+                s_list <- list(selecType = "trawl_ogive",
+                               L50 = bootRaw$L50[bi],
+                               L75 = bootRaw$L75[bi])
+                selecType = s_list$selecType
             }else{
-              selecType <- "knife_edge"
+                if(length(s_list) > 1){
+                    selecType <- s_list$selecType
+                }else{
+                    selecType <- "knife_edge"
+                }    
             }
-
+            
 
             # HEART
             list_Lc_runs <- vector("list", length(Lc))
