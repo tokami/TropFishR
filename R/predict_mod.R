@@ -324,10 +324,10 @@ predict_mod <- function(param, type, FM_change = NA,
         F01 <- vector("numeric",nrow(bootRaw))
         Fmax <- vector("numeric",nrow(bootRaw))
         F05 <- vector("numeric",nrow(bootRaw))
-        ypr <- vector("numeric",nrow(bootRaw))
-        yprrel <- vector("numeric",nrow(bootRaw))
-        bpr <- vector("numeric",nrow(bootRaw))
-        bprrel <- vector("numeric",nrow(bootRaw))         
+##        ypr <- vector("numeric",nrow(bootRaw))
+##        yprrel <- vector("numeric",nrow(bootRaw))
+##        bpr <- vector("numeric",nrow(bootRaw))
+##        bprrel <- vector("numeric",nrow(bootRaw))         
         for(bi in 1:nrow(bootRaw)){
 
             set.seed(boot$seed[bi])
@@ -573,7 +573,7 @@ predict_mod <- function(param, type, FM_change = NA,
 
             curr.E <- FM/Z
             curr.Lc <- Lc
-            curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf,K=K,t0=t0))
+            curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf,K=K,t0=t0,ts=ts,C=C))
             # current exploitation rate
             curr.F = (M * curr.E)/(1-curr.E)  # curr.F <- (M * curr.E)/(1-curr.E)
             tmpList <- list(Linf=Linf,
@@ -585,13 +585,13 @@ predict_mod <- function(param, type, FM_change = NA,
                             tc = curr.tc)
             
             if(length(s_list) == 1 | selecType == "knife_edge"){
-              tmpRES <- ypr(param = tmpList, FM_change = curr.F)
+                tmpRES <- ypr(param = tmpList, FM_change = curr.F)
             }
             if(length(s_list) > 1 & selecType != "knife_edge"){
-              P <- select_ogive(s_list, Lt =  Lt, Lc = curr.Lc)
-              tmpRES <- ypr_sel(param = tmpList, FM_change = curr.F, Lt, P)
-              tmpRES$yr <- tmpRES$ryr * Winf * exp(M * (tr - t0))
-              tmpRES$br <- tmpRES$rbr * Winf * exp(M * (tr - t0))
+                P <- select_ogive(s_list, Lt =  Lt, Lc = curr.Lc)
+                tmpRES <- ypr_sel(param = tmpList, FM_change = curr.F, Lt, P)
+                tmpRES$yr <- tmpRES$ryr * Winf * exp(M * (tr - t0))
+                tmpRES$br <- tmpRES$rbr * Winf * exp(M * (tr - t0))
             }
 
             F01[bi] <- FM_change[N01]
@@ -602,18 +602,16 @@ predict_mod <- function(param, type, FM_change = NA,
             }else{
                 F05[bi] <- NA
             }
-            ypr[bi] <- tmpRES$yr
-            yprrel[bi] <- tmpRES$ryr
-            bpr[bi] <- tmpRES$br
-            bprrel[bi] <- tmpRES$rbr
+##            ypr[bi] <- tmpRES$yr
+##            yprrel[bi] <- tmpRES$ryr
+##            bpr[bi] <- tmpRES$br
+##            bprrel[bi] <- tmpRES$rbr
         }
-        
-        bootRaw <- cbind(bootRaw, data.frame(F01,Fmax,F05,ypr,yprrel,
-                                             bpr,bprrel))
+        bootRaw <- cbind(bootRaw, data.frame(F01,Fmax,F05))  ## ,ypr,yprrel,bpr,bprrel))
 ##        colnames(bootRaw) <- c(colnames(bootRaw)[-((ncol(bootRaw)-6):ncol(bootRaw))],
 ##                               c("F01","Fmax","F05","ypr","yprrel","bpr","bprrel"))
 
-        tmp <- as.data.frame(bootRaw[,(ncol(boot$bootRaw)+(1:7))])
+        tmp <- as.data.frame(bootRaw[,(ncol(boot$bootRaw)+(1:3))])
 
         idx <- apply(tmp, 2, function(x) all(x == 0 | is.na(x) | x == 1))
         tmp <- tmp[,!idx]
@@ -654,11 +652,11 @@ predict_mod <- function(param, type, FM_change = NA,
             }
         }
         resCIs <- cbind(boot$bootCIs,t(do.call(rbind,ciList)))
-        colnames(resCIs) <- c(colnames(bootRaw)[-((ncol(bootRaw)-6):ncol(bootRaw))],
+        colnames(resCIs) <- c(colnames(bootRaw)[-((ncol(bootRaw)-2):ncol(bootRaw))],
                               colnames(tmp))
         rownames(resCIs) <- c("lo","up")
         resMaxDen <- c(boot$bootMaxDen, resMaxDen)
-        names(resMaxDen) <- c(colnames(bootRaw)[-((ncol(bootRaw)-6):ncol(bootRaw))],
+        names(resMaxDen) <- c(colnames(bootRaw)[-((ncol(bootRaw)-2):ncol(bootRaw))],
                               colnames(tmp))        
 
         ret <- list()
