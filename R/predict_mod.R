@@ -313,10 +313,12 @@ predict_mod <- function(param, type, FM_change = NA,
         }        
 
 
-        if(!("Lr" %in% names(param)) | !("Lc" %in% names(param)))
+        if(!("Lr" %in% names(param)) | (!("Lc" %in% names(param)) & !("L50" %in% names(bootRaw))))
             stop("YPR requires information about the length at recruitment and length at first capture. Please provide 'Lr' and 'Lc' estimates in param.")
         Lr <- param$Lr
-        Lc <- param$Lc       
+        if("Lc" %in% names(param) & !("L50" %in% names(bootRaw))){
+            Lc <- param$Lc
+        }
         
 
         F01 <- vector("numeric",nrow(bootRaw))
@@ -389,7 +391,10 @@ predict_mod <- function(param, type, FM_change = NA,
 
             ## Selectivity - knife edge or with selctivtiy ogive
             tc <- param$tc   # might be NULL
-            Lc <- param$Lc   # might be NULL
+            Lc <- param$Lc   # might be NULL            
+            if("L50" %in% names(bootRaw) & !("Lc" %in% names(param))){
+                Lc <- bootRaw$L50[bi]
+            }
             if(is.null(tc) & is.null(Lc)){
               if("L50" %in% s_list) Lc <- s_list$L50
               if("Lc" %in% s_list) Lc <- s_list$Lc
