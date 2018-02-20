@@ -394,6 +394,9 @@ predict_mod <- function(param, type, FM_change = NA,
             Lc <- param$Lc   # might be NULL            
             if("L50" %in% names(bootRaw) & !("Lc" %in% names(param))){
                 Lc <- bootRaw$L50[bi]
+                if(is.na(Lc) | is.nan(Lc) | is.null(Lc) | Lc == Inf | Lc == -Inf){
+                    Lc <- 5  ## hack but might be NaN
+                }
             }
             if(is.null(tc) & is.null(Lc)){
               if("L50" %in% s_list) Lc <- s_list$L50
@@ -423,6 +426,12 @@ predict_mod <- function(param, type, FM_change = NA,
                                L50 = bootRaw$L50[bi],
                                L75 = bootRaw$L75[bi])
                 selecType = s_list$selecType
+                if(is.na(bootRaw$L50[bi]) | is.nan(bootRaw$L50[bi]) |
+                   is.null(bootRaw$L50[bi]) | bootRaw$L50[bi] == Inf |
+                   bootRaw$L50[bi] == -Inf){
+                    s_list$L50 <- 5  ## hack
+                    s_list$L75 <- 6
+                }                
             }else{
                 if(length(s_list) > 1){
                     selecType <- s_list$selecType
@@ -602,6 +611,16 @@ predict_mod <- function(param, type, FM_change = NA,
             }else{
                 F05[bi] <- NA
             }
+
+
+            if(is.na(bootRaw$L50[bi]) | is.nan(bootRaw$L50[bi]) |
+               is.null(bootRaw$L50[bi]) | bootRaw$L50[bi] == Inf |
+               bootRaw$L50[bi] == -Inf){
+                F01[bi] <- NaN  ## hack
+                Fmax[bi] <- NaN
+                F05[bi] <- NaN
+            }
+            
 ##            ypr[bi] <- tmpRES$yr
 ##            yprrel[bi] <- tmpRES$ryr
 ##            bpr[bi] <- tmpRES$br
