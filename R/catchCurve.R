@@ -33,6 +33,8 @@
 #' @param boot an object of class 'lfqBoot'
 #' @param natMort optional argument; name of column with natural mortality estimates
 #'    for application to 'lfqBoot' object
+#' @param robustReg logical; indicating whether the robust automatic fitting of the regression line should be used
+#'    for application to 'lfqBoot' object
 #' @param plot logical; should a plot be displayed? Default = TRUE
 #' 
 #'
@@ -190,6 +192,7 @@ catchCurve <- function(param,
                        auto = FALSE,
                        boot = NULL,
                        natMort = NULL,
+                       robustReg = FALSE,
                        plot = TRUE
                        ){
 
@@ -212,15 +215,14 @@ catchCurve <- function(param,
         L50s <- vector("numeric", nrow(bootRaw))
         L75s <- vector("numeric", nrow(bootRaw))        
         
-        for(i in 1:nrow(bootRaw)){
+        for(bi in 1:nrow(bootRaw)){
 
-            set.seed(boot$seed[i])
+            set.seed(boot$seed[bi])
             lfqTemp <- lfqPermutate(param)
             lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE)
 
             ## error if lfq data spans several years!
             if(class(lfqLoop$catch) == "matrix") stop("The lfq data spans several years, please subset for one year at a time!")
-            
 
             catch <- lfqLoop$catch
 
@@ -235,15 +237,15 @@ catchCurve <- function(param,
             ## L and t of lower length classes
             lowerLengths <- midLengths - (interval / 2)
             if("C" %in% names(bootRaw) & "ts" %in% names(bootRaw)){
-                t_L1 <- VBGF(param = list(Linf = bootRaw$Linf[i], K = bootRaw$K[i],
-                                          t0 = 0, C=bootRaw$C[i], ts=bootRaw$ts[i]), L = lowerLengths)
+                t_L1 <- VBGF(param = list(Linf = bootRaw$Linf[bi], K = bootRaw$K[bi],
+                                          t0 = 0, C=bootRaw$C[bi], ts=bootRaw$ts[bi]), L = lowerLengths)
             }else{
-                t_L1 <- VBGF(param = list(Linf = bootRaw$Linf[i], K = bootRaw$K[i],
+                t_L1 <- VBGF(param = list(Linf = bootRaw$Linf[bi], K = bootRaw$K[bi],
                                           t0 = 0), L = lowerLengths)
             }
             ## t0 - (1/K) * log(1 - (lowerLengths / Linf))
 
-            # delta t
+            ## delta t
             dt <- rep(NA,length(midLengths))
             for(x1 in 1:(length(dt)-1)){
               dt[x1] <- t_L1[x1+1] - t_L1[x1]
@@ -251,13 +253,13 @@ catchCurve <- function(param,
 
             # x varaible
             #ln (Linf - L)
-            ln_Linf_L <- log(bootRaw$Linf[i] - lowerLengths)
+            ln_Linf_L <- log(bootRaw$Linf[bi] - lowerLengths)
             ## t of midlengths
             if("C" %in% names(bootRaw) & "ts" %in% names(bootRaw)){
-                t_midL <- VBGF(param = list(Linf = bootRaw$Linf[i], K = bootRaw$K[i],
-                                            t0 = 0, C=bootRaw$C[i], ts=bootRaw$ts[i]), L = midLengths)
+                t_midL <- VBGF(param = list(Linf = bootRaw$Linf[bi], K = bootRaw$K[bi],
+                                            t0 = 0, C=bootRaw$C[bi], ts=bootRaw$ts[bi]), L = midLengths)
             }else{
-                t_midL <- VBGF(param = list(Linf = bootRaw$Linf[i], K = bootRaw$K[i],
+                t_midL <- VBGF(param = list(Linf = bootRaw$Linf[bi], K = bootRaw$K[bi],
                                             t0 = 0), L = midLengths)
             }
             ## t0 - (1/K) * log(1 - (midLengths / Linf))
@@ -269,7 +271,7 @@ catchCurve <- function(param,
             lnC_dt <- log(catch / dt)
             lnC_dt[which(lnC_dt == -Inf)] <- NA   ### OR zero???
 
-            if(cumulative == FALSE){
+            if(!cumulative){
               xvar = t_midL
               yvar = lnC_dt
             }
@@ -286,6 +288,55 @@ catchCurve <- function(param,
             temp <- temp[(!(temp[,2] == Inf | temp[,2] == -Inf)),]
             xvar <- temp[,1]
             yvar <- temp[,2]
+
+
+            ## improving automatic fitting of regression line:
+            if(robustReg){
+                if(FALSE){
+                ## 1: if last point is outlier (e.g. due to gear selectivity) -> remove
+                if(xvar[which.max(xvar)] > (xvar[which.max(xvar)-1]+5)){
+                    yvar[which.max(xvar)] <- NA
+                    xvar[which.max(xvar)] <- NA
+                }
+                }
+                
+                ## 2: fitting regression line through last 3 points and compare slopes
+                ##      -> if very different selectivity might be responsible
+                ##      -> then remove last point
+                yvar2 <- as.numeric(yvar)
+                xvar2 <- xvar[which(yvar2 > 0.2)]
+                
+                indX <- (which.max(xvar2)-2):which.max(xvar2)
+                yvarX <- yvar2[indX]
+                xvarX <- xvar2[indX]
+                sx <- abs(coefficients(lm(yvarX ~ xvarX))[2])
+
+                indXX <- (which.max(yvar2)+1) : which.max(xvar2)
+                xvarXX <- xvar2[indXX]
+                yvarXX <- yvar2[indXX]
+                sxx <- abs(coefficients(lm(yvarXX ~ xvarXX))[2])
+
+                if(sx/sxx < 0.8){
+                    print(1)
+                    yvar[which.max(xvar)] <- NA
+                    xvar[which.max(xvar)] <- NA                    
+                }
+
+                if(FALSE){plot(xvar2,yvar2)
+                abline(lm(yvarXX ~ xvarXX))
+                abline(lm(yvarX ~ xvarX),col=4)
+                }
+
+                ## remove all NAs and Infs
+                temp <- cbind(xvar,yvar)
+                temp <- as.matrix(na.exclude(temp))
+                temp <- temp[(!(temp[,1] == Inf | temp[,1] == -Inf)),]
+                temp <- temp[(!(temp[,2] == Inf | temp[,2] == -Inf)),]
+                xvar <- temp[,1]
+                yvar <- temp[,2]
+            }
+
+            
 
             ## cut
             yvar2 <- as.numeric(yvar)
@@ -315,9 +366,9 @@ catchCurve <- function(param,
               SE_Z_lm1 <- SE_Z_lm1 * K
             }
 
-            Zs[i] <- Z_lm1
-            ## seZ[i] <- SE_Z_lm1
-            ## confZ[i] <- conf_Z_lm1
+            Zs[bi] <- Z_lm1
+            ## seZ[bi] <- SE_Z_lm1
+            ## confZ[bi] <- conf_Z_lm1
 
             if(calc_ogive){
               ## Assumption that Z of smallest selected individuals is most appropriate
@@ -330,9 +381,9 @@ catchCurve <- function(param,
 
               ## it could be that the smallest length is already fully exploited
                 if(length(catch_ogive) < 2){
-                  t50s[i] <- t75s[i] <- t_ogive ## assuming knife edge
+                  t50s[bi] <- t75s[bi] <- t_ogive ## assuming knife edge
                   t0 <- 0
-                  L50s[i] <- L75s[i] <- bootRaw$Linf[i]*(1-exp(-bootRaw$K[i]*(t50s[i]-t0)))
+                  L50s[bi] <- L75s[bi] <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t50s[bi]-t0)))
               }else{
                   ## calculate observed selection ogive
                   Sobs <- catch_ogive/(dt_ogive *
@@ -356,13 +407,13 @@ catchCurve <- function(param,
                   Sest <- 1/(1+exp(T1 - T2*xvar))
 
                   # selection parameters
-                  t50s[i] <- T1/T2
-                  t75s[i] <- (T1 + log(3))/T2
+                  t50s[bi] <- T1/T2
+                  t75s[bi] <- (T1 + log(3))/T2
 ##                  t95 <-  (T1 - log((1 / 0.95) - 1)) / T2
                   t0 <- 0                  
-                  L50s[i] <- bootRaw$Linf[i]*(1-exp(-bootRaw$K[i]*(t50s[i]-t0)))
-                  L75s[i] <- bootRaw$Linf[i]*(1-exp(-bootRaw$K[i]*(t75s[i]-t0)))
-##                  L95 <- bootRaw$Linf[i]*(1-exp(-bootRaw$K[i]*(t95-t0)))
+                  L50s[bi] <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t50s[bi]-t0)))
+                  L75s[bi] <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t75s[bi]-t0)))
+##                  L95 <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t95-t0)))
               }
             }
         }
@@ -494,11 +545,11 @@ catchCurve <- function(param,
         }else if(class(catch) == 'numeric'){
           if(length(classes) != length(catch)) stop(noquote(
             "Age/length classes and catch vector do not have the same length!"))
-        }        
+        }
 
-        # Length converted catch curve
-          if("midLengths" %in% names(res) == TRUE){
-              if("par" %in% names(res)){
+        ## Length converted catch curve
+        if("midLengths" %in% names(res)){
+            if("par" %in% names(res)){
                   Linf <- res$par$Linf
                   K <- res$par$K
                   t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
@@ -511,6 +562,7 @@ catchCurve <- function(param,
                   C <- ifelse("C" %in% names(res), res$C, 0)
                   ts <- ifelse("ts" %in% names(res), res$ts, 0)
               }
+            
 
           if((is.null(Linf) | is.null(K))) stop(noquote(
             "You need to assign values to Linf and K for the catch curve based on length-frequency data!"))
@@ -519,13 +571,10 @@ catchCurve <- function(param,
           midLengths <- classes.num
           interval <- midLengths[2] - midLengths[1]
 
-          # L and t of lower length classes
-          lowerLengths <- midLengths - (interval / 2)
-          if("C" %in% names(res) & "ts" %in% names(res)){
-              t_L1 <- VBGF(param = list(Linf = Linf, K = K, t0 = t0, C=C, ts=ts), L = lowerLengths)
-          }else{
-              t_L1 <- VBGF(param = list(Linf = Linf, K = K, t0 = t0), L = lowerLengths)
-          }
+            ## L and t of lower length classes
+
+            lowerLengths <- midLengths - (interval / 2)
+            t_L1 <- VBGF(param = list(Linf = Linf, K = K, t0 = t0, C=C, ts=ts), L = lowerLengths)
           ## t0 - (1/K) * log(1 - (lowerLengths / Linf))
 
           # delta t
@@ -622,11 +671,22 @@ catchCurve <- function(param,
           }
         }
 
+
+
+        ## remove all NAs and Infs
+        temp <- cbind(xvar,yvar)
+        temp <- as.matrix(na.exclude(temp))
+        temp <- temp[(!(temp[,1] == Inf | temp[,1] == -Inf)),]
+        temp <- temp[(!(temp[,2] == Inf | temp[,2] == -Inf)),]
+        xvar <- temp[,1]
+        yvar <- temp[,2]
+
+        
         #for plot
         #minY <- ifelse(min(yvar,na.rm=TRUE) < 0, min(yvar,na.rm=TRUE),0)
         minY <- min(yvar,na.rm=TRUE)
         maxY <- max(yvar,na.rm=TRUE) + 1
-          xlims <- c(0, max(xvar,na.rm=TRUE))
+        xlims <- c(0, max(xvar,na.rm=TRUE))
 
           cutterList <- vector("list", reg_num)
         #identify plot
