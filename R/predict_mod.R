@@ -339,8 +339,8 @@ predict_mod <- function(param, type, FM_change = NA,
             Linf <- bootRaw$Linf[bi]
             K <- bootRaw$K[bi]
             t_anchor <- bootRaw$t_anchor[bi]
-            C <- bootRaw$C[bi]
-            ts <- bootRaw$ts[bi]
+            C <- ifelse("C" %in% names(bootRaw),bootRaw$C[bi],0)
+            ts <- ifelse("ts" %in% names(bootRaw),bootRaw$ts[bi],0)
             t0 <- 0
             
             if(!(natMort %in% names(bootRaw))) stop("Please provide a natural mortality estimate 'M' in the boot object.")
@@ -617,13 +617,15 @@ predict_mod <- function(param, type, FM_change = NA,
             }
 
 
-            if(is.na(bootRaw$L50[bi]) | is.nan(bootRaw$L50[bi]) |
+            if("L50" %in% names(bootRaw)){
+                if(is.na(bootRaw$L50[bi]) | is.nan(bootRaw$L50[bi]) |
                    is.null(bootRaw$L50[bi]) | bootRaw$L50[bi] == Inf |
                bootRaw$L50[bi] == -Inf | bootRaw$L50[bi] < 0 |
                bootRaw$L75[bi] >= bootRaw$Linf[bi]){
                 F01[bi] <- NaN  ## hack
                 Fmax[bi] <- NaN
                 F05[bi] <- NaN
+                }
             }
             
 ##            ypr[bi] <- tmpRES$yr
