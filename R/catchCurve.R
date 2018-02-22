@@ -317,14 +317,14 @@ catchCurve <- function(param,
                 sxx <- abs(coefficients(lm(yvarXX ~ xvarXX))[2])
 
                 if(sx/sxx < 0.8){
-                    print(1)
                     yvar[which.max(xvar)] <- NA
                     xvar[which.max(xvar)] <- NA                    
                 }
 
-                if(FALSE){plot(xvar2,yvar2)
-                abline(lm(yvarXX ~ xvarXX))
-                abline(lm(yvarX ~ xvarX),col=4)
+                if(FALSE){
+                    plot(xvar2,yvar2)
+                    abline(lm(yvarXX ~ xvarXX))
+                    abline(lm(yvarX ~ xvarX),col=4)
                 }
 
                 ## remove all NAs and Infs
