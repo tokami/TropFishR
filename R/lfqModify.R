@@ -253,13 +253,11 @@ lfqModify <- function(lfq, par = NULL,
                 midLengths = midLengths,
                 catch = catches)
 
-    # add growth parameter if known
+    ## add growth parameter if known
+    if("par" %in% names(lfq)) res$par <- lfq$par    
     if(!is.null(par)){
-      res$Linf <- par$Linf
-      res$K <- par$K
-      res$t_anchor <- par$t_anchor
+        res$par <- par
     }
-    if("par" %in% names(lfq)) res$par <- lfq$par
 
     if("Linf" %in% names(lfq)) res$Linf <- lfq$Linf
     if("K" %in% names(lfq)) res$K <- lfq$K
