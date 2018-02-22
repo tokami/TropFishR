@@ -394,7 +394,10 @@ predict_mod <- function(param, type, FM_change = NA,
             Lc <- param$Lc   # might be NULL            
             if("L50" %in% names(bootRaw) & !("Lc" %in% names(param))){
                 Lc <- bootRaw$L50[bi]
-                if(is.na(Lc) | is.nan(Lc) | is.null(Lc) | Lc == Inf | Lc == -Inf){
+                if(is.na(bootRaw$L50[bi]) | is.nan(bootRaw$L50[bi]) |
+                   is.null(bootRaw$L50[bi]) | bootRaw$L50[bi] == Inf |
+                   bootRaw$L50[bi] == -Inf | bootRaw$L50[bi] < 0 |
+               bootRaw$L75[bi] >= bootRaw$Linf[bi]){
                     Lc <- 5  ## hack but might be NaN
                 }
             }
@@ -428,7 +431,8 @@ predict_mod <- function(param, type, FM_change = NA,
                 selecType = s_list$selecType
                 if(is.na(bootRaw$L50[bi]) | is.nan(bootRaw$L50[bi]) |
                    is.null(bootRaw$L50[bi]) | bootRaw$L50[bi] == Inf |
-                   bootRaw$L50[bi] == -Inf){
+                   bootRaw$L50[bi] == -Inf | bootRaw$L50[bi] < 0 |
+               bootRaw$L75[bi] >= bootRaw$Linf[bi]){
                     s_list$L50 <- 5  ## hack
                     s_list$L75 <- 6
                 }                
@@ -614,8 +618,9 @@ predict_mod <- function(param, type, FM_change = NA,
 
 
             if(is.na(bootRaw$L50[bi]) | is.nan(bootRaw$L50[bi]) |
-               is.null(bootRaw$L50[bi]) | bootRaw$L50[bi] == Inf |
-               bootRaw$L50[bi] == -Inf){
+                   is.null(bootRaw$L50[bi]) | bootRaw$L50[bi] == Inf |
+               bootRaw$L50[bi] == -Inf | bootRaw$L50[bi] < 0 |
+               bootRaw$L75[bi] >= bootRaw$Linf[bi]){
                 F01[bi] <- NaN  ## hack
                 Fmax[bi] <- NaN
                 F05[bi] <- NaN
