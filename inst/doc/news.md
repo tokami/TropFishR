@@ -4,8 +4,8 @@
 
 ##### New features
 
-      - New functions with bootstrapping
-      - Existing funtions with bootstrapping option
+      - New functions with bootstrapping (ELEFAN_boot_GA, ELEFAN_boot_SA)
+      - Existing funtions with bootstrapping option (M_empirical, catchCurve, VPA, ypr)
 
 
 ##### User-visible changes
@@ -21,7 +21,8 @@
       
       
 ##### Bug fixes
-      -
+      - seasonal growth parameters have not been added correctly in lfqModify
+      - 
       
       
 <br><br>
