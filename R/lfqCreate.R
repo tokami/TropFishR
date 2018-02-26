@@ -71,7 +71,7 @@ lfqCreate <- function(data, Lname, Dname, Fname = NA, bin_size = 2,
   }
 
   # show histogram
-  hist(data2$length, breaks = 50)
+  ## hist(data2$length, breaks = 50)
 
   # no NAs allowed in length nor date column
   data2 <- data2[!is.na(data2$length),]
