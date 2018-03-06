@@ -346,76 +346,84 @@ catchCurve <- function(param,
             ## calculations + model
             df.CC <- as.data.frame(cbind(xvar,yvar))
             df.CC.cut <- df.CC[cutter[1]:cutter[2],]
-            lm1 <- lm(yvar ~ xvar, data = df.CC.cut)
-            sum_lm1 <- summary(lm1)
-            r_lm1 <- sum_lm1$r.squared
-            intercept_lm1 <- sum_lm1$coefficients[1]
-            slope_lm1 <- sum_lm1$coefficients[2]
-            se_slope_lm1 <- sum_lm1$coefficients[4]
+            lm1 <- try(lm(yvar ~ xvar, data = df.CC.cut), silent = TRUE)
+            if(class(lm1) != "try-error"){
+                sum_lm1 <- summary(lm1)
+                r_lm1 <- sum_lm1$r.squared
+                intercept_lm1 <- sum_lm1$coefficients[1]
+                slope_lm1 <- sum_lm1$coefficients[2]
+                se_slope_lm1 <- sum_lm1$coefficients[4]
 
-            ## fit of regression line
-            lm1.fit <- sum_lm1$r.squared
-            Z_lm1 <- abs(slope_lm1)
-            SE_Z_lm1 <- abs(se_slope_lm1)
-            confi <-  abs(se_slope_lm1) * qt(0.975,sum_lm1$df[2])
-            conf_Z_lm1 <- Z_lm1 + c(-confi,confi)
+                ## fit of regression line
+                lm1.fit <- sum_lm1$r.squared
+                Z_lm1 <- abs(slope_lm1)
+                SE_Z_lm1 <- abs(se_slope_lm1)
+                confi <-  abs(se_slope_lm1) * qt(0.975,sum_lm1$df[2])
+                conf_Z_lm1 <- Z_lm1 + c(-confi,confi)
 
-            ## special case when cumulative and length-frequency data
-            if(cumulative & "midLengths" %in% names(param) == TRUE){
-              Z_lm1 <- Z_lm1 * K
-              SE_Z_lm1 <- SE_Z_lm1 * K
+                ## special case when cumulative and length-frequency data
+                if(cumulative & "midLengths" %in% names(param) == TRUE){
+                  Z_lm1 <- Z_lm1 * K
+                  SE_Z_lm1 <- SE_Z_lm1 * K
+                }
+
+                Zs[bi] <- Z_lm1
+                ## seZ[bi] <- SE_Z_lm1
+                ## confZ[bi] <- conf_Z_lm1
+                if(calc_ogive){
+                  ## Assumption that Z of smallest selected individuals is most appropriate
+                  mini <- min(cutter)
+
+                  ## only use part of catch and t which is not fully exploited by the gear
+                  t_ogive <- xvar[1:(cutter[1]-1)]
+                  dt_ogive <- dt[1:(cutter[1]-1)]
+                  catch_ogive <- catch[1:(cutter[1]-1)]
+
+                  ## it could be that the smallest length is already fully exploited
+                    if(length(catch_ogive) < 2){
+                      t50s[bi] <- t75s[bi] <- t_ogive ## assuming knife edge
+                      t0 <- 0
+                      L50s[bi] <- L75s[bi] <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t50s[bi]-t0)))
+                  }else{
+                      ## calculate observed selection ogive
+                      Sobs <- catch_ogive/(dt_ogive *
+                                           exp(unlist(intercept_lm1) -
+                                               unlist(Z_lm1) * t_ogive))
+
+                      # dependent vairable in following regression analysis
+                      ln_1_S_1 <- log((1/Sobs) - 1)
+
+                      # get rid of Inf
+                      ln_1_S_1[which(ln_1_S_1 == Inf)] <- NA
+                      t_ogive[which(t_ogive == Inf)] <- NA
+
+                      #regression analysis to caluclate T1 and T2
+                      mod_ogive <- lm(ln_1_S_1 ~ t_ogive, na.action = na.omit)
+                      sum_lm_ogive <- summary(mod_ogive)
+                      T1 <- sum_lm_ogive$coefficients[1]
+                      T2 <- abs(sum_lm_ogive$coefficients[2])
+
+                      # calculate estimated selection ogive
+                      Sest <- 1/(1+exp(T1 - T2*xvar))
+
+                      # selection parameters
+                      t50s[bi] <- T1/T2
+                      t75s[bi] <- (T1 + log(3))/T2
+    ##                  t95 <-  (T1 - log((1 / 0.95) - 1)) / T2
+                      t0 <- 0                  
+                      L50s[bi] <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t50s[bi]-t0)))
+                      L75s[bi] <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t75s[bi]-t0)))
+    ##                  L95 <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t95-t0)))
+                  }
+                }
+            }else{
+                Zs[bi] <- NA
+                if(calc_ogive){
+                      L50s[bi] <- NA
+                      L75s[bi] <- NA
+                }
             }
 
-            Zs[bi] <- Z_lm1
-            ## seZ[bi] <- SE_Z_lm1
-            ## confZ[bi] <- conf_Z_lm1
-
-            if(calc_ogive){
-              ## Assumption that Z of smallest selected individuals is most appropriate
-              mini <- min(cutter)
-
-              ## only use part of catch and t which is not fully exploited by the gear
-              t_ogive <- xvar[1:(cutter[1]-1)]
-              dt_ogive <- dt[1:(cutter[1]-1)]
-              catch_ogive <- catch[1:(cutter[1]-1)]
-
-              ## it could be that the smallest length is already fully exploited
-                if(length(catch_ogive) < 2){
-                  t50s[bi] <- t75s[bi] <- t_ogive ## assuming knife edge
-                  t0 <- 0
-                  L50s[bi] <- L75s[bi] <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t50s[bi]-t0)))
-              }else{
-                  ## calculate observed selection ogive
-                  Sobs <- catch_ogive/(dt_ogive *
-                                       exp(unlist(intercept_lm1) -
-                                           unlist(Z_lm1) * t_ogive))
-
-                  # dependent vairable in following regression analysis
-                  ln_1_S_1 <- log((1/Sobs) - 1)
-
-                  # get rid of Inf
-                  ln_1_S_1[which(ln_1_S_1 == Inf)] <- NA
-                  t_ogive[which(t_ogive == Inf)] <- NA
-
-                  #regression analysis to caluclate T1 and T2
-                  mod_ogive <- lm(ln_1_S_1 ~ t_ogive, na.action = na.omit)
-                  sum_lm_ogive <- summary(mod_ogive)
-                  T1 <- sum_lm_ogive$coefficients[1]
-                  T2 <- abs(sum_lm_ogive$coefficients[2])
-
-                  # calculate estimated selection ogive
-                  Sest <- 1/(1+exp(T1 - T2*xvar))
-
-                  # selection parameters
-                  t50s[bi] <- T1/T2
-                  t75s[bi] <- (T1 + log(3))/T2
-##                  t95 <-  (T1 - log((1 / 0.95) - 1)) / T2
-                  t0 <- 0                  
-                  L50s[bi] <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t50s[bi]-t0)))
-                  L75s[bi] <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t75s[bi]-t0)))
-##                  L95 <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t95-t0)))
-              }
-            }
         }
         bootRaw[,(ncol(bootRaw)+1)] <- Zs
         colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)],"Z")        
