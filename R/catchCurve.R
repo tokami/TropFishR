@@ -347,7 +347,13 @@ catchCurve <- function(param,
             df.CC <- as.data.frame(cbind(xvar,yvar))
             df.CC.cut <- df.CC[cutter[1]:cutter[2],]
             lm1 <- try(lm(yvar ~ xvar, data = df.CC.cut), silent = TRUE)
-            if(class(lm1) != "try-error"){
+            if(class(lm1) == "try-error" | nrow(df.CC.cut) < 3){
+                Zs[bi] <- NA
+                if(calc_ogive){
+                      L50s[bi] <- NA
+                      L75s[bi] <- NA
+                }
+            }else{
                 sum_lm1 <- summary(lm1)
                 r_lm1 <- sum_lm1$r.squared
                 intercept_lm1 <- sum_lm1$coefficients[1]
@@ -416,14 +422,7 @@ catchCurve <- function(param,
     ##                  L95 <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t95-t0)))
                   }
                 }
-            }else{
-                Zs[bi] <- NA
-                if(calc_ogive){
-                      L50s[bi] <- NA
-                      L75s[bi] <- NA
-                }
             }
-
         }
         bootRaw[,(ncol(bootRaw)+1)] <- Zs
         colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)],"Z")        
@@ -464,12 +463,13 @@ catchCurve <- function(param,
                 limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
                 ciList[[i]] <- limCI                
             }else{
-                if(length(unique(as.character(tmp[,i]))) == 1 && all(!is.na(tmp[,i]))){
-                    resMaxDen[i] <- unique(tmp[,i])
-                    ciList[[i]] <- NA
+                if((length(unique(as.character(tmp[,i]))) == 1 && all(!is.na(tmp[,i]))) |
+                   (length(unique(as.character(na.omit(tmp[,i])))) == 1)){
+                    resMaxDen[i] <- unique(as.numeric(na.omit(tmp[,i])))
+                    ciList[[i]] <- c(NA,NA)
                 }else{
                     resMaxDen[i] <- NA
-                    ciList[[i]] <- NA
+                    ciList[[i]] <- c(NA,NA)
                 }
             }
         }
