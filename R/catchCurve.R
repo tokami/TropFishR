@@ -316,7 +316,7 @@ catchCurve <- function(param,
                 yvarXX <- yvar2[indXX]
                 sxx <- abs(coefficients(lm(yvarXX ~ xvarXX))[2])
 
-                if(sx/sxx < 0.8){
+                if(!is.na(sxx) & sx/sxx < 0.8){
                     yvar[which.max(xvar)] <- NA
                     xvar[which.max(xvar)] <- NA                    
                 }
