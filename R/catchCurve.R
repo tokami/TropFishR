@@ -347,7 +347,7 @@ catchCurve <- function(param,
             df.CC <- as.data.frame(cbind(xvar,yvar))
             df.CC.cut <- df.CC[cutter[1]:cutter[2],]
             lm1 <- try(lm(yvar ~ xvar, data = df.CC.cut), silent = TRUE)
-            if(class(lm1) == "try-error" | nrow(df.CC.cut) < 3){
+            if(class(lm1) == "try-error" | nrow(df.CC.cut) < 3 | coefficients(lm1)[2] > 0){
                 Zs[bi] <- NA
                 if(calc_ogive){
                       L50s[bi] <- NA

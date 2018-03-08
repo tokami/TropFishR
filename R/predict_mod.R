@@ -349,10 +349,22 @@ predict_mod <- function(param, type, FM_change = NA,
             if(!("FM" %in% names(bootRaw)))
                 stop("Please provide a fishing mortality estimate 'FM' in the boot object.")
             FM <- bootRaw$FM[bi]
+            if(is.na(bootRaw$FM[bi]) | is.nan(bootRaw$FM[bi]) |
+               is.null(bootRaw$FM[bi]) | bootRaw$FM[bi] == Inf |
+               bootRaw$FM[bi] == -Inf){
+                    FM <- 0.1  ## hack but might be NaN
+            }
+            
 
             if(!("Z" %in% names(bootRaw)))
                 stop("Please provide a total mortality estimate 'Z' in the boot object.")
             Z <- bootRaw$Z[bi]
+            if(is.na(bootRaw$Z[bi]) | is.nan(bootRaw$Z[bi]) |
+               is.null(bootRaw$Z[bi]) | bootRaw$Z[bi] == Inf |
+               bootRaw$Z[bi] == -Inf){
+                    Z <- 0.9  ## hack but might be NaN
+            }
+            
 
             catch <- lfqLoop$catch            
 
@@ -626,6 +638,13 @@ predict_mod <- function(param, type, FM_change = NA,
                 Fmax[bi] <- NaN
                 F05[bi] <- NaN
                 }
+            }
+            if(is.na(bootRaw$Z[bi]) | is.nan(bootRaw$Z[bi]) |
+               is.null(bootRaw$Z[bi]) | bootRaw$Z[bi] == Inf |
+               bootRaw$Z[bi] == -Inf){
+                F01[bi] <- NaN  ## hack
+                Fmax[bi] <- NaN
+                F05[bi] <- NaN
             }
             
 ##            ypr[bi] <- tmpRES$yr
