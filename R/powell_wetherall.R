@@ -19,6 +19,7 @@
 #'    which is to be used for the regression analysis. If equal to NULL identity method
 #'    is applied (default).
 #' @param main title of plot (Default is "Powell-Wetherall plot")
+#' @param col colour of points for regression line and regression line, default = 4
 #'
 #' @keywords function mortality Z/K Linf
 #'
@@ -78,7 +79,7 @@
 
 powell_wetherall <- function(param, catch_columns = NA,
                              savePlots = FALSE, reg_int = NULL,
-                             main = "Powell-Wetherall plot"){
+                             main = "Powell-Wetherall plot",col=4){
 
   res <- param
   catch <- res$catch
@@ -212,8 +213,8 @@ powell_wetherall <- function(param, catch_columns = NA,
          cex = 1.5, main = main)
     par(new=T)
     points(x = df.BH.cut$Lprime,y = df.BH.cut$Lmean_Lprime,
-           pch = 19, col = 'blue', cex = 1.5)
-    abline(a=intercept_lm1,b=slope_lm1,col="blue",lwd = 1.7)
+           pch = 19, col = col, cex = 1.5)
+    abline(a=intercept_lm1,b=slope_lm1,col=col,lwd = 1.7)
     if(savePlots == TRUE){
       ploti <- recordPlot()
     }else ploti = NA
