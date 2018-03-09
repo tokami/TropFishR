@@ -13,7 +13,7 @@
 #'   \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column);
 #' }
 #' @param Fname indicating whether restructured ("rcounts") or original frequencies ("catch") should be
-#'    displayed (default: "rcounts")
+#'    displayed (default: "catch")
 #' @param par a list with following growth parameters (default NULL):
 #'  \itemize{
 #'   \item \strong{Linf} asymptotic length,
@@ -145,7 +145,7 @@
 #' @export
 
 plot.lfq <- function(x,
-  Fname = "rcounts",  # alternative : "catch"
+  Fname = "catch",  # alternative : "rcounts"
   par = NULL,
   agemax = NULL,
   rel = FALSE,
