@@ -13,7 +13,7 @@
       - The reference level labelled Fmsy in the function 'predict_mod()' is now labelled Fmax, as
       this description is more appropriate (reference level which maximises the yield per recruit
       function according to underlying ypr model)
-      -
+      - Setting display of raw catches to default for LFQ plot
 
 		
 ##### Documentation
@@ -22,7 +22,7 @@
       
 ##### Bug fixes
       - seasonal growth parameters have not been added correctly in lfqModify
-      - 
+      - accounting for seasonal parameters correctly in catchCurve? check!
       
       
 <br><br>
