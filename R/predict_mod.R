@@ -55,6 +55,8 @@
 #' @param hide.progressbar logical; should progressbar be displayed or hidden? (Default: FALSE)
 #' @param boot an object of class 'lfqBoot'
 #' @param natMort name of column with natural mortalites for bootstrapping application of VPA
+#' @param yearSel optional character for bootsrapping use of this function
+#'    specifying a year to be subsetted if LFQ data covers multiple years
 #'
 #' @keywords function prediction ypr
 #'
@@ -291,7 +293,8 @@ predict_mod <- function(param, type, FM_change = NA,
                         plot = FALSE, mark = TRUE,
                         hide.progressbar = FALSE,
                         boot = NULL,
-                        natMort = NULL){
+                        natMort = NULL,
+                        yearSel = NA){
 
     ## VPA with bootstrapping ELEFAN results
     if(!is.null(boot) & class(boot) == "lfqBoot"){
@@ -333,6 +336,18 @@ predict_mod <- function(param, type, FM_change = NA,
             set.seed(boot$seed[bi])
             
             lfqTemp <- lfqPermutate(param)
+            
+            ## subset data for specific years (optional) due to seed values not possible before resampling
+            if(!is.na(yearSel)){
+                yearSel <- as.character(yearSel)
+                ## warning if year not in dates
+                dateYears <- format(lfqTemp$dates, "%Y")
+                if(all(yearSel %in% dateYears == FALSE)) stop(paste0("The selected year ", yearSel, " is not in the LFQ data!"))
+                
+                lfqTemp$catch <- lfqTemp$catch[,which(format(lfqTemp$dates,"%Y") %in% yearSel)]
+                lfqTemp$dates <- lfqTemp$dates[format(lfqTemp$dates,"%Y") %in% yearSel]
+            }
+            
             lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE)
             
 
@@ -723,18 +738,31 @@ predict_mod <- function(param, type, FM_change = NA,
         # Beverton and Holt's ypr
         if(type == "ypr"){
           if(FM_relative) stop(noquote("ypr does not work with relative changes in FM, please provide absolute values."))
-          M <- res$M
-          K <- res$K
-          t0 <- ifelse(!is.null(res$t0),res$t0,0)
+          if("par" %in% names(res)){
+              Winf <- ifelse("Winf" %in% names(res$par), res$par$Winf, NA)
+              Linf <- ifelse("Linf" %in% names(res$par), res$par$Linf, NA)
+              K <- res$par$K
+              t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
+              C <- ifelse("C" %in% names(res$par), res$par$C, 0)
+              ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
+          }else{
+              Winf <- ifelse("Winf" %in% names(res), res$Winf, NA)
+              Linf <- ifelse("Linf" %in% names(res), res$Linf, NA)
+              K <- res$K
+              t0 <- ifelse("t0" %in% names(res), res$t0, 0)
+              C <- ifelse("C" %in% names(res), res$C, 0)
+              ts <- ifelse("ts" %in% names(res), res$ts, 0)
+          }
+
+          
+          M <- res$M          
           a <- res$a  # might be NULL
           b <- res$b  # might be NULL
           ## this makes sure that a is always in kg/cm3 = and therefore meanBodyWeight is always in kg
           if(LW_unit == "g"){
               a <- a / 1000
           }                  
-          Winf <- res$Winf  # might be NULL
-          Linf <- res$Linf # might be NULL
-          if("Linf" %in% names(res) & "a" %in% names(res) & "b" %in% names(res)){
+          if(!is.na(Linf) & is.na(Winf) & "a" %in% names(res) & "b" %in% names(res)){
             Winf <- a * (Linf ^ b)
           }
           #Linf <- ifelse(!is.null(res$Linf),res$Linf, exp(log(Winf/a)/b))

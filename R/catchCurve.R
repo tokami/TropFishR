@@ -33,6 +33,8 @@
 #' @param boot an object of class 'lfqBoot'
 #' @param natMort optional argument; name of column with natural mortality estimates
 #'    for application to 'lfqBoot' object
+#' @param yearSel optional character for bootsrapping use of this function
+#'    specifying a year to be subsetted if LFQ data covers multiple years
 #' @param robustReg logical; indicating whether the robust automatic fitting of the regression line should be used
 #'    for application to 'lfqBoot' object
 #' @param plot logical; should a plot be displayed? Default = TRUE
@@ -193,6 +195,7 @@ catchCurve <- function(param,
                        boot = NULL,
                        natMort = NULL,
                        robustReg = FALSE,
+                       yearSel = NA,
                        plot = TRUE
                        ){
 
@@ -219,6 +222,19 @@ catchCurve <- function(param,
 
             set.seed(boot$seed[bi])
             lfqTemp <- lfqPermutate(param)
+
+            ## subset data for specific years (optional) due to seed values not possible before resampling
+            if(!is.na(yearSel)){
+                yearSel <- as.character(yearSel)
+                ## warning if year not in dates
+                dateYears <- format(lfqTemp$dates, "%Y")
+                if(all(yearSel %in% dateYears == FALSE)) stop(paste0("The selected year ", yearSel, " is not in the LFQ data!"))
+                
+                lfqTemp$catch <- lfqTemp$catch[,which(format(lfqTemp$dates,"%Y") %in% yearSel)]
+                lfqTemp$dates <- lfqTemp$dates[format(lfqTemp$dates,"%Y") %in% yearSel]
+            }
+
+            ## vectorise 
             lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE)
 
             ## error if lfq data spans several years!

@@ -42,6 +42,8 @@
 #' @param plot logical; indicating whether a plot should be printed
 #' @param boot an object of class 'lfqBoot'
 #' @param natMort name of column with natural mortalites for bootstrapping application of VPA
+#' @param yearSel optional character for bootsrapping use of this function
+#'    specifying a year to be subsetted if LFQ data covers multiple years
 #'
 #' @details The main difference between virtual population analysis (VPA) and cohort
 #'    analysis (CA) is the step of calculating the fishing mortality per age class or
@@ -147,7 +149,7 @@ VPA <- function(param,
                 LW_unit = "g",
                 analysis_type = "VPA", algorithm = "new",
                 plus_group = TRUE, plot = FALSE,
-                boot = NULL, natMort = NULL){
+                boot = NULL, natMort = NULL, yearSel = NA){
 
     ## VPA with bootstrapping ELEFAN results
     if(!is.null(boot) & class(boot) == "lfqBoot"){
@@ -175,6 +177,18 @@ VPA <- function(param,
             set.seed(boot$seed[i])
             
             lfqTemp <- lfqPermutate(param)
+
+            ## subset data for specific years (optional) due to seed values not possible before resampling
+            if(!is.na(yearSel)){
+                yearSel <- as.character(yearSel)
+                ## warning if year not in dates
+                dateYears <- format(lfqTemp$dates, "%Y")
+                if(all(yearSel %in% dateYears == FALSE)) stop(paste0("The selected year ", yearSel, " is not in the LFQ data!"))
+                
+                lfqTemp$catch <- lfqTemp$catch[,which(format(lfqTemp$dates,"%Y") %in% yearSel)]
+                lfqTemp$dates <- lfqTemp$dates[format(lfqTemp$dates,"%Y") %in% yearSel]
+            }
+            
             lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE)
 
 
