@@ -5,7 +5,7 @@
 \title{Powell-Wetherall method}
 \usage{
 powell_wetherall(param, catch_columns = NA, savePlots = FALSE,
-  reg_int = NULL, main = "Powell-Wetherall plot")
+  reg_int = NULL, main = "Powell-Wetherall plot", col = 4)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -27,6 +27,8 @@ which is to be used for the regression analysis. If equal to NULL identity metho
 is applied (default).}
 
 \item{main}{title of plot (Default is "Powell-Wetherall plot")}
+
+\item{col}{colour of points for regression line and regression line, default = 4}
 }
 \value{
 A list with the input parameters and follwing objects:

@@ -7,7 +7,7 @@
 VPA(param, catch_columns = NA, catch_unit = NA, catch_corFac = NA,
   terminalF = NA, terminalE = NA, LW_unit = "g", analysis_type = "VPA",
   algorithm = "new", plus_group = TRUE, plot = FALSE, boot = NULL,
-  natMort = NULL)
+  natMort = NULL, yearSel = NA)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -60,6 +60,9 @@ while \code{"old"} uses the algorithm described by Sparre and Venema (1998).}
 \item{boot}{an object of class 'lfqBoot'}
 
 \item{natMort}{name of column with natural mortalites for bootstrapping application of VPA}
+
+\item{yearSel}{optional character for bootsrapping use of this function
+specifying a year to be subsetted if LFQ data covers multiple years}
 }
 \value{
 A list with the input parameters and following list objects:

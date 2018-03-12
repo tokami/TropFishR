@@ -6,7 +6,8 @@
 \usage{
 catchCurve(param, catch_columns = NA, cumulative = FALSE,
   calc_ogive = FALSE, reg_int = NULL, reg_num = 1, auto = FALSE,
-  boot = NULL, natMort = NULL, plot = TRUE)
+  boot = NULL, natMort = NULL, robustReg = FALSE, yearSel = NA,
+  plot = TRUE)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -44,6 +45,12 @@ automatically. Default = FALSE}
 
 \item{natMort}{optional argument; name of column with natural mortality estimates
 for application to 'lfqBoot' object}
+
+\item{robustReg}{logical; indicating whether the robust automatic fitting of the regression line should be used
+for application to 'lfqBoot' object}
+
+\item{yearSel}{optional character for bootsrapping use of this function
+specifying a year to be subsetted if LFQ data covers multiple years}
 
 \item{plot}{logical; should a plot be displayed? Default = TRUE}
 }

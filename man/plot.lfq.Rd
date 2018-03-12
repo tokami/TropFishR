@@ -4,7 +4,7 @@
 \alias{plot.lfq}
 \title{Plotting of length frequency data (with VBGF curves)}
 \usage{
-\method{plot}{lfq}(x, Fname = "rcounts", par = NULL, agemax = NULL,
+\method{plot}{lfq}(x, Fname = "catch", par = NULL, agemax = NULL,
   rel = FALSE, y = NA, curve.col = 1, hist.sc = 0.5,
   hist.col = c("white", "black", "orange", "darkgreen"), image.col = NULL,
   region.col = NULL, zlim = NULL, zlimtype = "balanced",
@@ -21,7 +21,7 @@
 }}
 
 \item{Fname}{indicating whether restructured ("rcounts") or original frequencies ("catch") should be
-displayed (default: "rcounts")}
+displayed (default: "catch")}
 
 \item{par}{a list with following growth parameters (default NULL):
  \itemize{

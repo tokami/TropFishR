@@ -8,7 +8,8 @@ predict_mod(param, type, FM_change = NA, E_change = NA,
   FM_relative = FALSE, Lc_change = NULL, tc_change = NULL, s_list = NA,
   stock_size_1 = NA, age_unit = "year", curr.E = NA, curr.Lc = NA,
   plus_group = NA, Lmin = NA, Lincr = NA, LW_unit = "g", plot = FALSE,
-  mark = TRUE, hide.progressbar = FALSE, boot = NULL, natMort = NULL)
+  mark = TRUE, hide.progressbar = FALSE, boot = NULL, natMort = NULL,
+  yearSel = NA)
 }
 \arguments{
 \item{param}{a list consisting of following parameters (not all are required):
@@ -81,6 +82,9 @@ kg/cm3 or "g" for g/cm3. Default is "g".}
 \item{boot}{an object of class 'lfqBoot'}
 
 \item{natMort}{name of column with natural mortalites for bootstrapping application of VPA}
+
+\item{yearSel}{optional character for bootsrapping use of this function
+specifying a year to be subsetted if LFQ data covers multiple years}
 }
 \value{
 A list with the input parameters and dependent on the model type following
@@ -183,7 +187,7 @@ The Thompson and Bell model incorporates an iteration step simulating the
 threadfin <- list(Winf = 286, K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4)
 
 predict_mod(threadfin, FM_change = seq(0,6,0.1),
-   tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
+   tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MAX
 
 # Leiognathus spendens (Pauly, 1980)
 ponyfish <- list(Winf = 64, K = 1, t0 = -0.2, M = 1.8, tr = 0.2)
