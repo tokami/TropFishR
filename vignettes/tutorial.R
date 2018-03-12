@@ -183,29 +183,3 @@ sum(vpa_res$meanBiomassTon, na.rm = TRUE)
 # assign F per length class to the data list
 synLFQ7c$FM <- vpa_res$FM_calc
 
-## ----Figure 9, echo=TRUE, eval=TRUE, fig.cap="Results of the Thompson and Bell model: (a) Curves of yield and biomass per recruit. The black dot represents yield and biomass under current fishing pressure. The yellow and red dashed lines represent fishing mortality for maximum sustainable yield (Fmsy) and fishing mortality to fish the stock at 50% of the virgin biomass (F0.5). (b) exploration of impact of different exploitation rates and Lc values on the relative yield per recruit."----
-# Thompson and Bell model with changes in F
-TB1 <- predict_mod(synLFQ7c, type = "ThompBell",
-                   FM_change = seq(0,1.5,0.05),  stock_size_1 = 1,
-                   curr.E = synLFQ7c$E, plot = FALSE, hide.progressbar = TRUE)
-# Thompson and Bell model with changes in F and Lc
-TB2 <- predict_mod(synLFQ7c, type = "ThompBell",
-                   FM_change = seq(0,1.5,0.1), Lc_change = seq(25,50,0.1),
-                   stock_size_1 = 1,
-                   curr.E = synLFQ7c$E, curr.Lc = res_cc$L50,
-                   s_list = list(selecType = "trawl_ogive",
-                                 L50 = res_cc$L50, L75 = res_cc$L75),
-                   plot = FALSE, hide.progressbar = TRUE)
-# plot results
-if(FALSE){
-par(mfrow = c(2,1), mar = c(4,5,2,4.5), oma = c(1,0,0,0))
-plot(TB1, mark = TRUE)
-mtext("(a)", side = 3, at = -1, line = 0.6)
-plot(TB2, type = "Isopleth", xaxis1 = "FM", mark = TRUE, contour = 6)
-mtext("(b)", side = 3, at = -0.1, line = 0.6)
-}
-# Biological reference levels
-TB1$df_Es
-# Current yield and biomass levels
-TB1$currents
-

@@ -792,11 +792,13 @@ predict_mod <- function(param, type, FM_change = NA,
           tr <- res$tr   # might be NULL
           Lr <- res$Lr   # might be NULL
           if(is.null(tr) & is.null(Lr)) stop("Either the age or the length at recruitment (tr or Lr) has to be provided in param!")
-          if(!is.null(Linf)){
-            if(is.null(tr)) tr <- VBGF(L=Lr,param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lr,Linf=Linf,K=K,t0=t0)
-            if(is.null(Lr)) Lr <- VBGF(t=tr,param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tr,Linf=Linf,K=K,t0=t0)
-          }
 
+          if(!is.na(Linf)){
+              if(is.null(tr)) tr <- VBGF(L=Lr,param = list(Linf=Linf,K=K,t0=t0,C=C,ts=ts))
+              ## VBGF(L=Lr,Linf=Linf,K=K,t0=t0)
+              if(is.null(Lr)) Lr <- VBGF(t=tr,param = list(Linf=Linf,K=K,t0=t0,C=C,ts=ts))
+              ## VBGF(t=tr,Linf=Linf,K=K,t0=t0)
+          }
 
           # Selectivity - knife edge or with selctivtiy ogive
           tc <- res$tc   # might be NULL
@@ -806,7 +808,7 @@ predict_mod <- function(param, type, FM_change = NA,
             if("Lc" %in% s_list) Lc <- s_list$Lc
             #if(!("Lc" %in% s_list) & !("L50" %in% s_list))stop("Either the age or the length at first capture (tc or Lc) has to be provided in param! \n Or provide a Lc value in s_list!")
           }
-          if(!is.null(Linf)){
+          if(!is.na(Linf)){
             if(is.null(tc) & !is.null(Lc)) tc <- VBGF(L=Lc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc,Linf=Linf,K=K,t0=t0)
             if(is.null(Lc) & !is.null(tc)) Lc <- VBGF(t=tc, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(t=tc,Linf=Linf,K=K,t0=t0)
             if(is.null(tc_change) & !is.null(Lc_change)) tc_change <- VBGF(L=Lc_change, param = list(Linf=Linf,K=K,t0=t0)) # VBGF(L=Lc_change,Linf=Linf,K=K,t0=t0)

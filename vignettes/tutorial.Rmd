@@ -297,7 +297,7 @@ TB2 <- predict_mod(synLFQ7c, type = "ThompBell",
                    plot = FALSE, hide.progressbar = TRUE)
 # plot results
 par(mfrow = c(2,1), mar = c(4,5,2,4.5), oma = c(1,0,0,0))
-TropFishR:::plot.predict_mod(TB1, mark = TRUE)
+plot(TB1, mark = TRUE)
 mtext("(a)", side = 3, at = -1, line = 0.6)
 plot(TB2, type = "Isopleth", xaxis1 = "FM", mark = TRUE, contour = 6)
 mtext("(b)", side = 3, at = -0.1, line = 0.6)

@@ -14,6 +14,7 @@
       this description is more appropriate (reference level which maximises the yield per recruit
       function according to underlying ypr model)
       - Setting display of raw catches to default for LFQ plot
+      - change of labelling of reference point "Fmsy" in prediction models to "Fmax" (is more correct)
 
 		
 ##### Documentation

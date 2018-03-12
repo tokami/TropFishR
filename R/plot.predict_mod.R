@@ -106,6 +106,8 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
       mesi
     }
 
+
+    
     #THOMPBELL
     if("totY" %in% names(pes)){
       df_Es <- pes$df_Es
@@ -319,7 +321,6 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
       #mtext("Yield", line=0.5, side=3)
       if(identify == TRUE) image.identifier(m)
     }
-
 
 
     # YPR
