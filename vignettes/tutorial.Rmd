@@ -297,17 +297,18 @@ TB2 <- predict_mod(synLFQ7c, type = "ThompBell",
                    plot = FALSE, hide.progressbar = TRUE)
 # plot results
 par(mfrow = c(2,1), mar = c(4,5,2,4.5), oma = c(1,0,0,0))
-plot(TB1, mark = TRUE)
+TropFishR:::plot.predict_mod(TB1, mark = TRUE)
 mtext("(a)", side = 3, at = -1, line = 0.6)
 plot(TB2, type = "Isopleth", xaxis1 = "FM", mark = TRUE, contour = 6)
 mtext("(b)", side = 3, at = -0.1, line = 0.6)
+
 # Biological reference levels
 TB1$df_Es
 # Current yield and biomass levels
 TB1$currents
 ```
 
-Please note that the resolution of the $L_c$ and F changes is quite low and the range quite narrow due to the limitations in computation time of the vignette format. The results indicate that the fishing mortality of this example (F = `r {round(synLFQ7b$FM,2)}`) is higher than the fishing mortality for MSY ($F_{MSY} =$ `r {round(TB1$df_Es$Fmsy,2)}`), which confirms the indication of the slightly increased exploitation rate (E = `r {round(synLFQ7b$E,2)}`). The prediction plot shows that the yield could be increased when fishing mortality and mesh size is increased. The units are grams per recruit.
+Please note that the resolution of the $L_c$ and F changes is quite low and the range quite narrow due to the limitations in computation time of the vignette format. The results indicate that the fishing mortality of this example (F = `r {round(synLFQ7b$FM,2)}`) is higher than the maximum fishing mortality ($F_{max} =$ `r {round(TB1$df_Es$Fmax,2)}`), which confirms the indication of the slightly increased exploitation rate (E = `r {round(synLFQ7b$E,2)}`). The prediction plot shows that the yield could be increased when fishing mortality and mesh size is increased. The units are grams per recruit.
 
 
 ##*Summary*
