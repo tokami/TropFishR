@@ -402,7 +402,8 @@ ELEFAN <- function(
                             flagging.out = flagging.out,
                             agemax = agemax)
 
-  # Results
+    ## Results
+    res$score_mat <- score_mat
   res$ncohort = final_res$ncohort
   res$agemax = final_res$agemax
   res$par <- pars
