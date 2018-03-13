@@ -300,8 +300,42 @@ growth_length_age <- function(param, method, Linf_est = NA,
              lines(age_plot, predict(nls_mod,newdata = data.frame(t=age_plot)))
            }
          },
+         "LSM2"={
 
-         stop(paste("\n",method, "not recognised, possible options are \n",
+             nll <- function(theta, Lt, t){
+                 Linf = theta[1]
+                 K = theta[2]
+                 t0 = theta[3]
+                 predL <- (Linf * (1 - exp(-K * (t - t0))))
+                 log(sum(abs(Lt - predL)))
+             }
+
+             nls_mod <- nlminb(start = c(Linf_init, K_init, t0_init),
+                               objective = nll, Lt = Lt, t = t,
+                               lower = c(0,0,-10))
+             
+           Linf <- nls_mod$par[1]
+           K <- nls_mod$par[2]
+           t0 <- nls_mod$par[3]
+           
+             tmp <- list(t0 = t0)
+             mod <- nls_mod
+             
+             if(!CI){
+             t_plot <- seq(min(t),max(t),0.001)
+             Lt_plot <- (nls_mod$par[1] * (1 - exp(-nls_mod$par[2] * (t_plot- nls_mod$par[3]))))
+                 
+             plot(Lt ~ t,
+                  ylab = "L(t)",
+                  xlab = "t(age)",
+                  main = "Non-linear least squares method")
+             lines(t_plot, Lt_plot)
+           }
+
+         },
+                  
+
+         Stop(paste("\n",method, "not recognised, possible options are \n",
                     "\"GullandHolt\", \"FordWalford\", \"Chapman\" \n",
                     "\"BertalanffyPlot\", and \"LSM\""))
          )
