@@ -704,10 +704,10 @@ predict_mod <- function(param, type, FM_change = NA,
                     tmp5 <- tmp[,i]
                     tmp6 <- names(table(tmp5))[which.max(table(tmp5))]
                     resMaxDen[i] <- as.numeric(tmp6)
-                    ciList[[i]] <- NaN
+                    ciList[[i]] <- c(NaN,NaN)
                 }else{
                     resMaxDen[i] <- NaN
-                    ciList[[i]] <- NaN
+                    ciList[[i]] <- c(NaN,NaN)
                 }
             }
         }
