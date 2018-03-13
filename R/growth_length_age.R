@@ -314,14 +314,14 @@ growth_length_age <- function(param, method, Linf_est = NA,
                                objective = nll, Lt = Lt, t = t,
                                lower = c(0,0,-10))
              
-           Linf <- nls_mod$par[1]
-           K <- nls_mod$par[2]
-           t0 <- nls_mod$par[3]
+             Linf <- nls_mod$par[1]
+             K <- nls_mod$par[2]
+             t0 <- nls_mod$par[3]
            
              tmp <- list(t0 = t0)
              mod <- nls_mod
              
-             if(!CI){
+
              t_plot <- seq(min(t),max(t),0.001)
              Lt_plot <- (nls_mod$par[1] * (1 - exp(-nls_mod$par[2] * (t_plot- nls_mod$par[3]))))
                  
@@ -330,8 +330,6 @@ growth_length_age <- function(param, method, Linf_est = NA,
                   xlab = "t(age)",
                   main = "Non-linear least squares method")
              lines(t_plot, Lt_plot)
-           }
-
          },
                   
 
