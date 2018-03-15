@@ -159,18 +159,18 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
             ciList[[i]] <- limCI
         }
 
-        resCIs <- cbind(boot$bootCIs,t(do.call(rbind,ciList)))
+        resCIs <- cbind(boot$CI,t(do.call(rbind,ciList)))
         colnames(resCIs) <- colnames(bootRaw)
         rownames(resCIs) <- c("lo","up")
-        resMaxDen <- c(boot$bootMaxDen, resMaxDen)
-        names(resMaxDen) <- names(bootRaw)
+        resMaxDen <- cbind(boot$maxDen, resMaxDen)
+        colnames(resMaxDen) <- colnames(bootRaw)
+        rownames(resMaxDen) <- "maxDen"        
 
         ret <- list()
         ret$bootRaw <- bootRaw
-        ret$bootMaxDen <- resMaxDen
-        ret$bootCIs <- resCIs
-        ret$seed <- boot$seed
-
+        ret$seed <- boot$seed        
+        ret$maxDen <- resMaxDen
+        ret$CI <- resCIs
         class(ret) <- "lfqBoot"        
         return(ret)
 

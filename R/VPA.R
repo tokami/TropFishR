@@ -169,14 +169,18 @@ VPA <- function(param,
         if(LW_unit == "g"){
             a <- a / 1000
         }
+
+
+        ## resample data sets
+        lfqAll <- lfqResample(param, boot)
+        ##  set.seed(boot$seed[bi])
         
 
         N <- vector("numeric",nrow(bootRaw))
         B <- vector("numeric",nrow(bootRaw))
-        for(i in 1:nrow(bootRaw)){
-            set.seed(boot$seed[i])
-            
-            lfqTemp <- lfqPermutate(param)
+        for(bi in 1:nrow(bootRaw)){
+
+            lfqTemp <- lfqAll[[bi]]
 
             ## subset data for specific years (optional) due to seed values not possible before resampling
             if(!is.na(yearSel)){
@@ -205,28 +209,28 @@ VPA <- function(param,
             lowerLength <- classes.num - (interval / 2)
             upperLength <- classes.num + (interval / 2)            
             
-            if(bootRaw$Linf[i] < max(upperLength)){
+            if(bootRaw$Linf[bi] < max(upperLength)){
                 lfqLoop <- lfqModify(lfqLoop,
                                   plus_group =
                                       lfqLoop$midLengths[which.min(abs(upperLength -
-                                                                       floor(bootRaw$Linf[i])))])
+                                                                       floor(bootRaw$Linf[bi])))])
                 plus_group <- TRUE
             }else{
                 plus_group <- FALSE
             }            
 
-            Linf <- bootRaw$Linf[i]
-            K <- bootRaw$K[i]
-            t_anchor <- bootRaw$t_anchor[i]
-            C <- bootRaw$C[i]
-            ts <- bootRaw$ts[i]
+            Linf <- bootRaw$Linf[bi]
+            K <- bootRaw$K[bi]
+            t_anchor <- bootRaw$t_anchor[bi]
+            C <- bootRaw$C[bi]
+            ts <- bootRaw$ts[bi]
             t0 <- 0
             
             if(!(natMort %in% names(bootRaw))) stop("Please provide a natural mortality estimate 'M' in the boot object.")
-            M_vec <- rep(bootRaw[i,which(colnames(bootRaw) == natMort)], length(lfqLoop$midLengths))  ## vector with Ms not yet implemented for boot VPA
+            M_vec <- rep(bootRaw[bi,which(colnames(bootRaw) == natMort)], length(lfqLoop$midLengths))  ## vector with Ms not yet implemented for boot VPA
 
             if(!("FM" %in% names(bootRaw))) stop("Please provide a fishing mortality estimate 'FM' in the boot object.")
-            terminalF <- bootRaw$FM[i]
+            terminalF <- bootRaw$FM[bi]
             terminalE <- terminalF / (terminalF + M_vec[length(M_vec)])            
             terminalZ <- terminalF + M_vec[length(M_vec)]
 
@@ -388,8 +392,8 @@ VPA <- function(param,
             #Calculate natural losses
             natLoss <- survivors - survivors_rea - catch_numbers
 
-            N[i] <- sum(annualMeanNr)
-            B[i] <- sum(meanBiomassTon)
+            N[bi] <- sum(annualMeanNr)
+            B[bi] <- sum(meanBiomassTon)
         }
         bootRaw[,(ncol(bootRaw)+1)] <- N
         colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)],"N")
@@ -421,17 +425,18 @@ VPA <- function(param,
                 ciList[[i]] <- c(NA,NA)
             }            
         }
-        resCIs <- cbind(boot$bootCIs,t(do.call(rbind,ciList)))
+        resCIs <- cbind(boot$CI,t(do.call(rbind,ciList)))
         colnames(resCIs) <- colnames(bootRaw)
         rownames(resCIs) <- c("lo","up")
-        resMaxDen <- c(boot$bootMaxDen, resMaxDen)
-        names(resMaxDen) <- names(bootRaw)
-
+        resMaxDen <- cbind(boot$maxDen, t(as.data.frame(resMaxDen)))
+        colnames(resMaxDen) <- colnames(bootRaw)
+        rownames(resMaxDen) <- "maxDen"
+        
         ret <- list()
         ret$bootRaw <- bootRaw
-        ret$bootMaxDen <- resMaxDen
-        ret$bootCIs <- resCIs
-        ret$seed <- boot$seed
+        ret$seed <- boot$seed        
+        ret$maxDen <- resMaxDen
+        ret$CI <- resCIs
 
         class(ret) <- "lfqBoot"
         return(ret)

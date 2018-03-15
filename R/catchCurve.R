@@ -208,7 +208,12 @@ catchCurve <- function(param,
 
         if (any(is.null(bootRaw$Linf), is.null(bootRaw$K)))
           stop("LCCC with boot requires a boot object with columns Linf and K")
-        
+
+
+        ## resample data sets
+        ## set.seed(boot$seed[bi])
+        lfqAll <- lfqResample(param, boot)
+
 
         Zs <- vector("numeric",nrow(bootRaw))
         ## seZ <- vector("numeric",nrow(bootRaw))
@@ -220,8 +225,7 @@ catchCurve <- function(param,
         
         for(bi in 1:nrow(bootRaw)){
 
-            set.seed(boot$seed[bi])
-            lfqTemp <- lfqPermutate(param)
+            lfqTemp <- lfqAll[[bi]]
 
             ## subset data for specific years (optional) due to seed values not possible before resampling
             if(!is.na(yearSel)){
@@ -489,17 +493,18 @@ catchCurve <- function(param,
                 }
             }
         }
-        resCIs <- cbind(boot$bootCIs,t(do.call(rbind,ciList)))
+        resCIs <- cbind(boot$CI,t(do.call(rbind,ciList)))
         colnames(resCIs) <- colnames(bootRaw)
         rownames(resCIs) <- c("lo","up")
-        resMaxDen <- c(boot$bootMaxDen, resMaxDen)
-        names(resMaxDen) <- names(bootRaw)
-
+        resMaxDen <- cbind(boot$maxDen, t(as.data.frame(resMaxDen)))
+        colnames(resMaxDen) <- colnames(bootRaw)
+        rownames(resMaxDen) <- "maxDen"
+        
         ret <- list()
         ret$bootRaw <- bootRaw
-        ret$bootMaxDen <- resMaxDen
-        ret$bootCIs <- resCIs
-        ret$seed <- boot$seed
+        ret$seed <- boot$seed        
+        ret$maxDen <- resMaxDen
+        ret$CI <- resCIs
 
         class(ret) <- "lfqBoot"
         return(ret)

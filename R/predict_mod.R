@@ -322,6 +322,12 @@ predict_mod <- function(param, type, FM_change = NA,
         if("Lc" %in% names(param) & !("L50" %in% names(bootRaw))){
             Lc <- param$Lc
         }
+
+
+        
+        ## resample data sets
+        lfqAll <- lfqResample(param, boot)
+        ##  set.seed(boot$seed[bi])
         
 
         F01 <- vector("numeric",nrow(bootRaw))
@@ -333,9 +339,7 @@ predict_mod <- function(param, type, FM_change = NA,
 ##        bprrel <- vector("numeric",nrow(bootRaw))         
         for(bi in 1:nrow(bootRaw)){
 
-            set.seed(boot$seed[bi])
-            
-            lfqTemp <- lfqPermutate(param)
+            lfqTemp <- lfqAll[[bi]]
             
             ## subset data for specific years (optional) due to seed values not possible before resampling
             if(!is.na(yearSel)){
@@ -711,19 +715,20 @@ predict_mod <- function(param, type, FM_change = NA,
                 }
             }
         }
-        resCIs <- cbind(boot$bootCIs,t(do.call(rbind,ciList)))
+        resCIs <- cbind(boot$CI,t(do.call(rbind,ciList)))
         colnames(resCIs) <- c(colnames(bootRaw)[-((ncol(bootRaw)-2):ncol(bootRaw))],
                               colnames(tmp))
         rownames(resCIs) <- c("lo","up")
-        resMaxDen <- c(boot$bootMaxDen, resMaxDen)
-        names(resMaxDen) <- c(colnames(bootRaw)[-((ncol(bootRaw)-2):ncol(bootRaw))],
-                              colnames(tmp))        
+        resMaxDen <- cbind(boot$maxDen, t(as.data.frame(resMaxDen)))
+        colnames(resMaxDen) <- c(colnames(bootRaw)[-((ncol(bootRaw)-2):ncol(bootRaw))],
+                                 colnames(tmp))
+        rownames(resMaxDen) <- "maxDen"
 
         ret <- list()
         ret$bootRaw <- bootRaw
-        ret$bootMaxDen <- resMaxDen
-        ret$bootCIs <- resCIs
-        ret$seed <- boot$seed
+        ret$seed <- boot$seed        
+        ret$maxDen <- resMaxDen
+        ret$CI <- resCIs
 
         class(ret) <- "lfqBoot"
         return(ret)
