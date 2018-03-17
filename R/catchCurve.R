@@ -357,11 +357,17 @@ catchCurve <- function(param,
             }
 
             
-
             ## cut
-            yvar2 <- as.numeric(yvar)
-            xvar2 <- xvar[which(yvar2 > 0.2)]
-            cutter <- c(which(yvar2 == max(as.numeric(yvar2),na.rm=TRUE))+1, which(xvar2 == max(xvar2,na.rm=TRUE)))
+            yvar2 <- as.numeric(yvar)            
+            maxY <- which(yvar2 == max(as.numeric(yvar2),na.rm=TRUE))
+            indexX <- which(yvar2 < 0.5 & xvar > xvar[maxY])
+            if(length(indexX) < 1){
+                indexX <- max(xvar,na.rm=TRUE)
+            }else{
+                indexX <- indexX-1
+            }
+            xvar2 <- xvar[1:indexX]
+            cutter <- c(maxY+1, which(xvar2 == max(xvar2,na.rm=TRUE)))
 
             ## calculations + model
             df.CC <- as.data.frame(cbind(xvar,yvar))
