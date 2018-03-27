@@ -300,7 +300,6 @@ catchCurve <- function(param,
               yvar = lnC
             }
 
-            
             ## remove all NAs and Infs
             temp <- cbind(xvar,yvar)
             temp <- as.matrix(na.exclude(temp))
@@ -360,19 +359,26 @@ catchCurve <- function(param,
             ## cut
             yvar2 <- as.numeric(yvar)            
             maxY <- which(yvar2 == max(as.numeric(yvar2),na.rm=TRUE))
-            indexX <- which(yvar2 < 0.5 & xvar > xvar[maxY])
+            
+            index1 <- which(xvar > xvar[maxY])
+            index2 <- which(yvar2 > 0.5)
+
+            indexX <- intersect(index1,index2)
+
             if(length(indexX) < 1){
                 indexX <- max(xvar,na.rm=TRUE)
             }else{
                 indexX <- indexX-1
             }
-            xvar2 <- xvar[1:indexX]
-            cutter <- c(maxY+1, which(xvar2 == max(xvar2,na.rm=TRUE)))
+            
+            xvar2 <- xvar[indexX]
+            cutter <- c(maxY+1, which(xvar == max(xvar2,na.rm=TRUE)))
 
             ## calculations + model
             df.CC <- as.data.frame(cbind(xvar,yvar))
             df.CC.cut <- df.CC[cutter[1]:cutter[2],]
             lm1 <- try(lm(yvar ~ xvar, data = df.CC.cut), silent = TRUE)
+
             if(class(lm1) == "try-error" | nrow(df.CC.cut) < 3 | coefficients(lm1)[2] > 0){
                 Zs[bi] <- NA
                 if(calc_ogive){
