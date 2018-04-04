@@ -196,6 +196,7 @@ catchCurve <- function(param,
                        natMort = NULL,
                        robustReg = FALSE,
                        yearSel = NA,
+                       binSize = NA,
                        plot = TRUE
                        ){
 
@@ -238,8 +239,12 @@ catchCurve <- function(param,
                 lfqTemp$dates <- lfqTemp$dates[format(lfqTemp$dates,"%Y") %in% yearSel]
             }
 
-            ## vectorise 
-            lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE)
+            ## vectorise
+            if(!is.na(binSize)){
+                lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE, bin_size = binSize)
+            }else{
+                lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE)
+            }
 
             ## error if lfq data spans several years!
             if(class(lfqLoop$catch) == "matrix") stop("The lfq data spans several years, please subset for one year at a time!")
@@ -511,7 +516,17 @@ catchCurve <- function(param,
         resMaxDen <- cbind(boot$maxDen, t(as.data.frame(resMaxDen)))
         colnames(resMaxDen) <- colnames(bootRaw)
         rownames(resMaxDen) <- "maxDen"
+
+
+        if(FALSE){
+        ## check with FM
+        if("FM" %in% colnames(resMaxDen)){
+            resMaxDen$FM <- as.numeric(resMaxDen$Z - resMaxDen[(colnames(resMaxDen) == natMort)])
+            bootRaw$FM <- resMaxDen$FM
+        }
+        }
         
+
         ret <- list()
         ret$bootRaw <- bootRaw
         ret$seed <- boot$seed        

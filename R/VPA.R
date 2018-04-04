@@ -192,7 +192,21 @@ VPA <- function(param,
                 lfqTemp$catch <- lfqTemp$catch[,which(format(lfqTemp$dates,"%Y") %in% yearSel)]
                 lfqTemp$dates <- lfqTemp$dates[format(lfqTemp$dates,"%Y") %in% yearSel]
             }
+
             
+            ## correct catch with raising factor
+            if(!is.na(catch_corFac)){
+                if(length(catch_corFac) == 1){
+                    catch_cor <- lfqTemp$catch * catch_corFac
+                }
+                if(length(catch_corFac) > 1 & length(catch_corFac) == ncol(lfqTemp$catch)){
+                    catch_cor <- t(apply(lfqTemp$catch, 1, function(x) x * catch_corFac))
+                }
+            }
+            if(is.na(catch_corFac)) catch_cor <- lfqTemp$catch
+            lfqTemp$catch <- catch_cor
+
+            ## vectorise catch
             lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE)
 
 
@@ -234,10 +248,8 @@ VPA <- function(param,
             terminalE <- terminalF / (terminalF + M_vec[length(M_vec)])            
             terminalZ <- terminalF + M_vec[length(M_vec)]
 
-            catch <- lfqLoop$catch            
-            # correct catch with raising factor
-            if(!is.na(catch_corFac)) catch_cor <- catch * catch_corFac
-            if(is.na(catch_corFac)) catch_cor <- catch            
+            catch_cor<- lfqLoop$catch            
+
 
             classes <- as.character(lfqLoop$midLengths)            
             # create column without plus group (sign) if present
@@ -391,7 +403,7 @@ VPA <- function(param,
 
             #Calculate natural losses
             natLoss <- survivors - survivors_rea - catch_numbers
-
+            
             N[bi] <- sum(annualMeanNr)
             B[bi] <- sum(meanBiomassTon)
         }

@@ -78,7 +78,10 @@ VBGF <- function(param, t = NA, L = NA){
   L0 <- ifelse("L0" %in% names(res),res$L0, NA)
   ts <- ifelse("ts" %in% names(res),res$ts, 0)
   C <- ifelse("C" %in% names(res),res$C, 0)
-  if("t_anchor" %in% names(res)) t0 <- res$t_anchor
+  if("t_anchor" %in% names(res)){
+      ## t0 <- abs((res$t_anchor - t0) %% 1)
+      t0 <- res$t_anchor 
+  }
 
 
   if(is.na(Linf) & is.na(Winf)) stop("You have to provide either Linf or Winf.")
