@@ -197,8 +197,23 @@ stock_sim <- function(param, age_unit = "year",
   # length based
   if('midLengths' %in% names(res)){
 
-    Linf <- res$Linf
-    K <- res$K
+
+      if("par" %in% names(res)){
+              Winf <- ifelse("Winf" %in% names(res$par), res$par$Winf, NA)
+              Linf <- ifelse("Linf" %in% names(res$par), res$par$Linf, NA)
+              K <- res$par$K
+              t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
+              C <- ifelse("C" %in% names(res$par), res$par$C, 0)
+              ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
+          }else{
+              Winf <- ifelse("Winf" %in% names(res), res$Winf, NA)
+              Linf <- ifelse("Linf" %in% names(res), res$Linf, NA)
+              K <- res$K
+              t0 <- ifelse("t0" %in% names(res), res$t0, 0)
+              C <- ifelse("C" %in% names(res), res$C, 0)
+              ts <- ifelse("ts" %in% names(res), res$ts, 0)
+          }
+
     a <- res$a
     b <- res$b
 
