@@ -79,7 +79,7 @@ stock_sim <- function(param, age_unit = "year",
                       stock_size_1 = NA, plus_group = NA){
 
   res <- param
-  meanWeight <- res$meanWeight
+
   meanValue <- res$meanValue
 
   #mortalities
@@ -101,6 +101,9 @@ stock_sim <- function(param, age_unit = "year",
   # age based
   if('age' %in% names(res)){
 
+
+      meanWeight <- res$meanWeight
+      
     # delta t
     dt <- c(diff(classes.num),NA)
     if(age_unit == 'month'){
