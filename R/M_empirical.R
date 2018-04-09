@@ -147,18 +147,28 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
         ciList <- vector("list", ncol(tmp))
         for(i in seq(length(method))){
             ## max densities
-            x <- ks::kde(as.numeric(na.omit(tmp[,i])))                        
-            ind <- which(x$estimate > x$cont["99%"])
-            resMaxDen[i] <- mean(x$eval.points[ind])
-            ## confidence intervals
-            CItxt <- paste0(round(5), "%")
-            inCI <- rle( x$estimate > x$cont[CItxt] )
-            start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
-            end.idx <- cumsum(inCI$lengths)
-            limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
-            ciList[[i]] <- limCI
+            x <- try(ks::kde(as.numeric(na.omit(tmp[,i]))), TRUE)
+            if(class(x) != "try-error"){
+                ind <- which(x$estimate > x$cont["99%"])
+                resMaxDen[i] <- mean(x$eval.points[ind])
+                ## confidence intervals
+                CItxt <- paste0(round(5), "%")
+                inCI <- rle( x$estimate > x$cont[CItxt] )
+                start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
+                end.idx <- cumsum(inCI$lengths)
+                limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
+                ciList[[i]] <- limCI                
+            }else{
+                if((length(unique(as.character(tmp[,i]))) == 1 && all(!is.na(tmp[,i]))) |
+                   (length(unique(as.character(na.omit(tmp[,i])))) == 1)){
+                    resMaxDen[i] <- unique(as.numeric(na.omit(tmp[,i])))
+                    ciList[[i]] <- c(NA,NA)
+                }else{
+                    resMaxDen[i] <- NA
+                    ciList[[i]] <- c(NA,NA)
+                }
+            }
         }
-
         resCIs <- cbind(boot$CI,t(do.call(rbind,ciList)))
         colnames(resCIs) <- colnames(bootRaw)
         rownames(resCIs) <- c("lo","up")
