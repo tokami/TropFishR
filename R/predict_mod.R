@@ -775,6 +775,16 @@ predict_mod <- function(param, type, FM_change = NA,
         bootRaw <- cbind(bootRaw, data.frame(F01,Fmax,F05)) 
         tmp <- as.data.frame(bootRaw[,(ncol(boot$bootRaw)+(1:3))])            
 
+
+        ## estimate FF01, FFmax, FF05 if FM in dataframe
+        if("FM" %in% colnames(bootRaw)){
+            bootRaw[,(ncol(bootRaw)+1)] <- bootRaw$FM / F01
+            bootRaw[,(ncol(bootRaw)+1)] <- bootRaw$FM / Fmax
+            bootRaw[,(ncol(bootRaw)+1)] <- bootRaw$FM / F05
+            colnames(bootRaw) <- c(colnames(bootRaw)[-((ncol(bootRaw)-2):ncol(bootRaw))],
+                                   c("FF01","FFmax","FF05"))
+            tmp <- cbind(tmp,as.data.frame(bootRaw[,((ncol(bootRaw)-2):ncol(bootRaw))]))
+        }
         
         idx <- apply(tmp, 2, function(x) all(x == 0 | is.na(x) | x == 1))
         tmp <- tmp[,!idx]
@@ -814,12 +824,13 @@ predict_mod <- function(param, type, FM_change = NA,
                 }
             }
         }
+
         resCIs <- cbind(boot$CI,t(do.call(rbind,ciList)))
-        colnames(resCIs) <- c(colnames(bootRaw)[-((ncol(bootRaw)-2):ncol(bootRaw))],
+        colnames(resCIs) <- c(colnames(bootRaw)[-((ncol(bootRaw)-5):ncol(bootRaw))],
                               colnames(tmp))
         rownames(resCIs) <- c("lo","up")
         resMaxDen <- cbind(boot$maxDen, t(as.data.frame(resMaxDen)))
-        colnames(resMaxDen) <- c(colnames(bootRaw)[-((ncol(bootRaw)-2):ncol(bootRaw))],
+        colnames(resMaxDen) <- c(colnames(bootRaw)[-((ncol(bootRaw)-5):ncol(bootRaw))],
                                  colnames(tmp))
         rownames(resMaxDen) <- "maxDen"
 
@@ -827,6 +838,7 @@ predict_mod <- function(param, type, FM_change = NA,
         ## remove F01 which is not estimated in ThomBell model
         if(type=="ThompBell"){
             bootRaw <- bootRaw[,-which(colnames(bootRaw) == "F01")]
+            bootRaw <- bootRaw[,-which(colnames(bootRaw) == "FF01")]            
         }
 
         ret <- list()
