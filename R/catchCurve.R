@@ -35,6 +35,7 @@
 #'    for application to 'lfqBoot' object
 #' @param yearSel optional character for bootsrapping use of this function
 #'    specifying a year to be subsetted if LFQ data covers multiple years
+#' @param binSize optional argument for bootstrapping application, if lfq data should be rebinned.
 #' @param robustReg logical; indicating whether the robust automatic fitting of the regression line should be used
 #'    for application to 'lfqBoot' object
 #' @param plot logical; should a plot be displayed? Default = TRUE
