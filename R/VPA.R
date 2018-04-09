@@ -452,7 +452,6 @@ VPA <- function(param,
         ret$maxDen <- resMaxDen
         ret$CI <- resCIs
         ret$FMvecVPA <- FMsVPA
-
         class(ret) <- "lfqBoot"
         return(ret)
 
