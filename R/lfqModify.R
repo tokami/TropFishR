@@ -142,7 +142,34 @@ lfqModify <- function(lfq, par = NULL,
     catch_mat <- do.call(cbind,listi)
     catch_mat[is.na(catch_mat)] <- 0
     catch <- catch_mat
-    midLengths <- midLengthsNEW
+        midLengths <- midLengthsNEW
+
+
+        ## get rid of 0 bins at both ends
+        lowRow <- 0
+        resi <- TRUE
+        while(resi == TRUE){
+          lowRow <- lowRow + 1
+          resi <- rowSums(catch)[lowRow] == 0
+        }
+
+        upRow <- nrow(catch)
+        resi <- TRUE
+        while(resi == TRUE){
+          resi <- rowSums(catch)[upRow] == 0
+          upRow <- upRow - 1
+        }
+        upRow <- upRow + 1
+
+        catch <- catch[lowRow:upRow,]
+        midLengths <- midLengths[lowRow:upRow]
+
+
+        ## correct if catch was numeric already
+        if(class(lfq$catch) == "numeric"){
+            catch <- as.numeric(catch)
+        }
+        
   }
   if(vectorise_catch & !is.matrix(catch)){
     stop(paste0("Catch is ", class(catch), ". To vectorise catch, it has to be a matrix."))
