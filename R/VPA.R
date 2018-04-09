@@ -178,6 +178,7 @@ VPA <- function(param,
 
         N <- vector("numeric",nrow(bootRaw))
         B <- vector("numeric",nrow(bootRaw))
+        FMsVPA <- vector("list",nrow(bootRaw))        
         for(bi in 1:nrow(bootRaw)){
 
             lfqTemp <- lfqAll[[bi]]
@@ -256,7 +257,7 @@ VPA <- function(param,
             classes.num <- do.call(rbind, strsplit(classes, split="\\+"))
             classes.num <- as.numeric(classes.num[,1])
 
-            #calculate size class interval
+            #calculate size class interval (this assumes constant lenght class intervals)
             interval <- classes.num[2] - classes.num[1]
 
             # lower and upper length vectors
@@ -406,6 +407,7 @@ VPA <- function(param,
             
             N[bi] <- sum(annualMeanNr)
             B[bi] <- sum(meanBiomassTon)
+            FMsVPA[[bi]] <- FM_calc
         }
         bootRaw[,(ncol(bootRaw)+1)] <- N
         colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)],"N")
@@ -449,6 +451,7 @@ VPA <- function(param,
         ret$seed <- boot$seed        
         ret$maxDen <- resMaxDen
         ret$CI <- resCIs
+        ret$FMvecVPA <- FMsVPA
 
         class(ret) <- "lfqBoot"
         return(ret)
