@@ -34,6 +34,17 @@
 #' tmp <- recruitment2(lfq = lfq)
 #' tmp
 #'
+#' lfq <- synLFQ5
+#' lfq$par <- list(
+#'   Linf = 80, K = 0.5, t_anchor = 0.25
+#' )
+#' tmp <- recruitment2(lfq = lfq)
+#' plot(tmp, col = 5, freq = FALSE,
+#'   main = "Recruitment pattern for synLFQ5",
+#'   xlab = "Month"
+#' )
+#'
+#'
 recruitment2 <- function(
   lfq,
   Lrecr = 0,

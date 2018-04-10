@@ -112,7 +112,7 @@ Before proceeding with the ELEFAN functions, one should first explore settings f
 
 ```{r}
 alba <- lfqRestructure(alba, MA = 7)
-plot(alba, hist.sc = 0.75)
+plot(alba, Fname="rcounts", hist.sc = 0.75)
 ```
 
 ## Scoring of VGBF parameter combinations
@@ -127,7 +127,7 @@ $$Rn = 10^{(ESP/ASP)}/10$$
 In the following plot, background shading shows runs of peaks, with positive peaks in blue, negative peaks in red, and values of zero in white.  
 ```{r}
 alba <- lfqRestructure(alba, MA=7)
-plot(alba, hist.col = c("white", "black"), 
+plot(alba, Fname="rcounts", hist.col = c("white", "black"), 
   image.col = c(rep(rgb(1,0.8,0.8),1000), "white", rep(rgb(0.8,0.8,1),1000)),
   ylim = c(0,max(alba$midLengths+0.5)))
 tmp <- lfqFitCurves(alba, par = list(Linf=11, K=2.5, t_anchor=0.5), 
@@ -187,7 +187,7 @@ In the above plot, the highest Rn score is denoted by a red star symbol(*), alth
 
 The resulting best scoring combination is added to the lfq object in the `par` element, allowing for direct visualization via `plot.lfq`. In the following plot, the bin designated for crossing is denoted by a red star symbol(*):
 ```{r}
-plot(alba2)
+plot(alba2, Fname="rcounts")
 points(alba$dates[3], alba$midLengths[5], pch="*", cex=2, col=2)
 ```
 
@@ -224,7 +224,7 @@ It is advised to use an `SA_temp` setting that allows for a period of random sea
 Again, the resulting best scoring parameter combination is added to `$par`, and can be directly plotted:
 
 ```{r}
-plot(alba3)
+plot(alba3, Fname="rcounts")
 ```
 
 
@@ -260,7 +260,7 @@ As with `ELEFAN_SA` it is important to review the plot of Rn scores by generatio
 Again, the best fitting combination is added to `$par` and the results can be directly plotted over the lfq data:
 
 ```{r}
-plot(alba4)
+plot(alba4, Fname="rcounts")
 ```
 
 
@@ -291,7 +291,7 @@ alba5 <- ELEFAN_GA(
 )
 unlist(alba5$par)
 alba5$Rn_max
-plot(alba5)
+plot(alba5, Fname="rcounts")
 ```
 
 As an illustration of the fitted soVBGF parameters, the instantaneous values of *K* through time can be calculated according to @munro_estimation_1982. The values oscillate around the mean fitted value, `K`, with `ts` reflecting the time of year when instantaneous K is at a maximum.   
@@ -365,10 +365,14 @@ tmp
 
 
 ```{r}
-plot(synLFQ4, draw = FALSE) 
-tmp <- lfqFitCurves(synLFQ4, par = true_par, col=8, lty=1, draw = TRUE)
-tmp <- lfqFitCurves(synLFQ4, par = synLFQ4$par, col=4, lty=2, draw = TRUE)
-legend("top", ncol=2, legend = c("true", "estimated"), col=c(8,4), lty=c(1,2))
+plot(synLFQ4, Fname="rcounts", draw = FALSE, 
+  image.col = NA, region.col = "grey90") 
+tmp <- lfqFitCurves(synLFQ4, par = true_par, col=5,
+  lty=1, draw = TRUE)
+tmp <- lfqFitCurves(synLFQ4, par = synLFQ4$par, col=4,
+  lty=2, draw = TRUE)
+legend("top", ncol=2, legend = c("true", "estimated"),
+  col=c(5,4), lty=c(1,2), bg = "grey90", cex = 0.75)
 ```
 
 
@@ -405,7 +409,7 @@ The following list highlights some existing best practices for using the ELEFAN 
 * `lfq` data 
     + should contain relatively high counts that are representative of the length distribution of the population (in the best case) or catches.
     + should be sampled at regular intervals throughout the year, and at roughly the same sampling effort.
-    + should cover a substantial degree of small length classes, as their relatively higher numbers and more apparent growth will aid in the fitting of the VBGF. A general rule-of-thumb could be that the smallest bins should start at at least 25\% of Linf.
+    + should cover a substantial degree of small length classes, as their relatively higher numbers and more apparent growth will aid in the fitting of the VBGF. A general rule-of-thumb is that the smallest bins should start at at least 25\% of Linf.
 * `MA` setting
     + should approximate the number of bins spanning the width of a cohort following recruitment.
 * Optimization settings

@@ -3,13 +3,12 @@
 ---
 
 ##### New features
-
       - New functions with bootstrapping (ELEFAN_boot_GA, ELEFAN_boot_SA)
       - Existing funtions with bootstrapping option (M_empirical, catchCurve, VPA, ypr)
+      - New formulation of recruitment pattern hindcasting of an lfq object (recruitment2). Hindcasting is done for each bin using an iterative calls to a discrete version of the VBGF, and returns a yearly pattern weighted by associated bin counts.
 
 
 ##### User-visible changes
-
       - The reference level labelled Fmsy in the function 'predict_mod()' is now labelled Fmax, as
       this description is more appropriate (reference level which maximises the yield per recruit
       function according to underlying ypr model)
