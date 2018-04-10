@@ -30,7 +30,7 @@
 #' # plot of restructured scores and fit of soVBGF growth curves
 #' plot(synLFQ4)
 #' lfqFitCurves(synLFQ4,
-#'  par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0),
+#'  par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0.5),
 #'  draw=TRUE
 #' )$fASP
 #'
@@ -195,7 +195,7 @@ lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE){
 
     # ASP calc
     sampASP <- NaN*seq(ncol(rcounts))
-    
+
     for(i in seq(ncol(rcounts))){
         ## lfq.i <- lfq[i,]
         tmp <- rle(sign(rcounts[,i]))
@@ -207,17 +207,17 @@ lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE){
             for(p in seq(length(posrun))){
                 peakval[p] <- max(rcounts[start.idx[posrun[p]]:end.idx[posrun[p]], i ])
             }
-            sampASP[i] <- sum(peakval)            
+            sampASP[i] <- sum(peakval)
         }else{
             sampASP[i] <- 0
         }
-    
+
     }
-    
+
     ASP <- sum(sampASP)
     lfq$ASP <- ASP
     lfq$MA <- MA
-    
+
     class(lfq) <- "lfq"
     return(lfq)
 }

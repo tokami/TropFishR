@@ -7,7 +7,7 @@
 catchCurve(param, catch_columns = NA, cumulative = FALSE,
   calc_ogive = FALSE, reg_int = NULL, reg_num = 1, auto = FALSE,
   boot = NULL, natMort = NULL, robustReg = FALSE, yearSel = NA,
-  plot = TRUE)
+  binSize = NA, plot = TRUE)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -51,6 +51,8 @@ for application to 'lfqBoot' object}
 
 \item{yearSel}{optional character for bootsrapping use of this function
 specifying a year to be subsetted if LFQ data covers multiple years}
+
+\item{binSize}{optional argument for bootstrapping application, if lfq data should be rebinned.}
 
 \item{plot}{logical; should a plot be displayed? Default = TRUE}
 }

@@ -2,6 +2,8 @@
 .Rhistory
 .Rapp.history
 
+# working folder
+working
 # Session Data files
 .RData
 # Example code in package build process

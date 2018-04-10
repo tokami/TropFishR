@@ -46,7 +46,7 @@
 #'     be applied to a the results of the bootstrapping ELEFAN functions. This can be done by providing
 #'     the 'lfqBoot' object by use of the argument \code{boot}. So far only the methods 'Pauly_Linf' and
 #'     'Then_growth' can be used.
-#' 
+#'
 #'
 #' Depending on the method different input parameters are required:
 #' \itemize{
@@ -65,6 +65,8 @@
 #' }
 #' If accounting for schooling behaviour M is multiplied by 0.8 according to
 #'    Pauly (1983).
+#'
+#' @importFrom ks kde
 #'
 #' @return A matrix of M estimates.
 #'
@@ -119,25 +121,25 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
         ## calculations with bootstrapped ELEFAN results
         bootOut <- boot
         bootRaw <- boot$bootRaw
-        
+
         if (any(method == "Pauly_Linf") & any(is.null(bootRaw$Linf), is.null(bootRaw$K), is.null(temp)))
           stop("Pauly_Linf requires temp and a boot object with columns Linf and K")
         if (any(method == "Then_growth") & any(is.null(bootRaw$Linf), is.null(bootRaw$K)))
-          stop("Then_growth requires a boot object with columns Linf and K")        
+          stop("Then_growth requires a boot object with columns Linf and K")
 
-        
+
         if(any(method == "Pauly_Linf")){
             Ms <- round(10^(-0.0066 - 0.279 * log10(bootRaw$Linf) +
                             0.6543 * log10(bootRaw$K) + 0.4634 * log10(temp)), 3)
             if(schooling == TRUE){
                 Ms <- 0.8 * Ms
-            }                
+            }
             bootRaw[,ncol(bootRaw)+1]  <- Ms
             colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)], "M_Pauly")
         }
         if (any(method == "Then_growth")) {
             bootRaw[,ncol(bootRaw)+1] <- round(4.118 * (bootRaw$K^0.73) * (bootRaw$Linf^-0.33), 3)
-            colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)], "M_Then")            
+            colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)], "M_Then")
         }
 
         tmp <- as.data.frame(bootRaw[,(ncol(boot$bootRaw)+1:length(method))])
@@ -157,7 +159,7 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
                 start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
                 end.idx <- cumsum(inCI$lengths)
                 limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
-                ciList[[i]] <- limCI                
+                ciList[[i]] <- limCI
             }else{
                 if((length(unique(as.character(tmp[,i]))) == 1 && all(!is.na(tmp[,i]))) |
                    (length(unique(as.character(na.omit(tmp[,i])))) == 1)){
@@ -174,14 +176,14 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
         rownames(resCIs) <- c("lo","up")
         resMaxDen <- cbind(boot$maxDen, resMaxDen)
         colnames(resMaxDen) <- colnames(bootRaw)
-        rownames(resMaxDen) <- "maxDen"        
+        rownames(resMaxDen) <- "maxDen"
 
         ret <- list()
         ret$bootRaw <- bootRaw
-        ret$seed <- boot$seed        
+        ret$seed <- boot$seed
         ret$maxDen <- resMaxDen
         ret$CI <- resCIs
-        class(ret) <- "lfqBoot"        
+        class(ret) <- "lfqBoot"
         return(ret)
 
     }else if(!is.null(boot) & class(boot) != "lfqBoot"){
@@ -304,7 +306,7 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
           M_mat <- as.data.frame(matrix(c(Bl,Ml),byrow = FALSE,ncol=2))
           colnames(M_mat) <- c("Bl","Ml")
         }
-        return(M_mat)                
+        return(M_mat)
 
     }
 

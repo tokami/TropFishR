@@ -130,7 +130,7 @@
 #' #______________________________________
 #' # YPR with bootstrapping
 #' # coming soon!
-#' 
+#'
 #'
 #' @details The Thompson and Bell model incorporates an iteration step simulating the
 #'    stock by means
@@ -218,6 +218,7 @@
 #' }
 #'
 #' @importFrom graphics plot
+#' @importFrom ks kde
 #' @importFrom utils setTxtProgressBar txtProgressBar
 #'
 #' @references
@@ -280,21 +281,23 @@
 #'
 #' @export
 
-predict_mod <- function(param, type, FM_change = NA,
-                        E_change = NA,
-                        FM_relative = FALSE,
-                        Lc_change = NULL,
-                        tc_change = NULL,
-                        s_list = NA,
-                        stock_size_1 = NA, age_unit = 'year', curr.E = NA,
-                        curr.Lc = NA,
-                        plus_group = FALSE, Lmin = NA, Lincr = NA,
-                        LW_unit = "g",
-                        plot = FALSE, mark = TRUE,
-                        hide.progressbar = FALSE,
-                        boot = NULL,
-                        natMort = NULL,
-                        yearSel = NA){
+predict_mod <- function(
+  param, type, FM_change = NA,
+  E_change = NA,
+  FM_relative = FALSE,
+  Lc_change = NULL,
+  tc_change = NULL,
+  s_list = NA,
+  stock_size_1 = NA, age_unit = 'year', curr.E = NA,
+  curr.Lc = NA,
+  plus_group = FALSE, Lmin = NA, Lincr = NA,
+  LW_unit = "g",
+  plot = FALSE, mark = TRUE,
+  hide.progressbar = FALSE,
+  boot = NULL,
+  natMort = NULL,
+  yearSel = NA
+){
 
     ## VPA with bootstrapping ELEFAN results
     if(!is.null(boot) & class(boot) == "lfqBoot"){
@@ -313,7 +316,7 @@ predict_mod <- function(param, type, FM_change = NA,
         ## this makes sure that a is always in kg/cm3 = and therefore meanBodyWeight is always in kg
         if(LW_unit == "g"){
             a <- a / 1000
-        }        
+        }
 
 
         ## add possibility to provide selecitvity information with s_list
@@ -321,12 +324,12 @@ predict_mod <- function(param, type, FM_change = NA,
            !("FMvecVPA" %in% names(boot))){
             stop("YPR requires information about the length at recruitment and length at first capture. Please provide 'Lr' and 'Lc' estimates in param.")
         }
-        
+
 
         ## resample data sets
         lfqAll <- lfqResample(param, boot)
         ##  set.seed(boot$seed[bi])
-        
+
 
         F01 <- vector("numeric",nrow(bootRaw))
         Fmax <- vector("numeric",nrow(bootRaw))
@@ -334,20 +337,20 @@ predict_mod <- function(param, type, FM_change = NA,
         for(bi in 1:nrow(bootRaw)){
 
             lfqTemp <- lfqAll[[bi]]
-            
+
             ## subset data for specific years (optional) due to seed values not possible before resampling
             if(!is.na(yearSel)){
                 yearSel <- as.character(yearSel)
                 ## warning if year not in dates
                 dateYears <- format(lfqTemp$dates, "%Y")
                 if(all(yearSel %in% dateYears == FALSE)) stop(paste0("The selected year ", yearSel, " is not in the LFQ data!"))
-                
+
                 lfqTemp$catch <- lfqTemp$catch[,which(format(lfqTemp$dates,"%Y") %in% yearSel)]
                 lfqTemp$dates <- lfqTemp$dates[format(lfqTemp$dates,"%Y") %in% yearSel]
             }
-            
+
             lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE)
-            
+
 
             Linf <- bootRaw$Linf[bi]
             K <- bootRaw$K[bi]
@@ -355,7 +358,7 @@ predict_mod <- function(param, type, FM_change = NA,
             C <- ifelse("C" %in% names(bootRaw),bootRaw$C[bi],0)
             ts <- ifelse("ts" %in% names(bootRaw),bootRaw$ts[bi],0)
             t0 <- 0
-            
+
             if(!(natMort %in% names(bootRaw))) stop("Please provide a natural mortality estimate 'M' in the boot object.")
             M <- bootRaw[bi,which(colnames(bootRaw) == natMort)] ## vector with Ms not yet implemented for boot YPR
 
@@ -367,7 +370,7 @@ predict_mod <- function(param, type, FM_change = NA,
                bootRaw$FM[bi] == -Inf){
                     FM <- 0.1  ## hack but might be NaN
             }
-            
+
 
             if(!("Z" %in% names(bootRaw)))
                 stop("Please provide a total mortality estimate 'Z' in the boot object.")
@@ -377,9 +380,9 @@ predict_mod <- function(param, type, FM_change = NA,
                bootRaw$Z[bi] == -Inf){
                     Z <- 0.9  ## hack but might be NaN
             }
-            
 
-            catch <- lfqLoop$catch            
+
+            catch <- lfqLoop$catch
 
 
             if(FM_relative) stop(noquote("ypr does not work with relative changes in FM, please provide absolute values."))
@@ -403,7 +406,7 @@ predict_mod <- function(param, type, FM_change = NA,
 
             ## Selectivity - knife edge or with selctivtiy ogive
             tc <- param$tc   # might be NULL
-            Lc <- param$Lc   # might be NULL            
+            Lc <- param$Lc   # might be NULL
             if("L50" %in% names(bootRaw) & !("Lc" %in% names(param))){
                 Lc <- bootRaw$L50[bi]
                 if(is.na(bootRaw$L50[bi]) | is.nan(bootRaw$L50[bi]) |
@@ -435,7 +438,7 @@ predict_mod <- function(param, type, FM_change = NA,
             tc <- c(tc,tc_change)
             Lc <- c(Lc,Lc_change)
 
-            
+
             ## THOMPSON BELL MODEL
             if(type == "ThompBell"){
 
@@ -532,9 +535,9 @@ predict_mod <- function(param, type, FM_change = NA,
                 }
             }
 
-            
-            
-            ## BEVERTON HOLT YPR MODEL            
+
+
+            ## BEVERTON HOLT YPR MODEL
             if(type == "ypr"){
 
                 if(!("Lr" %in% names(param)) | (!("Lc" %in% names(param)) & !("L50" %in% names(bootRaw))))
@@ -545,7 +548,7 @@ predict_mod <- function(param, type, FM_change = NA,
                 }
 
 
-                
+
                 # Recruitment  - knife edge
                 tr <- param$tr   # might be NULL
                 Lr <- param$Lr   # might be NULL
@@ -571,13 +574,13 @@ predict_mod <- function(param, type, FM_change = NA,
                    bootRaw$L75[bi] >= bootRaw$Linf[bi]){
                         s_list$L50 <- 5  ## hack
                         s_list$L75 <- 6
-                    }                
+                    }
                 }else{
                     if(length(s_list) > 1){
                         selecType <- s_list$selecType
                     }else{
                         selecType <- "knife_edge"
-                    }    
+                    }
                 }
 
 
@@ -697,7 +700,7 @@ predict_mod <- function(param, type, FM_change = NA,
                   if(length(B_R) > 0) results.PBH$B_R = B_R
                   if(length(B_R.percent) > 0) results.PBH$B_R.percent = B_R.percent
 
-                  list_Lc_runs[[i]] <- results.PBH                
+                  list_Lc_runs[[i]] <- results.PBH
 
                   # reference points
                   Nmax <- which.max(Y_R.rel)  #  should be the same as which.min(abs(deri)) which is also labelled Nmax
@@ -714,7 +717,7 @@ predict_mod <- function(param, type, FM_change = NA,
                   # df_loop_Es$Fmax <- FM_change[Nmax]
                   df_loop_Es$E01 <- E[N01]
                   df_loop_Es$Emax <- E[Nmax]
-                  if(length(B_R.percent) > 0) df_loop_Es$E05 <- E[N05] 
+                  if(length(B_R.percent) > 0) df_loop_Es$E05 <- E[N05]
                   # df_loop_Es$Emax <- E[Nmax]
 
                   list_Es[[i]] <- df_loop_Es
@@ -772,8 +775,8 @@ predict_mod <- function(param, type, FM_change = NA,
                 }
             }
         }
-        bootRaw <- cbind(bootRaw, data.frame(F01,Fmax,F05)) 
-        tmp <- as.data.frame(bootRaw[,(ncol(boot$bootRaw)+(1:3))])            
+        bootRaw <- cbind(bootRaw, data.frame(F01,Fmax,F05))
+        tmp <- as.data.frame(bootRaw[,(ncol(boot$bootRaw)+(1:3))])
 
 
         ## estimate FF01, FFmax, FF05 if FM in dataframe
@@ -785,7 +788,7 @@ predict_mod <- function(param, type, FM_change = NA,
                                    c("FF01","FFmax","FF05"))
             tmp <- cbind(tmp,as.data.frame(bootRaw[,((ncol(bootRaw)-2):ncol(bootRaw))]))
         }
-        
+
         idx <- apply(tmp, 2, function(x) all(x == 0 | is.na(x) | x == 1))
         tmp <- tmp[,!idx]
         nx <- ncol(tmp)
@@ -838,12 +841,12 @@ predict_mod <- function(param, type, FM_change = NA,
         ## remove F01 which is not estimated in ThomBell model
         if(type=="ThompBell"){
             bootRaw <- bootRaw[,-which(colnames(bootRaw) == "F01")]
-            bootRaw <- bootRaw[,-which(colnames(bootRaw) == "FF01")]            
+            bootRaw <- bootRaw[,-which(colnames(bootRaw) == "FF01")]
         }
 
         ret <- list()
         ret$bootRaw <- bootRaw
-        ret$seed <- boot$seed        
+        ret$seed <- boot$seed
         ret$maxDen <- resMaxDen
         ret$CI <- resCIs
         ret$FMvecVPA <- boot$FMvecVPA
@@ -867,7 +870,7 @@ predict_mod <- function(param, type, FM_change = NA,
               K <- res$par$K
               t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
               C <- ifelse("C" %in% names(res$par), res$par$C, 0)
-              ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
+              ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)
           }else{
               Winf <- ifelse("Winf" %in% names(res), res$Winf, NA)
               Linf <- ifelse("Linf" %in% names(res), res$Linf, NA)
@@ -877,14 +880,14 @@ predict_mod <- function(param, type, FM_change = NA,
               ts <- ifelse("ts" %in% names(res), res$ts, 0)
           }
 
-          
-          M <- res$M          
+
+          M <- res$M
           a <- res$a  # might be NULL
           b <- res$b  # might be NULL
           ## this makes sure that a is always in kg/cm3 = and therefore meanBodyWeight is always in kg
           if(LW_unit == "g"){
               a <- a / 1000
-          }                  
+          }
           if(!is.na(Linf) & is.na(Winf) & "a" %in% names(res) & "b" %in% names(res)){
             Winf <- a * (Linf ^ b)
           }
@@ -1167,7 +1170,7 @@ predict_mod <- function(param, type, FM_change = NA,
               K <- res$par$K
               t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
               C <- ifelse("C" %in% names(res$par), res$par$C, 0)
-              ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
+              ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)
           }else{
               Winf <- ifelse("Winf" %in% names(res), res$Winf, NA)
               Linf <- ifelse("Linf" %in% names(res), res$Linf, NA)
@@ -1520,5 +1523,5 @@ predict_mod <- function(param, type, FM_change = NA,
 
         return(ret)
     }
-    
+
 }

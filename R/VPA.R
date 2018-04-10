@@ -119,6 +119,7 @@
 #'
 #' @importFrom graphics plot
 #' @importFrom stats optimise
+#' @importFrom ks kde
 #'
 #' @references
 #' Jones, R., 1984. Assessing the effects of changes in exploitation pattern using length
@@ -174,11 +175,11 @@ VPA <- function(param,
         ## resample data sets
         lfqAll <- lfqResample(param, boot)
         ##  set.seed(boot$seed[bi])
-        
+
 
         N <- vector("numeric",nrow(bootRaw))
         B <- vector("numeric",nrow(bootRaw))
-        FMsVPA <- vector("list",nrow(bootRaw))        
+        FMsVPA <- vector("list",nrow(bootRaw))
         for(bi in 1:nrow(bootRaw)){
 
             lfqTemp <- lfqAll[[bi]]
@@ -189,12 +190,12 @@ VPA <- function(param,
                 ## warning if year not in dates
                 dateYears <- format(lfqTemp$dates, "%Y")
                 if(all(yearSel %in% dateYears == FALSE)) stop(paste0("The selected year ", yearSel, " is not in the LFQ data!"))
-                
+
                 lfqTemp$catch <- lfqTemp$catch[,which(format(lfqTemp$dates,"%Y") %in% yearSel)]
                 lfqTemp$dates <- lfqTemp$dates[format(lfqTemp$dates,"%Y") %in% yearSel]
             }
 
-            
+
             ## correct catch with raising factor
             if(!is.na(catch_corFac)){
                 if(length(catch_corFac) == 1){
@@ -212,7 +213,7 @@ VPA <- function(param,
 
 
             ## for automatic plus group creation
-            classes <- as.character(lfqLoop$midLengths)            
+            classes <- as.character(lfqLoop$midLengths)
             # create column without plus group (sign) if present
             classes.num <- do.call(rbind, strsplit(classes, split="\\+"))
             classes.num <- as.numeric(classes.num[,1])
@@ -222,8 +223,8 @@ VPA <- function(param,
 
             # lower and upper length vectors
             lowerLength <- classes.num - (interval / 2)
-            upperLength <- classes.num + (interval / 2)            
-            
+            upperLength <- classes.num + (interval / 2)
+
             if(bootRaw$Linf[bi] < max(upperLength)){
                 lfqLoop <- lfqModify(lfqLoop,
                                   plus_group =
@@ -232,7 +233,7 @@ VPA <- function(param,
                 plus_group <- TRUE
             }else{
                 plus_group <- FALSE
-            }            
+            }
 
             Linf <- bootRaw$Linf[bi]
             K <- bootRaw$K[bi]
@@ -240,19 +241,19 @@ VPA <- function(param,
             C <- bootRaw$C[bi]
             ts <- bootRaw$ts[bi]
             t0 <- 0
-            
+
             if(!(natMort %in% names(bootRaw))) stop("Please provide a natural mortality estimate 'M' in the boot object.")
             M_vec <- rep(bootRaw[bi,which(colnames(bootRaw) == natMort)], length(lfqLoop$midLengths))  ## vector with Ms not yet implemented for boot VPA
 
             if(!("FM" %in% names(bootRaw))) stop("Please provide a fishing mortality estimate 'FM' in the boot object.")
             terminalF <- bootRaw$FM[bi]
-            terminalE <- terminalF / (terminalF + M_vec[length(M_vec)])            
+            terminalE <- terminalF / (terminalF + M_vec[length(M_vec)])
             terminalZ <- terminalF + M_vec[length(M_vec)]
 
-            catch_cor<- lfqLoop$catch            
+            catch_cor<- lfqLoop$catch
 
 
-            classes <- as.character(lfqLoop$midLengths)            
+            classes <- as.character(lfqLoop$midLengths)
             # create column without plus group (sign) if present
             classes.num <- do.call(rbind, strsplit(classes, split="\\+"))
             classes.num <- as.numeric(classes.num[,1])
@@ -262,7 +263,7 @@ VPA <- function(param,
 
             # lower and upper length vectors
             lowerLength <- classes.num - (interval / 2)
-            upperLength <- classes.num + (interval / 2)                        
+            upperLength <- classes.num + (interval / 2)
             if(plus_group) upperLength[length(upperLength)] <- Linf
 
             #Mean body weight
@@ -404,7 +405,7 @@ VPA <- function(param,
 
             #Calculate natural losses
             natLoss <- survivors - survivors_rea - catch_numbers
-            
+
             N[bi] <- sum(annualMeanNr)
             B[bi] <- sum(meanBiomassTon)
             FMsVPA[[bi]] <- FM_calc
@@ -415,8 +416,8 @@ VPA <- function(param,
         colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)],"B")
 
         tmp <- as.data.frame(bootRaw[,(ncol(boot$bootRaw)+(1:2))])
-        nx <- 2        
-        
+        nx <- 2
+
         ## max density and CIS
         resMaxDen <- vector("numeric", ncol(tmp))
         ciList <- vector("list", ncol(tmp))
@@ -433,11 +434,11 @@ VPA <- function(param,
             limCI <- try(range(x$eval.points[start.idx[min(which(inCI$values),na.rm=TRUE)]:
                                          end.idx[max(which(inCI$values),na.rm=TRUE)]]))
             if(class(limCI) != "try-error"){  ## haven't quite figured out why limCI can give NA, but either all of x$eval.points or all of start.idx or end.idx are NA...
-            limCI[limCI < 0] <- 0                
+            limCI[limCI < 0] <- 0
             ciList[[i]] <- limCI
             }else{
                 ciList[[i]] <- c(NA,NA)
-            }            
+            }
         }
         resCIs <- cbind(boot$CI,t(do.call(rbind,ciList)))
         colnames(resCIs) <- colnames(bootRaw)
@@ -445,10 +446,10 @@ VPA <- function(param,
         resMaxDen <- cbind(boot$maxDen, t(as.data.frame(resMaxDen)))
         colnames(resMaxDen) <- colnames(bootRaw)
         rownames(resMaxDen) <- "maxDen"
-        
+
         ret <- list()
         ret$bootRaw <- bootRaw
-        ret$seed <- boot$seed        
+        ret$seed <- boot$seed
         ret$maxDen <- resMaxDen
         ret$CI <- resCIs
         ret$FMvecVPA <- FMsVPA
@@ -495,7 +496,7 @@ VPA <- function(param,
             if(LW_unit == "g"){
                 a <- a / 1000
             }
-            
+
           if(!("M" %in% names(res))) stop("Please provide a natural mortality estimate 'M' in res.")
           M <- res$M
           if(length(M) == length(classes)){
@@ -711,7 +712,7 @@ VPA <- function(param,
               K <- res$par$K
               t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
               C <- ifelse("C" %in% names(res$par), res$par$C, 0)
-              ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
+              ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)
           }else{
               Linf <- res$Linf
               K <- res$K

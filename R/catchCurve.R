@@ -39,7 +39,7 @@
 #' @param robustReg logical; indicating whether the robust automatic fitting of the regression line should be used
 #'    for application to 'lfqBoot' object
 #' @param plot logical; should a plot be displayed? Default = TRUE
-#' 
+#'
 #'
 #' @keywords function mortality Z catchCurve
 #'
@@ -138,6 +138,7 @@
 #' @importFrom graphics identify par plot
 #' @importFrom stats lm na.omit
 #' @importFrom utils flush.console
+#' @importFrom ks kde
 #'
 #' @references
 #' Baranov, F.I., 1926. On the question of the dynamics of the fishing industry.
@@ -223,8 +224,8 @@ catchCurve <- function(param,
         t50s <- vector("numeric", nrow(bootRaw))
         t75s <- vector("numeric", nrow(bootRaw))
         L50s <- vector("numeric", nrow(bootRaw))
-        L75s <- vector("numeric", nrow(bootRaw))        
-        
+        L75s <- vector("numeric", nrow(bootRaw))
+
         for(bi in 1:nrow(bootRaw)){
 
             lfqTemp <- lfqAll[[bi]]
@@ -235,7 +236,7 @@ catchCurve <- function(param,
                 ## warning if year not in dates
                 dateYears <- format(lfqTemp$dates, "%Y")
                 if(all(yearSel %in% dateYears == FALSE)) stop(paste0("The selected year ", yearSel, " is not in the LFQ data!"))
-                
+
                 lfqTemp$catch <- lfqTemp$catch[,which(format(lfqTemp$dates,"%Y") %in% yearSel)]
                 lfqTemp$dates <- lfqTemp$dates[format(lfqTemp$dates,"%Y") %in% yearSel]
             }
@@ -254,11 +255,11 @@ catchCurve <- function(param,
 
             classes <- as.character(lfqLoop$midLengths)
             classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
-            classes.num <- as.numeric(classes.num[,1])            
+            classes.num <- as.numeric(classes.num[,1])
 
             ##calculate size class interval
             midLengths <- classes.num
-            interval <- midLengths[2] - midLengths[1]            
+            interval <- midLengths[2] - midLengths[1]
 
             ## L and t of lower length classes
             lowerLengths <- midLengths - (interval / 2)
@@ -324,13 +325,13 @@ catchCurve <- function(param,
                     xvar[which.max(xvar)] <- NA
                 }
                 }
-                
+
                 ## 2: fitting regression line through last 3 points and compare slopes
                 ##      -> if very different selectivity might be responsible
                 ##      -> then remove last point
                 yvar2 <- as.numeric(yvar)
                 xvar2 <- xvar[which(yvar2 > 0.2)]
-                
+
                 indX <- (which.max(xvar2)-2):which.max(xvar2)
                 yvarX <- yvar2[indX]
                 xvarX <- xvar2[indX]
@@ -343,7 +344,7 @@ catchCurve <- function(param,
 
                 if(!is.na(sxx) & sx/sxx < 0.8){
                     yvar[which.max(xvar)] <- NA
-                    xvar[which.max(xvar)] <- NA                    
+                    xvar[which.max(xvar)] <- NA
                 }
 
                 if(FALSE){
@@ -361,11 +362,11 @@ catchCurve <- function(param,
                 yvar <- temp[,2]
             }
 
-            
+
             ## cut
-            yvar2 <- as.numeric(yvar)            
+            yvar2 <- as.numeric(yvar)
             maxY <- which(yvar2 == max(as.numeric(yvar2),na.rm=TRUE))
-            
+
             index1 <- which(xvar > xvar[maxY])
             index2 <- which(yvar2 > 0.5)
 
@@ -376,7 +377,7 @@ catchCurve <- function(param,
             }else{
                 indexX <- indexX-1
             }
-            
+
             xvar2 <- xvar[indexX]
             cutter <- c(maxY+1, which(xvar == max(xvar2,na.rm=TRUE)))
 
@@ -454,7 +455,7 @@ catchCurve <- function(param,
                       t50s[bi] <- T1/T2
                       t75s[bi] <- (T1 + log(3))/T2
     ##                  t95 <-  (T1 - log((1 / 0.95) - 1)) / T2
-                      t0 <- 0                  
+                      t0 <- 0
                       L50s[bi] <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t50s[bi]-t0)))
                       L75s[bi] <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t75s[bi]-t0)))
     ##                  L95 <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t95-t0)))
@@ -463,12 +464,12 @@ catchCurve <- function(param,
             }
         }
         bootRaw[,(ncol(bootRaw)+1)] <- Zs
-        colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)],"Z")        
-        
+        colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)],"Z")
+
         ## estimate FM if M in data frame
         if(!is.null(natMort) & natMort %in% colnames(bootRaw)){
             bootRaw[,(ncol(bootRaw)+1)] <- bootRaw$Z - bootRaw[,(colnames(bootRaw) == natMort)]
-            colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)],"FM")            
+            colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)],"FM")
             tmp <- as.data.frame(bootRaw[,(ncol(boot$bootRaw)+(1:2))])
             nx <- 2
         }else{
@@ -478,7 +479,7 @@ catchCurve <- function(param,
         ## estimate L50 and L75 if calc_ogive
         if(calc_ogive){
             bootRaw[,(ncol(bootRaw)+1)] <- L50s
-            bootRaw[,(ncol(bootRaw)+1)] <- L75s            
+            bootRaw[,(ncol(bootRaw)+1)] <- L75s
             colnames(bootRaw) <- c(colnames(bootRaw)[-(((ncol(bootRaw)-1):ncol(bootRaw)))],"L50","L75")
             tmp <- cbind(tmp,as.data.frame(bootRaw[,((ncol(bootRaw)-1):ncol(bootRaw))]))
             nx <- nx + 2
@@ -499,7 +500,7 @@ catchCurve <- function(param,
                 start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
                 end.idx <- cumsum(inCI$lengths)
                 limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
-                ciList[[i]] <- limCI                
+                ciList[[i]] <- limCI
             }else{
                 if((length(unique(as.character(tmp[,i]))) == 1 && all(!is.na(tmp[,i]))) |
                    (length(unique(as.character(na.omit(tmp[,i])))) == 1)){
@@ -526,11 +527,11 @@ catchCurve <- function(param,
             bootRaw$FM <- resMaxDen$FM
         }
         }
-        
+
 
         ret <- list()
         ret$bootRaw <- bootRaw
-        ret$seed <- boot$seed        
+        ret$seed <- boot$seed
         ret$maxDen <- resMaxDen
         ret$CI <- resCIs
 
@@ -611,7 +612,7 @@ catchCurve <- function(param,
                   K <- res$par$K
                   t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
                   C <- ifelse("C" %in% names(res$par), res$par$C, 0)
-                  ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
+                  ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)
               }else{
                   Linf <- res$Linf
                   K <- res$K
@@ -619,7 +620,7 @@ catchCurve <- function(param,
                   C <- ifelse("C" %in% names(res), res$C, 0)
                   ts <- ifelse("ts" %in% names(res), res$ts, 0)
               }
-            
+
 
           if((is.null(Linf) | is.null(K))) stop(noquote(
             "You need to assign values to Linf and K for the catch curve based on length-frequency data!"))
@@ -738,7 +739,7 @@ catchCurve <- function(param,
         xvar <- temp[,1]
         yvar <- temp[,2]
 
-        
+
         #for plot
         #minY <- ifelse(min(yvar,na.rm=TRUE) < 0, min(yvar,na.rm=TRUE),0)
         minY <- min(yvar,na.rm=TRUE)
@@ -856,7 +857,7 @@ catchCurve <- function(param,
                                linear_mod = lm1List,
                                Z =  Z_lm1List,
                                se = SE_Z_lm1List,
-                               confidenceInt = conf_Z_lm1List))        
+                               confidenceInt = conf_Z_lm1List))
           }else{
               ret <- c(res,list(
                                xvar = xvar,
