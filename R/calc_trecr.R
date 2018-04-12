@@ -13,7 +13,7 @@
 #' population or fishery
 #' @param Lt known length at time \code{t}
 #' @param t time (class is numeric or date)
-#' @param tincr resolution to use for hindcasting time at recruitment (default: 0.05)
+#' @param tincr resolution to use for hindcasting time at recruitment (default: 0.01)
 #'
 #' @return a numeric value (typically decimal year)
 #' @export
@@ -37,36 +37,40 @@ calc_trecr <- function(
   t = NULL,
   tincr = 0.01
 ){
-  if(Lrecr > par$Linf){stop("Error: 'Lrecr' must be lower than 'par$Linf'")}
-  if(Lt > par$Linf){stop("Error: 'Lt' must be lower than 'par$Linf'")}
-
-  Lt.i <- rep(NaN, 500/tincr)
-  Lt.i[1] <- Lt
-  if(class(t)=="Date"){
-    t.i <- seq(date2yeardec(t), by = -tincr, length.out = length(Lt.i))
+  # if(Lrecr > par$Linf){stop("Error: 'Lrecr' must be lower than 'par$Linf'")}
+  # if(Lt > par$Linf){stop("Error: 'Lt' must be lower than 'par$Linf'")}
+  if(Lrecr > par$Linf | Lt > par$Linf | Lt < Lrecr){
+    trecr <- NA
   }else{
-    if(class(t)=="numeric"){
-      t.i <- seq(t, by = -tincr, length.out = length(Lt.i))
+    Lt.i <- rep(NaN, 500/tincr)
+    Lt.i[1] <- Lt
+    if(class(t)=="Date"){
+      t.i <- seq(date2yeardec(t), by = -tincr, length.out = length(Lt.i))
     }else{
-      stop("Error: t must be of class 'Date' or 'numeric'" )
+      if(class(t)=="numeric"){
+        t.i <- seq(t, by = -tincr, length.out = length(Lt.i))
+      }else{
+        stop("Error: t must be of class 'Date' or 'numeric'" )
+      }
     }
-  }
-  seasonalized <- !is.null(par$C)
-  if(!seasonalized){par$ts <- 0; par$C <- 0}
+    seasonalized <- !is.null(par$C)
+    if(!seasonalized){par$ts <- 0; par$C <- 0}
 
-  i <- 2
-  while(i <= length(t.i) & Lt.i[i-1] > Lrecr){
-    t2 <- t.i[i-1]
-    t1 <- t.i[i]
-    slope <- {1 - exp(-(
-      par$K*(t2-t1)
-      - (((par$C*par$K)/(2*pi))*sin(2*pi*(t1-par$ts)))
-      + (((par$C*par$K)/(2*pi))*sin(2*pi*(t2-par$ts)))
-    ))}
-    Lt.i[i] <- (par$Linf*slope - Lt.i[i-1]) / (slope - 1)
-    i <- i + 1
+    i <- 2
+    while(i <= length(t.i) & Lt.i[i-1] > Lrecr){
+      t2 <- t.i[i-1]
+      t1 <- t.i[i]
+      slope <- {1 - exp(-(
+        par$K*(t2-t1)
+        - (((par$C*par$K)/(2*pi))*sin(2*pi*(t1-par$ts)))
+        + (((par$C*par$K)/(2*pi))*sin(2*pi*(t2-par$ts)))
+      ))}
+      Lt.i[i] <- (par$Linf*slope - Lt.i[i-1]) / (slope - 1)
+      i <- i + 1
+    }
+    trecr <- t.i[max(which(Lt.i > Lrecr))]
   }
-  trecr <- t.i[max(which(Lt.i > Lrecr))]
+  # return result
   return(trecr)
 }
 

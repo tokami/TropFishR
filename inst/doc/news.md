@@ -5,7 +5,7 @@
 ##### New features
       - New functions with bootstrapping (ELEFAN_boot_GA, ELEFAN_boot_SA)
       - Existing funtions with bootstrapping option (M_empirical, catchCurve, VPA, ypr)
-      - New formulation of recruitment pattern hindcasting of an lfq object (recruitment2). Hindcasting is done for each bin using an iterative calls to a discrete version of the VBGF, and returns a yearly pattern weighted by associated bin counts.
+      - New formulation of recruitment pattern hindcasting of an lfq object (recruitment). Hindcasting is done for each bin using an iterative calls to a discrete version of the VBGF, and returns a yearly pattern weighted by associated bin counts.
 
 
 ##### User-visible changes
@@ -14,6 +14,7 @@
       function according to underlying ypr model)
       - Setting display of raw catches to default for LFQ plot
       - change of labelling of reference point "Fmsy" in prediction models to "Fmax" (is more correct)
+      - plot.recruitment function has been removed, since recruitment results are now of class histogram, which can be directly plotted.
 
 		
 ##### Documentation
