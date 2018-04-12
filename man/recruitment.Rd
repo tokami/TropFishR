@@ -2,106 +2,131 @@
 % Please edit documentation in R/recruitment.R
 \name{recruitment}
 \alias{recruitment}
-\title{Recruitment patterns}
+\title{Calculate recruitment pattern of lfq object}
 \usage{
-recruitment(param, tsample, catch_column = NA, plot = FALSE)
+recruitment(lfq, Lrecr = 0, tincr = 0.01, use.rcounts = FALSE,
+  plot = TRUE, hide.progressbar = FALSE)
 }
 \arguments{
-\item{param}{a list consisting of following parameters:
-\itemize{
-  \item \code{midLengths}: midpoints of the length classes (length-frequency
-  data),
-  \item \code{Linf}: infinite length for investigated species in cm [cm],
-  \item \code{K}: growth coefficent for investigated species per year [1/year],
-  \item \code{t0}: theoretical time zero, when growth curve crosses length equalling zero,
-  \item \code{D}: optional; for generalised vBGF
-  \item \code{C}: optional; intensity of the (sinusoid) growth oscillations of
-  the model,
-  \item \code{ts}: optional; onset of the positive phase of the growth oscillation (fraction of year; i.e. Jan 1 = 0, July 1 = 0.5, etc.),
-  \item \code{catch}: catches, vector or matrix with catches of subsequent sampling
-  times
-}}
+\item{lfq}{a length-frequency object (i.e. class \code{lfq}) that contains
+a \code{lfq$par} slot with \code{\link{VBGF}} parameters (usually fit
+via \code{\link{ELEFAN}}, \code{\link{ELEFAN_GA}}, or \code{\link{ELEFAN_SA}}
+functions).}
 
-\item{tsample}{sampling time corresponding to time when catch was sampled as
-fraction of year
-(e.g. 0.25 for 1st of April). If catch was sampled several times (catch as matrix)
-vector has to be provided with sampling times in equal order.}
+\item{Lrecr}{numeric. Length at recruitment
+(default: \code{Lrecr = 0}).}
 
-\item{catch_column}{numeric; if catch in param is a matrix, this number indicates
-the column of the catch matrix which should be used for the analysis.}
+\item{tincr}{resolution to use for hindcasting time at recruitment
+(default: \code{tincr = 0.01})}
 
-\item{plot}{logical; indicating whether a plot should be printed}
+\item{use.rcounts}{logical. Should restructured counts
+(\code{lfq$rcounts}),
+rather than raw catch counts (\code{lfq$catch}) be used to derive
+recruitment pattern. If true, only bins with positive reconstructed counts
+are considered, and those values are multiplied by 100 in order to provide
+and appropriate scaling for density approxmations via
+\code{\link[graphics]{hist}}.}
+
+\item{plot}{logical. Should monthly recruitment pattern [\%] by plotted
+(default: \code{plot = TRUE}).}
+
+\item{hide.progressbar}{logical. Should progress bar be displayed
+(default: \code{hide.progressbar = FALSE})}
 }
 \value{
-A list with the input parameters and following list objects:
-\itemize{
-  \item \strong{ti}: actual age,
-  \item \strong{tS_frac}: age at which the length was zero expressed as fraction
-  of the year,
-  \item \strong{cor_months}: corresponding months,
-  \item \strong{months}: numeric months (relative if no t0 is not given),
-  \item \strong{months_abb}: months (only presented if t0 is given),
-  \item \strong{all_recruits}: number of recruits per month as matrix if several
-  length-frequency data sets are provided,
-  \item \strong{mean_recruits}: (mean) number of recruits per month,
-  \item \strong{per_recruits}: precentage number of recruits per month.
-}
+object of "histogram" class containing
+monthly recruitment pattern
 }
 \description{
-This function estimates recrutiment patterns from length-frequency data.
+\code{recruitment2} calculates the recruitment pattern (i.e. monthly)
+of an lfq object given corresponding \code{\link{VBGF}} parameters
+and a defined length at recruitment (\code{Lrecr}, defaults to
+\code{Lrecr = 0})
+Time at recruitment \code{trecr} is calculated via a hindcast
+using the \code{\link{calc_trecr}} function.
 }
 \details{
-This function calculates recruitment patterns of a
-stock by backward projection onto the length axis of a set of length frequency data
-using the (special, generalised or seasonalised)
-von Bertallanfy growth curve (vBGF, Pauly 1982). The method assumes that (i) all fish in a
-data set grow as described by a single set of growth parameters and (ii) one month out
-of twelve always has zero recruitment. The second assumption is probably not met, since
-temperate species may contain more than one month with zero recruitment, while tropical species
-may have more constant recruitment without months of no recruitment.
-If t0 is not provided, a relative recruitment pattern will be estimated without
-specific month values returned in the results. However, an estimate of t0
-can be obtained by the time
-lag between peak spawning and recruitment. Several length-frequency data sets
-can be used to estimate the recrutiment pattern by providing catch as a matrix and
-setting catch_column to NA (default). Then the fraction per time is calculated for
-each size class in each sample and then pooled together. For the generalised vBGF, D is
-required, for the seasonalised vBGF C, ts and D.
+This function does not represent a robust statistical method as it
+assumes the same growth parameters for all individual counts
+in the lfq count bins.
+Nevertheless, the results should provide general information about
+the recruitment pattern, e.g. relative recruitment strength by month.
+Using the argument \code{use.rcounts = TRUE}, the analysis is
+perfomed on restructured frequencies (positive values only).
+
+From Gayanilo et al (2005):
+"The results generated by this routine should be treated
+as approximations because, while allowing statements on
+the number of annual pulses and on their relative strength,
+this model is based on two assumptions that are rarely met
+in reality: (i) all fish in the sample grow as described
+by a single set of growth parameters...
+When using restructured data, the temporal spread reduces
+and thus probably better reflects the actual seasonality
+of recruitment."
+
+Contrary to the method used in FiSAT, which produces either
+a single or mixture of Gaussian distributions, the output
+of this function is simply count data and corresponding densities
+by month. Therefore it is possible to have densities for each
+month, which is not the case in FiSAT.
 }
 \examples{
-# one sample
-dat <- list(midLengths = seq(2,98,4),
-               catch = c(0.6,17.6,93,83.2,12.6,0.3,0,0,0,1,17.1,51.4,
-               26.1,2.2,0.2,4.5,21.6,17.6,3.7,8.7,10.6,6.3,5.6,2.9,0.8),
-               Linf = 100,
-               K = 0.5,
-               t0 = 0)
-recruitment(param = dat, tsample = 0.25)
+
+# using catch frequencies
+lfq <- synLFQ4
+lfq$par <- list(
+  Linf = 80, K = 0.5, t_anchor = 0.25, C = 0.75, ts = 0.5
+)
+tmp <- recruitment2(lfq = lfq)
 
 
-# several samples
-data(synLFQ4)
-
-# add growth parameters
-synLFQ4$Linf <- 80
-synLFQ4$K <- 0.5
-synLFQ4$t0 <- 0.25
-
-# retrieve sampling times from catch matrix
-s_dates <- as.POSIXlt(synLFQ4$dates, format="\%d.\%m.\%Y")
-
-recruitment(param = synLFQ4, tsample = s_dates$yday/365, plot = TRUE)
+# using restructured frequencies
+lfq <- lfqRestructure(synLFQ4, MA = 11)
+lfq$par <- list(
+  Linf = 80, K = 0.5, t_anchor = 0.25, C = 0.75, ts = 0.5
+)
+tmp <- recruitment2(lfq = lfq, use.rcounts = TRUE)
 
 
-plot(synLFQ4, Fname = "catch",
-   par = list(Linf = 80, K = 0.5, t_anchor = 0.25, C = 0.75, ts = 0),
-   ylim = c(0,80))
+# use of results in external plotting (via histogram())
+plot(tmp, col = 5, freq = FALSE,
+  main = "Recruitment pattern for synLFQ4",
+  xlab = "Month"
+)
+
+
+# presentation as percentages
+barplot(tmp$counts/sum(tmp$counts)*100, names.arg = month.abb,
+  las = 2, ylab = "Recruitment [\%]", main = "tmp")
+
+
+# use of other Lrecr
+lfq <- alba
+lfq$par <- list(
+  Linf = 9,5, K = 2.3, t_anchor = 0.28
+)
+lfq <- lfqRestructure(lfq, MA = 7)
+plot(lfq)
+tmp0 <- recruitment2(lfq = lfq, Lrecr = 0, plot = FALSE)
+tmp2 <- recruitment2(lfq = lfq, Lrecr = 2, plot = FALSE)
+op <- par(mfcol = c(2,1), mgp = c(2,0.5,0), mar = c(4,4,2,1))
+plot(tmp0, col=8, freq=FALSE, main="Lrecr = 0", xlab="Month")
+plot(tmp2, col=8, freq=FALSE, main="Lrecr = 2", xlab="Month")
+par(op)
+
+
 
 }
 \references{
 Brey, T., Soriano, M., Pauly, D., 1988. Electronic length frequency analysis. A
 revised and expanded user's guide to ELEFAN 0, 1 and 2. (Second edition).
 Berichte aus dem Institut f??r Meereskunde Kiel, No 177, 31p.
+
+Gayanilo, F. C., Sparre, P., & Pauly, D., 2005.
+FAO-ICLARM stock assessment tools II: user's guide.
+Rome: Worldfish Center,
+Food and Agriculture Organization of the United Nations.
 
 Moreau, J., & Cuende, F. X., 1991. On improving the resolution of the recruitment
 patterns of fishes. \emph{Fishbyte}, 9(1), 45-46.
