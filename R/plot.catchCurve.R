@@ -211,7 +211,7 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
           }
 
           pusr <- par("usr")
-          text(x = pusr[2]*0.85, y = pusr[4]-(pusr[4]/(5*I)), labels = paste("Z =",round(Z_lm1,2),"+/-",
+          text(x = pusr[2]*0.83, y = pusr[4]-(pusr[4]/(5*I)), labels = paste("Z =",round(Z_lm1,2),"\u00B1",
                                                                 round(SE_Z_lm1,2)), col = col[I])
 
 
@@ -306,7 +306,7 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
           lines(xplot[reg_int[1]:reg_int[2]],fitted(lm1), col=col[I], lwd=1.7)
 
           pusr <- par("usr")
-          text(x = pusr[2]*0.85, y = pusr[4]-(pusr[4]/(12*(1/I))), labels = paste("Z =",round(Z_lm1,2),"+/-",
+          text(x = pusr[2]*0.83, y = pusr[4]-(pusr[4]/(12*(1/I))), labels = paste("Z =",round(Z_lm1,2),"\u00B1",
                                                                 round(SE_Z_lm1,2)), col = col[I])
           ## mtext(side = 3,line=(reg_num-I+0.3), text = paste("Z =",round(Z_lm1,2),"+/-",
           ##                                                  round(SE_Z_lm1,2)), col = col[I])
