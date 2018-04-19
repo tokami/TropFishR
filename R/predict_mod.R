@@ -1263,6 +1263,7 @@ predict_mod <- function(
               pred_res_list[[x7]] <- resL$totals
             }
 
+
             pred_res_df <- do.call(rbind, pred_res_list)
             pred_res_df$FM_change <- FM_change
             pred_res_df$E_change <- E_change
@@ -1270,31 +1271,51 @@ predict_mod <- function(
             res2 <- pred_res_df
             res3 <- c(res,res2)
 
-            # reference points
-            Bper <- rep(NA,length(pred_res_df$meanB))
-            Bper[1] <- 100
-            for(ix in 2:length(Bper)){
-              Bper[ix] <- pred_res_df$meanB[ix]/pred_res_df$meanB[1] * 100
-            }
-            N05 <- which.min(abs(Bper - 50))
-            Nmax <- which.max(pred_res_df$totY)
+              
+              ## reference points
+              ## F01 (proxy for Fmsy in ICES)
+              slopeOrg <- (pred_res_df$totY[2] - pred_res_df$totY[1]) / (FM_change[2] - FM_change[1])
+              slope01 <- round(0.1*slopeOrg, 2)
+              slopes <- rep(NA, length(FM_change))
+              slopes[1] <- slopeOrg
+              
+              for(i in 3:length(FM_change)){
+                  slopes[i-1] <- round((pred_res_df$totY[i] - pred_res_df$totY[i-1]) /
+                      (FM_change[i] - FM_change[i-1]),2)
+              }
+              dif <- abs(slopes - slope01)
+              dif[is.na(dif)] <- 1e+11
+              N01 <- which.min(dif)
+              ## F05
+              Bper <- rep(NA,length(pred_res_df$meanB))
+              Bper[1] <- 100
+              for(ix in 2:length(Bper)){
+                Bper[ix] <- pred_res_df$meanB[ix]/pred_res_df$meanB[1] * 100
+              }
+              N05 <- which.min(abs(Bper - 50))
+              ## Fmax
+              Nmax <- which.max(pred_res_df$totY)
 
-            if(!is.null(Lc[1]) & !is.null(tc[1])){
-              df_Es <- data.frame(Lc = Lc,
-                                  tc = tc,
-                                  Fmax = FM_change[Nmax],
-                                  F05 = FM_change[N05],
-                                  Emax = E_change[Nmax],
-                                  E05 = E_change[N05])
-            }else{
-              df_Es <- data.frame(Fmax = FM_change[Nmax],
-                                  F05 = FM_change[N05],
-                                  Emax = E_change[Nmax],
-                                  E05 = E_change[N05])
-            }
+              if(!is.null(Lc[1]) & !is.null(tc[1])){
+                df_Es <- data.frame(Lc = Lc,
+                                    tc = tc,
+                                    F01 = FM_change[N01],                                    
+                                    Fmax = FM_change[Nmax],
+                                    F05 = FM_change[N05],
+                                    E01 = E_change[N01],                                    
+                                    Emax = E_change[Nmax],
+                                    E05 = E_change[N05])
+              }else{
+                  df_Es <- data.frame(F01 = FM_change[N01],
+                      Fmax = FM_change[Nmax],
+                      F05 = FM_change[N05],
+                                    E01 = E_change[N01],                      
+                                    Emax = E_change[Nmax],
+                                    E05 = E_change[N05])
+              }
 
 
-            ret <- c(res3, list(df_Es = df_Es))
+              ret <- c(res3, list(df_Es = df_Es))
 
 
             if(!is.na(curr.E)){
@@ -1438,31 +1459,54 @@ predict_mod <- function(
             mat_FM_Lc_com.B <- t(mat_FM_Lc_com.B)
             mat_FM_Lc_com.V <- t(mat_FM_Lc_com.V)
 
-            # reference points
-            mat_FM_Lc_com.Bper <- matrix(NA,ncol=dim(mat_FM_Lc_com.B)[2],
-                                                 nrow=dim(mat_FM_Lc_com.B)[1])
-            mat_FM_Lc_com.Bper[1,] <- 100
-            for(ix in 2:dim(mat_FM_Lc_com.B)[1]){
-              mat_FM_Lc_com.Bper[ix,] <- mat_FM_Lc_com.B[ix,]/mat_FM_Lc_com.B[1,] *100
-            }
-            N05 <- apply(mat_FM_Lc_com.Bper, MARGIN = 2,
-                         FUN = function(x) which.min(abs(x - 50)))
 
-            Nmax <- apply(mat_FM_Lc_com.Y, MARGIN = 2, FUN = which.max)
+              ## reference points
+              ## F01 (proxy for Fmsy in ICES)
+              slopes <- matrix(NA,ncol=dim(mat_FM_Lc_com.Y)[2],
+                               nrow=dim(mat_FM_Lc_com.Y)[1])
+              slopeOrg <- (mat_FM_Lc_com.Y[2,] - mat_FM_Lc_com.Y[1,]) /
+                  (rep(FM_change[2],dim(mat_FM_Lc_com.Y)[2]) -
+                   rep(FM_change[1],dim(mat_FM_Lc_com.Y)[2]))
+              slope01 <- round(0.1*slopeOrg, 2)
+              slopes[1,] <- slopeOrg
+              for(i in 3:length(FM_change)){
+                  slopes[i-1,] <- round((mat_FM_Lc_com.Y[i,] - mat_FM_Lc_com.Y[i-1,]) /
+                                        (rep(FM_change[i],dim(mat_FM_Lc_com.Y)[2]) -
+                                         rep(FM_change[i-1],dim(mat_FM_Lc_com.Y)[2])),2)
+              }
+              dif <- t(apply(slopes,1,function(x) abs(x - slope01)))
+              dif[is.na(dif)] <- 1e+11
+              N01 <- apply(dif, MARGIN = 2, FUN = which.min)
+              ## F05
+              mat_FM_Lc_com.Bper <- matrix(NA,ncol=dim(mat_FM_Lc_com.B)[2],
+                                                   nrow=dim(mat_FM_Lc_com.B)[1])
+              mat_FM_Lc_com.Bper[1,] <- 100
+              for(ix in 2:dim(mat_FM_Lc_com.B)[1]){
+                mat_FM_Lc_com.Bper[ix,] <- mat_FM_Lc_com.B[ix,]/mat_FM_Lc_com.B[1,] *100
+              }
+              N05 <- apply(mat_FM_Lc_com.Bper, MARGIN = 2,
+                           FUN = function(x) which.min(abs(x - 50)))
+              ## Fmax
+              Nmax <- apply(mat_FM_Lc_com.Y, MARGIN = 2, FUN = which.max)
 
-            if((!is.null(Lc[1]) & !is.null(tc[1])) | (!is.na(Lc[1]) & !is.na(tc[1])) ){
-              df_Es <- data.frame(Lc = Lc,
-                                  tc = tc,
-                                  Fmax = FM_change[Nmax],
-                                  F05 = FM_change[N05],
-                                  Emax = E_change[Nmax],
-                                  E05 = E_change[N05])
-            }else{
-              df_Es <- data.frame(Fmax = FM_change[Nmax],
-                                  F05 = FM_change[N05],
-                                  Emax = E_change[Nmax],
-                                  E05 = E_change[N05])
-            }
+              if((!is.null(Lc[1]) & !is.null(tc[1])) | (!is.na(Lc[1]) & !is.na(tc[1])) ){
+                df_Es <- data.frame(Lc = Lc,
+                                    tc = tc,
+                                    F01 = FM_change[N01],
+                                    Fmax = FM_change[Nmax],
+                                    F05 = FM_change[N05],
+                                    E01 = E_change[N01],                                    
+                                    Emax = E_change[Nmax],
+                                    E05 = E_change[N05])
+              }else{
+                  df_Es <- data.frame(
+                      F01 = FM_change[N01],                      
+                      Fmax = FM_change[Nmax],
+                      F05 = FM_change[N05],
+                      E01 = E_change[N01],
+                      Emax = E_change[Nmax],
+                      E05 = E_change[N05])
+              }
 
 
             ret <- c(res,
