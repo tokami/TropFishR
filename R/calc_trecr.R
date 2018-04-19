@@ -13,7 +13,9 @@
 #' population or fishery
 #' @param Lt known length at time \code{t}
 #' @param t time (class is numeric or date)
-#' @param tincr resolution to use for hindcasting time at recruitment (default: 0.01)
+#' @param tincr resolution to use for hindcasting time at recruitment
+#' (default: 0.01). Smaller values give higher precision, but hindcast calculation
+#' is slower.
 #'
 #' @return a numeric value (typically decimal year)
 #' @export

@@ -16,7 +16,9 @@ population or fishery}
 
 \item{t}{time (class is numeric or date)}
 
-\item{tincr}{resolution to use for hindcasting time at recruitment (default: 0.01)}
+\item{tincr}{resolution to use for hindcasting time at recruitment
+(default: 0.01). Smaller values give higher precision, but hindcast calculation
+is slower.}
 }
 \value{
 a numeric value (typically decimal year)

@@ -5,7 +5,7 @@
 \title{Calculate recruitment pattern of lfq object}
 \usage{
 recruitment(lfq, Lrecr = 0, tincr = 0.01, use.rcounts = FALSE,
-  plot = TRUE, hide.progressbar = FALSE)
+  plot = TRUE, hide.progressbar = FALSE, ...)
 }
 \arguments{
 \item{lfq}{a length-frequency object (i.e. class \code{lfq}) that contains
@@ -28,17 +28,20 @@ and appropriate scaling for density approxmations via
 \code{\link[graphics]{hist}}.}
 
 \item{plot}{logical. Should monthly recruitment pattern [\%] by plotted
-(default: \code{plot = TRUE}).}
+as a \code{\link[graphics]{barplot}} (default: \code{plot = TRUE}).}
 
 \item{hide.progressbar}{logical. Should progress bar be displayed
 (default: \code{hide.progressbar = FALSE})}
+
+\item{...}{further arguments passed to
+\code{link\[graphics]{barplot}} when \code{plot = TRUE}.}
 }
 \value{
 object of "histogram" class containing
 monthly recruitment pattern
 }
 \description{
-\code{recruitment2} calculates the recruitment pattern (i.e. monthly)
+\code{recruitment} calculates the recruitment pattern (i.e. monthly)
 of an lfq object given corresponding \code{\link{VBGF}} parameters
 and a defined length at recruitment (\code{Lrecr}, defaults to
 \code{Lrecr = 0})
@@ -74,11 +77,12 @@ month, which is not the case in FiSAT.
 \examples{
 
 # using catch frequencies
+data("synLFQ4")
 lfq <- synLFQ4
 lfq$par <- list(
   Linf = 80, K = 0.5, t_anchor = 0.25, C = 0.75, ts = 0.5
 )
-tmp <- recruitment2(lfq = lfq)
+tmp <- recruitment(lfq = lfq)
 
 
 # using restructured frequencies
@@ -86,7 +90,7 @@ lfq <- lfqRestructure(synLFQ4, MA = 11)
 lfq$par <- list(
   Linf = 80, K = 0.5, t_anchor = 0.25, C = 0.75, ts = 0.5
 )
-tmp <- recruitment2(lfq = lfq, use.rcounts = TRUE)
+tmp <- recruitment(lfq = lfq, use.rcounts = TRUE)
 
 
 # use of results in external plotting (via histogram())
@@ -102,14 +106,15 @@ barplot(tmp$counts/sum(tmp$counts)*100, names.arg = month.abb,
 
 
 # use of other Lrecr
+data("alba")
 lfq <- alba
 lfq$par <- list(
   Linf = 9,5, K = 2.3, t_anchor = 0.28
 )
 lfq <- lfqRestructure(lfq, MA = 7)
 plot(lfq)
-tmp0 <- recruitment2(lfq = lfq, Lrecr = 0, plot = FALSE)
-tmp2 <- recruitment2(lfq = lfq, Lrecr = 2, plot = FALSE)
+tmp0 <- recruitment(lfq = lfq, Lrecr = 0, plot = FALSE)
+tmp2 <- recruitment(lfq = lfq, Lrecr = 2, plot = FALSE)
 op <- par(mfcol = c(2,1), mgp = c(2,0.5,0), mar = c(4,4,2,1))
 plot(tmp0, col=8, freq=FALSE, main="Lrecr = 0", xlab="Month")
 plot(tmp2, col=8, freq=FALSE, main="Lrecr = 2", xlab="Month")

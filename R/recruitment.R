@@ -1,6 +1,6 @@
 #' Calculate recruitment pattern of lfq object
 #'
-#' \code{recruitment2} calculates the recruitment pattern (i.e. monthly)
+#' \code{recruitment} calculates the recruitment pattern (i.e. monthly)
 #' of an lfq object given corresponding \code{\link{VBGF}} parameters
 #' and a defined length at recruitment (\code{Lrecr}, defaults to
 #' \code{Lrecr = 0})
@@ -31,9 +31,11 @@
 #' and appropriate scaling for density approxmations via
 #' \code{\link[graphics]{hist}}.
 #' @param plot logical. Should monthly recruitment pattern [\%] by plotted
-#' (default: \code{plot = TRUE}).
+#' as a \code{\link[graphics]{barplot}} (default: \code{plot = TRUE}).
 #' @param hide.progressbar logical. Should progress bar be displayed
 #' (default: \code{hide.progressbar = FALSE})
+#' @param ... further arguments passed to
+#' \code{link\[graphics]{barplot}} when \code{plot = TRUE}.
 #'
 #' @return object of "histogram" class containing
 #' monthly recruitment pattern
@@ -60,11 +62,12 @@
 #' @examples
 #'
 #' # using catch frequencies
+#' data("synLFQ4")
 #' lfq <- synLFQ4
 #' lfq$par <- list(
 #'   Linf = 80, K = 0.5, t_anchor = 0.25, C = 0.75, ts = 0.5
 #' )
-#' tmp <- recruitment2(lfq = lfq)
+#' tmp <- recruitment(lfq = lfq)
 #'
 #'
 #' # using restructured frequencies
@@ -72,7 +75,7 @@
 #' lfq$par <- list(
 #'   Linf = 80, K = 0.5, t_anchor = 0.25, C = 0.75, ts = 0.5
 #' )
-#' tmp <- recruitment2(lfq = lfq, use.rcounts = TRUE)
+#' tmp <- recruitment(lfq = lfq, use.rcounts = TRUE)
 #'
 #'
 #' # use of results in external plotting (via histogram())
@@ -88,14 +91,15 @@
 #'
 #'
 #' # use of other Lrecr
+#' data("alba")
 #' lfq <- alba
 #' lfq$par <- list(
 #'   Linf = 9,5, K = 2.3, t_anchor = 0.28
 #' )
 #' lfq <- lfqRestructure(lfq, MA = 7)
 #' plot(lfq)
-#' tmp0 <- recruitment2(lfq = lfq, Lrecr = 0, plot = FALSE)
-#' tmp2 <- recruitment2(lfq = lfq, Lrecr = 2, plot = FALSE)
+#' tmp0 <- recruitment(lfq = lfq, Lrecr = 0, plot = FALSE)
+#' tmp2 <- recruitment(lfq = lfq, Lrecr = 2, plot = FALSE)
 #' op <- par(mfcol = c(2,1), mgp = c(2,0.5,0), mar = c(4,4,2,1))
 #' plot(tmp0, col=8, freq=FALSE, main="Lrecr = 0", xlab="Month")
 #' plot(tmp2, col=8, freq=FALSE, main="Lrecr = 2", xlab="Month")
@@ -129,7 +133,8 @@ recruitment <- function(
   tincr = 0.01,
   use.rcounts = FALSE,
   plot = TRUE,
-  hide.progressbar = FALSE
+  hide.progressbar = FALSE,
+  ...
 ){
   if(use.rcounts & is.null(lfq$rcounts)){stop(
     "If use.rcounts = TRUE, then lfq$rcounts can not be empty.\n
@@ -170,7 +175,7 @@ recruitment <- function(
   h <- hist(trecr.mo, breaks = seq(0.5, 12.5, by=1), plot = FALSE)
   if(plot){
     barplot(h$counts/sum(h$counts)*100, names.arg = month.abb,
-      las = 2, ylab = "Recruitment [%]")
+      las = 2, ylab = "Recruitment [%]", ...)
   }
   return(h)
 }
