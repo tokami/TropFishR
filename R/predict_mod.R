@@ -502,15 +502,31 @@ predict_mod <- function(
                 res2 <- pred_res_df
                 res3 <- c(res,res2)
 
-                # reference points
+                
+                ## reference points
+                ## F01 (proxy for Fmsy in ICES)
+                slopeOrg <- (pred_res_df$totY[2] - pred_res_df$totY[1]) / (FM_change[2] - FM_change[1])
+                slope01 <- round(0.1*slopeOrg, 2)
+                slopes <- rep(NA, length(FM_change))
+                slopes[1] <- slopeOrg
+                for(i in 3:length(FM_change)){
+                    slopes[i-1] <- round((pred_res_df$totY[i] - pred_res_df$totY[i-1]) /
+                        (FM_change[i] - FM_change[i-1]),2)
+                }
+                dif <- abs(slopes - slope01)
+                dif[is.na(dif)] <- 1e+11
+                N01 <- which.min(dif)
+                ## F05
                 Bper <- rep(NA,length(pred_res_df$meanB))
                 Bper[1] <- 100
                 for(ix in 2:length(Bper)){
                   Bper[ix] <- pred_res_df$meanB[ix]/pred_res_df$meanB[1] * 100
                 }
                 N05 <- which.min(abs(Bper - 50))
+                ## Fmax
                 Nmax <- which.max(pred_res_df$totY)
-                F01[bi] <- NaN
+                ## ref level
+                F01[bi] <- FM_change[N01]
                 Fmax[bi] <- FM_change[Nmax]
                 F05[bi] <- FM_change[N05]
 
