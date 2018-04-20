@@ -138,7 +138,7 @@ TFR2DLMtool <- function(uncertaintyCap = FALSE,
         templati <- eval(parse(text=paste(parse(text = eval(template, subList)),collapse=" ")))
 
         ## save names of MPs
-        if(uncertaintyCap){
+        if(uncertaintyCap[I]){
             nami[I] <- paste0("TFR_uC_",uncertaintyCapPrint[I],
                               "_lo_",argListCor[[2]][I],
                               "_up_",argListCor[[3]][I])            
