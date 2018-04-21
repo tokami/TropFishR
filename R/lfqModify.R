@@ -150,13 +150,13 @@ lfqModify <- function(lfq, par = NULL,
         resi <- TRUE
         while(resi == TRUE){
           lowRow <- lowRow + 1
-          resi <- rowSums(catch)[lowRow] == 0
+          resi <- rowSums(catch, na.rm = TRUE)[lowRow] == 0
         }
 
         upRow <- nrow(catch)
         resi <- TRUE
         while(resi == TRUE){
-          resi <- rowSums(catch)[upRow] == 0
+          resi <- rowSums(catch, na.rm = TRUE)[upRow] == 0
           upRow <- upRow - 1
         }
         upRow <- upRow + 1
@@ -187,13 +187,13 @@ lfqModify <- function(lfq, par = NULL,
     resi <- TRUE
     while(resi == TRUE){
       lowRow <- lowRow + 1
-      resi <- rowSums(c_dat)[lowRow] == 0
+      resi <- rowSums(c_dat, na.rm = TRUE)[lowRow] == 0
     }
 
     upRow <- nrow(c_dat)
     resi <- TRUE
     while(resi == TRUE){
-      resi <- rowSums(c_dat)[upRow] == 0
+      resi <- rowSums(c_dat, na.rm = TRUE)[upRow] == 0
       upRow <- upRow - 1
     }
     upRow <- upRow + 1
