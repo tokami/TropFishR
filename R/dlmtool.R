@@ -214,7 +214,7 @@ TFSA <- function(lfq, m, wla, wlb, fmsy){   ## import slist
                 fvec <- resvpa$FM_calc
                 lfq$FM <- fvec
                 ## ypr
-                resypr <- try(predict_mod(lfq,
+                resypr <- try(TropFishR::predict_mod(lfq,
                                           type="ThompBell",
 ##                                          s_list = slist,
                                           plus_group = plusgroup,
