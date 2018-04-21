@@ -40,7 +40,7 @@
 #' OMex@nyears <- 25
 #' OMex@proyears <- 5
 #' 
-#' ## Get TFR HCR
+#' ## Get TFSA HCR
 #' MPname <- TFR2DLMtool(uncertaintyCap = c(FALSE,TRUE))
 #' MPname
 #' 
@@ -50,7 +50,7 @@
 #' }
 #'
 #'
-TFR2DLMtool <- function(uncertaintyCap = FALSE,
+TFSA2DLMtool <- function(uncertaintyCap = FALSE,
                         lower=0.8,
                         upper=1.2,
                         env=globalenv()){
@@ -112,6 +112,7 @@ TFR2DLMtool <- function(uncertaintyCap = FALSE,
                             if(length(ffmsy) == 0) ffmsy <- NA
                             return(ffmsy)
               }, linfs, ks, t0s, ms, wlas, wlbs, fmsys, SIMPLIFY = TRUE)
+## print(paste0(x," == ",round(median(res,na.rm=TRUE),2)))
               ## apply HCR
               Cc <- trlnorm(reps, Data@Cat[x, length(Data@Cat[x, ])], Data@CV_Cat[x])
               r <- 1         ## account for trend in stock biomass
@@ -139,11 +140,11 @@ TFR2DLMtool <- function(uncertaintyCap = FALSE,
 
         ## save names of MPs
         if(uncertaintyCap[I]){
-            nami[I] <- paste0("TFR_uC_",uncertaintyCapPrint[I],
+            nami[I] <- paste0("TFSA_uC_",uncertaintyCapPrint[I],
                               "_lo_",argListCor[[2]][I],
                               "_up_",argListCor[[3]][I])            
         }else{
-            nami[I] <- paste0("TFR_uC_",uncertaintyCapPrint[I])
+            nami[I] <- paste0("TFSA_uC_",uncertaintyCapPrint[I])
         }
 
         assign(value=templati, x=nami[I], envir=env)
@@ -190,9 +191,9 @@ TFSA <- function(lfq, m, wla, wlb, fmsy){   ## import slist
         if(is.na(fm) | length(fm) == 0 | fm < 0){
             return(NA)
         }else{
-            if(lfq$par$Linf < max(lfq$midLengths)){
-                interval <- lfq$midLengths[2] - lfq$midLengths[1]
-                upperLength <- lfq$midLengths + (interval / 2)
+            interval <- lfq$midLengths[2] - lfq$midLengths[1]
+            upperLength <- lfq$midLengths + (interval / 2)            
+            if(lfq$par$Linf < max(upperLength)){
                 lfq <- lfqModify(lfq,
                                  plus_group = lfq$midLengths[which.min(abs(upperLength - floor(lfq$par$Linf)))])
                 plusgroup <- TRUE
@@ -224,7 +225,7 @@ TFSA <- function(lfq, m, wla, wlb, fmsy){   ## import slist
                     return(NA)
                 }else{
                     f01 <- as.numeric(resypr$df_Es[which(names(resypr$df_Es) == "F01")])  ## F01 as proxy for Fmsy
-                    ff01 <- max(fvec)/f01
+                    ff01 <- fm/f01
 ##                    print(paste0("Ref:  ",f01," -- ", fmsy))
                     return(ff01)                
                 }
