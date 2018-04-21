@@ -113,6 +113,7 @@ TFSA2DLMtool <- function(uncertaintyCap = FALSE,
                             return(ffmsy)
               }, linfs, ks, t0s, ms, wlas, wlbs, fmsys, SIMPLIFY = TRUE)
 ## print(paste0(x," == ",round(median(res,na.rm=TRUE),2)))
+## print(Data@CAL[x, dim(Data@CAL)[2], ])
               ## apply HCR
               Cc <- trlnorm(reps, Data@Cat[x, length(Data@Cat[x, ])], Data@CV_Cat[x])
               r <- 1         ## account for trend in stock biomass
@@ -177,61 +178,65 @@ TFSA2DLMtool <- function(uncertaintyCap = FALSE,
 #'
 #'
 TFSA <- function(lfq, m, wla, wlb, fmsy){   ## import slist
-    ## catch curve
-    rescc <- try(TropFishR::catchCurve(lfq,
-                                       auto = TRUE,
-                                       plot = FALSE),
-                 silent = TRUE)
-    if(is(rescc, "try-error")){
+    if(all(lfq$catch == 0)){
         return(NA)
     }else{
-        z <- rescc$Z
-        fm <- z - m
-##        print(paste0("F:  ", fm, " -- "))
-        if(is.na(fm) | length(fm) == 0 | fm < 0){
+        ## catch curve
+        rescc <- suppressMessages(try(TropFishR::catchCurve(lfq,
+                                           auto = TRUE,
+                                           plot = FALSE),
+                     silent = TRUE))
+        if(is(rescc, "try-error")){
             return(NA)
         }else{
-            interval <- lfq$midLengths[2] - lfq$midLengths[1]
-            upperLength <- lfq$midLengths + (interval / 2)            
-            if(lfq$par$Linf < max(upperLength)){
-                lfq <- lfqModify(lfq,
-                                 plus_group = lfq$midLengths[which.min(abs(upperLength - floor(lfq$par$Linf)))])
-                plusgroup <- TRUE
-            }else{
-                plusgroup <- FALSE
-            }
-            lfq$a <- wla
-            lfq$b <- wlb
-            lfq$M <- m
-            ## vpa
-            resvpa <- try(TropFishR::VPA(lfq, terminalF=fm,
-                                         plus_group = plusgroup,
-                                         plot = FALSE),
-                          silent = TRUE)
-            if(is(resvpa, "try-error")){
+            z <- rescc$Z
+            fm <- z - m
+    ##        print(paste0("F:  ", fm, " -- "))
+            if(is.na(fm) | length(fm) == 0 | fm < 0){
                 return(NA)
             }else{
-                fvec <- resvpa$FM_calc
-                lfq$FM <- fvec
-                ## ypr
-                resypr <- try(TropFishR::predict_mod(lfq,
-                                          type="ThompBell",
-##                                          s_list = slist,
-                                          plus_group = plusgroup,
-                                          FM_change=seq(0.001,3,0.01),
-                                          plot = FALSE),
-                              silent = TRUE)
-                if(is(resypr, "try-error")){
+                interval <- lfq$midLengths[2] - lfq$midLengths[1]
+                upperLength <- lfq$midLengths + (interval / 2)            
+                if(lfq$par$Linf < max(upperLength)){
+                    lfq <- suppressMessages(lfqModify(lfq,
+                                     plus_group = lfq$midLengths[which.min(abs(upperLength - floor(lfq$par$Linf)))]))
+                    plusgroup <- TRUE
+                }else{
+                    plusgroup <- FALSE
+                }
+                lfq$a <- wla
+                lfq$b <- wlb
+                lfq$M <- m
+                ## vpa
+                resvpa <- suppressMessages(try(TropFishR::VPA(lfq, terminalF=fm,
+                                             plus_group = plusgroup,
+                                             plot = FALSE),
+                              silent = TRUE))
+                if(is(resvpa, "try-error")){
                     return(NA)
                 }else{
-                    f01 <- as.numeric(resypr$df_Es[which(names(resypr$df_Es) == "F01")])  ## F01 as proxy for Fmsy
-                    ff01 <- fm/f01
-##                    print(paste0("Ref:  ",f01," -- ", fmsy))
-                    return(ff01)                
-                }
-            }            
-        }
+                    fvec <- resvpa$FM_calc
+                    lfq$FM <- fvec
+                    ## ypr
+                    resypr <- suppressMessages(try(TropFishR::predict_mod(lfq,
+                                              type="ThompBell",
+    ##                                          s_list = slist,
+                                              plus_group = plusgroup,
+                                              FM_change=seq(0.001,3,0.01),
+                                              plot = FALSE),
+                                  silent = TRUE))
+                    if(is(resypr, "try-error")){
+                        return(NA)
+                    }else{
+                        f01 <- as.numeric(resypr$df_Es[which(names(resypr$df_Es) == "F01")])  ## F01 as proxy for Fmsy
+                        ff01 <- fm/f01
+    ##                    print(paste0("Ref:  ",f01," -- ", fmsy))
+                        return(ff01)                
+                    }
+                }            
+            }
 
+        }        
     }
 }
     

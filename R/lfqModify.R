@@ -145,25 +145,27 @@ lfqModify <- function(lfq, par = NULL,
         midLengths <- midLengthsNEW
 
 
-        ## get rid of 0 bins at both ends
-        lowRow <- 0
-        resi <- TRUE
-        while(resi == TRUE){
-          lowRow <- lowRow + 1
-          resi <- rowSums(catch, na.rm = TRUE)[lowRow] == 0
+        if(any(catch != 0)){
+            ## get rid of 0 bins at both ends
+            lowRow <- 0
+            resi <- TRUE
+            while(resi == TRUE){
+              lowRow <- lowRow + 1
+              resi <- rowSums(catch, na.rm = TRUE)[lowRow] == 0
+            }
+
+            upRow <- nrow(catch)
+            resi <- TRUE
+            while(resi == TRUE){
+              resi <- rowSums(catch, na.rm = TRUE)[upRow] == 0
+              upRow <- upRow - 1
+            }
+            upRow <- upRow + 1
+
+            catch <- catch[lowRow:upRow,]
+            midLengths <- midLengths[lowRow:upRow]
+            
         }
-
-        upRow <- nrow(catch)
-        resi <- TRUE
-        while(resi == TRUE){
-          resi <- rowSums(catch, na.rm = TRUE)[upRow] == 0
-          upRow <- upRow - 1
-        }
-        upRow <- upRow + 1
-
-        catch <- catch[lowRow:upRow,]
-        midLengths <- midLengths[lowRow:upRow]
-
 
         ## correct if catch was numeric already
         if(class(lfq$catch) == "numeric"){
@@ -182,24 +184,28 @@ lfqModify <- function(lfq, par = NULL,
     c_list <- lapply(as.list(c_sum), c)
     c_dat <- as.data.frame(c_list)
 
-    # get rid of 0 bins at both ends
-    lowRow <- 0
-    resi <- TRUE
-    while(resi == TRUE){
-      lowRow <- lowRow + 1
-      resi <- rowSums(c_dat, na.rm = TRUE)[lowRow] == 0
-    }
+      if(any(c_dat != 0)){
+          # get rid of 0 bins at both ends
+          lowRow <- 0
+          resi <- TRUE
+          while(resi == TRUE){
+            lowRow <- lowRow + 1
+            resi <- rowSums(c_dat, na.rm = TRUE)[lowRow] == 0
+          }
 
-    upRow <- nrow(c_dat)
-    resi <- TRUE
-    while(resi == TRUE){
-      resi <- rowSums(c_dat, na.rm = TRUE)[upRow] == 0
-      upRow <- upRow - 1
-    }
-    upRow <- upRow + 1
+          upRow <- nrow(c_dat)
+          resi <- TRUE
+          while(resi == TRUE){
+            resi <- rowSums(c_dat, na.rm = TRUE)[upRow] == 0
+            upRow <- upRow - 1
+          }
+          upRow <- upRow + 1
 
-    catch <- c_dat[lowRow:upRow,]
-    midLengths <- midLengths[lowRow:upRow]
+          catch <- c_dat[lowRow:upRow,]
+          midLengths <- midLengths[lowRow:upRow]
+      }else{
+          catch <- c_dat
+      }
 
     # override old dates
     dates <- unique(as.Date(paste0(format(dates,"%Y"),"-01-01")))
