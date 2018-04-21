@@ -51,24 +51,29 @@
 #'
 #'
 TFSA2DLMtool <- function(uncertaintyCap = FALSE,
-                        lower=0.8,
-                        upper=1.2,
-                        env=globalenv()){
+                        lower = 0.8,
+                        upper = 1.2,
+                        twoOverThree = FALSE,
+                        env = globalenv()){
+
 
     ## allowing for multiple generation of MPs
-    argList <- list(uncertaintyCap, lower, upper)
+    argList <- list(uncertaintyCap, lower, upper, twoOverThree)
     argLengths <- sapply(argList, length)
     maxi <- max(argLengths)
     maxl  <- which(argLengths == maxi)
     if(maxi>1){
-        if(max(argLengths[(1:3)[-maxl]]) > 1)
+        if(max(argLengths[(1:4)[-maxl]]) > 1)
             stop("Specified arguments have different lengths, they should have the same length or length = 1.")
     }
     argListCor <- argList
-    argListCor[(1:3)[-maxl]] <- lapply(argList[(1:3)[-maxl]], function(x) rep(unlist(x), maxi))
+    argListCor[(1:4)[-maxl]] <- lapply(argList[(1:4)[-maxl]], function(x) rep(unlist(x), maxi))
     uncertaintyCapPrint <- argListCor[[1]]
-    uncertaintyCapPrint[which(uncertaintyCapPrint == TRUE)] <- "T"
-    uncertaintyCapPrint[which(uncertaintyCapPrint == FALSE)] <- "F"                        
+    uncertaintyCapPrint[which(uncertaintyCapPrint==TRUE)] <- "T"
+    uncertaintyCapPrint[which(uncertaintyCapPrint==FALSE)] <- "F"
+    twoOver3print <- argListCor[[4]]
+    twoOver3print[which(twoOver3print==TRUE)] <- "T"
+    twoOver3print[which(twoOver3print==FALSE)] <- "F"    
 
     ## dimensions Data@CAL: nsim x nyears x length(CAL_bins)
     ## MP as function
@@ -76,10 +81,11 @@ TFSA2DLMtool <- function(uncertaintyCap = FALSE,
     'structure(function(x, Data, reps=100,
           uncertaintyCap=',a,',
           lower=',b,',
-          upper=',c,'){
+          upper=',c,',
+          twoOverThree=',d,'){
 
               ## input from OM
-              dependencies = "Data@Cat, Data@vbK, Data@CV_vbK, Data@Mort, Data@CV_Mort, Data@wla, Data@CV_wla, Data@wlb, Data@CV_wlb, Data@CAL, Data@CAL_bins, Data@vbLinf, Data@CV_vbLinf, Data@FMSY_M, Data@vbt0, Data@CV_vbt0"
+              dependencies = "Data@Cat, Data@vbK, Data@CV_vbK, Data@Mort, Data@CV_Mort, Data@wla, Data@CV_wla, Data@wlb, Data@CV_wlb, Data@CAL, Data@CAL_bins, Data@vbLinf, Data@CV_vbLinf, Data@FMSY_M, Data@vbt0, Data@CV_vbt0, Data@Ind, Data@CV_Ind"
 
               ## midlengths
               interval <- Data@CAL_bins[3] - Data@CAL_bins[2]  ## assuming constant interval (removing first lower bound == 0)
@@ -98,8 +104,17 @@ TFSA2DLMtool <- function(uncertaintyCap = FALSE,
                    t0s <- rep(Data@vbt0[x], reps)
               }
               t0s[!is.finite(t0s)] <- 0
+              ## apply 2 over 3 rule for r
+              if(twoOverThree){
+                  ind5 <- Data@Ind[x, (length(Data@Ind[x,])-5+1):length(Data@Ind[x,])]
+                  ind5s <- trlnorm(reps * 5, ind5, Data@CV_Ind[x])
+                  indmat <- matrix(ind5s, ncol=reps)
+                  rres <- TropFishR:::r2over3(indmat)
+              }else{
+                  rres <- rep(1, reps)
+              }
               ## run TFR FSA
-              res <- mapply(function(linf, k, t0, m, wla, wlb, fmsy){
+              fres <- mapply(function(linf, k, t0, m, wla, wlb, fmsy){
                             ## create lfq data
                             lfq <- list(midLengths = midLengths,
                                         dates = as.Date("2000-01-01"),  ## not relevant
@@ -116,9 +131,9 @@ TFSA2DLMtool <- function(uncertaintyCap = FALSE,
 ## print(Data@CAL[x, dim(Data@CAL)[2], ])
               ## apply HCR
               Cc <- trlnorm(reps, Data@Cat[x, length(Data@Cat[x, ])], Data@CV_Cat[x])
-              r <- 1         ## account for trend in stock biomass
-              f <- 1 / res   ## proxy for fmsy/current exploitation
-              b <- 1         ## min(1, proxy for B/Btrigger)
+              r <- rres       ## account for trend in stock biomass
+              f <- 1 / fres   ## proxy for fmsy/current exploitation
+              b <- 1          ## min(1, proxy for B/Btrigger)
               if(uncertaintyCap){
                   TAC <- Cc * sapply(r*f*b, function(x) min(upper, max(lower, x)))
               }else{
@@ -136,16 +151,18 @@ TFSA2DLMtool <- function(uncertaintyCap = FALSE,
 
         ## create MPs as functions
         subList <- lapply(argListCor, "[[", I)
-        names(subList) <- letters[1:3]
+        names(subList) <- letters[1:4]
         templati <- eval(parse(text=paste(parse(text = eval(template, subList)),collapse=" ")))
 
         ## save names of MPs
         if(uncertaintyCap[I]){
             nami[I] <- paste0("TFSA_uC_",uncertaintyCapPrint[I],
                               "_lo_",argListCor[[2]][I],
-                              "_up_",argListCor[[3]][I])            
+                              "_up_",argListCor[[3]][I],
+                              "_2over3_",twoOver3print[I])
         }else{
-            nami[I] <- paste0("TFSA_uC_",uncertaintyCapPrint[I])
+            nami[I] <- paste0("TFSA_uC_",uncertaintyCapPrint[I],
+                              "_2over3_",twoOver3print[I])
         }
 
         assign(value=templati, x=nami[I], envir=env)
@@ -240,3 +257,19 @@ TFSA <- function(lfq, m, wla, wlb, fmsy){   ## import slist
     }
 }
     
+
+
+#' @title 2 over 3 rule to estimate r of HCRs
+#' 
+#' @description Apply 2 over 3 rule to estimate r of HCRs
+#' 
+#' @param indmat matrix with indices of last 5 years
+#' 
+r2over3 <- function(indmat) {
+  inum <- indmat[4:5, ]
+  iden <- indmat[1:3, ]
+  if(ncol(indmat) == 1){
+      mean(inum, na.rm = TRUE)/mean(iden, na.rm = TRUE)
+  } else apply(inum, 2, mean, na.rm = TRUE) / apply(iden, 2, mean, na.rm = TRUE)
+}
+

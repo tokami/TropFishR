@@ -5,7 +5,7 @@
 \title{Harvest control rules based on TropFishR}
 \usage{
 TFSA2DLMtool(uncertaintyCap = FALSE, lower = 0.8, upper = 1.2,
-  env = globalenv())
+  twoOverThree = FALSE, env = globalenv())
 }
 \arguments{
 \item{uncertaintyCap}{Logical; If true TAC is bound between two values set in lower and upper. Default: FALSE.}
