@@ -10,14 +10,15 @@
 #'
 #' @param par \code{\link{VBGF}} parameters
 #' @param Lrecr Length at recruitment. This can be e.g. the length at recruitment to the
-#' population or fishery
+#' population or fishery (default: \code{Lrecr = 0}).
 #' @param Lt known length at time \code{t}
 #' @param t time (class is numeric or date)
 #' @param tincr resolution to use for hindcasting time at recruitment
 #' (default: 0.01). Smaller values give higher precision, but hindcast calculation
 #' is slower.
 #'
-#' @return a numeric value (typically decimal year)
+#' @return a numeric value (typically decimal year). When \code{Lrecr > par$Linf} 
+#' or \code{Lt > par$Linf} or \code{Lt < Lrecr}, \code{NA} is returned.
 #' @export
 #'
 #' @examples
