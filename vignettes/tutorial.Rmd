@@ -82,7 +82,7 @@ For synLFQ7, a bin size of 4 cm and a moving average of 5 seems appropriate and 
 # Powell Wetherall plot
 res_PW <- powell_wetherall(param = synLFQ7a,
                            catch_columns = 1:ncol(synLFQ7a$catch),
-                           reg_int = c(10,30))
+                           reg_int = c(10,28))
 # show results
 paste("Linf =",round(res_PW$Linf_est), "±", round(res_PW$se_Linf))
 ```
