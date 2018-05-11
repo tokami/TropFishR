@@ -53,11 +53,11 @@ plot(tmplfq, Fname="catch", hist.sc = 1)
 
 ## ------------------------------------------------------------------------
 alba <- lfqRestructure(alba, MA = 7)
-plot(alba, hist.sc = 0.75)
+plot(alba, Fname="rcounts", hist.sc = 0.75)
 
 ## ------------------------------------------------------------------------
 alba <- lfqRestructure(alba, MA=7)
-plot(alba, hist.col = c("white", "black"), 
+plot(alba, Fname="rcounts", hist.col = c("white", "black"), 
   image.col = c(rep(rgb(1,0.8,0.8),1000), "white", rep(rgb(0.8,0.8,1),1000)),
   ylim = c(0,max(alba$midLengths+0.5)))
 tmp <- lfqFitCurves(alba, par = list(Linf=11, K=2.5, t_anchor=0.5), 
@@ -72,7 +72,7 @@ PW$confidenceInt_Linf
 alba2 <- ELEFAN(
   x = alba,  MA = 7,
   Linf_range = seq(7, 20, length.out = 30),
-  K_range = exp(seq(log(0.1),log(4), length.out = 30)),
+  K_range = exp(seq(log(0.1),log(5), length.out = 30)),
   method = "cross",
   cross.date = alba$dates[3], 
   cross.midLength = alba$midLengths[5], 
@@ -84,7 +84,7 @@ unlist(alba2$par)
 alba2$Rn_max
 
 ## ------------------------------------------------------------------------
-plot(alba2)
+plot(alba2, Fname="rcounts")
 points(alba$dates[3], alba$midLengths[5], pch="*", cex=2, col=2)
 
 ## ------------------------------------------------------------------------
@@ -106,7 +106,7 @@ unlist(alba3$par)
 alba3$Rn_max
 
 ## ------------------------------------------------------------------------
-plot(alba3)
+plot(alba3, Fname="rcounts")
 
 ## ------------------------------------------------------------------------
 set.seed(1)
@@ -128,7 +128,7 @@ unlist(alba4$par)
 alba4$Rn_max
 
 ## ------------------------------------------------------------------------
-plot(alba4)
+plot(alba4, Fname="rcounts")
 
 ## ------------------------------------------------------------------------
 set.seed(1)
@@ -148,7 +148,26 @@ alba5 <- ELEFAN_GA(
 )
 unlist(alba5$par)
 alba5$Rn_max
-plot(alba5)
+plot(alba5, Fname="rcounts")
+
+## ------------------------------------------------------------------------
+obj <- alba5
+time <- date2yeardec(obj$dates)
+t <- seq(floor(min(time)), ceiling(max(time)),0.01)
+PAR <- obj$par
+PAR$t_anchor <- PAR$t_anchor + floor(min(time))
+
+Lt <- VBGF(param = PAR, t = t)
+Kt <- (log(PAR$Linf-Lt[-length(t)]) - log(PAR$Linf-Lt[-1]))/0.01
+plot((t[-1]+t[-length(t)])/2, Kt, t="l", ylim=range(Kt)+(c(-1,1)*dist(range(Kt)*0.1)), xlab = "", ylab=bquote(K[t]))
+abline(h=PAR$K, lty=2, col=8)
+tmin <- (PAR$ts+1.5)%%1
+tmax <- (PAR$ts+1)%%1
+points(x = floor(min(t))+1+c(tmin,tmax), y = range(Kt))
+abline(v = floor(min(t))+1+c(tmin,tmax), lty=2, col=c(2,3))
+text(x = floor(min(t))+1 + tmax, y = max(Kt), labels = bquote(t[max] == .(sprintf(fmt = "%.2f",round(tmax,2)))~.(paste0("(",format(yeardec2date(tmax), "%b-%d"),")"))), pos=3, srt=90, offset = -5)
+text(x = floor(min(t))+1 + tmin, y = min(Kt), labels = bquote(t[min] == .(sprintf(fmt = "%.2f",round(tmin,2)))~.(paste0("(",format(yeardec2date(tmin), "%b-%d"),")"))), pos=3, srt=90, offset = 05)
+mtext("Instantaneous growth rate (K)", side=3, line=0.25)
 
 ## ------------------------------------------------------------------------
 true_par <- list(Linf = 80, K = 0.5, t_anchor = 0.25,C = 0.75,  ts = 0.5, phiL = 3.51)
@@ -173,15 +192,19 @@ synLFQ4 <- ELEFAN_GA(
 ## ------------------------------------------------------------------------
 tmp <- as.data.frame(rbind(unlist(true_par), unlist(synLFQ4$par)))
 rownames(tmp) <- c("true", "estimated")
-tmp$Rn <- c(synLFQ4$Rn_max,  lfqFitCurves(synLFQ4, par = true_par)$Rn_max)
+tmp$Rn <- c(lfqFitCurves(synLFQ4, par = true_par)$Rn_max, synLFQ4$Rn_max)
 tmp <- round(tmp,3)
 tmp
 
 ## ------------------------------------------------------------------------
-plot(synLFQ4, draw = FALSE) 
-tmp <- lfqFitCurves(synLFQ4, par = true_par, col=8, lty=1, draw = TRUE)
-tmp <- lfqFitCurves(synLFQ4, par = synLFQ4$par, col=4, lty=2, draw = TRUE)
-legend("top", ncol=2, legend = c("true", "estimated"), col=c(8,4), lty=c(1,2))
+plot(synLFQ4, Fname="rcounts", draw = FALSE, 
+  image.col = NA, region.col = "grey90") 
+tmp <- lfqFitCurves(synLFQ4, par = true_par, col=5,
+  lty=1, draw = TRUE)
+tmp <- lfqFitCurves(synLFQ4, par = synLFQ4$par, col=4,
+  lty=2, draw = TRUE)
+legend("top", ncol=2, legend = c("true", "estimated"),
+  col=c(5,4), lty=c(1,2), bg = "grey90", cex = 0.75)
 
 ## ------------------------------------------------------------------------
 synLFQ4 <- ELEFAN_GA(

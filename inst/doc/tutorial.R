@@ -39,7 +39,7 @@ par(opar)
 # Powell Wetherall plot
 res_PW <- powell_wetherall(param = synLFQ7a,
                            catch_columns = 1:ncol(synLFQ7a$catch),
-                           reg_int = c(10,30))
+                           reg_int = c(10,28))
 # show results
 paste("Linf =",round(res_PW$Linf_est), "±", round(res_PW$se_Linf))
 
@@ -154,7 +154,7 @@ paste("M =", as.numeric(Ms))
 # summarise catch matrix into vector and add plus group which is smaller than Linf
 synLFQ7b <- lfqModify(synLFQ7a, vectorise_catch = TRUE, plus_group = 118)
 # run catch curve
-res_cc <- catchCurve(synLFQ7b, reg_int = c(9,27), calc_ogive = TRUE)
+res_cc <- catchCurve(synLFQ7b, reg_int = c(8,26), calc_ogive = TRUE)
 # assign estimates to the data list
 synLFQ7b$Z <- res_cc$Z
 synLFQ7b$FM <- as.numeric(synLFQ7b$Z - synLFQ7b$M)
@@ -202,6 +202,7 @@ plot(TB1, mark = TRUE)
 mtext("(a)", side = 3, at = -1, line = 0.6)
 plot(TB2, type = "Isopleth", xaxis1 = "FM", mark = TRUE, contour = 6)
 mtext("(b)", side = 3, at = -0.1, line = 0.6)
+
 # Biological reference levels
 TB1$df_Es
 # Current yield and biomass levels

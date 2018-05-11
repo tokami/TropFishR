@@ -549,8 +549,6 @@ ELEFAN_GA_boot <- function(lfq, seasonalised = FALSE, low_par = NULL, up_par = N
 
 
 
-
-
 #' Multivariate maximum density estimates from a bootstrapped object
 #'
 #' @param boot object of class "lfqBoot"
