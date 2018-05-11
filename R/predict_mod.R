@@ -856,12 +856,6 @@ predict_mod <- function(
         rownames(resMaxDen) <- "maxDen"
 
 
-        ## remove F01 which is not estimated in ThomBell model
-        if(type=="ThompBell"){
-            bootRaw <- bootRaw[,-which(colnames(bootRaw) == "F01")]
-            bootRaw <- bootRaw[,-which(colnames(bootRaw) == "FF01")]
-        }
-
         ret <- list()
         ret$bootRaw <- bootRaw
         ret$seed <- boot$seed
