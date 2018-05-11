@@ -299,6 +299,7 @@ predict_mod <- function(
   yearSel = NA
 ){
 
+    
     ## VPA with bootstrapping ELEFAN results
     if(!is.null(boot) & class(boot) == "lfqBoot"){
 
@@ -502,7 +503,6 @@ predict_mod <- function(
                 res2 <- pred_res_df
                 res3 <- c(res,res2)
 
-                
                 ## reference points
                 ## Fmax
                 Nmax <- which.max(pred_res_df$totY)                
@@ -718,7 +718,7 @@ predict_mod <- function(
                   if(length(B_R) > 0) results.PBH$B_R = B_R
                   if(length(B_R.percent) > 0) results.PBH$B_R.percent = B_R.percent
 
-                  list_Lc_runs[[i]] <- results.PBH
+                    list_Lc_runs[[i]] <- results.PBH
 
                   # reference points
                   Nmax <- which.max(Y_R.rel)  #  should be the same as which.min(abs(deri)) which is also labelled Nmax
@@ -1088,7 +1088,6 @@ predict_mod <- function(
 
             list_Lc_runs[[i]] <- results.PBH
 
-
             # reference points
             Nmax <- which.max(Y_R.rel)  #  should be the same as which.min(abs(deri)) which is also labelled Nmax
             deri_pot <- deri[1:Nmax]
@@ -1275,15 +1274,14 @@ predict_mod <- function(
               pred_res_list[[x7]] <- resL$totals
             }
 
-
             pred_res_df <- do.call(rbind, pred_res_list)
             pred_res_df$FM_change <- FM_change
             pred_res_df$E_change <- E_change
 
             res2 <- pred_res_df
-            res3 <- c(res,res2)
+              res3 <- c(res,res2)
 
-              
+
               ## reference points
               ## Fmax
               Nmax <- which.max(pred_res_df$totY)
@@ -1473,6 +1471,9 @@ predict_mod <- function(
 
 
               ## reference points
+              ## Fmax
+              Nmax <- apply(mat_FM_Lc_com.Y, MARGIN = 2, FUN = which.max)
+              
               ## F01 (proxy for Fmsy in ICES)
               slopes <- matrix(NA,ncol=dim(mat_FM_Lc_com.Y)[2],
                                nrow=dim(mat_FM_Lc_com.Y)[1])
@@ -1488,7 +1489,10 @@ predict_mod <- function(
               }
               dif <- t(apply(slopes,1,function(x) abs(x - slope01)))
               dif[is.na(dif)] <- 1e+11
-              difpot <- dif[1:Nmax,]                                          ### DOUBLE CHECK
+              difpot <- dif
+              for(i in 1:ncol(dif)){
+                  difpot[(Nmax[i]:nrow(difpot)),i] <- 1e+11
+              }
               N01 <- apply(difpot, MARGIN = 2, FUN = which.min)
               ## F05
               mat_FM_Lc_com.Bper <- matrix(NA,ncol=dim(mat_FM_Lc_com.B)[2],
@@ -1499,8 +1503,6 @@ predict_mod <- function(
               }
               N05 <- apply(mat_FM_Lc_com.Bper, MARGIN = 2,
                            FUN = function(x) which.min(abs(x - 50)))
-              ## Fmax
-              Nmax <- apply(mat_FM_Lc_com.Y, MARGIN = 2, FUN = which.max)
 
               if((!is.null(Lc[1]) & !is.null(tc[1])) | (!is.na(Lc[1]) & !is.na(tc[1])) ){
                 df_Es <- data.frame(Lc = Lc,

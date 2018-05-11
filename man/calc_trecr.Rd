@@ -10,7 +10,7 @@ calc_trecr(par = NULL, Lrecr = 0, Lt = NULL, t = NULL, tincr = 0.01)
 \item{par}{\code{\link{VBGF}} parameters}
 
 \item{Lrecr}{Length at recruitment. This can be e.g. the length at recruitment to the
-population or fishery}
+population or fishery (default: \code{Lrecr = 0}).}
 
 \item{Lt}{known length at time \code{t}}
 
@@ -21,7 +21,8 @@ population or fishery}
 is slower.}
 }
 \value{
-a numeric value (typically decimal year)
+a numeric value (typically decimal year). When \code{Lrecr > par$Linf} 
+or \code{Lt > par$Linf} or \code{Lt < Lrecr}, \code{NA} is returned.
 }
 \description{
 The \code{calc_trecr} function calculates the time at recruitment based
