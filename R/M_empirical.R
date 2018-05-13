@@ -316,3 +316,98 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
     }
 
 }
+
+
+
+
+
+
+#' @title Empirical M formula by Then in bootstrap framework
+#
+#' @description Resamples from Then's original data and refits
+#'     original model within bootstrap framework to estimate M with confidence intervals.
+#' 
+#' @param boot an object of class 'lfqBoot'
+#' @param CI percentage for confidence intervals (Default: 95)
+#'
+#' @importFrom ks kde
+#'
+#' @references
+#' Then, A. Y., J. M. Hoenig, N. G. Hall, D. A. Hewitt. 2015. Evaluating the predictive
+#' performance of empirical estimators of natural mortality rate using information on over
+#' 200 fish species. ICES J. Mar. Sci. 72: 82-92.
+#'
+#' @export
+
+MstochThen <- function(boot, CI=95){
+
+    Mboot <- function(preddat, datThenNA, modThen){
+        sampi <- sample(x =  seq(nrow(datThenNA)), size = nrow(datThenNA), replace = TRUE)
+        dfi <- datThenNA[sampi,]
+        modTheni <- update(modThen, data = dfi)
+        predi <- predict(modTheni, newdata = preddat)
+        return(predi)
+    }
+
+    bootRaw <- boot$bootRaw
+
+    ## load Then's data
+    data("datThen")
+
+    ## original model by Then
+    modThen <- nls(M ~ a * K^b * Linf^c, data= datThen, start=list(a=4,b=0.8,c=-0.3))
+
+    ## remove NA for resampling
+    datThenNA <- na.omit(data.frame(M = datThen$M,K = datThen$K,Linf = datThen$Linf))
+
+    Ms <- apply(bootRaw, 1, Mboot, datThenNA = datThenNA, modThen = modThen)
+
+    bootRaw[,ncol(bootRaw)+1] <- Ms
+    colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)], "M_Then")
+    
+
+    ## max density and CIS
+    ## median
+    resMed <- median(Ms, na.rm = TRUE)
+
+    ## confidence intervals
+    citmp <- (100-CI)/2/100
+    ciList <- quantile(Ms,  probs = c(citmp, 1-citmp), na.rm = TRUE)
+
+    ## max densities
+    x <- try(ks::kde(as.numeric(na.omit(Ms))), TRUE)
+    if(class(x) != "try-error"){
+        ## max den
+        ind <- which(x$estimate > x$cont["99%"])
+        resMaxDen <- mean(x$eval.points[ind])  ## why mean?
+    }else{
+        if((length(unique(as.character(Ms))) == 1 && all(!is.na(Ms))) |
+           (length(unique(as.character(na.omit(Ms)))) == 1)){
+            resMaxDen <- unique(as.numeric(na.omit(Ms)))
+        }else{
+            resMaxDen <- NA
+        }
+    }
+    resCIs <- cbind(boot$CI,as.matrix(ciList))
+    colnames(resCIs) <- colnames(bootRaw)
+    rownames(resCIs) <- c("lo","up")
+    resMaxDen <- c(boot$maxDen, resMaxDen)
+    names(resMaxDen) <- colnames(bootRaw)
+    resMed <- c(boot$median, resMed)
+    names(resMed) <- colnames(bootRaw)
+    
+
+    ret <- list()
+    ret$bootRaw <- bootRaw
+    ret$seed <- boot$seed
+    ret$maxDen <- resMaxDen
+    ret$median <- resMed        
+    ret$CI <- resCIs
+    if("multiCI" %in% names(boot)) ret$multiCI <- boot$multiCI
+    class(ret) <- "lfqBoot"
+    return(ret)
+}
+
+
+
+
