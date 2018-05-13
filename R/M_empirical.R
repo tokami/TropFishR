@@ -28,6 +28,7 @@
 #'    Please refer to Details to see which input parameters
 #'    are required by each method.
 #' @param boot an object of class 'lfqBoot'
+#' @param CI percentage for confidence intervals (Default: 95)
 #'
 #' @keywords function mortality M
 #'
@@ -115,7 +116,7 @@
 M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
                         temp = NULL, tmax = NULL, tm50 = NULL, GSI = NULL,
                         Wdry = NULL, Wwet = NULL, Bl = NULL,
-                        schooling = FALSE, method, boot = NULL){
+                        schooling = FALSE, method, boot = NULL, CI = 95){
 
     if(!is.null(boot) & class(boot) == "lfqBoot"){
         ## calculations with bootstrapped ELEFAN results
@@ -146,43 +147,47 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
 
         ## max density and CIS
         resMaxDen <- vector("numeric", ncol(tmp))
+        resMed <- vector("numeric", ncol(tmp))                
         ciList <- vector("list", ncol(tmp))
         for(i in seq(length(method))){
+            ## median
+            resMed[i] <- median(tmp[,i], na.rm = TRUE)
+            
+            ## confidence intervals
+            citmp <- (100-CI)/2/100
+            ciList[[i]] <- quantile(tmp[,i],  probs = c(citmp, 1-citmp), na.rm = TRUE)
+            
             ## max densities
             x <- try(ks::kde(as.numeric(na.omit(tmp[,i]))), TRUE)
             if(class(x) != "try-error"){
+                ## max den
                 ind <- which(x$estimate > x$cont["99%"])
-                resMaxDen[i] <- mean(x$eval.points[ind])
-                ## confidence intervals
-                CItxt <- paste0(round(5), "%")
-                inCI <- rle( x$estimate > x$cont[CItxt] )
-                start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
-                end.idx <- cumsum(inCI$lengths)
-                limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
-                ciList[[i]] <- limCI
+                resMaxDen[i] <- mean(x$eval.points[ind])  ## why mean?
             }else{
                 if((length(unique(as.character(tmp[,i]))) == 1 && all(!is.na(tmp[,i]))) |
                    (length(unique(as.character(na.omit(tmp[,i])))) == 1)){
                     resMaxDen[i] <- unique(as.numeric(na.omit(tmp[,i])))
-                    ciList[[i]] <- c(NA,NA)
                 }else{
                     resMaxDen[i] <- NA
-                    ciList[[i]] <- c(NA,NA)
                 }
             }
         }
         resCIs <- cbind(boot$CI,t(do.call(rbind,ciList)))
         colnames(resCIs) <- colnames(bootRaw)
         rownames(resCIs) <- c("lo","up")
-        resMaxDen <- cbind(boot$maxDen, resMaxDen)
-        colnames(resMaxDen) <- colnames(bootRaw)
-        rownames(resMaxDen) <- "maxDen"
+        resMaxDen <- c(boot$maxDen, resMaxDen)
+        names(resMaxDen) <- colnames(bootRaw)
+        resMed <- c(boot$median, resMed)
+        names(resMed) <- colnames(bootRaw)
+
 
         ret <- list()
         ret$bootRaw <- bootRaw
         ret$seed <- boot$seed
         ret$maxDen <- resMaxDen
+        ret$median <- resMed        
         ret$CI <- resCIs
+        if("multiCI" %in% names(boot)) ret$multiCI <- boot$multiCI
         class(ret) <- "lfqBoot"
         return(ret)
 

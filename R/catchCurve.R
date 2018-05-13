@@ -39,6 +39,7 @@
 #' @param robustReg logical; indicating whether the robust automatic fitting of the regression line should be used
 #'    for application to 'lfqBoot' object
 #' @param plot logical; should a plot be displayed? Default = TRUE
+#' @param CI percentage for confidence intervals (Default: 95)
 #'
 #'
 #' @keywords function mortality Z catchCurve
@@ -199,7 +200,8 @@ catchCurve <- function(param,
                        robustReg = FALSE,
                        yearSel = NA,
                        binSize = NA,
-                       plot = TRUE
+                       plot = TRUE,
+                       CI = 95
                        ){
 
     ## catch curve with bootstrapping ELEFAN results
@@ -487,38 +489,37 @@ catchCurve <- function(param,
 
         ## max density and CIS
         resMaxDen <- vector("numeric", ncol(tmp))
+        resMed <- vector("numeric", ncol(tmp))        
         ciList <- vector("list", ncol(tmp))
         for(i in seq(nx)){
+            ## median
+            resMed[i] <- median(tmp[,i], na.rm = TRUE)
+            
+            ## confidence intervals
+            citmp <- (100-CI)/2/100
+            ciList[[i]] <- quantile(tmp[,i],  probs = c(citmp, 1-citmp), na.rm = TRUE)
+
             ## max densities
             x <- try(ks::kde(as.numeric(na.omit(tmp[,i]))), TRUE)
             if(class(x) != "try-error"){
                 ind <- which(x$estimate > x$cont["99%"])
                 resMaxDen[i] <- mean(x$eval.points[ind])
-                ## confidence intervals
-                CItxt <- paste0(round(5), "%")
-                inCI <- rle( x$estimate > x$cont[CItxt] )
-                start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
-                end.idx <- cumsum(inCI$lengths)
-                limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
-                ciList[[i]] <- limCI
             }else{
                 if((length(unique(as.character(tmp[,i]))) == 1 && all(!is.na(tmp[,i]))) |
                    (length(unique(as.character(na.omit(tmp[,i])))) == 1)){
                     resMaxDen[i] <- unique(as.numeric(na.omit(tmp[,i])))
-                    ciList[[i]] <- c(NA,NA)
                 }else{
                     resMaxDen[i] <- NA
-                    ciList[[i]] <- c(NA,NA)
                 }
             }
         }
         resCIs <- cbind(boot$CI,t(do.call(rbind,ciList)))
         colnames(resCIs) <- colnames(bootRaw)
         rownames(resCIs) <- c("lo","up")
-        resMaxDen <- cbind(boot$maxDen, t(as.data.frame(resMaxDen)))
-        colnames(resMaxDen) <- colnames(bootRaw)
-        rownames(resMaxDen) <- "maxDen"
-
+        resMaxDen <- c(boot$maxDen, t(as.data.frame(resMaxDen)))
+        names(resMaxDen) <- colnames(bootRaw)
+        resMed <- c(boot$median, resMed)
+        names(resMed) <- colnames(bootRaw)
 
         if(FALSE){
         ## check with FM
@@ -533,11 +534,12 @@ catchCurve <- function(param,
         ret$bootRaw <- bootRaw
         ret$seed <- boot$seed
         ret$maxDen <- resMaxDen
+        ret$median <- resMed        
         ret$CI <- resCIs
-
+        if("multiCI" %in% names(boot)) ret$multiCI <- boot$multiCI
         class(ret) <- "lfqBoot"
         return(ret)
-
+        
     }else if(!is.null(boot) & class(boot) != "lfqBoot"){
         stop("You provided an object for boot, but it does not have class 'lfqBoot'. Please check.")
     }else{

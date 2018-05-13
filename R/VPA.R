@@ -44,6 +44,7 @@
 #' @param natMort name of column with natural mortalites for bootstrapping application of VPA
 #' @param yearSel optional character for bootsrapping use of this function
 #'    specifying a year to be subsetted if LFQ data covers multiple years
+#' @param CI percentage for confidence intervals (Default: 95)
 #'
 #' @details The main difference between virtual population analysis (VPA) and cohort
 #'    analysis (CA) is the step of calculating the fishing mortality per age class or
@@ -150,7 +151,7 @@ VPA <- function(param,
                 LW_unit = "g",
                 analysis_type = "VPA", algorithm = "new",
                 plus_group = TRUE, plot = FALSE,
-                boot = NULL, natMort = NULL, yearSel = NA){
+                boot = NULL, natMort = NULL, yearSel = NA, CI = 95){
 
     ## VPA with bootstrapping ELEFAN results
     if(!is.null(boot) & class(boot) == "lfqBoot"){
@@ -420,38 +421,45 @@ VPA <- function(param,
 
         ## max density and CIS
         resMaxDen <- vector("numeric", ncol(tmp))
+        resMed <- vector("numeric", ncol(tmp))        
         ciList <- vector("list", ncol(tmp))
         for(i in seq(nx)){
-            ## max densities
-            x <- ks::kde(as.numeric(na.omit(tmp[,i])))
-            ind <- which(x$estimate > x$cont["99%"])
-            resMaxDen[i] <- mean(x$eval.points[ind])
+            ## median
+            resMed[i] <- median(tmp[,i], na.rm = TRUE)
+            
             ## confidence intervals
-            CItxt <- paste0(round(5), "%")
-            inCI <- rle( x$estimate > x$cont[CItxt] )
-            start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
-            end.idx <- cumsum(inCI$lengths)
-            limCI <- try(range(x$eval.points[start.idx[min(which(inCI$values),na.rm=TRUE)]:
-                                         end.idx[max(which(inCI$values),na.rm=TRUE)]]))
-            if(class(limCI) != "try-error"){  ## haven't quite figured out why limCI can give NA, but either all of x$eval.points or all of start.idx or end.idx are NA...
-            limCI[limCI < 0] <- 0
-            ciList[[i]] <- limCI
+            citmp <- (100-CI)/2/100
+            ciList[[i]] <- quantile(tmp[,i],  probs = c(citmp, 1-citmp), na.rm = TRUE)
+
+            ## max densities
+            x <- try(ks::kde(as.numeric(na.omit(tmp[,i]))), TRUE)
+            if(class(x) != "try-error"){
+                ind <- which(x$estimate > x$cont["99%"])
+                resMaxDen[i] <- mean(x$eval.points[ind])
             }else{
-                ciList[[i]] <- c(NA,NA)
+                if((length(unique(as.character(tmp[,i]))) == 1 && all(!is.na(tmp[,i]))) |
+                   (length(unique(as.character(na.omit(tmp[,i])))) == 1)){
+                    resMaxDen[i] <- unique(as.numeric(na.omit(tmp[,i])))
+                }else{
+                    resMaxDen[i] <- NA
+                }
             }
         }
         resCIs <- cbind(boot$CI,t(do.call(rbind,ciList)))
         colnames(resCIs) <- colnames(bootRaw)
         rownames(resCIs) <- c("lo","up")
-        resMaxDen <- cbind(boot$maxDen, t(as.data.frame(resMaxDen)))
-        colnames(resMaxDen) <- colnames(bootRaw)
-        rownames(resMaxDen) <- "maxDen"
-
+        resMaxDen <- c(boot$maxDen, t(as.data.frame(resMaxDen)))
+        names(resMaxDen) <- colnames(bootRaw)
+        resMed <- c(boot$median, resMed)
+        names(resMed) <- colnames(bootRaw)
+        
         ret <- list()
         ret$bootRaw <- bootRaw
         ret$seed <- boot$seed
         ret$maxDen <- resMaxDen
+        ret$median <- resMed        
         ret$CI <- resCIs
+        if("multiCI" %in% names(boot)) ret$multiCI <- boot$multiCI
         ret$FMvecVPA <- FMsVPA
         class(ret) <- "lfqBoot"
         return(ret)

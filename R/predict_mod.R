@@ -57,6 +57,7 @@
 #' @param natMort name of column with natural mortalites for bootstrapping application of VPA
 #' @param yearSel optional character for bootsrapping use of this function
 #'    specifying a year to be subsetted if LFQ data covers multiple years
+#' @param CI percentage for confidence intervals (Default: 95)
 #'
 #' @keywords function prediction ypr
 #'
@@ -296,7 +297,7 @@ predict_mod <- function(
   hide.progressbar = FALSE,
   boot = NULL,
   natMort = NULL,
-  yearSel = NA
+  yearSel = NA, CI = 95
 ){
 
     
@@ -814,55 +815,47 @@ predict_mod <- function(
 
         ## max density and CIS
         resMaxDen <- vector("numeric", ncol(tmp))
+        resMed <- vector("numeric", ncol(tmp))                
         ciList <- vector("list", ncol(tmp))
         for(i in seq(nx)){
+            ## median
+            resMed[i] <- median(tmp[,i], na.rm = TRUE)
+            
+            ## confidence intervals
+            citmp <- (100-CI)/2/100
+            ciList[[i]] <- quantile(tmp[,i],  probs = c(citmp, 1-citmp), na.rm = TRUE)
+            
             ## max densities
             x <- try(ks::kde(as.numeric(na.omit(tmp[,i]))), TRUE)
             if(class(x) != "try-error"){
                 ind <- which(x$estimate > x$cont["99%"])
                 resMaxDen[i] <- mean(x$eval.points[ind])
-                ## confidence intervals
-                CItxt <- paste0(round(5), "%")
-                inCI <- rle( x$estimate > x$cont[CItxt] )
-                start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
-                end.idx <- cumsum(inCI$lengths)
-                limCI <- try(range(x$eval.points[start.idx[min(which(inCI$values),na.rm=TRUE)]:
-                                                 end.idx[max(which(inCI$values),na.rm=TRUE)]]))
-                if(class(limCI) != "try-error"){  ## haven't quite figured out why limCI can give NA, but either all of x$eval.points or all of start.idx or end.idx are NA...
-                    ciList[[i]] <- limCI
-                }else{
-                    ciList[[i]] <- c(NA,NA)
-                }
             }else{
                 if(all(!is.na(tmp[,i]))){
                     tmp5 <- tmp[,i]
                     tmp6 <- names(table(tmp5))[which.max(table(tmp5))]
                     resMaxDen[i] <- as.numeric(tmp6)
-                    ciList[[i]] <- c(NaN,NaN)
                 }else{
                     resMaxDen[i] <- NaN
-                    ciList[[i]] <- c(NaN,NaN)
                 }
             }
         }
-
         resCIs <- cbind(boot$CI,t(do.call(rbind,ciList)))
-        colnames(resCIs) <- c(colnames(bootRaw)[-((ncol(bootRaw)-5):ncol(bootRaw))],
-                              colnames(tmp))
+        colnames(resCIs) <- colnames(bootRaw)
         rownames(resCIs) <- c("lo","up")
-        resMaxDen <- cbind(boot$maxDen, t(as.data.frame(resMaxDen)))
-        colnames(resMaxDen) <- c(colnames(bootRaw)[-((ncol(bootRaw)-5):ncol(bootRaw))],
-                                 colnames(tmp))
-        rownames(resMaxDen) <- "maxDen"
-
+        resMaxDen <- c(boot$maxDen, t(as.data.frame(resMaxDen)))
+        names(resMaxDen) <- colnames(bootRaw)
+        resMed <- c(boot$median, resMed)
+        names(resMed) <- colnames(bootRaw)
 
         ret <- list()
         ret$bootRaw <- bootRaw
         ret$seed <- boot$seed
         ret$maxDen <- resMaxDen
+        ret$median <- resMed        
         ret$CI <- resCIs
-        ret$FMvecVPA <- boot$FMvecVPA
-
+        if("multiCI" %in% names(boot)) ret$multiCI <- boot$multiCI
+        ret$FMvecVPA <- boot$FMvecVPA        
         class(ret) <- "lfqBoot"
         return(ret)
 

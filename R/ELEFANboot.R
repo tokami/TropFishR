@@ -312,11 +312,12 @@ ELEFAN_SA_boot <- function(lfq, seasonalised = FALSE,
     fhat <- kde(x = x, H = H, eval.points = x)
 
     # maximum density
-    maxDens <- fhat$eval.points[which.max(fhat$estimate),] 
-    rownames(maxDens) <- NULL
+    maxDens <- fhat$eval.points[which.max(fhat$estimate),]
+    nami <- names(maxDens)
+    maxDens <- as.numeric(maxDens)
+    names(maxDens) <- nami
 
     medians <- apply(fhat$eval.points, 2, median, na.rm = TRUE)
-    rownames(medians) <- NULL
 
     ## confidence intervals (univariate)
     tmp <- (100-CI)/2/100
@@ -330,7 +331,7 @@ ELEFAN_SA_boot <- function(lfq, seasonalised = FALSE,
     rownames(limCI) <- c("lo","up")
 
     ## adding phiL to maxDen and CI assuming relationship
-    maxDens[ncol(maxDens)+1] <- log10(maxDens[which(names(maxDens) == "K")]) +
+    maxDens[length(maxDens)+1] <- log10(maxDens[which(names(maxDens) == "K")]) +
         2 * log10(maxDens[which(names(maxDens) == "Linf")])
     names(maxDens) <- c(names(maxDens)[-length(maxDens)],"phiL")
     medians[length(medians)+1] <- log10(medians[which(names(medians) == "K")]) +
@@ -611,12 +612,13 @@ ELEFAN_GA_boot <- function(lfq, seasonalised = FALSE, low_par = NULL, up_par = N
     fhat <- kde(x = x, H = H, eval.points = x)
 
     # maximum density
-    maxDens <- fhat$eval.points[which.max(fhat$estimate),] 
-    rownames(maxDens) <- NULL
+    maxDens <- fhat$eval.points[which.max(fhat$estimate),]
+    nami <- names(maxDens)
+    maxDens <- as.numeric(maxDens)
+    names(maxDens) <- nami
 
     medians <- apply(fhat$eval.points, 2, median, na.rm = TRUE)
-    rownames(medians) <- NULL
-
+    
     ## confidence intervals (univariate)
     tmp <- (100-CI)/2/100
     limCIuni <- apply(fhat$eval.points, 2, quantile, na.rm = TRUE, probs = c(tmp, 1-tmp))
@@ -629,7 +631,7 @@ ELEFAN_GA_boot <- function(lfq, seasonalised = FALSE, low_par = NULL, up_par = N
     rownames(limCI) <- c("lo","up")
 
     ## adding phiL to maxDen and CI assuming relationship
-    maxDens[ncol(maxDens)+1] <- log10(maxDens[which(names(maxDens) == "K")]) +
+    maxDens[length(maxDens)+1] <- log10(maxDens[which(names(maxDens) == "K")]) +
         2 * log10(maxDens[which(names(maxDens) == "Linf")])
     names(maxDens) <- c(names(maxDens)[-length(maxDens)],"phiL")
     medians[length(medians)+1] <- log10(medians[which(names(medians) == "K")]) +
