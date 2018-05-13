@@ -549,7 +549,7 @@ ELEFAN_GA_boot <- function(lfq, seasonalised = FALSE, low_par = NULL, up_par = N
 
 
 
-#' Multivariate maximum density estimates from a bootstrapped object
+#' Summarise ELEFAN_boot results
 #'
 #' @param boot object of class "lfqBoot"
 #' @param CI confidence interval default 95%
@@ -570,7 +570,9 @@ ELEFAN_GA_boot <- function(lfq, seasonalised = FALSE, low_par = NULL, up_par = N
 #' 
 #' @export
 #' 
-MultiMaxDen <- function(boot, CI = 95, omega = 1.5){
+summary.lfqBoot <- function(boot, CI = 95, omega = 1.5){
+
+    if(class(boot) != "lfqBoot") error("boot has to be of class 'lfqBoot'!")
 
     ## lfqboot object
     bootRaw <- boot$bootRaw
@@ -590,7 +592,15 @@ MultiMaxDen <- function(boot, CI = 95, omega = 1.5){
     maxDens <- fhat$eval.points[which.max(fhat$estimate),] 
     rownames(maxDens) <- NULL
 
-    ## confidence intervals
+    medians <- apply(fhat$eval.points, 2, median, na.rm = TRUE)
+    rownames(medians) <- NULL
+
+    ## confidence intervals (univariate)
+    tmp <- (100-CI)/2/100
+    limCIuni <- apply(fhat$eval.points, 2, quantile, na.rm = TRUE, probs = c(tmp, 1-tmp))
+    rownames(limCIuni) <- c("lo","up")
+
+    ## confidence intervals (multivariate)
     inCI <- fhat$estimate > quantile(fhat$estimate, probs = (100-CI)/100)
     x_inCI <- x[inCI,]
     limCI <- apply(x_inCI, 2, range)
@@ -600,6 +610,12 @@ MultiMaxDen <- function(boot, CI = 95, omega = 1.5){
     maxDens[ncol(maxDens)+1] <- log10(maxDens[which(names(maxDens) == "K")]) +
         2 * log10(maxDens[which(names(maxDens) == "Linf")])
     names(maxDens) <- c(names(maxDens)[-length(maxDens)],"phiL")
+    medians[length(medians)+1] <- log10(medians[which(names(medians) == "K")]) +
+        2 * log10(medians[which(names(medians) == "Linf")])
+    names(medians) <- c(names(medians)[-length(medians)],"phiL")
+    limCIuni <- cbind(limCIuni,log10(limCIuni[,which(names(maxDens) == "K")]) +
+        2 * log10(limCIuni[,which(names(maxDens) == "Linf")]))
+    colnames(limCIuni) <- c(colnames(limCIuni)[-ncol(limCI)],"phiL")    
     limCI <- cbind(limCI,log10(limCI[,which(names(maxDens) == "K")]) +
         2 * log10(limCI[,which(names(maxDens) == "Linf")]))
     colnames(limCI) <- c(colnames(limCI)[-ncol(limCI)],"phiL")
@@ -609,7 +625,9 @@ MultiMaxDen <- function(boot, CI = 95, omega = 1.5){
     ret$bootRaw <- bootRaw
     ret$seed <- boot$seed
     ret$maxDen <- maxDens
-    ret$CI <- limCI
+    ret$median <- medians
+    ret$CI <- limCIuni
+    ret$multiCI <- limCI
     class(ret) <- "lfqBoot"
 
     return(ret)
