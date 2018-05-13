@@ -7,7 +7,7 @@
 catchCurve(param, catch_columns = NA, cumulative = FALSE,
   calc_ogive = FALSE, reg_int = NULL, reg_num = 1, auto = FALSE,
   boot = NULL, natMort = NULL, robustReg = FALSE, yearSel = NA,
-  binSize = NA, plot = TRUE)
+  binSize = NA, plot = TRUE, CI = 95)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -55,6 +55,8 @@ specifying a year to be subsetted if LFQ data covers multiple years}
 \item{binSize}{optional argument for bootstrapping application, if lfq data should be rebinned.}
 
 \item{plot}{logical; should a plot be displayed? Default = TRUE}
+
+\item{CI}{percentage for confidence intervals (Default: 95)}
 }
 \value{
 A list with the input parameters and following list objects:

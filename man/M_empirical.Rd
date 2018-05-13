@@ -9,7 +9,8 @@ https://cran.r-project.org/web/packages/fishmethods/index.html
 \usage{
 M_empirical(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
   temp = NULL, tmax = NULL, tm50 = NULL, GSI = NULL, Wdry = NULL,
-  Wwet = NULL, Bl = NULL, schooling = FALSE, method, boot = NULL)
+  Wwet = NULL, Bl = NULL, schooling = FALSE, method, boot = NULL,
+  CI = 95)
 }
 \arguments{
 \item{Linf}{infinite total length (TL) from a von Bertalanffy
@@ -50,6 +51,8 @@ Please refer to Details to see which input parameters
 are required by each method.}
 
 \item{boot}{an object of class 'lfqBoot'}
+
+\item{CI}{percentage for confidence intervals (Default: 95)}
 }
 \value{
 A matrix of M estimates.

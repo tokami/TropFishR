@@ -9,7 +9,7 @@ ELEFAN_SA_boot(lfq, seasonalised = FALSE, init_par = list(Linf = 50, K =
   parallel = TRUE, nresamp = 10, no_cores = detectCores() - 1,
   clusterType = "PSOCK", outfile = "output.txt", SA_time = 60,
   SA_temp = 1e+05, maxit = NULL, MA = 5, addl.sqrt = FALSE,
-  agemax = NULL, flagging.out = TRUE, seed = NULL)
+  agemax = NULL, flagging.out = TRUE, seed = NULL, CI = 95)
 }
 \arguments{
 \item{lfq}{a length frequency object of the class `lfq`}
@@ -89,6 +89,8 @@ according to Brey et al. (1988) (default: FALSE, for
 ELEFAN in TRUE. Default:TRUE}
 
 \item{seed}{seed value for random number reproducibility (Default: NULL)}
+
+\item{CI}{percentage for confidence intervals (Default: 95)}
 }
 \value{
 a data.frame of fitted VBGF parameters (columns) by permutation (rows).

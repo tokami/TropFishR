@@ -9,7 +9,8 @@ ELEFAN_GA_boot(lfq, seasonalised = FALSE, low_par = NULL, up_par = NULL,
   clusterType = "PSOCK", outfile = "output.txt", popSize = 60,
   maxiter = 50, run = 10, pmutation = 0.2, pcrossover = 0.8,
   elitism = base::max(1, round(popSize * 0.05)), MA = 5,
-  addl.sqrt = FALSE, agemax = NULL, flagging.out = TRUE, seed = NULL)
+  addl.sqrt = FALSE, agemax = NULL, flagging.out = TRUE, seed = NULL,
+  CI = 95)
 }
 \arguments{
 \item{lfq}{a length frequency object of the class `lfq`}
@@ -89,6 +90,8 @@ according to Brey et al. (1988) (default: FALSE, for
 ELEFAN in TRUE. Default:TRUE}
 
 \item{seed}{seed value for random number reproducibility (Default: NULL)}
+
+\item{CI}{percentage for confidence intervals (Default: 95)}
 }
 \value{
 an object of class 'lfqBoot' with following objects
