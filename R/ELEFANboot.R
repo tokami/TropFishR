@@ -131,6 +131,7 @@ lfqResample <- function(lfq, boot = NULL){
 #' @param flagging.out logical; should positive peaks be flagged out? Original setting of
 #' ELEFAN in TRUE. Default:TRUE
 #' @param seed seed value for random number reproducibility (Default: NULL)
+#' @param CI percentage for confidence intervals (Default: 95)
 #'
 #' @description `ELEFAN_SA_boot` performs a bootstrapped fitting of
 #'   von Bertalanffy growth function (VBGF) via the \link{ELEFAN_SA} function. 
@@ -203,7 +204,7 @@ ELEFAN_SA_boot <- function(lfq, seasonalised = FALSE,
                            outfile = "output.txt",
                            SA_time = 60, SA_temp = 1e5, maxit = NULL,
                            MA = 5, addl.sqrt = FALSE, agemax = NULL,
-                           flagging.out = TRUE, seed = NULL
+                           flagging.out = TRUE, seed = NULL, CI = 95
 ){
   
     if(!is.null(outfile)){unlink(outfile)} # delete old outfile
@@ -294,12 +295,65 @@ ELEFAN_SA_boot <- function(lfq, seasonalised = FALSE,
     tmp0 <- as.data.frame(do.call("rbind", res))
     tmp <- tmp0[,-ncol(tmp0)]
 
+    seeds <- as.numeric(tmp0[,ncol(tmp0)])
+
+    ## lfqboot object
+    bootRaw <- tmp
+
+    ## Conduct multivariate kernel smoothing
+    phiLcol <- which(names(bootRaw) == "phiL")
+    if(length(phiLcol > 0)){
+      x <- bootRaw[,-phiLcol]
+    } else {
+      x <- bootRaw
+    }
+
+    H <- Hpi(x, nstage = 1)
+    fhat <- kde(x = x, H = H, eval.points = x)
+
+    # maximum density
+    maxDens <- fhat$eval.points[which.max(fhat$estimate),] 
+    rownames(maxDens) <- NULL
+
+    medians <- apply(fhat$eval.points, 2, median, na.rm = TRUE)
+    rownames(medians) <- NULL
+
+    ## confidence intervals (univariate)
+    tmp <- (100-CI)/2/100
+    limCIuni <- apply(fhat$eval.points, 2, quantile, na.rm = TRUE, probs = c(tmp, 1-tmp))
+    rownames(limCIuni) <- c("lo","up")
+
+    ## confidence intervals (multivariate)
+    inCI <- fhat$estimate > quantile(fhat$estimate, probs = (100-CI)/100)
+    x_inCI <- x[inCI,]
+    limCI <- apply(x_inCI, 2, range)
+    rownames(limCI) <- c("lo","up")
+
+    ## adding phiL to maxDen and CI assuming relationship
+    maxDens[ncol(maxDens)+1] <- log10(maxDens[which(names(maxDens) == "K")]) +
+        2 * log10(maxDens[which(names(maxDens) == "Linf")])
+    names(maxDens) <- c(names(maxDens)[-length(maxDens)],"phiL")
+    medians[length(medians)+1] <- log10(medians[which(names(medians) == "K")]) +
+        2 * log10(medians[which(names(medians) == "Linf")])
+    names(medians) <- c(names(medians)[-length(medians)],"phiL")
+    limCIuni <- cbind(limCIuni,log10(limCIuni[,which(names(maxDens) == "K")]) +
+        2 * log10(limCIuni[,which(names(maxDens) == "Linf")]))
+    colnames(limCIuni) <- c(colnames(limCIuni)[-ncol(limCI)],"phiL")    
+    limCI <- cbind(limCI,log10(limCI[,which(names(maxDens) == "K")]) +
+        2 * log10(limCI[,which(names(maxDens) == "Linf")]))
+    colnames(limCI) <- c(colnames(limCI)[-ncol(limCI)],"phiL")
+
+    ## save and return results
     ret <- list()
-    ret$bootRaw <- tmp
-    ret$seed <- as.numeric(tmp0[,ncol(tmp0)])
+    ret$bootRaw <- bootRaw
+    ret$seed <- seeds
+    ret$maxDen <- maxDens
+    ret$median <- medians
+    ret$CI <- limCIuni
+    ret$multiCI <- limCI
     class(ret) <- "lfqBoot"
-    
-    return(ret)
+
+    return(ret)    
 }
 
 
@@ -366,6 +420,7 @@ ELEFAN_SA_boot <- function(lfq, seasonalised = FALSE,
 #' @param flagging.out logical; should positive peaks be flagged out? Original setting of
 #' ELEFAN in TRUE. Default:TRUE
 #' @param seed seed value for random number reproducibility (Default: NULL)
+#' @param CI percentage for confidence intervals (Default: 95)
 #'
 #' @description `ELEFAN_GA_boot` performs a bootstrapped fitting of
 #'   von Bertalanffy growth function (VBGF) via the \link{ELEFAN_GA} function. Most of the arguments
@@ -445,7 +500,7 @@ ELEFAN_GA_boot <- function(lfq, seasonalised = FALSE, low_par = NULL, up_par = N
                            pmutation = 0.2, pcrossover = 0.8,
                            elitism = base::max(1, round(popSize * 0.05)),
                            MA = 5, addl.sqrt = FALSE, agemax = NULL,
-                           flagging.out = TRUE, seed = NULL
+                           flagging.out = TRUE, seed = NULL, CI = 95
                            ){
 
     if(!is.null(outfile)){unlink(outfile)} # delete old outfile
@@ -539,43 +594,10 @@ ELEFAN_GA_boot <- function(lfq, seasonalised = FALSE, low_par = NULL, up_par = N
     tmp0 <- as.data.frame(do.call("rbind", res))
     tmp <- tmp0[,-ncol(tmp0)]
 
-    ret <- list()
-    ret$bootRaw <- tmp
-    ret$seed <- as.numeric(tmp0[,ncol(tmp0)])
-    class(ret) <- "lfqBoot"
-    
-    return(ret)
-}
-
-
-
-#' Summarise ELEFAN_boot results
-#'
-#' @param boot object of class "lfqBoot"
-#' @param CI confidence interval default 95%
-#' @param omega multiplication factor defining the number of eval.points
-#' 
-#' @description estimates maximum density estimates and confidence intervals for
-#'   (seasonalised) VBGF parameters obtained with ELEFAN_GA_boot or ELEFAN_boot_SA
-#'
-#' @return an object of class 'lfqBoot' with following objects
-#'    \itemize{
-#'    \item \strong{bootRaw} a data.frame of fitted VBGF parameters (columns) by
-#'               permutation (rows),
-#'    \item \strong{seed} a vector with seed values used in the LFQ resampling process
-#'    \item \strong{maxDen} a dataframe with the modes of the VBGF parameters,
-#'    \item \strong{CI} a dataframe with the lower and upper 95% (default) confidence
-#'               interval for the VBGF growth parameters.
-#'    }
-#' 
-#' @export
-#' 
-summary.lfqBoot <- function(boot, CI = 95, omega = 1.5){
-
-    if(class(boot) != "lfqBoot") error("boot has to be of class 'lfqBoot'!")
+    seeds <- as.numeric(tmp0[,ncol(tmp0)])
 
     ## lfqboot object
-    bootRaw <- boot$bootRaw
+    bootRaw <- tmp
 
     ## Conduct multivariate kernel smoothing
     phiLcol <- which(names(bootRaw) == "phiL")
@@ -623,7 +645,7 @@ summary.lfqBoot <- function(boot, CI = 95, omega = 1.5){
     ## save and return results
     ret <- list()
     ret$bootRaw <- bootRaw
-    ret$seed <- boot$seed
+    ret$seed <- seeds
     ret$maxDen <- maxDens
     ret$median <- medians
     ret$CI <- limCIuni
@@ -632,10 +654,6 @@ summary.lfqBoot <- function(boot, CI = 95, omega = 1.5){
 
     return(ret)
 }
-
-
-
-
 
 
 
