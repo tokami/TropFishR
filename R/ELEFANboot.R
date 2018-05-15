@@ -578,7 +578,7 @@ ELEFAN_GA_boot <- function(lfq, seasonalised = FALSE, low_par = NULL, up_par = N
         pmutation = pmutation, pcrossover = pcrossover, elitism = elitism,
         MA = MA, parallel = FALSE, addl.sqrt = addl.sqrt,
         agemax = agemax, flagging.out = flagging.out,
-        plot.score = FALSE, beep = FALSE, seed = NULL
+        plot.score = FALSE, seed = NULL
       )
 
       if(!is.null(outfile)){
