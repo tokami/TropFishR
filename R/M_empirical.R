@@ -344,8 +344,12 @@ MstochThen <- function(boot, CI=95){
     Mboot <- function(preddat, datThenNA, modThen){
         sampi <- sample(x =  seq(nrow(datThenNA)), size = nrow(datThenNA), replace = TRUE)
         dfi <- datThenNA[sampi,]
-        modTheni <- update(modThen, data = dfi)
-        predi <- predict(modTheni, newdata = preddat)
+        modTheni <- try(update(modThen, data = dfi))
+        if(class(modTheni) == "try-error"){
+            predi <- NA
+        }else{
+            predi <- predict(modTheni, newdata = preddat)
+        }
         return(predi)
     }
 
@@ -355,7 +359,7 @@ MstochThen <- function(boot, CI=95){
     data("datThen")
 
     ## original model by Then
-    modThen <- nls(M ~ a * K^b * Linf^c, data= datThen, start=list(a=4,b=0.8,c=-0.3))
+    modThen <- nls(M ~ a * K^b * Linf^c, data=datThen, start=list(a=4.118,b=0.73,c=-0.33))
 
     ## remove NA for resampling
     datThenNA <- na.omit(data.frame(M = datThen$M,K = datThen$K,Linf = datThen$Linf))
