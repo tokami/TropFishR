@@ -140,6 +140,12 @@ lfqResample <- function(lfq, boot = NULL){
 #'
 #' @return a data.frame of fitted VBGF parameters (columns) by permutation (rows).
 #'
+#' @importFrom ks Hpi
+#' @importFrom ks kde
+#' @importFrom parallel makeCluster
+#' @importFrom parallel stopCluster
+#' @importFrom parallel parLapply
+#'
 #' @examples
 #' # load data
 #' data(alba)
@@ -308,8 +314,8 @@ ELEFAN_SA_boot <- function(lfq, seasonalised = FALSE,
       x <- bootRaw
     }
 
-    H <- Hpi(x, nstage = 1)
-    fhat <- kde(x = x, H = H, eval.points = x)
+    H <- ks::Hpi(x, nstage = 1)
+    fhat <- ks::kde(x = x, H = H, eval.points = x)
 
     # maximum density
     maxDens <- fhat$eval.points[which.max(fhat$estimate),]
@@ -437,6 +443,12 @@ ELEFAN_SA_boot <- function(lfq, seasonalised = FALSE,
 #'               interval for the VBGF growth parameters.
 #'    }
 #'
+#' @importFrom ks kde
+#' @importFrom ks Hpi
+#' @importFrom parallel makeCluster
+#' @importFrom parallel stopCluster
+#' @importFrom parallel parLapply
+#' 
 #' @examples
 #' # load data
 #' data(alba)
@@ -608,8 +620,8 @@ ELEFAN_GA_boot <- function(lfq, seasonalised = FALSE, low_par = NULL, up_par = N
       x <- bootRaw
     }
 
-    H <- Hpi(x, nstage = 1)
-    fhat <- kde(x = x, H = H, eval.points = x)
+    H <- ks::Hpi(x, nstage = 1)
+    fhat <- ks::kde(x = x, H = H, eval.points = x)
 
     # maximum density
     maxDens <- fhat$eval.points[which.max(fhat$estimate),]
@@ -685,7 +697,9 @@ ELEFAN_GA_boot <- function(lfq, seasonalised = FALSE, low_par = NULL, up_par = N
 #'   are within each of the defined CIs, `density` - the multivariate kernel density
 #'   estimates for each sample, and `max_dens` is a list with the VBGF parameter
 #'   combination having the maximum density estimate.
-#' @export
+#'
+#' @importFrom ks Hpi
+#' @importFrom ks kde
 #'
 #' @examples
 #'
@@ -720,8 +734,8 @@ ELEFAN_GA_boot <- function(lfq, seasonalised = FALSE, low_par = NULL, up_par = N
 #'   col = 1, draw = TRUE, lty=1, lwd=2
 #' )
 #'
-#'
-#'
+#' @export
+#' 
 vbgfCI_time <- function(res, CI = 95, agemax = NULL,
   add_legend = TRUE, add_max_dens_legend = TRUE,
   xlab = "Relative time", ylab = "Length",
@@ -1062,15 +1076,18 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
 #' @param ylim limits for y-axis
 #'
 #' @return plot
-#' @export
+#'
+#' @importFrom ks Hpi
 #'
 #' @examples
 #' data(alba_boot)
 #' LinfK_scatterhist(alba_boot)
 #'
+#' @export
+#' 
 LinfK_scatterhist <- function(
   res, Linf.breaks = "Sturges", K.breaks = "Sturges",
-  gridsize = 151, H = Hpi(res[,c("Linf", "K")]), 
+  gridsize = 151, H = ks::Hpi(res[,c("Linf", "K")]), 
   shading = TRUE, shading.cols = colorRampPalette(c("white", blues9))(50),
   dens.contour = TRUE, probs = c(25,50,75,95),
   phi.contour = FALSE, phi.levels = NULL, 
