@@ -5,7 +5,7 @@
 \title{Link/K scatterplot of bootstrapping results}
 \usage{
 LinfK_scatterhist(res, Linf.breaks = "Sturges", K.breaks = "Sturges",
-  gridsize = 151, H = Hpi(res[, c("Linf", "K")]), shading = TRUE,
+  gridsize = 151, H = ks::Hpi(res[, c("Linf", "K")]), shading = TRUE,
   shading.cols = colorRampPalette(c("white", blues9))(50),
   dens.contour = TRUE, probs = c(25, 50, 75, 95), phi.contour = FALSE,
   phi.levels = NULL, phi.contour.col = 8, phi.contour.lty = 2,

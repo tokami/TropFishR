@@ -85,6 +85,4 @@ tmp <- lfqFitCurves(lfq = alba, par = CIinfo$max_dens,
   col = 1, draw = TRUE, lty=1, lwd=2
 )
 
-
-
 }
