@@ -1,8 +1,8 @@
 Package: TropFishR
 Type: Package
 Title: Tropical Fisheries Analysis
-Version: 1.2.1
-Date: 2018-01-08
+Version: 2.0.0
+Date: 2018-06-01
 Author: Tobias K. Mildenberger, Marc H. Taylor, Matthias Wolff
 Maintainer: Tobias K. Mildenberger <t.k.mildenberger@gmail.com>
 Depends:
@@ -20,7 +20,7 @@ Imports:
 LazyData: TRUE
 Description: A compilation of fish stock assessment methods for the
     analysis of length-frequency data in the context of data-poor
-    fisheries. Includes traditional methods and examples included in the FAO
+    fisheries. Includes methods and examples included in the FAO
     Manual by P. Sparre and S.C. Venema (1998), "Introduction to tropical fish
     stock assessment"
     (<http://www.fao.org/docrep/W5449E/W5449E00.htm>), as well as
