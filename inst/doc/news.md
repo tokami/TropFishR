@@ -6,7 +6,7 @@
       - New functions with bootstrapping (ELEFAN_boot_GA, ELEFAN_boot_SA)
       - Existing funtions with bootstrapping option (M_empirical, catchCurve, VPA, ypr)
       - New formulation of recruitment pattern hindcasting of an lfq object (recruitment). Hindcasting is done for each bin using an iterative calls to a discrete version of the VBGF, and returns a yearly pattern weighted by associated bin counts.
-
+      - Improved implementation of compilaiton of LFD allowing for faster compilation of lfq data with lfqCreate and lfqModify (with argument bin_size) and allowing compilation of large data sets
 
 ##### User-visible changes
       - The reference level labelled Fmsy in the function 'predict_mod()' is now labelled Fmax, as
@@ -15,11 +15,10 @@
       - Setting display of raw catches to default for LFQ plot
       - change of labelling of reference point "Fmsy" in prediction models to "Fmax" (is more correct)
       - plot.recruitment function has been removed, since recruitment results are now of class histogram, which can be directly plotted.
-
 		
 ##### Documentation
       - new publication with evaluation and demonstration of bootstrapped LFQ assessment
-      
+      - new publication about bootstrapped ELEFAN
       
 ##### Bug fixes
       - seasonal growth parameters have not been added correctly in lfqModify
