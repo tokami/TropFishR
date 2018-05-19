@@ -35,7 +35,7 @@
 #'
 #' @export
 
-lfqModify2 <- function(lfq, par = NULL,
+lfqModify <- function(lfq, par = NULL,
                       bin_size = NA,
                       vectorise_catch = FALSE,
                       plus_group = FALSE,
