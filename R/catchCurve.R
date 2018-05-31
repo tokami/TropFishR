@@ -445,22 +445,30 @@ catchCurve <- function(param,
                       t_ogive[which(t_ogive == Inf)] <- NA
 
                       #regression analysis to caluclate T1 and T2
-                      mod_ogive <- lm(ln_1_S_1 ~ t_ogive, na.action = na.omit)
-                      sum_lm_ogive <- summary(mod_ogive)
-                      T1 <- sum_lm_ogive$coefficients[1]
-                      T2 <- abs(sum_lm_ogive$coefficients[2])
+                      mod_ogive <- try(lm(ln_1_S_1 ~ t_ogive, na.action = na.omit), silent = TRUE)
 
-                      # calculate estimated selection ogive
-                      Sest <- 1/(1+exp(T1 - T2*xvar))
+                      if(class(mod_ogive) == "try-error"){
+                          t50s[bi] <- NA
+                          t75s[bi] <- NA
+                          L50s[bi] <- NA
+                          L75s[bi] <- NA
+                      }else{
+                          sum_lm_ogive <- summary(mod_ogive)
+                          T1 <- sum_lm_ogive$coefficients[1]
+                          T2 <- abs(sum_lm_ogive$coefficients[2])
 
-                      # selection parameters
-                      t50s[bi] <- T1/T2
-                      t75s[bi] <- (T1 + log(3))/T2
-    ##                  t95 <-  (T1 - log((1 / 0.95) - 1)) / T2
-                      t0 <- 0
-                      L50s[bi] <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t50s[bi]-t0)))
-                      L75s[bi] <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t75s[bi]-t0)))
-    ##                  L95 <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t95-t0)))
+                          # calculate estimated selection ogive
+                          Sest <- 1/(1+exp(T1 - T2*xvar))
+
+                          # selection parameters
+                          t50s[bi] <- T1/T2
+                          t75s[bi] <- (T1 + log(3))/T2
+        ##                  t95 <-  (T1 - log((1 / 0.95) - 1)) / T2
+                          t0 <- 0
+                          L50s[bi] <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t50s[bi]-t0)))
+                          L75s[bi] <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t75s[bi]-t0)))
+        ##                  L95 <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t95-t0)))                          
+                      }
                   }
                 }
             }
