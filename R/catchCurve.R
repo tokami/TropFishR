@@ -28,6 +28,8 @@
 #'    for the regression line in each element of the list.
 #' @param reg_num integer indicating how many separate regression lines should be applied to the
 #'    data. Default 1.
+#' @param slicing logical; defining if relative age should be estimated by slicing the LFQ data
+#'     with the estimated growth curves
 #' @param auto logical; no interactive functions used instead regression line is chosen
 #'    automatically. Default = FALSE
 #' @param boot an object of class 'lfqBoot'
@@ -35,6 +37,7 @@
 #'    for application to 'lfqBoot' object
 #' @param yearSel optional character for bootsrapping use of this function
 #'    specifying a year to be subsetted if LFQ data covers multiple years
+#' @param yearCombine logical; defining wether independent of years, catches should be combined
 #' @param binSize optional argument for bootstrapping application, if lfq data should be rebinned.
 #' @param robustReg logical; indicating whether the robust automatic fitting of the regression line should be used
 #'    for application to 'lfqBoot' object
@@ -194,11 +197,13 @@ catchCurve <- function(param,
                        calc_ogive = FALSE,
                        reg_int = NULL,
                        reg_num = 1,
+                       slicing = FALSE,
                        auto = FALSE,
                        boot = NULL,
                        natMort = NULL,
                        robustReg = FALSE,
                        yearSel = NA,
+                       yearCombine = FALSE,
                        binSize = NA,
                        plot = TRUE,
                        CI = 95
@@ -250,6 +255,9 @@ catchCurve <- function(param,
                 lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE)
             }
 
+
+            if(yearCombine) lfqLoop$catch <- rowSums(lfqLoop$catch)
+            
             ## error if lfq data spans several years!
             if(class(lfqLoop$catch) == "matrix") stop("The lfq data spans several years, please subset for one year at a time!")
 
@@ -554,7 +562,10 @@ catchCurve <- function(param,
 
         res <- param
 
-        if("midLengths" %in% names(res)) classes <- as.character(res$midLengths)
+        if("midLengths" %in% names(res)){
+            if(!is.na(binSize)) res <- lfqModify(res, bin_size = binSize)
+            classes <- as.character(res$midLengths)
+        }
         if("age" %in% names(res)) classes <- as.character(res$age)
         # create column without plus group (sign) if present
         classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
@@ -592,22 +603,27 @@ catchCurve <- function(param,
           }
         }
 
+
         # Error message if catch and age do not have same length
         #   Linearised catch curve with constant time intervals
         if(constant_dt){
-          if("midLengths" %in% names(res) == TRUE) stop(noquote(
-            "The catch curve with constant time interval is not applicable to length-frequency data. Please provide a catch vector."))
+            if("midLengths" %in% names(res)){
+                res <- lfqCohort(res)
+                tmp <- by(as.numeric(catch),as.numeric(res$cohort),sum, na.rm = TRUE)
+                catch <- as.numeric(tmp)
+                cohorts <- as.numeric(names(tmp))
+            } 
 
           #if(length(classes) != length(catch[,1])) stop(noquote(
           #  "Age/length classes and catch matrix do not have the same length!"))
 
-          if(length(classes) != length(diag(as.matrix(catch)))) writeLines("Age/length classes and the real cohort in the catch matrix \ndo not have the same length. The missing age/length \nclasses will be omitted.")
-
+          
           # Aged based Catch curve
           if("age" %in% names(res) == TRUE){
-            #find cohort to analyse
-            real.cohort <- diag(as.matrix(catch))
-            catch <- c(real.cohort, rep(NA,length(classes.num) - length(real.cohort)))
+              ## find cohort to analyse
+              real.cohort <- diag(as.matrix(catch))
+              catch <- c(real.cohort, rep(NA,length(classes.num) - length(real.cohort)))
+              if(length(classes) != length(diag(as.matrix(catch)))) writeLines("Age classes and the real cohort in the catch matrix \ndo not have the same length. The missing age \nclasses will be omitted.")
           }
 
         }else if(class(catch) == 'numeric'){
@@ -651,7 +667,7 @@ catchCurve <- function(param,
             dt[x1] <- t_L1[x1+1] - t_L1[x1]
           }
 
-          # x varaible
+          # x variable
           #ln (Linf - L)
           ln_Linf_L <- log(Linf - lowerLengths)
           ## t of midlengths
@@ -667,14 +683,24 @@ catchCurve <- function(param,
           lnC <- log(catch)
           # ln( Catch / delta t)
           lnC_dt <- log(catch / dt)
-          lnC_dt[which(lnC_dt == -Inf)] <- NA   ### OR zero???
+            lnC_dt[which(lnC_dt == -Inf)] <- NA   ### OR zero???
 
-          if(cumulative == FALSE){
+          if(constant_dt){
+            xvar = cohorts
+            xname = "classes.num"
+            xlabel = "Relative age [years - t0]"
+            yvar = lnC
+            yname = "lnC"
+            ylabel = "ln(C)"
+          }            
+            
+
+          if(!cumulative & !constant_dt){
             xvar = t_midL
             yvar = lnC_dt
             xname = "t_midL"
             yname = "lnC_dt"
-            xlabel = "Relative age [yrs]"
+            xlabel = "Relative age [years - t0]"
             ylabel = "ln(C/dt)"
           }
 
@@ -714,16 +740,16 @@ catchCurve <- function(param,
           if(constant_dt){
             xvar = classes.num
             xname = "classes.num"
-            xlabel = "Age [yrs]"
+            xlabel = "Age [years]"
             yvar = lnC
             yname = "lnC"
             ylabel = "ln C(t, inf)"
           }
 
-          if(cumulative == FALSE & constant_dt == FALSE){
+          if(!cumulative & constant_dt){
             xvar = tplusdt_2
             xname = "tplusdt_2"
-            xlabel = "Age [yrs]"
+            xlabel = "Age [years]"
             yvar = lnC_dt
             yname = "lnC_dt"
             ylabel = "ln(C/dt)"
@@ -732,13 +758,12 @@ catchCurve <- function(param,
           if(cumulative){
             xvar = tplusdt_2
             xname = "tplusdt_2"
-            xlabel = "Age [yrs]"
+            xlabel = "Age [years]"
             yvar = lnC
             yname = "lnC"
             ylabel = "ln C(t, inf)"
           }
         }
-
 
 
         ## remove all NAs and Infs

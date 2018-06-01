@@ -57,6 +57,8 @@
 #' @param natMort name of column with natural mortalites for bootstrapping application of VPA
 #' @param yearSel optional character for bootsrapping use of this function
 #'    specifying a year to be subsetted if LFQ data covers multiple years
+#' @param yearCombine logical; defining wether independent of years, catches should be combined
+#' @param binSize optional argument for bootstrapping application, if lfq data should be rebinned.
 #' @param CI percentage for confidence intervals (Default: 95)
 #'
 #' @keywords function prediction ypr
@@ -297,7 +299,10 @@ predict_mod <- function(
   hide.progressbar = FALSE,
   boot = NULL,
   natMort = NULL,
-  yearSel = NA, CI = 95
+  yearSel = NA,
+  yearCombine = FALSE,
+  binSize = NA,  
+  CI = 95
 ){
 
     
@@ -351,7 +356,18 @@ predict_mod <- function(
                 lfqTemp$dates <- lfqTemp$dates[format(lfqTemp$dates,"%Y") %in% yearSel]
             }
 
-            lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE)
+            ## vectorise
+            if(!is.na(binSize)){
+                lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE, bin_size = binSize)
+            }else{
+                lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE)
+            }
+
+
+            if(yearCombine) lfqLoop$catch <- rowSums(lfqLoop$catch)
+            
+            ## error if lfq data spans several years!
+            if(class(lfqLoop$catch) == "matrix") stop("The lfq data spans several years, please subset for one year at a time!")
 
 
             Linf <- bootRaw$Linf[bi]

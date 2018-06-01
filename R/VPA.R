@@ -44,6 +44,8 @@
 #' @param natMort name of column with natural mortalites for bootstrapping application of VPA
 #' @param yearSel optional character for bootsrapping use of this function
 #'    specifying a year to be subsetted if LFQ data covers multiple years
+#' @param yearCombine logical; defining wether independent of years, catches should be combined
+#' @param binSize optional argument for bootstrapping application, if lfq data should be rebinned.
 #' @param CI percentage for confidence intervals (Default: 95)
 #'
 #' @details The main difference between virtual population analysis (VPA) and cohort
@@ -151,7 +153,9 @@ VPA <- function(param,
                 LW_unit = "g",
                 analysis_type = "VPA", algorithm = "new",
                 plus_group = TRUE, plot = FALSE,
-                boot = NULL, natMort = NULL, yearSel = NA, CI = 95){
+                boot = NULL, natMort = NULL, yearSel = NA, 
+                       yearCombine = FALSE,
+                       binSize = NA, CI = 95){
 
     ## VPA with bootstrapping ELEFAN results
     if(!is.null(boot) & class(boot) == "lfqBoot"){
@@ -210,9 +214,18 @@ VPA <- function(param,
             lfqTemp$catch <- catch_cor
 
             ## vectorise catch
-            lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE)
+            if(!is.na(binSize)){
+                lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE, bin_size = binSize)
+            }else{
+                lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE)
+            }
 
+            if(yearCombine) lfqLoop$catch <- rowSums(lfqLoop$catch)
 
+            ## error if lfq data spans several years!
+            if(class(lfqLoop$catch) == "matrix") stop("The lfq data spans several years, please subset for one year at a time!")
+
+            
             ## for automatic plus group creation
             classes <- as.character(lfqLoop$midLengths)
             # create column without plus group (sign) if present
