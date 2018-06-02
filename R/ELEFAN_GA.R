@@ -311,16 +311,28 @@ ELEFAN_GA <- function(
   phiL <- log10(pars$K) + 2 * log10(pars$Linf)
   pars$phiL <- phiL
 
-  # Results
-  lfq$ncohort <- final_res$ncohort
-  lfq$agemax <- final_res$agemax
-  lfq$par <- pars
-  lfq$fESP <- fit@fitnessValue
-  lfq$Rn_max <- fit@fitnessValue
+    ## Results
+    lfq$low_par <- list(Linf = low_Linf, K = low_K, t_anchor=low_tanc, C=low_C, ts=low_ts)
+    lfq$up_par <- list(Linf=up_Linf, K=up_K, t_anchor=up_tanc, C=up_C, ts=up_ts)
+    lfq$seasonalised <- seasonalised    
+    lfq$addl.sqrt <- addl.sqrt
+    lfq$popSize <- popSize
+    lfq$maxiter <- maxiter
+    lfq$run <- run
+    lfq$pmutation <- pmutation
+    lfq$pcrossover <- pcrossover
+    lfq$elitism <- elitism
+    lfq$flagging.out <- flagging.out
+    lfq$seed <- seed
+    lfq$ncohort <- final_res$ncohort
+    lfq$agemax <- final_res$agemax
+    lfq$par <- pars
+    lfq$fESP <- fit@fitnessValue
+    lfq$Rn_max <- fit@fitnessValue
 
-  if(plot){
-    plot(lfq, Fname = "rcounts")
-    Lt <- lfqFitCurves(lfq, par = lfq$par, draw=TRUE)
-  }
-  return(lfq)
+    if(plot){
+      plot(lfq, Fname = "rcounts")
+      Lt <- lfqFitCurves(lfq, par = lfq$par, draw=TRUE)
+    }
+    return(lfq)
 }

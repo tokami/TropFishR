@@ -354,16 +354,23 @@ ELEFAN_SA <- function(
   phiL <- log10(pars$K) + 2 * log10(pars$Linf)
   pars$phiL <- phiL
 
-  # Results
-  res$ncohort <- final_res$ncohort
-  res$agemax <- final_res$agemax
-  res$par <- pars
-  res$fESP <- abs(SAfit$value)
-  res$Rn_max <- abs(SAfit$value)
+    ## Results
+    res$init_par <- list(Linf = init_Linf, K=init_K, t_anchor=init_tanc, C=init_C, ts=init_ts)
+    res$low_par <- list(Linf=low_Linf, K=low_K, t_anchor=low_tanc, C=low_C, ts=low_ts)
+    res$up_par <- list(Linf=up_Linf, K=up_K, t_anchor=up_tanc, C=up_C, ts=up_ts)
+    res$seasonalised <- seasonalised    
+    res$addl.sqrt <- addl.sqrt
+    res$flagging.out <- flagging.out
+    res$control <- control
+    res$ncohort <- final_res$ncohort
+    res$agemax <- final_res$agemax
+    res$par <- pars
+    res$fESP <- abs(SAfit$value)
+    res$Rn_max <- abs(SAfit$value)
 
-  if(plot){
-    plot(res, Fname = "rcounts")
-    Lt <- lfqFitCurves(res, par = res$pars, draw=TRUE)
-  }
-  return(res)
+    if(plot){
+      plot(res, Fname = "rcounts")
+      Lt <- lfqFitCurves(res, par = res$pars, draw=TRUE)
+    }
+    return(res)
 }
