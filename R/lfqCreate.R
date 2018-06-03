@@ -9,6 +9,9 @@
 #' @param Fname optional; name of column with frequency, in case each length was measured more than
 #'              one time
 #' @param bin_size size of the bins in cm (Default: 2)
+#' @param species character; to store species name in lfq list
+#' @param stock character; to store stock ID or name in lfq list
+#' @param comment optional character; to store comments conerning the lfq list
 #' @param length_unit unit of length measurements, either "cm" (default), "mm" or "m"
 #' @param plus_group logical; should a plus group be created? If yes you will be
 #'    asked to insert the length for the plus group in the console (default: FALSE).
@@ -44,10 +47,11 @@
 #'
 #' @export
 
-lfqCreate <- function(data, Lname, Dname, Fname = NA, bin_size = 2,
-                    length_unit = "cm", plus_group = FALSE,
-                    aggregate_dates = FALSE,
-                    plot = FALSE){
+lfqCreate <- function(data, Lname, Dname, Fname = NA, bin_size = 1,
+                      species = NA, stock = NA, comment = "",
+                      length_unit = "cm", plus_group = FALSE,
+                      aggregate_dates = FALSE,
+                      plot = FALSE){
 
     data$length <- get(Lname, data)
     data$date <- get(Dname, data)
@@ -155,9 +159,12 @@ lfqCreate <- function(data, Lname, Dname, Fname = NA, bin_size = 2,
 
 
 
-    res <- list(dates = unique(data$samplings),
-                     midLengths = midLengths,
-                     catch = catch_mat)
+    res <- list(species = species,
+                stock = stock,
+                dates = unique(data$samplings),
+                midLengths = midLengths,
+                catch = catch_mat,
+                comment = comment)
     class(res) <- "lfq"
     if(plot) plot(res, Fname = "catch")
     return(res)

@@ -13,6 +13,11 @@
 #'    asked to insert the length for the plus group in the console (default: FALSE).
 #'    Instead of inserting the length of the plus group via the console, the value
 #'    can be inserted, e.g. plus_group = 85.5.
+#' @param minDate minimum date to subset lfq data
+#' @param maxDate maximum date to subset lfq data
+#' @param years numeric with year(s) to subset lfq data
+#' @param Lmin minimum length to subset lfq data
+#' @param Lmax maximum length to subset lfq data
 #' @param lfq2 optional second lfq object which will be merged with lfq. This might be interesting for
 #'    fleet specific lfq objects. Default: NA.
 #'
@@ -39,6 +44,11 @@ lfqModify <- function(lfq, par = NULL,
                       bin_size = NA,
                       vectorise_catch = FALSE,
                       plus_group = FALSE,
+                      minDate = NA,
+                      maxDate = NA,
+                      years = NA,
+                      Lmin = NA,                      
+                      Lmax = NA,
                       lfq2 = NA){
 
     if(class(lfq) != "lfq") stop("Your lfq data set has to have class 'lfq'!")
@@ -49,7 +59,38 @@ lfqModify <- function(lfq, par = NULL,
     ## replace NAs in catch
     catch[which(is.na(catch))] <- 0
 
+    ## select beyond certain date
+    if(!is.na(minDate)){
+        lfq$catch <- lfq$catch[,which(lfq$dates >= minDate)]
+        lfq$dates <- lfq$dates[which(lfq$dates >= minDate)]        
+    }
+    
+    ## select before certain date
+    if(!is.na(maxDate)){
+        lfq$catch <- lfq$catch[,which(lfq$dates <= maxDate)]
+        lfq$dates <- lfq$dates[which(lfq$dates <= maxDate)]        
+    }
 
+    ## select certain years
+    if(!is.na(years[1])){
+        lfq$catch <- lfq$catch[,which(format(lfq$dates,"%Y") %in% years)]
+        lfq$dates <- lfq$dates[which(format(lfq$dates,"%Y") %in% years)]
+    }
+
+    ## select above certain length
+    if(!is.na(Lmin)){
+        lfq$catch <- lfq$catch[,which(lfq$midLengths >= Lmin)]
+        lfq$midLengths <- lfq$midLengths[which(lfq$midLengths >= Lmin)]
+    }
+
+    ## select below certain length
+    if(!is.na(Lmax)){
+        lfq$catch <- lfq$catch[,which(lfq$midLengths <= Lmax)]
+        lfq$midLengths <- lfq$midLengths[which(lfq$midLengths <= Lmax)]
+    }
+
+
+    ## merge two lfq data sets (ADD weighing factor)
     if(!any(is.na(lfq2))){
         if(class(lfq2) != "lfq") stop("Your lfq2 data set has to have class 'lfq'!")
         
@@ -294,39 +335,29 @@ lfqModify <- function(lfq, par = NULL,
             catches <- as.vector(catch)
         }else catches <- as.matrix(catch)
 
-        res <- list(dates = dates,
-                    midLengths = midLengths,
-                    catch = catches)
+    res <- list()
+    if("species" %in% names(lfq)) res$species <- lfq$species
+    if("stock" %in% names(lfq)) res$stock <- lfq$stock
+    res$dates = dates
+    res$midLengths = midLengths
+    res$catch = catches
+    if("comment" %in% names(lfq)) res$comment <- lfq$comment 
 
-        ## add growth parameter if known
-        if("par" %in% names(lfq)) res$par <- lfq$par    
-        if(!is.null(par)){
-            res$par <- par
-        }
+    ## add growth parameter if known
+    if("par" %in% names(lfq)) res$par <- lfq$par    
+    if(!is.null(par)){
+        res$par <- par
+    }
 
-        if("Linf" %in% names(lfq)) res$Linf <- lfq$Linf
-        if("K" %in% names(lfq)) res$K <- lfq$K
-        if("t0" %in% names(lfq)) res$t0 <- lfq$t0
-        if("t_anchor" %in% names(lfq)) res$t_anchor <- lfq$t_anchor
-        if("C" %in% names(lfq)) res$C <- lfq$C
-        if("ts" %in% names(lfq)) res$ts <- lfq$ts
-        if("M" %in% names(lfq)) res$M <- lfq$M
-        if("Z" %in% names(lfq)) res$Z <- lfq$Z
-        if("FM" %in% names(lfq)) res$FM <- lfq$FM
-        if("E" %in% names(lfq)) res$E <- lfq$E
-        if("FM_calc" %in% names(lfq)) res$FM_calc <- lfq$FM_calc
-        if("a" %in% names(lfq)) res$a <- lfq$a
-        if("b" %in% names(lfq)) res$b <- lfq$b
-        if("L50" %in% names(lfq)) res$L50 <- lfq$L50
-        if("L75" %in% names(lfq)) res$L75 <- lfq$L75
-        if("L95" %in% names(lfq)) res$L95 <- lfq$L95
-        if("s_list" %in% names(lfq)) res$s_list <- lfq$s_list
+    ## add all objects to which in lfq to new lfq list
+    idx <- names(lfq)[which(!(names(lfq) %in% names(res)))]
+    tmpList <- lfq[which(names(lfq) %in% idx)]
+    res <- c(res, tmpList)
 
+    if(class(res) != "lfq"){
+        class(res) <- "lfq"
+    }
+    ## if(!is.na(bin_size)){class(res) <- "lfq"}
 
-        if(class(res) != "lfq"){
-            class(res) <- "lfq"
-        }
-        ## if(!is.na(bin_size)){class(res) <- "lfq"}
-
-        return(res)
+    return(res)
 }
