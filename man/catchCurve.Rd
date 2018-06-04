@@ -5,9 +5,10 @@
 \title{Catch curve}
 \usage{
 catchCurve(param, catch_columns = NA, cumulative = FALSE,
-  calc_ogive = FALSE, reg_int = NULL, reg_num = 1, auto = FALSE,
-  boot = NULL, natMort = NULL, robustReg = FALSE, yearSel = NA,
-  binSize = NA, plot = TRUE, CI = 95)
+  calc_ogive = FALSE, reg_int = NULL, reg_num = 1, slicing = FALSE,
+  auto = FALSE, boot = NULL, natMort = NULL, robustReg = FALSE,
+  yearSel = NA, yearCombine = FALSE, binSize = NA, plot = TRUE,
+  CI = 95)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -38,6 +39,9 @@ for the regression line in each element of the list.}
 \item{reg_num}{integer indicating how many separate regression lines should be applied to the
 data. Default 1.}
 
+\item{slicing}{logical; defining if relative age should be estimated by slicing the LFQ data
+with the estimated growth curves}
+
 \item{auto}{logical; no interactive functions used instead regression line is chosen
 automatically. Default = FALSE}
 
@@ -51,6 +55,8 @@ for application to 'lfqBoot' object}
 
 \item{yearSel}{optional character for bootsrapping use of this function
 specifying a year to be subsetted if LFQ data covers multiple years}
+
+\item{yearCombine}{logical; defining wether independent of years, catches should be combined}
 
 \item{binSize}{optional argument for bootstrapping application, if lfq data should be rebinned.}
 

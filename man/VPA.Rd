@@ -7,7 +7,8 @@
 VPA(param, catch_columns = NA, catch_unit = NA, catch_corFac = NA,
   terminalF = NA, terminalE = NA, LW_unit = "g", analysis_type = "VPA",
   algorithm = "new", plus_group = TRUE, plot = FALSE, boot = NULL,
-  natMort = NULL, yearSel = NA, CI = 95)
+  natMort = NULL, yearSel = NA, yearCombine = FALSE, binSize = NA,
+  CI = 95)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -63,6 +64,10 @@ while \code{"old"} uses the algorithm described by Sparre and Venema (1998).}
 
 \item{yearSel}{optional character for bootsrapping use of this function
 specifying a year to be subsetted if LFQ data covers multiple years}
+
+\item{yearCombine}{logical; defining wether independent of years, catches should be combined}
+
+\item{binSize}{optional argument for bootstrapping application, if lfq data should be rebinned.}
 
 \item{CI}{percentage for confidence intervals (Default: 95)}
 }

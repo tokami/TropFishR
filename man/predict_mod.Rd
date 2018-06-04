@@ -9,7 +9,8 @@ predict_mod(param, type, FM_change = NA, E_change = NA,
   stock_size_1 = NA, age_unit = "year", curr.E = NA, curr.Lc = NA,
   plus_group = FALSE, Lmin = NA, Lincr = NA, LW_unit = "g",
   plot = FALSE, mark = TRUE, hide.progressbar = FALSE, boot = NULL,
-  natMort = NULL, yearSel = NA, CI = 95)
+  natMort = NULL, yearSel = NA, yearCombine = FALSE, binSize = NA,
+  CI = 95)
 }
 \arguments{
 \item{param}{a list consisting of following parameters (not all are required):
@@ -85,6 +86,10 @@ kg/cm3 or "g" for g/cm3. Default is "g".}
 
 \item{yearSel}{optional character for bootsrapping use of this function
 specifying a year to be subsetted if LFQ data covers multiple years}
+
+\item{yearCombine}{logical; defining wether independent of years, catches should be combined}
+
+\item{binSize}{optional argument for bootstrapping application, if lfq data should be rebinned.}
 
 \item{CI}{percentage for confidence intervals (Default: 95)}
 }
