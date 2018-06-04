@@ -22,8 +22,8 @@ jackknife <- function(elefanFit){
         stop("Please provide an object fitted by one of the ELEFAN functions!")
 
     if("control" %in% names(res)){
-        method == "SA"
-    }else method == "GA"
+        method <- "SA"
+    }else method <- "GA"
 
     JK <- vector("list", length(res$dates))
     rns <- vector("numeric", length(res$dates))    
