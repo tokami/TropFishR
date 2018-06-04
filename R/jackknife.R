@@ -7,14 +7,7 @@
 #' 
 #' @keywords function jackknife CI
 #'
-#' @examples
-#' 
-#' @return 
-#'
-#' @references
-#' 
 #' @export
-
 jackknife <- function(elefanFit){
 
     res <- elefanFit

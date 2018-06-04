@@ -9,18 +9,9 @@ jackknife(elefanFit)
 \arguments{
 \item{elefanFit}{lfq list fitted with growth parameters estimated with ELEFAN_SA or ELEFAN_GA}
 }
-\value{
-
-}
 \description{
 The jackknife routine can be used to estimate confidence intervals for
   the growth parameters estimated with ELEFAN.
-}
-\examples{
-
-}
-\references{
-
 }
 \keyword{CI}
 \keyword{function}
