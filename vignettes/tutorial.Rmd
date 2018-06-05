@@ -172,7 +172,7 @@ JKres <- do.call(cbind, JK)
 # mean
 JKmeans <- apply(as.matrix(JKres), MARGIN = 1, FUN = mean)
 # confidence intervals
-JKconf <- apply(as.matrix(JKres), MARGIN = 1, FUN = function(x) t.test(x)$conf.int[c(1,2)])
+JKconf <- apply(as.matrix(JKres), MARGIN = 1, FUN = function(x) quantile(x, probs=c(0.025,0.975)))
 JKconf <- t(JKconf)
 colnames(JKconf) <- c("lower","upper")
 

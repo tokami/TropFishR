@@ -26,7 +26,7 @@ jackknife <- function(elefanFit){
                       midLengths = res$midLengths,
                       catch = res$catch[,-i])
       if(method == "GA"){
-          tmp <- invisible(capture.output(ELEFAN_GA(loop_data, MA = res$MA, addl.sqrt = res$addl.sqrt,
+          invisible(capture.output(tmp <- ELEFAN_GA(loop_data, MA = res$MA, addl.sqrt = res$addl.sqrt,
                            seasonalised = res$seasonalised,
                            popSize = res$popSize,
                            maxiter = res$maxiter,
@@ -46,7 +46,7 @@ jackknife <- function(elefanFit){
           nb.stop.improvement <- res$control$nb.stop.improvement
           SA_temp <- res$control$temperature
           verbose <- FALSE
-          tmp <- invisible(capture.output(ELEFAN_SA(loop_data,
+          invisible(capture.output(tmp <- ELEFAN_SA(loop_data,
                            SA_time = SA_time, SA_temp = SA_temp,
                            maxit = maxit,
                            nb.stop.improvement = nb.stop.improvement,
@@ -64,14 +64,15 @@ jackknife <- function(elefanFit){
     }
     
     JKres <- do.call(cbind, JK)
-    # mean
+    ## mean
     JKmeans <- apply(as.matrix(JKres), MARGIN = 1, FUN = mean)
-    # confidence intervals
+    ## confidence intervals
     JKconf <- apply(as.matrix(JKres), MARGIN = 1, FUN = function(x) t.test(x)$conf.int[c(1,2)])
     JKconf <- t(JKconf)
     colnames(JKconf) <- c("lo","up")
 
-    ret <- list(RnScore = rns,
+    ret <- list(jkRaw = as.matrix(JKres),
+                jkScore = rns,
                 jkMean = JKmeans,
                 jkCI = t(JKconf))
 
