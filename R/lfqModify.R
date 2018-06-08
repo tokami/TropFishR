@@ -61,32 +61,32 @@ lfqModify <- function(lfq, par = NULL,
 
     ## select beyond certain date
     if(!is.na(minDate)){
-        lfq$catch <- lfq$catch[,which(lfq$dates >= minDate)]
-        lfq$dates <- lfq$dates[which(lfq$dates >= minDate)]        
+        catch <- lfq$catch[,which(dates >= minDate)]
+        dates <- lfq$dates[which(dates >= minDate)]        
     }
     
     ## select before certain date
     if(!is.na(maxDate)){
-        lfq$catch <- lfq$catch[,which(lfq$dates <= maxDate)]
-        lfq$dates <- lfq$dates[which(lfq$dates <= maxDate)]        
+        catch <- catch[,which(dates <= maxDate)]
+        dates <- dates[which(dates <= maxDate)]        
     }
 
     ## select certain years
     if(!is.na(years[1])){
-        lfq$catch <- lfq$catch[,which(format(lfq$dates,"%Y") %in% years)]
-        lfq$dates <- lfq$dates[which(format(lfq$dates,"%Y") %in% years)]
+        catch <- catch[,which(format(dates,"%Y") %in% years)]
+        dates <- dates[which(format(dates,"%Y") %in% years)]
     }
 
     ## select above certain length
     if(!is.na(Lmin)){
-        lfq$catch <- lfq$catch[,which(lfq$midLengths >= Lmin)]
-        lfq$midLengths <- lfq$midLengths[which(lfq$midLengths >= Lmin)]
+        catch <- catch[which(midLengths >= Lmin),]
+        midLengths <- midLengths[which(midLengths >= Lmin)]
     }
 
     ## select below certain length
     if(!is.na(Lmax)){
-        lfq$catch <- lfq$catch[,which(lfq$midLengths <= Lmax)]
-        lfq$midLengths <- lfq$midLengths[which(lfq$midLengths <= Lmax)]
+        catch <- catch[which(midLengths <= Lmax),]
+        midLengths <- midLengths[which(midLengths <= Lmax)]
     }
 
 
