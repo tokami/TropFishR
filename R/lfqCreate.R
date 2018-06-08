@@ -49,6 +49,7 @@
 
 lfqCreate <- function(data, Lname, Dname, Fname = NA, bin_size = 1,
                       species = NA, stock = NA, comment = "",
+                      Lmin = 0,
                       length_unit = "cm", plus_group = FALSE,
                       aggregate_dates = FALSE,
                       plot = FALSE){
@@ -85,7 +86,7 @@ lfqCreate <- function(data, Lname, Dname, Fname = NA, bin_size = 1,
     }else data$samplings <- data$date
 
     # rearrange data into LFQ data
-    bin.breaks <- seq(0, max(data$length) + bin_size, by=bin_size)
+    bin.breaks <- seq(Lmin, max(data$length) + bin_size, by=bin_size)
     midLengths <- bin.breaks + bin_size/2
 
     data2 <- aggregate(list(freq=data$freq),
