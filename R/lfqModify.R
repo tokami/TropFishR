@@ -5,8 +5,11 @@
 #'    Allows to change bin size of LFQ data. Allows to ad plus group to catch matrix.
 #'
 #' @param lfq lfq object with dates, midLengths, and catch
-#' @param par growth parameter as resulting from e.g. \code{\link{ELEFAN}}
+#' @param par growth parameters as resulting from e.g. \code{\link{ELEFAN}}
 #' @param bin_size Bin size for length frequencies (in cm)
+#' @param aggregate Factor to aggregate catch per year (\code{"year"}),
+#'    per quarter (\code{"quarter"}), or per month (\code{"month"}). By default data
+#'    is not aggregated (\code{NA}).
 #' @param vectorise_catch logical; indicating if the catch matrix should be summarised to
 #'    yearly vectors (default: FALSE).
 #' @param plus_group logical or numeric; should a plus group be created? If yes you will be
@@ -19,7 +22,7 @@
 #' @param Lmin minimum length to subset lfq data
 #' @param Lmax maximum length to subset lfq data
 #' @param lfq2 optional second lfq object which will be merged with lfq. This might be interesting for
-#'    fleet specific lfq objects. Default: NA.
+#'    fleet specific lfq objects. Default: NA. Be aware that catches are combined without weighting!
 #'
 #' @keywords function lfq length-frequency
 #'
@@ -42,6 +45,7 @@
 
 lfqModify <- function(lfq, par = NULL,
                       bin_size = NA,
+                      aggregate = NA,  ## either: year, quarter, month  (year will substitute vectorise_catch)
                       vectorise_catch = FALSE,
                       plus_group = FALSE,
                       minDate = NA,
@@ -229,40 +233,123 @@ lfqModify <- function(lfq, par = NULL,
       if(vectorise_catch & !is.matrix(catch)){
         stop(paste0("Catch is ", class(catch), ". To vectorise catch, it has to be a matrix."))
       }
-      if(vectorise_catch & is.matrix(catch)){
-        # sum numbers per year
-        c_sum <- by(t(catch),format(dates,"%Y"), FUN = colSums)
+    if(vectorise_catch) aggregate = "year"
+    if(!is.na(aggregate) & is.matrix(catch)){
+        if(aggregate == "year"){
+            ## sum numbers per year
+            c_sum <- by(t(catch),format(dates,"%Y"), FUN = colSums)
+            # rearrange in data frame
+            c_list <- lapply(as.list(c_sum), c)
+            c_dat <- as.data.frame(c_list)
 
-        # rearrange in data frame
-        c_list <- lapply(as.list(c_sum), c)
-        c_dat <- as.data.frame(c_list)
+              if(any(c_dat != 0)){
+                  # get rid of 0 bins at both ends
+                  lowRow <- 0
+                  resi <- TRUE
+                  while(resi == TRUE){
+                    lowRow <- lowRow + 1
+                    resi <- rowSums(c_dat, na.rm = TRUE)[lowRow] == 0
+                  }
 
-          if(any(c_dat != 0)){
-              # get rid of 0 bins at both ends
-              lowRow <- 0
-              resi <- TRUE
-              while(resi == TRUE){
-                lowRow <- lowRow + 1
-                resi <- rowSums(c_dat, na.rm = TRUE)[lowRow] == 0
+                  upRow <- nrow(c_dat)
+                  resi <- TRUE
+                  while(resi == TRUE){
+                    resi <- rowSums(c_dat, na.rm = TRUE)[upRow] == 0
+                    upRow <- upRow - 1
+                  }
+                  upRow <- upRow + 1
+
+                  catch <- c_dat[lowRow:upRow,]
+                  midLengths <- midLengths[lowRow:upRow]
+              }else{
+                  catch <- c_dat
               }
 
-              upRow <- nrow(c_dat)
-              resi <- TRUE
-              while(resi == TRUE){
-                resi <- rowSums(c_dat, na.rm = TRUE)[upRow] == 0
-                upRow <- upRow - 1
+            # override old dates
+            dates <- unique(as.Date(paste0(format(dates,"%Y"),"-01-01")))
+        }else if(aggregate == "quarter"){
+            months <- format(dates, "%m")
+            seasons <- rep(NA,length(months))
+            seasons[months == "01"] <- 2
+            seasons[months == "02"] <- 2
+            seasons[months == "03"] <- 2
+            seasons[months == "04"] <- 5
+            seasons[months == "05"] <- 5
+            seasons[months == "06"] <- 5
+            seasons[months == "07"] <- 8
+            seasons[months == "08"] <- 8
+            seasons[months == "09"] <- 8
+            seasons[months == "10"] <- 11
+            seasons[months == "11"] <- 11
+            seasons[months == "12"] <- 11
+            dateFac <- as.Date(paste0(format(dates,"%Y"),"-",seasons,"-15"))
+            ## sum numbers per year
+            c_sum <- by(t(catch),dateFac, FUN = colSums)
+            # rearrange in data frame
+            c_list <- lapply(as.list(c_sum), c)
+            c_dat <- as.data.frame(c_list)
+
+              if(any(c_dat != 0)){
+                  # get rid of 0 bins at both ends
+                  lowRow <- 0
+                  resi <- TRUE
+                  while(resi == TRUE){
+                    lowRow <- lowRow + 1
+                    resi <- rowSums(c_dat, na.rm = TRUE)[lowRow] == 0
+                  }
+
+                  upRow <- nrow(c_dat)
+                  resi <- TRUE
+                  while(resi == TRUE){
+                    resi <- rowSums(c_dat, na.rm = TRUE)[upRow] == 0
+                    upRow <- upRow - 1
+                  }
+                  upRow <- upRow + 1
+
+                  catch <- c_dat[lowRow:upRow,]
+                  midLengths <- midLengths[lowRow:upRow]
+              }else{
+                  catch <- c_dat
               }
-              upRow <- upRow + 1
 
-              catch <- c_dat[lowRow:upRow,]
-              midLengths <- midLengths[lowRow:upRow]
-          }else{
-              catch <- c_dat
-          }
+            # override old dates
+            dates <- unique(dateFac)
+        }else if(aggregate == "month"){
+            ## sum numbers per year
+            c_sum <- by(t(catch),format(dates,"%Y-%m"), FUN = colSums)
+            # rearrange in data frame
+            c_list <- lapply(as.list(c_sum), c)
+            c_dat <- as.data.frame(c_list)
 
-        # override old dates
-        dates <- unique(as.Date(paste0(format(dates,"%Y"),"-01-01")))
-      }
+              if(any(c_dat != 0)){
+                  # get rid of 0 bins at both ends
+                  lowRow <- 0
+                  resi <- TRUE
+                  while(resi == TRUE){
+                    lowRow <- lowRow + 1
+                    resi <- rowSums(c_dat, na.rm = TRUE)[lowRow] == 0
+                  }
+
+                  upRow <- nrow(c_dat)
+                  resi <- TRUE
+                  while(resi == TRUE){
+                    resi <- rowSums(c_dat, na.rm = TRUE)[upRow] == 0
+                    upRow <- upRow - 1
+                  }
+                  upRow <- upRow + 1
+
+                  catch <- c_dat[lowRow:upRow,]
+                  midLengths <- midLengths[lowRow:upRow]
+              }else{
+                  catch <- c_dat
+              }
+
+            # override old dates
+            dates <- unique(as.Date(paste0(format(dates,"%Y-%m"),"-15")))
+        }else{
+            stop('aggregate has to be either NA, "year", "quarter", or "month"')
+        }
+    }
 
       # plus group
       if(isTRUE(plus_group) | is.numeric(plus_group)){

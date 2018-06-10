@@ -7,6 +7,7 @@
       - Existing funtions with bootstrapping option (M_empirical, catchCurve, VPA, ypr)
       - New formulation of recruitment pattern hindcasting of an lfq object (recruitment). Hindcasting is done for each bin using an iterative calls to a discrete version of the VBGF, and returns a yearly pattern weighted by associated bin counts.
       - Improved implementation of compilaiton of LFD allowing for faster compilation of lfq data with lfqCreate and lfqModify (with argument bin_size) and allowing compilation of large data sets
+      - New possibilities to easily modify length-frequency data objects by means of "lfqModify", including aggregating catch matrix per year, per quarter, or per month, subsetting lfq data with range of length classes or sampling dates
 
 ##### User-visible changes
       - The reference level labelled Fmsy in the function 'predict_mod()' is now labelled Fmax, as
