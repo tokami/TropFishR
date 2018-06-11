@@ -59,6 +59,8 @@
 #' according to Brey et al. (1988) (default: FALSE, for
 #'    more information see \link{lfqRestructure})
 #' @param agemax maximum age of species; default NULL, then estimated from Linf
+#' @param spwaningTimes number of spawning events (times) per year. By default 1 spawning
+#'    event per year is assumed (so far implemented with 1 or 2 events per year).
 #' @param flagging.out logical; should positive peaks be flagged out? Original setting of
 #' ELEFAN in TRUE. Default:TRUE
 #' @param seed an integer value containing the random number generator state. This
@@ -179,6 +181,7 @@ ELEFAN_GA <- function(
   addl.sqrt = FALSE,
   agemax = NULL,
   flagging.out = TRUE,
+  spawningTimes = 1,
   seed = NULL,
   monitor = FALSE,
   plot = FALSE,
@@ -186,130 +189,166 @@ ELEFAN_GA <- function(
   ...
 ){
 
-  lfq <- x
-  classes <- lfq$midLengths
-  n_classes <- length(classes)
-  Linf_est <- classes[n_classes]
+    lfq <- x
+    classes <- lfq$midLengths
+    n_classes <- length(classes)
+    Linf_est <- classes[n_classes]
 
-  # lower parameter bounds
-  low_par_ALL <- list(Linf = Linf_est * 0.5,
-                      K = 0.01,
-                      t_anchor = 0,
-                      C = 0,
-                      ts = 0)
-  low_Linf <- ifelse("Linf" %in% names(low_par),
-                     get("Linf", low_par),
-                     get("Linf", low_par_ALL))
-  low_K <- ifelse("K" %in% names(low_par),
-                  get("K", low_par),
-                  get("K", low_par_ALL))
-  low_tanc <- ifelse("t_anchor" %in% names(low_par),
-                     get("t_anchor", low_par),
-                     get("t_anchor", low_par_ALL))
-  low_C <- ifelse("C" %in% names(low_par),
-                  get("C", low_par),
-                  get("C", low_par_ALL))
-  low_ts <- ifelse("ts" %in% names(low_par),
-                   get("ts", low_par),
-                   get("ts", low_par_ALL))
+    # lower parameter bounds
+    low_par_ALL <- list(Linf = Linf_est * 0.5,
+                        K = 0.01,
+                        t_anchor = 0,
+                        C = 0,
+                        ts = 0)
+    low_Linf <- ifelse("Linf" %in% names(low_par),
+                       get("Linf", low_par),
+                       get("Linf", low_par_ALL))
+    low_K <- ifelse("K" %in% names(low_par),
+                    get("K", low_par),
+                    get("K", low_par_ALL))
+    low_tanc <- ifelse("t_anchor" %in% names(low_par),
+                       get("t_anchor", low_par),
+                       get("t_anchor", low_par_ALL))
+    low_C <- ifelse("C" %in% names(low_par),
+                    get("C", low_par),
+                    get("C", low_par_ALL))
+    low_ts <- ifelse("ts" %in% names(low_par),
+                     get("ts", low_par),
+                     get("ts", low_par_ALL))
 
-  # upper parameter bounds
-  up_par_ALL <- list(Linf = Linf_est * 1.5,
-                     K = 1,
-                     t_anchor = 1,
-                     C = 1,
-                     ts = 1)
-  up_Linf <- ifelse("Linf" %in% names(up_par),
-                    get("Linf", up_par),
-                    get("Linf", up_par_ALL))
-  up_K <- ifelse("K" %in% names(up_par),
-                 get("K", up_par),
-                 get("K", up_par_ALL))
-  up_tanc <- ifelse("t_anchor" %in% names(up_par),
-                    get("t_anchor", up_par),
-                    get("t_anchor", up_par_ALL))
-  up_C <- ifelse("C" %in% names(up_par),
-                 get("C", up_par),
-                 get("C", up_par_ALL))
-  up_ts <- ifelse("ts" %in% names(up_par),
-                  get("ts", up_par),
-                  get("ts", up_par_ALL))
-
-  # ELEFAN 0
-  lfq <- lfqRestructure(lfq, MA = MA, addl.sqrt = addl.sqrt)
-
-  # seasonalised fitness function
-  sofun <- function(lfq, par, agemax, flagging.out){
-    Lt <- lfqFitCurves(lfq,
-                       par=list(Linf=par[1], K=par[2], t_anchor=par[3], C=par[4], ts=par[5]),
-                       agemax = agemax, flagging.out = flagging.out)
-    return(Lt$fESP)
-  }
-  # non-seasonalised fitness function
-  fun <- function(lfq, par, agemax, flagging.out){
-    Lt <- lfqFitCurves(lfq,
-                       par=list(Linf=par[1], K=par[2], t_anchor=par[3], C = 0, ts = 0),
-                       agemax = agemax, flagging.out = flagging.out)
-    return(Lt$fESP)
-  }
+    # upper parameter bounds
+    up_par_ALL <- list(Linf = Linf_est * 1.5,
+                       K = 1,
+                       t_anchor = 1,
+                       C = 1,
+                       ts = 1)
+    up_Linf <- ifelse("Linf" %in% names(up_par),
+                      get("Linf", up_par),
+                      get("Linf", up_par_ALL))
+    up_K <- ifelse("K" %in% names(up_par),
+                   get("K", up_par),
+                   get("K", up_par_ALL))
+    up_tanc <- ifelse("t_anchor" %in% names(up_par),
+                      get("t_anchor", up_par),
+                      get("t_anchor", up_par_ALL))
+    up_C <- ifelse("C" %in% names(up_par),
+                   get("C", up_par),
+                   get("C", up_par_ALL))
+    up_ts <- ifelse("ts" %in% names(up_par),
+                    get("ts", up_par),
+                    get("ts", up_par_ALL))
 
 
-  # Genetic algorithm
-  if(seasonalised){
-    min = c(low_Linf, low_K, low_tanc, low_C, low_ts)
-    max = c(up_Linf, up_K, up_tanc, up_C, up_ts)
-    writeLines("Genetic algorithm is running. This might take some time.")
-    flush.console()
-    fit <- GA::ga(
-      type = "real-valued",
-      fitness = sofun, lfq=lfq,
-      lower = min,
-      upper = max,
-      agemax = agemax,
-      flagging.out = flagging.out,
-      popSize = popSize, maxiter = maxiter, run = run, parallel = parallel,
-      pmutation = pmutation, pcrossover = pcrossover, elitism = elitism,
-      seed = seed, monitor = monitor,
-      ...
-    )
-    pars <- as.list(fit@solution[1,])
-    names(pars) <- c("Linf", "K", "t_anchor", "C", "ts")
-  }else{
-    min = c(low_Linf, low_K, low_tanc)
-    max = c(up_Linf, up_K, up_tanc)
-    writeLines("Genetic algorithm is running. This might take some time.")
-    flush.console()
-    fit <- GA::ga(
-      type = "real-valued",
-      fitness = fun,
-      lfq=lfq,
-      lower = min,
-      upper = max,
-      agemax = agemax,
-      flagging.out = flagging.out,
-      popSize = popSize, maxiter = maxiter, run = run, parallel = parallel,
-      pmutation = pmutation, pcrossover = pcrossover, elitism = elitism,
-      seed = seed,
-      monitor = monitor,
-      ...
-    )
-    pars <- as.list(fit@solution[1,])
-    names(pars) <- c("Linf", "K", "t_anchor")
-  }
+    ## two spawning times per year
+    if(spawningTimes == 2){
+        if(length(low_tanc) <= 1) low_tanc <- c(low_tanc, low_tanc)
+        if(length(up_tanc) <= 1) up_tanc <- c(up_tanc, up_tanc)        
+    }
+    
+    # ELEFAN 0
+    lfq <- lfqRestructure(lfq, MA = MA, addl.sqrt = addl.sqrt)
 
-  # Fitness graph
-  if(plot.score){
-    GA::plot(fit)
-  }
+    # seasonalised fitness function
+    sofun <- function(lfq, par, agemax, flagging.out, spawningTimes){
+        if(spawningTimes == 1){
+            parList <- list(Linf=par[1], K=par[2], t_anchor=par[3], C=par[4], ts=par[5])            
+        }else if(spawningTimes == 2){
+            parList <- list(Linf=par[1], K=par[2], t_anchor=c(par[3], par[4]),
+                            C=par[5], ts=par[6])
+        }
+        Lt <- lfqFitCurves(lfq, par=parList,
+                           agemax = agemax, flagging.out = flagging.out, spawningTimes = spawningTimes)
+        return(Lt$fESP)
+    }
+    # non-seasonalised fitness function
+    fun <- function(lfq, par, agemax, flagging.out, spawningTimes){
+        if(spawningTimes == 1){
+            parList <- list(Linf=par[1], K=par[2], t_anchor=par[3], C=0, ts=0)
+        }else if(spawningTimes == 2){
+            parList <- list(Linf=par[1], K=par[2], t_anchor=c(par[3],par[4]),
+                            C=0, ts=0)
+        }
+        Lt <- lfqFitCurves(lfq, par=parList,
+                           agemax = agemax, flagging.out = flagging.out, spawningTimes = spawningTimes)
+        return(Lt$fESP)
+    }
 
-  final_res <- lfqFitCurves(
-    lfq = lfq, par=pars,
-    flagging.out = flagging.out,
-    agemax = agemax)
+    # Genetic algorithm
+    if(seasonalised){
+      min = c(low_Linf, low_K, low_tanc, low_C, low_ts)
+      max = c(up_Linf, up_K, up_tanc, up_C, up_ts)
+      writeLines("Genetic algorithm is running. This might take some time.")
+      flush.console()
+      fit <- GA::ga(
+        type = "real-valued",
+        fitness = sofun, lfq=lfq,
+        lower = min,
+        upper = max,
+        agemax = agemax,
+        flagging.out = flagging.out,
+        spawningTimes = spawningTimes,        
+        popSize = popSize, maxiter = maxiter, run = run, parallel = parallel,
+        pmutation = pmutation, pcrossover = pcrossover, elitism = elitism,
+        seed = seed, monitor = monitor,
+        ...
+      )
+      if(spawningTimes == 1){
+          pars <- as.list(fit@solution[1,])          
+          names(pars) <- c("Linf", "K", "t_anchor", "C", "ts")
+      }else if(spawningTimes == 2){
+          tmp <- as.numeric(fit@solution[1,])
+          pars <- list(Linf = tmp[1],
+                       K = tmp[2],
+                       t_anchor = c(tmp[3], tmp[4]),
+                       C = tmp[5],
+                       ts = tmp[6])
+      }
+    }else{
+      min = c(low_Linf, low_K, low_tanc)
+      max = c(up_Linf, up_K, up_tanc)
+      writeLines("Genetic algorithm is running. This might take some time.")
+      flush.console()
+      fit <- GA::ga(
+        type = "real-valued",
+        fitness = fun,
+        lfq=lfq,
+        lower = min,
+        upper = max,
+        agemax = agemax,
+        flagging.out = flagging.out,
+        spawningTimes = spawningTimes,
+        popSize = popSize, maxiter = maxiter, run = run, parallel = parallel,
+        pmutation = pmutation, pcrossover = pcrossover, elitism = elitism,
+        seed = seed,
+        monitor = monitor,
+        ...
+        )
+      if(spawningTimes == 1){
+          pars <- as.list(fit@solution[1,])          
+          names(pars) <- c("Linf", "K", "t_anchor")
+      }else if(spawningTimes == 2){
+          tmp <- as.numeric(fit@solution[1,])
+          pars <- list(Linf = tmp[1],
+                       K = tmp[2],
+                       t_anchor = c(tmp[3], tmp[4]))
+      }                  
+    }
 
-  # growth performance index
-  phiL <- log10(pars$K) + 2 * log10(pars$Linf)
-  pars$phiL <- phiL
+    # Fitness graph
+    if(plot.score){
+      GA::plot(fit)
+    }
+
+    final_res <- lfqFitCurves(
+        lfq = lfq, par=pars,
+        flagging.out = flagging.out,
+        agemax = agemax,
+        spawningTimes = spawningTimes)
+
+    # growth performance index
+    phiL <- log10(pars$K) + 2 * log10(pars$Linf)
+    pars$phiL <- phiL
+
 
     ## Results
     lfq$low_par <- list(Linf = low_Linf, K = low_K, t_anchor=low_tanc, C=low_C, ts=low_ts)
@@ -326,13 +365,14 @@ ELEFAN_GA <- function(
     lfq$seed <- seed
     lfq$ncohort <- final_res$ncohort
     lfq$agemax <- final_res$agemax
+    lfq$spawningTimes <- spawningTimes
     lfq$par <- pars
     lfq$fESP <- fit@fitnessValue
     lfq$Rn_max <- fit@fitnessValue
 
     if(plot){
       plot(lfq, Fname = "rcounts")
-      Lt <- lfqFitCurves(lfq, par = lfq$par, draw=TRUE)
+      Lt <- lfqFitCurves(lfq, par = lfq$par, draw=TRUE, spawningTimes = spawningTimes)
     }
     return(lfq)
 }

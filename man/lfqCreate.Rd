@@ -5,8 +5,8 @@
 \title{Create lfq data from length measurements}
 \usage{
 lfqCreate(data, Lname, Dname, Fname = NA, bin_size = 1, species = NA,
-  stock = NA, comment = "", length_unit = "cm", plus_group = FALSE,
-  aggregate_dates = FALSE, plot = FALSE)
+  stock = NA, comment = "", Lmin = 0, length_unit = "cm",
+  plus_group = FALSE, aggregate_dates = FALSE, plot = FALSE)
 }
 \arguments{
 \item{data}{data with at least two columns, one with the length measurements, one

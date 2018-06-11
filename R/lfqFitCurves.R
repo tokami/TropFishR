@@ -24,6 +24,8 @@
 #'   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 0);
 #' }
 #' @param agemax maximum age of species; default NULL, then estimated from Linf
+#' @param spwaningTimes number of spawning events (times) per year. By default 1 spawning
+#'    event per year is assumed (so far implemented with 1 or 2 events per year).
 #' @param flagging.out logical; should positive peaks be flagged out?
 #'    (Default : TRUE)
 #' @param lty The line type. Line types can either be specified as an integer
@@ -111,107 +113,121 @@
 #' @export
 
 lfqFitCurves <- function(lfq,
-  par = list(Linf = 100, K = 0.1, t_anchor = 0.25, C = 0, ts = 0),
-  agemax = NULL, flagging.out = TRUE,
-  lty = 2, lwd = 1, col = 1,
-  draw = FALSE, tincr = 0.05
-){
+                         par = list(Linf = 100, K = 0.1, t_anchor = 0.25, C = 0, ts = 0),
+                         agemax = NULL, flagging.out = TRUE,
+                         lty = 2, lwd = 1, col = 1,
+                         draw = FALSE, tincr = 0.05,
+                         spawningTimes = 1){
 
-  if(is.null(par$Linf) | is.null(par$K) | is.null(par$t_anchor)) stop("Linf, K and t_anchor have to provided in par.")
+    if(is.null(par$Linf) | is.null(par$K) | is.null(par$t_anchor))
+        stop("Linf, K and t_anchor have to provided in par.")
 
-  # ISSUE: if seasonalised max age can be different and 0.95 very coarse
-  if(is.null(agemax)){
-    agemax <- ceiling((1/-par$K)*log(1-((par$Linf*0.95)/par$Linf)))
-  }
+    # ISSUE: if seasonalised max age can be different and 0.95 very coarse
+    if(is.null(agemax)){
+      agemax <- ceiling((1/-par$K)*log(1-((par$Linf*0.95)/par$Linf)))
+    }
 
-  yeardec <- date2yeardec(lfq$dates)
+    yeardec <- date2yeardec(lfq$dates)
 
-  tmax <- max(yeardec, na.rm = TRUE) # maximum sample date
-  tmin <- min(yeardec, na.rm = TRUE) # minimum sample date
-  ncohort <- agemax + ceiling(diff(range(yeardec))) # number of cohorts
-  tA.use <- par$t_anchor # VBGF anchor time in year
-  tAs <- seq(floor(tmax-ncohort), floor(tmax), by=1) + (tA.use+1e6)%%1   # anchor times
-  tAs <- tAs[which(tAs < tmax)]
-  ncohort <- length(tAs)
+    tmax <- max(yeardec, na.rm = TRUE) # maximum sample date
+    tmin <- min(yeardec, na.rm = TRUE) # minimum sample date
+    ncohort <- agemax + ceiling(diff(range(yeardec))) # number of cohorts
+
+    ## account for several spawning times per year:
+    if(spawningTimes == 1){
+        tA.use <- par$t_anchor[1] # VBGF anchor time in year
+        tAs <- seq(floor(tmax-ncohort), floor(tmax), by=1) + (tA.use+1e6)%%1   # anchor times
+        tAs <- tAs[which(tAs < tmax)]
+        ncohort <- length(tAs)
+    }else if(spawningTimes == 2){
+        tA.use <- par$t_anchor[1] # VBGF anchor time in year
+        tAs <- seq(floor(tmax-ncohort), floor(tmax), by=1) + (tA.use+1e6)%%1   # anchor times
+        tAs <- c(tAs, seq(floor(tmax-ncohort), floor(tmax), by=1) + (par$t_anchor[2] +1e6)%%1)
+        tAs <- sort(tAs)
+        tAs <- tAs[which(tAs < tmax)]
+        ncohort <- length(tAs)
+    }else{
+        stop("So far only only implemented with 1 or 2 spwaning events per year, i.e. spawningTime = 1 or = 2")
+    }
+
+    par2 <- par
+    t <- c(yeardec,max(yeardec)+0.2)  # for plotting, otherwise growth curves are cut at last sampling time
+    Lt <- vector(mode="list", ncohort)
+    for(ct in seq(ncohort)){
+        par2$t_anchor <- tAs[ct]
+        rel.age <- t-tAs[ct] # relative age to anchor time
+        t.use <- which(rel.age <= agemax & rel.age > 0)
+        t.ct <- t[t.use]
+        rel.age <- rel.age[t.use]
+        if(length(t.ct) > 0){
+          Lt.ct <- VBGF(param = par2, t = t.ct) ## do.call(what = VBGF,  par2)    # Lt.ct <- VBGF(lfq = par2, t = yeardec)   #
+          Lt[[ct]] <- data.frame(t=t.ct, Lt=Lt.ct, ct=ct, rel.age=rel.age)
+          if(draw){
+            tmp <- par2
+            t_tmp <- seq(tAs[ct], max(t.ct)+tincr, by=tincr)
+            tmp$L <- VBGF(tmp, t = t_tmp) ## do.call(what = VBGF,  tmp)
+            tmp$t <- yeardec2date(t_tmp)
+            lines(L ~ t, tmp, lty=lty, lwd=lwd, col=col)
+          }
+        }
+    }
+    Lt <- do.call(rbind, Lt)
+    Lt <- Lt[which(Lt$Lt>=0),]# trim negative lengths
 
 
-  par2 <- par
-  t <- c(yeardec,max(yeardec)+0.2)  # for plotting, otherwise growth curves are cut at last sampling time
-  Lt <- vector(mode="list", ncohort)
-  for(ct in seq(ncohort)){
-    par2$t_anchor <- tAs[ct]
-    rel.age <- t-tAs[ct] # relative age to anchor time
-    t.use <- which(rel.age <= agemax & rel.age > 0)
-    t.ct <- t[t.use]
-    rel.age <- rel.age[t.use]
-    if(length(t.ct) > 0){
-      Lt.ct <- VBGF(param = par2, t = t.ct) ## do.call(what = VBGF,  par2)    # Lt.ct <- VBGF(lfq = par2, t = yeardec)   #
-      Lt[[ct]] <- data.frame(t=t.ct, Lt=Lt.ct, ct=ct, rel.age=rel.age)
-      if(draw){
-        tmp <- par2
-        t_tmp <- seq(tAs[ct], max(t.ct)+tincr, by=tincr)
-        tmp$L <- VBGF(tmp, t = t_tmp) ## do.call(what = VBGF,  tmp)
-        tmp$t <- yeardec2date(t_tmp)
-        lines(L ~ t, tmp, lty=lty, lwd=lwd, col=col)
+    # calc scores
+    grd <- expand.grid(Lt=lfq$midLengths, t=date2yeardec(lfq$dates))
+    grd$Fs <- c(lfq$rcounts)  # turn matrix into 1-D vector
+    grd$cohort_peaks <- c(lfq$peaks_mat) # turn matrix into 1-D vector
+    grd$hit <- 0 # empty vector to record bins that are "hit" by a growth curve
+    bin.width <- diff(lfq$midLengths) # bin width (should allow for uneven bin sizes)
+    grd$bin.lower <- lfq$midLengths - (c(bin.width[1], bin.width)/2) # upper bin limit
+    grd$bin.upper <- lfq$midLengths + (c(bin.width, bin.width[length(bin.width)])/2) # lower bin limit
+
+    # mark all length classes (in all sampling times) which are hit
+    tmp <-
+      outer(X = c(grd$t), Y = Lt$t, FUN = "==") &
+      outer(X = c(grd$bin.lower), Y = Lt$Lt, FUN = "<=") &
+      outer(X = c(grd$bin.upper), Y = Lt$Lt, FUN = ">"
+    )
+
+    tmp2 <- apply(X = tmp, MARGIN = 1, FUN = sum, na.rm = TRUE)
+    if(flagging.out){
+      grd$hit <- tmp2
+    } else {
+      grd$hit <- as.numeric(tmp2 > 0)
+    }
+
+    # Count only one crossing of positive peaks within a cohort peak
+    if(flagging.out){
+      ch <- unique(grd$cohort_peaks)
+      if(0 %in% ch) ch <- ch[-which(0 %in% ch)]
+      for(ci in seq(length(ch))){
+        chi <- ch[ci]
+        peaki <- which(grd$cohort_peaks == chi)
+        dpch <- grd$hit[peaki]
+        if(sum(dpch, na.rm = TRUE) > 1){
+          grd$hit[peaki] <- 0
+          maxi <- which.max(grd$Fs[peaki])
+          grd$hit[peaki[maxi]] <- 1
+        }
       }
     }
-  }
-  Lt <- do.call(rbind, Lt)
-  Lt <- Lt[which(Lt$Lt>=0),]# trim negative lengths
 
 
-  # calc scores
-  grd <- expand.grid(Lt=lfq$midLengths, t=date2yeardec(lfq$dates))
-  grd$Fs <- c(lfq$rcounts)  # turn matrix into 1-D vector
-  grd$cohort_peaks <- c(lfq$peaks_mat) # turn matrix into 1-D vector
-  grd$hit <- 0 # empty vector to record bins that are "hit" by a growth curve
-  bin.width <- diff(lfq$midLengths) # bin width (should allow for uneven bin sizes)
-  grd$bin.lower <- lfq$midLengths - (c(bin.width[1], bin.width)/2) # upper bin limit
-  grd$bin.upper <- lfq$midLengths + (c(bin.width, bin.width[length(bin.width)])/2) # lower bin limit
+    ESP <- sum(grd$Fs * grd$hit, na.rm = TRUE)
+    fASP <- ESP/lfq$ASP
+    fESP <- (10^(ESP/lfq$ASP)) /10
 
-  # mark all length classes (in all sampling times) which are hit
-  tmp <-
-    outer(X = c(grd$t), Y = Lt$t, FUN = "==") &
-    outer(X = c(grd$bin.lower), Y = Lt$Lt, FUN = "<=") &
-    outer(X = c(grd$bin.upper), Y = Lt$Lt, FUN = ">"
-  )
+    lfq$Lt <- Lt
+    lfq$agemax <- agemax
+    lfq$ncohort <- ncohort
+    lfq$spawningTimes <- spawningTimes
+    lfq$ESP <- ESP
+    lfq$fASP <- fASP
+    lfq$fESP <- fESP
+    lfq$Rn_max <- fESP
+    lfq$par <- par
 
-  tmp2 <- apply(X = tmp, MARGIN = 1, FUN = sum, na.rm = TRUE)
-  if(flagging.out){
-    grd$hit <- tmp2
-  } else {
-    grd$hit <- as.numeric(tmp2 > 0)
-  }
-
-  # Count only one crossing of positive peaks within a cohort peak
-  if(flagging.out){
-    ch <- unique(grd$cohort_peaks)
-    if(0 %in% ch) ch <- ch[-which(0 %in% ch)]
-    for(ci in seq(length(ch))){
-      chi <- ch[ci]
-      peaki <- which(grd$cohort_peaks == chi)
-      dpch <- grd$hit[peaki]
-      if(sum(dpch, na.rm = TRUE) > 1){
-        grd$hit[peaki] <- 0
-        maxi <- which.max(grd$Fs[peaki])
-        grd$hit[peaki[maxi]] <- 1
-      }
-    }
-  }
-
-
-  ESP <- sum(grd$Fs * grd$hit, na.rm = TRUE)
-  fASP <- ESP/lfq$ASP
-  fESP <- (10^(ESP/lfq$ASP)) /10
-
-  lfq$Lt <- Lt
-  lfq$agemax <- agemax
-  lfq$ncohort <- ncohort
-  lfq$ESP <- ESP
-  lfq$fASP <- fASP
-  lfq$fESP <- fESP
-  lfq$Rn_max <- fESP
-  lfq$par <- par
-
-  return(lfq)
+    return(lfq)
 }

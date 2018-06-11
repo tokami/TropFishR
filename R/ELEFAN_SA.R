@@ -62,6 +62,8 @@
 #'    square-root transformation of positive values according to Brey et al. (1988).
 #'    (default: FALSE, for more information see \link{lfqRestructure}).
 #' @param agemax maximum age of species; default NULL, then estimated from Linf
+#' @param spwaningTimes number of spawning events (times) per year. By default 1 spawning
+#'    event per year is assumed (so far implemented with 1 or 2 events per year).
 #' @param flagging.out logical; passed to \link{lfqFitCurves}. Default is TRUE
 #' @param plot logical; Plot restructured counts with fitted lines using
 #' \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).
@@ -160,6 +162,7 @@ ELEFAN_SA <- function(
   verbose = TRUE,
   MA = 5, addl.sqrt = FALSE,
   agemax = NULL,
+  spawningTimes = 1,
   flagging.out = TRUE,
   plot = FALSE,
   plot.score = TRUE
@@ -240,29 +243,49 @@ ELEFAN_SA <- function(
                   get("ts", up_par_ALL))
 
 
+    ## two spawning times per year
+    if(spawningTimes == 2){
+        if(length(low_tanc) <= 1) low_tanc <- c(low_tanc, low_tanc)
+        if(length(up_tanc) <= 1) up_tanc <- c(up_tanc, up_tanc)
+        if(length(init_tanc) <= 1) init_tanc <- c(init_tanc, init_tanc)                
+    }
+    
+
+
   # ELEFAN 0
   res <- lfqRestructure(res, MA = MA, addl.sqrt = addl.sqrt)
   catch_aAF_F <- res$rcounts
   peaks_mat <- res$peaks_mat
   ASP <- res$ASP
 
-  # seasonalised cost function
-  soSAfun <- function(lfq, par=c(init_Linf, init_K, init_tanc, init_C, init_ts),
-                      agemax, flagging.out){
-    Lt <- lfqFitCurves(lfq,
-                 par=list(Linf=par[1], K=par[2], t_anchor=par[3], C=par[4], ts=par[5]),
-                 flagging.out = flagging.out, agemax = agemax)
-    return(-Lt$fESP)
-  }
-  # cost function
-  SAfun <- function(lfq, par=c(init_Linf, init_K, init_tanc),
-                    agemax, flagging.out){
-    Lt <- lfqFitCurves(lfq,
-                 par=list(Linf=par[1], K=par[2], t_anchor=par[3], C = 0, ts = 0),
-                 flagging.out = flagging.out, agemax = agemax)
-    return(-Lt$fESP)
-  }
 
+    ## seasonalised cost function
+    soSAfun <- function(lfq, par=c(init_Linf, init_K, init_tanc, init_C, init_ts),
+                        agemax, flagging.out, spawningTimes){
+        if(spawningTimes == 1){
+            parList <- list(Linf=par[1], K=par[2], t_anchor=par[3], C=par[4], ts=par[5])            
+        }else if(spawningTimes == 2){
+            parList <- list(Linf=par[1], K=par[2], t_anchor=c(par[3], par[4]),
+                            C=par[5], ts=par[6])
+        }
+        Lt <- lfqFitCurves(lfq, par=parList,
+                           agemax = agemax, flagging.out = flagging.out, spawningTimes = spawningTimes)
+        return(-Lt$fESP)
+    }
+    # non-seasonalised cost function
+    SAfun <- function(lfq, par=c(init_Linf, init_K, init_tanc),
+                      agemax, flagging.out, spawningTimes){
+        if(spawningTimes == 1){
+            parList <- list(Linf=par[1], K=par[2], t_anchor=par[3], C=0, ts=0)
+        }else if(spawningTimes == 2){
+            parList <- list(Linf=par[1], K=par[2], t_anchor=c(par[3],par[4]),
+                            C=0, ts=0)
+        }
+        Lt <- lfqFitCurves(lfq, par=parList,
+                           agemax = agemax, flagging.out = flagging.out, spawningTimes = spawningTimes)
+        return(-Lt$fESP)
+    }
+    
 
     ## control list
     control <- list(temperature = SA_temp,
@@ -288,12 +311,21 @@ ELEFAN_SA <- function(
       upper = c(up_Linf, up_K, up_tanc, up_C, up_ts),
       agemax = agemax,
       flagging.out = flagging.out,
+      spawningTimes = spawningTimes,
       control = control,
       lfq = res
     )
-
-    pars <- as.list(SAfit$par)
-    names(pars) <- c("Linf","K","t_anchor", "C", "ts")
+      if(spawningTimes == 1){
+          pars <- as.list(SAfit$par)          
+          names(pars) <- c("Linf", "K", "t_anchor", "C", "ts")
+      }else if(spawningTimes == 2){
+          tmp <- as.numeric(SAfit$par)
+          pars <- list(Linf = tmp[1],
+                       K = tmp[2],
+                       t_anchor = c(tmp[3], tmp[4]),
+                       C = tmp[5],
+                       ts = tmp[6])
+      }
   }else{
     # Simulated annealing
     writeLines(paste(
@@ -309,12 +341,19 @@ ELEFAN_SA <- function(
       upper = c(up_Linf, up_K, up_tanc),
       agemax = agemax,
       flagging.out = flagging.out,
+      spawningTimes = spawningTimes,      
       control = control,
       lfq = res
-    )
-
-    pars <- as.list(SAfit$par)
-    names(pars) <- c("Linf","K","t_anchor")
+      )
+      if(spawningTimes == 1){
+          pars <- as.list(SAfit$par)          
+          names(pars) <- c("Linf", "K", "t_anchor")
+      }else if(spawningTimes == 2){
+          tmp <- as.numeric(SAfit$par)
+          pars <- list(Linf = tmp[1],
+                       K = tmp[2],
+                       t_anchor = c(tmp[3], tmp[4]))
+      }
   }
 
   # Score graph in GA style
@@ -348,7 +387,7 @@ ELEFAN_SA <- function(
   }
 
   final_res <- lfqFitCurves(lfq = res,par=pars,flagging.out = flagging.out,
-                            agemax = agemax)
+                            agemax = agemax, spawningTimes = spawningTimes)
 
   # growth performance index
   phiL <- log10(pars$K) + 2 * log10(pars$Linf)
@@ -364,13 +403,15 @@ ELEFAN_SA <- function(
     res$control <- control
     res$ncohort <- final_res$ncohort
     res$agemax <- final_res$agemax
+    res$spawningTimes <- spawningTimes    
     res$par <- pars
     res$fESP <- abs(SAfit$value)
     res$Rn_max <- abs(SAfit$value)
 
     if(plot){
       plot(res, Fname = "rcounts")
-      Lt <- lfqFitCurves(res, par = res$pars, draw=TRUE)
+      Lt <- lfqFitCurves(res, par = res$pars, draw=TRUE,
+                         spawningTimes = spawningTimes)
     }
     return(res)
 }

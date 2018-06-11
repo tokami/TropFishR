@@ -6,7 +6,7 @@
 \usage{
 lfqFitCurves(lfq, par = list(Linf = 100, K = 0.1, t_anchor = 0.25, C = 0, ts =
   0), agemax = NULL, flagging.out = TRUE, lty = 2, lwd = 1, col = 1,
-  draw = FALSE, tincr = 0.05)
+  draw = FALSE, tincr = 0.05, spawningTimes = 1)
 }
 \arguments{
 \item{lfq}{a list of the class "lfq" consisting of following parameters:
@@ -53,6 +53,9 @@ than one. (See the help on the device for details of the interpretation.)}
 existing lfq plot}
 
 \item{tincr}{step for plotting}
+
+\item{spwaningTimes}{number of spawning events (times) per year. By default 1 spawning
+event per year is assumed (so far implemented with 1 or 2 events per year).}
 }
 \value{
 A list with the input parameters and following list objects:

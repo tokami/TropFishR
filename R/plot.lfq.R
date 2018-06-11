@@ -334,13 +334,13 @@ plot.lfq <- function(x,
     # optional addition of cohort growth curves
     if("par" %in% names(x) & is.null(par) & draw){
       Lt <- lfqFitCurves(lfq = x, par = x$par,
-        agemax = x$agemax, draw = TRUE, col=curve.col
-      )
+                         agemax = x$agemax, draw = TRUE, col=curve.col,
+                         spawningTimes = x$spawningTimes)
     }
     if(!is.null(par) & draw){
-      Lt <- lfqFitCurves(x, par = par,
-       agemax = agemax, draw = TRUE, col=curve.col
-      )
+        Lt <- lfqFitCurves(x, par = par,
+                           agemax = agemax, draw = TRUE, col=curve.col,
+                           spawningTimes = x$spawningTimes)
     }
 
     # frame

@@ -7,8 +7,8 @@
 ELEFAN_SA(x, seasonalised = FALSE, init_par = NULL, low_par = NULL,
   up_par = NULL, SA_time = 60 * 1, maxit = NULL,
   nb.stop.improvement = NULL, SA_temp = 1e+05, verbose = TRUE, MA = 5,
-  addl.sqrt = FALSE, agemax = NULL, flagging.out = TRUE, plot = FALSE,
-  plot.score = TRUE)
+  addl.sqrt = FALSE, agemax = NULL, spawningTimes = 1,
+  flagging.out = TRUE, plot = FALSE, plot.score = TRUE)
 }
 \arguments{
 \item{x}{a list consisting of following parameters:
@@ -90,6 +90,9 @@ square-root transformation of positive values according to Brey et al. (1988).
 
 \item{plot.score}{logical; Plot simulated annealing score progression.
 (Default: plot.score=TRUE)}
+
+\item{spwaningTimes}{number of spawning events (times) per year. By default 1 spawning
+event per year is assumed (so far implemented with 1 or 2 events per year).}
 }
 \value{
 A list with the input parameters and following list objects:
