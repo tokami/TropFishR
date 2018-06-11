@@ -156,7 +156,10 @@ recruitment <- function(
         t = lfq$dates[j],
         tincr = tincr
       )
-      setTxtProgressBar(pb, counter_mat[i,j])
+        if(!hide.progressbar){
+            setTxtProgressBar(pb, counter_mat[i,j])
+        }
+      
     }
   }
   if(!hide.progressbar){close(pb)}
