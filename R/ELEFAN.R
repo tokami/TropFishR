@@ -199,7 +199,8 @@ ELEFAN <- function(
   K_range = exp(seq(log(0.1), log(10), length.out=100)),
   C = 0, ts = 0,
   MA = 5, addl.sqrt = FALSE,
-  agemax = NULL, flagging.out = TRUE, method = "optimise",
+  agemax = NULL, flagging.out = TRUE, 
+  method = "optimise",
   cross.date = NULL, cross.midLength = NULL, cross.max = FALSE,
   hide.progressbar = FALSE,
   plot = FALSE, contour = FALSE,
@@ -217,7 +218,8 @@ ELEFAN <- function(
   n_classes <- length(classes)
 
   #ts <- WP - 0.5
-  if(is.na(Linf_fix) & is.na(Linf_range[1])) Linf_range <- seq(classes[n_classes]-5,classes[n_classes]+5,1) ### OLD: c(classes[n_classes]-5,classes[n_classes]+5)
+  if(is.na(Linf_fix) & is.na(Linf_range[1]))
+    Linf_range <- seq(classes[n_classes]-5,classes[n_classes]+5,1) ### OLD: c(classes[n_classes]-5,classes[n_classes]+5)
 
   # ELEFAN 0
   res <- lfqRestructure(res, MA = MA, addl.sqrt = addl.sqrt)
@@ -234,12 +236,12 @@ ELEFAN <- function(
 
 
   # optimisation function
-  sofun <- function(tanch, lfq, par, agemax, flagging.out){
-    Lt <- lfqFitCurves(lfq,
-                       par=list(Linf=par[1], K=par[2], t_anchor=tanch,
-                                C=par[4], ts=par[5]),
-                       flagging.out = flagging.out, agemax = agemax)
-    return(Lt$ESP)
+    sofun <- function(tanch, lfq, par, agemax, flagging.out){
+        parList <- list(Linf=par[1], K=par[2], t_anchor=par[3], C=par[4], ts=par[5])            
+        Lt <- lfqFitCurves(lfq,
+                           par=parList,
+                           flagging.out = flagging.out, agemax = agemax, spawningTimes = 1)
+        return(Lt$ESP)
   }
 
   ESP_tanch_L <- matrix(NA,nrow=length(Ks),ncol=length(Linfs))
@@ -284,7 +286,8 @@ ELEFAN <- function(
 
       if(method == "cross"){ # Method for crossing center of a prescribed bin
 
-        t0s <- seq(floor(min(date2yeardec(res$dates)) - agemax.i), ceiling(max(date2yeardec(res$dates))), by = 0.01)
+          t0s <- seq(floor(min(date2yeardec(res$dates)) - agemax.i),
+                     ceiling(max(date2yeardec(res$dates))), by = 0.01)
 
         Ltlut <- Linfs[li] * (1-exp(-(
           Ks[ki]*(date2yeardec(cross.date)-t0s)
@@ -294,7 +297,9 @@ ELEFAN <- function(
 
         t_anchor <- t0s[which.min((Ltlut - cross.midLength)^2)] %% 1
 
-        resis <- sofun(tanch = t_anchor, lfq = res, par = c(Linfs[li], Ks[ki], NA, C, ts), agemax = agemax.i, flagging.out = flagging.out)
+        resis <- sofun(tanch = t_anchor,
+                       lfq = res, par = c(Linfs[li], Ks[ki], NA, C, ts),
+                       agemax = agemax.i, flagging.out = flagging.out)
         ESP_list_K[ki] <- resis
         ESP_tanch_K[ki] <- t_anchor
 
@@ -400,22 +405,24 @@ ELEFAN <- function(
 
   final_res <- lfqFitCurves(lfq = res, par=pars,
                             flagging.out = flagging.out,
-                            agemax = agemax)
+                            agemax = agemax,
+                            spawningTimes = 1)
 
     ## Results
     res$score_mat <- score_mat
-  res$ncohort = final_res$ncohort
-  res$agemax = final_res$agemax
-  res$par <- pars
-  res$fESP <- Rn_max
-  res$Rn_max <- Rn_max
+    res$ncohort <- final_res$ncohort
+    res$agemax <- final_res$agemax
+    res$par <- pars
+    res$spawningTimes <- 1
+    res$fESP <- Rn_max
+    res$Rn_max <- Rn_max
 
 
-  class(res) <- "lfq"
-  if(plot){
-    plot(res, Fname = "rcounts")
-    Lt <- lfqFitCurves(res, par = pars, draw=TRUE)
-  }
-  return(res)
+    class(res) <- "lfq"
+    if(plot){
+      plot(res, Fname = "rcounts")
+      Lt <- lfqFitCurves(res, par = pars, spawningTimes=1, draw=TRUE)
+    }
+    return(res)
 }
 
