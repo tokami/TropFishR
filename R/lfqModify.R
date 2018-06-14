@@ -60,6 +60,19 @@ lfqModify <- function(lfq, par = NULL,
     midLengths <- lfq$midLengths
     catch <- lfq$catch
 
+    ## linf for plus_group definition
+    if(!is.null(par)){
+        linf <- par$Linf
+    }else{
+        if("Linf" %in% names(lfq)){
+            linf <- lfq$Linf
+        }else if("par" %in% names(lfq)){
+            linf <- lfq$par$Linf
+        }else{
+            linf <- NA
+        }
+    }
+
     ## replace NAs in catch
     catch[which(is.na(catch))] <- 0
 
@@ -352,7 +365,7 @@ lfqModify <- function(lfq, par = NULL,
     }
 
       # plus group
-      if(isTRUE(plus_group) | is.numeric(plus_group)){
+      if(isTRUE(plus_group) | is.numeric(plus_group) | plus_group == "Linf"){
         if(isTRUE(plus_group)){
           if(is.vector(catch)){
             print(data.frame(midLengths = midLengths, frequency = catch))
@@ -371,7 +384,8 @@ lfqModify <- function(lfq, par = NULL,
             print(tmp)
           }
 
-          writeLines("Check the table above and insert the length of the plus group (Esc to cancel).")
+          writeLines(paste0("Linf = ",round(linf,2),
+                            ". Check the table above and insert the length of the plus group (Esc to cancel)."))
           pg = -1
           while(pg > max(midLengths) | pg < min(midLengths)){
             pg <- readline(paste0("Enter a length group between ", min(midLengths)," and ",
@@ -385,7 +399,15 @@ lfqModify <- function(lfq, par = NULL,
             }
           }
         }else if(is.numeric(plus_group)){
-          pg = as.numeric(as.character(plus_group))
+            pg = as.numeric(as.character(plus_group))
+        }else if(plus_group == "Linf"){
+            interval <- midLengths[2] - midLengths[1]
+            upperLength <- midLengths + (interval / 2)
+            if(!is.na(linf)){
+                pg <- midLengths[which.min(abs(upperLength - floor(linf)))]
+            }else{
+                writeLines("Please provide Linf in par or lfq!")
+            }
         }
         if(!(pg %in% midLengths)){
           stop(paste0(pg, " is not an element of midLengths. Set 'plus_group' TRUE and pick a length class \n or check the vector 'midLengths' in your data."))
@@ -431,9 +453,19 @@ lfqModify <- function(lfq, par = NULL,
     if("comment" %in% names(lfq)) res$comment <- lfq$comment 
 
     ## add growth parameter if known
-    if("par" %in% names(lfq)) res$par <- lfq$par    
+    if("par" %in% names(lfq)){
+        if(class(lfq$par) == "list"){
+            res$par <- lfq$par
+        }else{
+            res$par <- as.list(lfq$par)
+        }
+    }
     if(!is.null(par)){
-        res$par <- par
+        if(class(par) == "list"){
+            res$par <- par
+        }else{
+            res$par <- as.list(par)
+        }
     }
 
     ## add all objects to which in lfq to new lfq list

@@ -166,8 +166,8 @@ plot.lfq <- function(x,
     dates <- x$dates
     classes <- x$midLengths
     catch <- get(Fname, x)
-    agemax <- ifelse(!is.null(x$agemax), x$agemax, NULL)
-    spawningTimes <- ifelse(!is.null(x$spawningTimes), x$spawningTimes, NULL)    
+    agemax <- ifelse("agemax" %in% names(x), x$agemax, NA)
+    spawningTimes <- ifelse("spawningTimes" %in% names(x), x$spawningTimes, NA)    
 
     ## combine lfq data sets (e.g. different fleets)
     if(any(!is.na(y))){

@@ -123,7 +123,7 @@ lfqFitCurves <- function(lfq,
         stop("Linf, K and t_anchor have to provided in par.")
 
     # ISSUE: if seasonalised max age can be different and 0.95 very coarse
-    if(is.null(agemax)){
+    if(is.null(agemax) | is.na(agemax)){
       agemax <- ceiling((1/-par$K)*log(1-((par$Linf*0.95)/par$Linf)))
     }
 
@@ -134,7 +134,7 @@ lfqFitCurves <- function(lfq,
     ncohort <- agemax + ceiling(diff(range(yeardec))) # number of cohorts
 
     ## account for several spawning times per year:
-    if(spawningTimes == 1){
+    if(spawningTimes == 1 | is.na(spawningTimes) | is.null(spawningTimes)){
         tA.use <- par$t_anchor[1] # VBGF anchor time in year
         tAs <- seq(floor(tmax-ncohort), floor(tmax), by=1) + (tA.use+1e6)%%1   # anchor times
         tAs <- tAs[which(tAs < tmax)]
