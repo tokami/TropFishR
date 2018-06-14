@@ -166,6 +166,8 @@ plot.lfq <- function(x,
     dates <- x$dates
     classes <- x$midLengths
     catch <- get(Fname, x)
+    agemax <- ifelse(!is.null(x$agemax), x$agemax, NULL)
+    spawningTimes <- ifelse(!is.null(x$spawningTimes), x$spawningTimes, NULL)    
 
     ## combine lfq data sets (e.g. different fleets)
     if(any(!is.na(y))){
@@ -334,13 +336,13 @@ plot.lfq <- function(x,
     # optional addition of cohort growth curves
     if("par" %in% names(x) & is.null(par) & draw){
       Lt <- lfqFitCurves(lfq = x, par = x$par,
-                         agemax = x$agemax, draw = TRUE, col=curve.col,
-                         spawningTimes = x$spawningTimes)
+                         agemax = agemax, draw = TRUE, col=curve.col,
+                         spawningTimes = spawningTimes)
     }
     if(!is.null(par) & draw){
         Lt <- lfqFitCurves(x, par = par,
                            agemax = agemax, draw = TRUE, col=curve.col,
-                           spawningTimes = x$spawningTimes)
+                           spawningTimes = spawningTimes)
     }
 
     # frame
