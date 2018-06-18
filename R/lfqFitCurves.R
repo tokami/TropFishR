@@ -182,6 +182,10 @@ lfqFitCurves <- function(lfq,
     Lt <- do.call(rbind, Lt)
     Lt <- Lt[which(Lt$Lt>=0),]# trim negative lengths
 
+    ## adjust ct so that youngest cohort has number 1
+    if(min(Lt$ct) != 1){
+        Lt$ct <- Lt$ct - (min(Lt$ct) - 1)
+    }
 
     # calc scores
     grd <- expand.grid(Lt=lfq$midLengths, t=date2yeardec(lfq$dates))

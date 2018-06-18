@@ -694,7 +694,6 @@ catchCurve <- function(param,
             yname = "lnC"
             ylabel = "ln(C)"
           }            
-            
 
           if(!cumulative & !constant_dt){
             xvar = t_midL
