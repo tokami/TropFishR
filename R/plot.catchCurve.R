@@ -78,7 +78,7 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
       xlabel <- "ln(Linf - L)"
     }else if("classes.num" %in% names(pes) & "midLengths" %in% names(pes)){
         xplot <- pes$classes.num
-        xlabel <- "Relative age [years - t0]" 
+        xlabel <- "Cohort"
     }else if("classes.num" %in% names(pes)){
         xplot <- pes$classes.num
     }

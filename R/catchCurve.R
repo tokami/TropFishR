@@ -689,7 +689,7 @@ catchCurve <- function(param,
           if(constant_dt){
             xvar = cohorts
             xname = "classes.num"
-            xlabel = "Relative age [years - t0]"
+            xlabel = "Cohort"
             yvar = lnC
             yname = "lnC"
             ylabel = "ln(C)"
