@@ -304,7 +304,7 @@ predict_mod <- function(
   binSize = NA,  
   CI = 95
 ){
-
+    res <- param
     
     ## VPA with bootstrapping ELEFAN results
     if(!is.null(boot) & class(boot) == "lfqBoot"){
