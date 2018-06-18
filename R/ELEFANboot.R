@@ -237,7 +237,7 @@ ELEFAN_SA_boot <- function(lfq, seasonalised = FALSE,
       # resample data
       lfqb <- lfqResample(lfq)
       
-      # call ELEFAN_GA
+      # call ELEFAN_SA
       fitboot <- ELEFAN_SA(
         lfqb, seasonalised = seasonalised,
         init_par = init_par,
