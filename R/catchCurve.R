@@ -28,8 +28,6 @@
 #'    for the regression line in each element of the list.
 #' @param reg_num integer indicating how many separate regression lines should be applied to the
 #'    data. Default 1.
-#' @param slicing logical; defining if relative age should be estimated by slicing the LFQ data
-#'     with the estimated growth curves
 #' @param auto logical; no interactive functions used instead regression line is chosen
 #'    automatically. Default = FALSE
 #' @param boot an object of class 'lfqBoot'
@@ -111,6 +109,10 @@
 #'   pseudo-cohort.
 #'   The cumulative catch curve does not allow for the estimation of the selectivity
 #'   ogive.
+#'   If the length-converted catch curve (\code{midLengths} in \code{lfq}) is applied
+#'   to a catch matrix, by default the slicing method is used to assign the numbers in
+#'   the different length classes to corresponding cohorts. This is the recommended method
+#'   if the stock is caracterised by several spawning events per year.
 #'
 #' @return A list with the input parameters and following list objects:
 #' \itemize{
@@ -197,7 +199,6 @@ catchCurve <- function(param,
                        calc_ogive = FALSE,
                        reg_int = NULL,
                        reg_num = 1,
-                       slicing = FALSE,
                        auto = FALSE,
                        boot = NULL,
                        natMort = NULL,
