@@ -5,10 +5,9 @@
 \title{Catch curve}
 \usage{
 catchCurve(param, catch_columns = NA, cumulative = FALSE,
-  calc_ogive = FALSE, reg_int = NULL, reg_num = 1, slicing = FALSE,
-  auto = FALSE, boot = NULL, natMort = NULL, robustReg = FALSE,
-  yearSel = NA, yearCombine = FALSE, binSize = NA, plot = TRUE,
-  CI = 95)
+  calc_ogive = FALSE, reg_int = NULL, reg_num = 1, auto = FALSE,
+  boot = NULL, natMort = NULL, robustReg = FALSE, yearSel = NA,
+  yearCombine = FALSE, binSize = NA, plot = TRUE, CI = 95)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
@@ -38,9 +37,6 @@ for the regression line in each element of the list.}
 
 \item{reg_num}{integer indicating how many separate regression lines should be applied to the
 data. Default 1.}
-
-\item{slicing}{logical; defining if relative age should be estimated by slicing the LFQ data
-with the estimated growth curves}
 
 \item{auto}{logical; no interactive functions used instead regression line is chosen
 automatically. Default = FALSE}
@@ -121,6 +117,10 @@ This function includes the \link{identify} function, which asks you to
   pseudo-cohort.
   The cumulative catch curve does not allow for the estimation of the selectivity
   ogive.
+  If the length-converted catch curve (\code{midLengths} in \code{lfq}) is applied
+  to a catch matrix, by default the slicing method is used to assign the numbers in
+  the different length classes to corresponding cohorts. This is the recommended method
+  if the stock is caracterised by several spawning events per year.
 }
 \examples{
 \donttest{
