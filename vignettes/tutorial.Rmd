@@ -44,6 +44,7 @@ install.packages("TropFishR", repos = "https://cran.rstudio.com/")
 The package is loaded into the R environment with:
 
 ```{r, eval=TRUE,echo=TRUE}
+devtools::install_github("tokami/TropFishR", ref="master")
 library(TropFishR)
 ```
 
@@ -308,7 +309,7 @@ TB1$df_Es
 TB1$currents
 ```
 
-Please note that the resolution of the $L_c$ and F changes is quite low and the range quite narrow due to the limitations in computation time of the vignette format. The results indicate that the fishing mortality of this example (F = `r {round(synLFQ7b$FM,2)}`) is higher than the maximum fishing mortality ($F_{max} =$ `r {round(TB1$df_Es$Fmax,2)}`), which confirms the indication of the slightly increased exploitation rate (E = `r {round(synLFQ7b$E,2)}`). The prediction plot shows that the yield could be increased when fishing mortality and mesh size is increased. The units are grams per recruit.
+Please note that the resolution of the $L_c$ and F changes is quite low and the range quite narrow due to the limitations in computation time of the vignette format. The results indicate that the fishing mortality of this example (F = `r {round(synLFQ7b$FM,2)}`) is higher than the maximum fishing mortality ($F_{max} =$ `r {round(TB1$df_Es$Fmsy,2)}`), which confirms the indication of the slightly increased exploitation rate (E = `r {round(synLFQ7b$E,2)}`). The prediction plot shows that the yield could be increased when fishing mortality and mesh size is increased. The units are grams per recruit.
 
 
 ##*Summary*
