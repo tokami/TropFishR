@@ -2,8 +2,8 @@
 #'
 #' \code{recruitment} calculates the recruitment pattern (i.e. monthly)
 #' of an lfq object given corresponding \code{\link{VBGF}} parameters
-#' and a defined length at recruitment (\code{Lrecr}, defaults to
-#' \code{Lrecr = 0})
+#' and a defined length at recruitment (\code{Lrecr} (Default:
+#' \code{Lrecr = NA} assumes Lrecr = 0, but plot emphasizes relative months)
 #' Time at recruitment \code{trecr} is calculated via a hindcast
 #' using the \code{\link{calc_trecr}} function.
 #'
@@ -12,23 +12,24 @@
 #' in the lfq count bins.
 #' Nevertheless, the results should provide general information about
 #' the recruitment pattern, e.g. relative recruitment strength by month.
-#' Using the argument \code{use.rcounts = TRUE}, the analysis is
-#' perfomed on restructured frequencies (positive values only).
+#' Using the argument \code{use.rcounts = TRUE}, the analysis represents
+#' a hindcast of positive restructured frequencies only.
 #'
 #' @param lfq a length-frequency object (i.e. class \code{lfq}) that contains
 #' a \code{lfq$par} slot with \code{\link{VBGF}} parameters (usually fit
 #' via \code{\link{ELEFAN}}, \code{\link{ELEFAN_GA}}, or \code{\link{ELEFAN_SA}}
 #' functions).
 #' @param Lrecr numeric. Length at recruitment
-#' (default: \code{Lrecr = 0}).
+#' (default: \code{Lrecr = NA} assumes Lrecr = 0, but plot emphasizes
+#' relative months).
 #' @param tincr resolution to use for hindcasting time at recruitment
 #' (default: \code{tincr = 0.01})
 #' @param use.rcounts logical. Should restructured counts
 #' (\code{lfq$rcounts}),
 #' rather than raw catch counts (\code{lfq$catch}) be used to derive
-#' recruitment pattern. If true, only bins with positive reconstructed counts
-#' are considered, and those values are multiplied by 100 in order to provide
-#' and appropriate scaling for density approxmations via
+#' recruitment pattern. If true, only bins with positive restructures
+#' frequencies are considered, and those values are multiplied by 100
+#' in order to provide appropriate scaling for density approxmations via
 #' \code{\link[graphics]{hist}}.
 #' @param plot logical. Should monthly recruitment pattern [\%] by plotted
 #' as a \code{\link[graphics]{barplot}} (default: \code{plot = TRUE}).
@@ -67,7 +68,8 @@
 #' lfq$par <- list(
 #'   Linf = 80, K = 0.5, t_anchor = 0.25, C = 0.75, ts = 0.5
 #' )
-#' tmp <- recruitment(lfq = lfq)
+#' tmp <- recruitment(lfq = lfq, tincr=0.01) # no Lrecr specified
+#' tmp <- recruitment(lfq = lfq, tincr=0.01, Lrecr = 0) # Lrecr specified
 #'
 #'
 #' # using restructured frequencies
@@ -110,7 +112,7 @@
 #' @references
 #' Brey, T., Soriano, M., Pauly, D., 1988. Electronic length frequency analysis. A
 #' revised and expanded user's guide to ELEFAN 0, 1 and 2. (Second edition).
-#' Berichte aus dem Institut f??r Meereskunde Kiel, No 177, 31p.
+#' Berichte aus dem Institut für Meereskunde Kiel, No 177, 31p.
 #'
 #' Gayanilo, F. C., Sparre, P., & Pauly, D., 2005.
 #' FAO-ICLARM stock assessment tools II: user's guide.
@@ -129,7 +131,7 @@
 #'
 recruitment <- function(
   lfq,
-  Lrecr = 0,
+  Lrecr = NA,
   tincr = 0.01,
   use.rcounts = FALSE,
   plot = TRUE,
@@ -140,6 +142,12 @@ recruitment <- function(
     "If use.rcounts = TRUE, then lfq$rcounts can not be empty.\n
     Please run lfqRestructure first and replace lfq with the output."
   )}
+  if(is.na(Lrecr)){
+    Lrecr <- 0
+    monthLabel <- FALSE
+  }else{
+    monthLabel <- TRUE
+  }
   trecr <- NaN * lfq$catch
   Lincl <- which(lfq$midLengths < lfq$par$Linf & lfq$midLengths > Lrecr)
   trecr <- trecr[Lincl,]
@@ -159,7 +167,7 @@ recruitment <- function(
         if(!hide.progressbar){
             setTxtProgressBar(pb, counter_mat[i,j])
         }
-      
+
     }
   }
   if(!hide.progressbar){close(pb)}
@@ -177,8 +185,13 @@ recruitment <- function(
   trecr.mo <- as.numeric(format(trecr, "%m"))
   h <- hist(trecr.mo, breaks = seq(0.5, 12.5, by=1), plot = FALSE)
   if(plot){
-    barplot(h$counts/sum(h$counts)*100, names.arg = month.abb,
-      las = 2, ylab = "Recruitment [%]", ...)
+    barplot(h$counts/sum(h$counts)*100,
+      las = 2,
+      names.arg = ifelse(monthLabel, function(){month.abb}, function(){})(),
+      ylab = "Recruitment [%]",
+      xlab = ifelse(monthLabel, "Month", "Relative month"),
+      ...
+    )
   }
   return(h)
 }
