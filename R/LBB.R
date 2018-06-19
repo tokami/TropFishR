@@ -101,6 +101,8 @@
 #' plotLBB.ts(res)
 #' }
 #'
+#' @importFrom R2jags jags.parallel
+#' @import Hmisc
 #'
 #' @references
 #' R. Froese, H. Winker, G. Coro, N. Demirel, A.C. Tsikliras, D. Dimarchopoulou,
