@@ -591,6 +591,7 @@ LBB <- function(lfq, startYear=NA, endYear=NA, years=NA, binSize=NA, LinfUser=NA
             if(which(Years==Year)==1){
                 if(is.na(mfrow)){
                     ncols <- ifelse(length(Years)<=4,2,3)
+                    if(length(Years) == 1) ncols <- 1
                     opar <- par(mfrow=c(ceiling(length(Years)/3),ncols))
                 }else{
                     opar <- par(mfrow=mfrow)
@@ -1112,6 +1113,7 @@ plotLBB.data <- function(lfq, mfrow=NA){
     for(z in 1:ceiling(nYears/6)) {
         if(is.na(mfrow)){
             ncols <- ifelse(length(Years)<=4,2,3)
+            if(length(Years) == 1) ncols <- 1            
             opar <- par(mfrow=c(ceiling(length(Years)/3),ncols))
         }else{
             opar <- par(mfrow=mfrow)
