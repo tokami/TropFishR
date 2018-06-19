@@ -5,16 +5,24 @@
 #'    Allows to change bin size of LFQ data. Allows to ad plus group to catch matrix.
 #'
 #' @param lfq lfq object with dates, midLengths, and catch
-#' @param par growth parameter as resulting from e.g. \code{\link{ELEFAN}}
+#' @param par growth parameters as resulting from e.g. \code{\link{ELEFAN}}
 #' @param bin_size Bin size for length frequencies (in cm)
+#' @param aggregate Factor to aggregate catch per year (\code{"year"}),
+#'    per quarter (\code{"quarter"}), or per month (\code{"month"}). By default data
+#'    is not aggregated (\code{NA}).
 #' @param vectorise_catch logical; indicating if the catch matrix should be summarised to
 #'    yearly vectors (default: FALSE).
 #' @param plus_group logical or numeric; should a plus group be created? If yes you will be
 #'    asked to insert the length for the plus group in the console (default: FALSE).
 #'    Instead of inserting the length of the plus group via the console, the value
 #'    can be inserted, e.g. plus_group = 85.5.
+#' @param minDate minimum date to subset lfq data
+#' @param maxDate maximum date to subset lfq data
+#' @param years numeric with year(s) to subset lfq data
+#' @param Lmin minimum length to subset lfq data
+#' @param Lmax maximum length to subset lfq data
 #' @param lfq2 optional second lfq object which will be merged with lfq. This might be interesting for
-#'    fleet specific lfq objects. Default: NA.
+#'    fleet specific lfq objects. Default: NA. Be aware that catches are combined without weighting!
 #'
 #' @keywords function lfq length-frequency
 #'
@@ -37,8 +45,14 @@
 
 lfqModify <- function(lfq, par = NULL,
                       bin_size = NA,
+                      aggregate = NA,  ## either: year, quarter, month  (year will substitute vectorise_catch)
                       vectorise_catch = FALSE,
                       plus_group = FALSE,
+                      minDate = NA,
+                      maxDate = NA,
+                      years = NA,
+                      Lmin = NA,                      
+                      Lmax = NA,
                       lfq2 = NA){
 
     if(class(lfq) != "lfq") stop("Your lfq data set has to have class 'lfq'!")
@@ -46,10 +60,54 @@ lfqModify <- function(lfq, par = NULL,
     midLengths <- lfq$midLengths
     catch <- lfq$catch
 
+    ## linf for plus_group definition
+    if(!is.null(par)){
+        linf <- par$Linf
+    }else{
+        if("Linf" %in% names(lfq)){
+            linf <- lfq$Linf
+        }else if("par" %in% names(lfq)){
+            linf <- lfq$par$Linf
+        }else{
+            linf <- NA
+        }
+    }
+
     ## replace NAs in catch
     catch[which(is.na(catch))] <- 0
 
+    ## select beyond certain date
+    if(!is.na(minDate)){
+        catch <- lfq$catch[,which(dates >= minDate)]
+        dates <- lfq$dates[which(dates >= minDate)]        
+    }
+    
+    ## select before certain date
+    if(!is.na(maxDate)){
+        catch <- catch[,which(dates <= maxDate)]
+        dates <- dates[which(dates <= maxDate)]        
+    }
 
+    ## select certain years
+    if(!is.na(years[1])){
+        catch <- catch[,which(format(dates,"%Y") %in% years)]
+        dates <- dates[which(format(dates,"%Y") %in% years)]
+    }
+
+    ## select above certain length
+    if(!is.na(Lmin)){
+        catch <- catch[which(midLengths >= Lmin),]
+        midLengths <- midLengths[which(midLengths >= Lmin)]
+    }
+
+    ## select below certain length
+    if(!is.na(Lmax)){
+        catch <- catch[which(midLengths <= Lmax),]
+        midLengths <- midLengths[which(midLengths <= Lmax)]
+    }
+
+
+    ## merge two lfq data sets (ADD weighing factor)
     if(!any(is.na(lfq2))){
         if(class(lfq2) != "lfq") stop("Your lfq2 data set has to have class 'lfq'!")
         
@@ -121,168 +179,304 @@ lfqModify <- function(lfq, par = NULL,
 
         ## error and warning messages
         if(bin_size < midLengths[2]-midLengths[1]) stop("The specified bin_size is smaller than the bin size \nin your data. This is not possible!")
-    # rearrange data into LFQ data
-    bin.breaks <- seq(0, max(midLengths) + bin_size, by=bin_size)
-    midLengthsNEW <- bin.breaks[-length(bin.breaks)] + bin_size/2
-    listi <- vector("list",length(unique(dates)))
-    LF_dat <- data.frame(midLengths = midLengthsNEW)
-    for(i in 1:length(unique(dates))){
-      sampli <- unique(dates)[i]
-      dati <- as.character(unique(dates)[i])
-      if(length(unique(dates)) > 1){
-        lengthi <- rep.int(midLengths,times=as.numeric(catch[,dates == sampli]))
-      }else{
-        lengthi <- rep.int(midLengths,times=as.numeric(catch[dates == sampli]))
+
+        ## rearrange data into LFQ data
+        bin.breaks <- seq(0, max(midLengths) + bin_size, by=bin_size)
+        midLengthsNEW <- bin.breaks + bin_size/2
+        listi <- vector("list",length(unique(dates)))
+        LF_dat <- data.frame(bin = bin.breaks)    
+        for(i in 1:length(unique(dates))){
+            sampli <- unique(dates)[i]
+            lengthi <- as.numeric(midLengths)
+
+            if(length(unique(dates)) > 1){
+                freqi <- as.numeric(catch[,dates == sampli])
+            }else{
+                freqi <- as.numeric(catch[dates == sampli])
+            }            
+
+            bin.breaks2 <- rep(NA, length(bin.breaks))
+            for(ii in 1:length(bin.breaks)){
+                if(ii == length(bin.breaks)){
+                    bin.breaks2[ii] <- length(which(lengthi >= bin.breaks[ii]))
+                }else{
+                    bin.breaks2[ii] <- length(which(lengthi >= bin.breaks[ii] & lengthi < bin.breaks[ii+1]))
+                }
+            }
+            bin.breaks3 <- rep(bin.breaks, bin.breaks2)
+            dati <- aggregate(list(freq=freqi), by=list(bin=bin.breaks3), sum)
+
+            listi[[i]] <- merge(LF_dat, dati, by.x = "bin", all.x =TRUE)[,2]
+        }
+        catch_mat <- do.call(cbind,listi)
+        catch_mat[is.na(catch_mat)] <- 0
+        catch <- catch_mat
+        midLengths <- midLengthsNEW
+
+
+        if(any(catch != 0)){
+
+            ## get rid of 0 bins at both ends
+            lowRow <- 0
+            resi <- TRUE
+            while(resi == TRUE){
+              lowRow <- lowRow + 1
+              resi <- rowSums(catch, na.rm = TRUE)[lowRow] == 0
+            }
+
+            upRow <- nrow(catch)
+            resi <- TRUE
+            while(resi == TRUE){
+              resi <- rowSums(catch, na.rm = TRUE)[upRow] == 0
+              upRow <- upRow - 1
+            }
+            upRow <- upRow + 1
+
+            catch <- catch[lowRow:upRow,]
+            midLengths <- midLengths[lowRow:upRow]
+
+        }
+
+        ## correct if catch was numeric already
+        if(class(lfq$catch) == "numeric"){
+            catch <- as.numeric(catch)
+        }
+
       }
-      cuti <- cut(lengthi, breaks = bin.breaks, labels = midLengthsNEW, include.lowest = TRUE)
-      freq <- plyr::count(cuti)
-      colnames(freq) <- c("midLengths", dati)
-      listi[[i]] <- merge(LF_dat,freq, by.x = "midLengths", all.x =TRUE)[,2]
-    }
-    catch_mat <- do.call(cbind,listi)
-    catch_mat[is.na(catch_mat)] <- 0
-    catch <- catch_mat
-    midLengths <- midLengthsNEW
-  }
-  if(vectorise_catch & !is.matrix(catch)){
-    stop(paste0("Catch is ", class(catch), ". To vectorise catch, it has to be a matrix."))
-  }
-  if(vectorise_catch & is.matrix(catch)){
-    # sum numbers per year
-    c_sum <- by(t(catch),format(dates,"%Y"), FUN = colSums)
-
-    # rearrange in data frame
-    c_list <- lapply(as.list(c_sum), c)
-    c_dat <- as.data.frame(c_list)
-
-    # get rid of 0 bins at both ends
-    lowRow <- 0
-    resi <- TRUE
-    while(resi == TRUE){
-      lowRow <- lowRow + 1
-      resi <- rowSums(c_dat)[lowRow] == 0
-    }
-
-    upRow <- nrow(c_dat)
-    resi <- TRUE
-    while(resi == TRUE){
-      resi <- rowSums(c_dat)[upRow] == 0
-      upRow <- upRow - 1
-    }
-    upRow <- upRow + 1
-
-    catch <- c_dat[lowRow:upRow,]
-    midLengths <- midLengths[lowRow:upRow]
-
-    # override old dates
-    dates <- unique(as.Date(paste0(format(dates,"%Y"),"-01-01")))
-  }
-
-  # plus group
-  if(isTRUE(plus_group) | is.numeric(plus_group)){
-    if(isTRUE(plus_group)){
-      if(is.vector(catch)){
-        print(data.frame(midLengths = midLengths, frequency = catch))
-      }else if(length(unique(format(lfq$dates, "%Y"))) == 1){
-        print(data.frame(midLengths = midLengths, frequency = rowSums(catch)))
-      }else{
-        # sum numbers per year
-        c_sum <- by(t(catch),format(dates,"%Y"), FUN = colSums)
-
-        # rearrange in data frame
-        c_list <- lapply(as.list(c_sum), c)
-        c_dat <- as.data.frame(c_list)
-
-        tmp <- data.frame(midLengths = midLengths)
-        tmp <- cbind(tmp, c_dat)
-        print(tmp)
+      if(vectorise_catch & !is.matrix(catch)){
+        stop(paste0("Catch is ", class(catch), ". To vectorise catch, it has to be a matrix."))
       }
+    if(vectorise_catch) aggregate = "year"
+    if(!is.na(aggregate) & is.matrix(catch)){
+        if(aggregate == "year"){
+            ## sum numbers per year
+            c_sum <- by(t(catch),format(dates,"%Y"), FUN = colSums)
+            # rearrange in data frame
+            c_list <- lapply(as.list(c_sum), c)
+            c_dat <- as.data.frame(c_list)
 
-      writeLines("Check the table above and insert the length of the plus group (Esc to cancel).")
-      pg = -1
-      while(pg > max(midLengths) | pg < min(midLengths)){
-        pg <- readline(paste0("Enter a length group between ", min(midLengths)," and ",
-                              max(midLengths),":"))
-        pg = as.numeric(as.character(pg))
-        if(!(pg %in% midLengths)){
-          writeLines(paste0(pg, " is not an element of midLengths (see table)."))
+              if(any(c_dat != 0)){
+                  # get rid of 0 bins at both ends
+                  lowRow <- 0
+                  resi <- TRUE
+                  while(resi == TRUE){
+                    lowRow <- lowRow + 1
+                    resi <- rowSums(c_dat, na.rm = TRUE)[lowRow] == 0
+                  }
+
+                  upRow <- nrow(c_dat)
+                  resi <- TRUE
+                  while(resi == TRUE){
+                    resi <- rowSums(c_dat, na.rm = TRUE)[upRow] == 0
+                    upRow <- upRow - 1
+                  }
+                  upRow <- upRow + 1
+
+                  catch <- c_dat[lowRow:upRow,]
+                  midLengths <- midLengths[lowRow:upRow]
+              }else{
+                  catch <- c_dat
+              }
+
+            # override old dates
+            dates <- unique(as.Date(paste0(format(dates,"%Y"),"-01-01")))
+        }else if(aggregate == "quarter"){
+            months <- format(dates, "%m")
+            seasons <- rep(NA,length(months))
+            seasons[months == "01"] <- 2
+            seasons[months == "02"] <- 2
+            seasons[months == "03"] <- 2
+            seasons[months == "04"] <- 5
+            seasons[months == "05"] <- 5
+            seasons[months == "06"] <- 5
+            seasons[months == "07"] <- 8
+            seasons[months == "08"] <- 8
+            seasons[months == "09"] <- 8
+            seasons[months == "10"] <- 11
+            seasons[months == "11"] <- 11
+            seasons[months == "12"] <- 11
+            dateFac <- as.Date(paste0(format(dates,"%Y"),"-",seasons,"-15"))
+            ## sum numbers per year
+            c_sum <- by(t(catch),dateFac, FUN = colSums)
+            # rearrange in data frame
+            c_list <- lapply(as.list(c_sum), c)
+            c_dat <- as.data.frame(c_list)
+
+              if(any(c_dat != 0)){
+                  # get rid of 0 bins at both ends
+                  lowRow <- 0
+                  resi <- TRUE
+                  while(resi == TRUE){
+                    lowRow <- lowRow + 1
+                    resi <- rowSums(c_dat, na.rm = TRUE)[lowRow] == 0
+                  }
+
+                  upRow <- nrow(c_dat)
+                  resi <- TRUE
+                  while(resi == TRUE){
+                    resi <- rowSums(c_dat, na.rm = TRUE)[upRow] == 0
+                    upRow <- upRow - 1
+                  }
+                  upRow <- upRow + 1
+
+                  catch <- c_dat[lowRow:upRow,]
+                  midLengths <- midLengths[lowRow:upRow]
+              }else{
+                  catch <- c_dat
+              }
+
+            # override old dates
+            dates <- unique(dateFac)
+        }else if(aggregate == "month"){
+            ## sum numbers per year
+            c_sum <- by(t(catch),format(dates,"%Y-%m"), FUN = colSums)
+            # rearrange in data frame
+            c_list <- lapply(as.list(c_sum), c)
+            c_dat <- as.data.frame(c_list)
+
+              if(any(c_dat != 0)){
+                  # get rid of 0 bins at both ends
+                  lowRow <- 0
+                  resi <- TRUE
+                  while(resi == TRUE){
+                    lowRow <- lowRow + 1
+                    resi <- rowSums(c_dat, na.rm = TRUE)[lowRow] == 0
+                  }
+
+                  upRow <- nrow(c_dat)
+                  resi <- TRUE
+                  while(resi == TRUE){
+                    resi <- rowSums(c_dat, na.rm = TRUE)[upRow] == 0
+                    upRow <- upRow - 1
+                  }
+                  upRow <- upRow + 1
+
+                  catch <- c_dat[lowRow:upRow,]
+                  midLengths <- midLengths[lowRow:upRow]
+              }else{
+                  catch <- c_dat
+              }
+
+            # override old dates
+            dates <- unique(as.Date(paste0(format(dates,"%Y-%m"),"-15")))
+        }else{
+            stop('aggregate has to be either NA, "year", "quarter", or "month"')
+        }
+    }
+
+      # plus group
+      if(isTRUE(plus_group) | is.numeric(plus_group) | plus_group == "Linf"){
+        if(isTRUE(plus_group)){
+          if(is.vector(catch)){
+            print(data.frame(midLengths = midLengths, frequency = catch))
+          }else if(length(unique(format(lfq$dates, "%Y"))) == 1){
+            print(data.frame(midLengths = midLengths, frequency = rowSums(catch)))
+          }else{
+            # sum numbers per year
+            c_sum <- by(t(catch),format(dates,"%Y"), FUN = colSums)
+
+            # rearrange in data frame
+            c_list <- lapply(as.list(c_sum), c)
+            c_dat <- as.data.frame(c_list)
+
+            tmp <- data.frame(midLengths = midLengths)
+            tmp <- cbind(tmp, c_dat)
+            print(tmp)
+          }
+
+          writeLines(paste0("Linf = ",round(linf,2),
+                            ". Check the table above and insert the length of the plus group (Esc to cancel)."))
           pg = -1
-          #pg <- ifelse(grepl("\\D",pg),-1,as.integer(pg))
-          if(is.na(pg)){break}  # breaks when hit enter
+          while(pg > max(midLengths) | pg < min(midLengths)){
+            pg <- readline(paste0("Enter a length group between ", min(midLengths)," and ",
+                                  max(midLengths),":"))
+            pg = as.numeric(as.character(pg))
+            if(!(pg %in% midLengths)){
+              writeLines(paste0(pg, " is not an element of midLengths (see table)."))
+              pg = -1
+              #pg <- ifelse(grepl("\\D",pg),-1,as.integer(pg))
+              if(is.na(pg)){break}  # breaks when hit enter
+            }
+          }
+        }else if(is.numeric(plus_group)){
+            pg = as.numeric(as.character(plus_group))
+        }else if(plus_group == "Linf"){
+            interval <- midLengths[2] - midLengths[1]
+            upperLength <- midLengths + (interval / 2)
+            if(!is.na(linf)){
+                pg <- midLengths[which.min(abs(upperLength - floor(linf)))]
+            }else{
+                writeLines("Please provide Linf in par or lfq!")
+            }
+        }
+        if(!(pg %in% midLengths)){
+          stop(paste0(pg, " is not an element of midLengths. Set 'plus_group' TRUE and pick a length class \n or check the vector 'midLengths' in your data."))
+        }
+        midLengths <- midLengths[1:which(midLengths == pg)]
+        if(is.vector(catch)){
+          if(which(midLengths == pg) < (length(catch)-1)){
+            addplus <- sum(catch[((which(midLengths == pg)+1):length(catch))])
+          }else if(which(midLengths == pg) == (length(catch)-1)){
+            addplus <- catch[(which(midLengths == pg)+1)]
+          }else if(which(midLengths == pg) == (length(catch))){
+            addplus <- 0
+          }
+          catch <- catch[1:which(midLengths == pg)]
+          catch[which(midLengths == pg)] <-
+            catch[which(midLengths == pg)] + addplus
+        }else{
+          if(which(midLengths == pg) < (nrow(catch)-1)){
+            addplus <- colSums(catch[((which(midLengths == pg)+1):nrow(catch)),])
+          }else if(which(midLengths == pg) == (nrow(catch)-1)){
+            addplus <- catch[(which(midLengths == pg)+1),]
+          }else if(which(midLengths == pg) == (nrow(catch))){
+            addplus <- 0
+          }
+          catch <- catch[1:which(midLengths == pg),]
+          catch[which(midLengths == pg),] <-
+            catch[which(midLengths == pg),] + addplus
         }
       }
-    }else if(is.numeric(plus_group)){
-      pg = as.numeric(as.character(plus_group))
-    }
-    if(!(pg %in% midLengths)){
-      stop(paste0(pg, " is not an element of midLengths. Set 'plus_group' TRUE and pick a length class \n or check the vector 'midLengths' in your data."))
-    }
-    midLengths <- midLengths[1:which(midLengths == pg)]
-    if(is.vector(catch)){
-      if(which(midLengths == pg) < (length(catch)-1)){
-        addplus <- sum(catch[((which(midLengths == pg)+1):length(catch))])
-      }else if(which(midLengths == pg) == (length(catch)-1)){
-        addplus <- catch[(which(midLengths == pg)+1)]
-      }else if(which(midLengths == pg) == (length(catch))){
-        addplus <- 0
-      }
-      catch <- catch[1:which(midLengths == pg)]
-      catch[which(midLengths == pg)] <-
-        catch[which(midLengths == pg)] + addplus
-    }else{
-      if(which(midLengths == pg) < (nrow(catch)-1)){
-        addplus <- colSums(catch[((which(midLengths == pg)+1):nrow(catch)),])
-      }else if(which(midLengths == pg) == (nrow(catch)-1)){
-        addplus <- catch[(which(midLengths == pg)+1),]
-      }else if(which(midLengths == pg) == (nrow(catch))){
-        addplus <- 0
-      }
-      catch <- catch[1:which(midLengths == pg),]
-      catch[which(midLengths == pg),] <-
-        catch[which(midLengths == pg),] + addplus
-    }
-  }
 
 
-    ## combine results
-    if(is.vector(catch)){
-        catches <- as.vector(catch)
-    }else catches <- as.matrix(catch)
-    
-    res <- list(dates = dates,
-                midLengths = midLengths,
-                catch = catches)
+        ## combine results
+        if(is.vector(catch)){
+            catches <- as.vector(catch)
+        }else catches <- as.matrix(catch)
 
-    # add growth parameter if known
+    res <- list()
+    if("species" %in% names(lfq)) res$species <- lfq$species
+    if("stock" %in% names(lfq)) res$stock <- lfq$stock
+    res$dates = dates
+    res$midLengths = midLengths
+    res$catch = catches
+    if("comment" %in% names(lfq)) res$comment <- lfq$comment 
+
+    ## add growth parameter if known
+    if("par" %in% names(lfq)){
+        if(class(lfq$par) == "list"){
+            res$par <- lfq$par
+        }else{
+            res$par <- as.list(lfq$par)
+        }
+    }
     if(!is.null(par)){
-      res$Linf <- par$Linf
-      res$K <- par$K
-      res$t_anchor <- par$t_anchor
+        if(class(par) == "list"){
+            res$par <- par
+        }else{
+            res$par <- as.list(par)
+        }
     }
 
-    if("Linf" %in% names(lfq)) res$Linf <- lfq$Linf
-    if("K" %in% names(lfq)) res$K <- lfq$K
-    if("t0" %in% names(lfq)) res$t0 <- lfq$t0
-    if("t_anchor" %in% names(lfq)) res$t_anchor <- lfq$t_anchor
-    if("C" %in% names(lfq)) res$C <- lfq$C
-    if("ts" %in% names(lfq)) res$ts <- lfq$ts
-    if("M" %in% names(lfq)) res$M <- lfq$M
-    if("Z" %in% names(lfq)) res$Z <- lfq$Z
-    if("FM" %in% names(lfq)) res$FM <- lfq$FM
-    if("E" %in% names(lfq)) res$E <- lfq$E
-    if("FM_calc" %in% names(lfq)) res$FM_calc <- lfq$FM_calc
-    if("a" %in% names(lfq)) res$a <- lfq$a
-    if("b" %in% names(lfq)) res$b <- lfq$b
-    if("L50" %in% names(lfq)) res$L50 <- lfq$L50
-    if("L75" %in% names(lfq)) res$L75 <- lfq$L75
-    if("L95" %in% names(lfq)) res$L95 <- lfq$L95
-    if("s_list" %in% names(lfq)) res$s_list <- lfq$s_list
-
+    ## add all objects to which in lfq to new lfq list
+    idx <- names(lfq)[which(!(names(lfq) %in% names(res)))]
+    tmpList <- lfq[which(names(lfq) %in% idx)]
+    res <- c(res, tmpList)
 
     if(class(res) != "lfq"){
         class(res) <- "lfq"
     }
     ## if(!is.na(bin_size)){class(res) <- "lfq"}
-    
+
     return(res)
 }
