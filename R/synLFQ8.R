@@ -20,12 +20,18 @@
 #' \itemize{
 #'   \item Lmat.f = 40 (length at maturity)
 #'   \item Lmat.m = 36 (length at maturity)
-#'   \item L50 = 20 (length at 50\% prob. of capture via trawl net)
+#'   \item L50 = 20 (length at 50\% prob. of capture with trawl net (Lc))
 #'   \item wqs = 4 (width between 25\% and 75\% prob. of capture quantiles;
 #'   i.e. wqs = 0 is knife-edge selection)
 #'   \item M = 0.7 (Natural mortality rate)
 #'   \item harvest_rate = 1, 0.8, 0.4, 0.1 for years 2014, 2015, 2016, 2017, repsectively (fishing mortality rate)
 #' }
+#'
+#' The average biomass relative to the unfished biomass and the yield per recurit
+#' for the years, 2014, 2015, 2016, 2017 is
+#' 0.16, 0.21, 0.41, 0.75, and 0.4, 0.43, 0.24, 0.07, respectively. Biomass over
+#' Bmsy as estimated with a surplus production model is 0.51, 0.67, 1.27, 2.18. Lopt is
+#' 53.33 cm.
 #'
 #' @docType data
 #'
