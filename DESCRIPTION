@@ -5,12 +5,10 @@ Version: 1.6.0
 Date: 2018-06-20
 Author: Tobias K. Mildenberger, Marc H. Taylor, Matthias Wolff
 Maintainer: Tobias K. Mildenberger <t.k.mildenberger@gmail.com>
-SystemRequirements: JAGS 4.x.y
+SystemRequirements: JAGS (http://mcmc-jags.sourceforge.net)
 Depends:
     R (>= 3.0.0),
-    R2jags (>= 0.5-7),
-    rjags (>= 4-6),
-    coda (>= 0.19-1)
+    R2jags (>= 0.5-7)
 Imports:
     msm,
     reshape2,
@@ -21,7 +19,9 @@ Imports:
     parallel,
     doParallel,
     ks,
-    Hmisc
+    Hmisc,
+    rjags (>= 4-6),
+    coda (>= 0.19-1)
 LazyData: TRUE
 Description: A compilation of fish stock assessment methods for the
     analysis of length-frequency data in the context of data-poor
