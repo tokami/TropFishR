@@ -21,7 +21,7 @@ population or fishery (default: \code{Lrecr = 0}).}
 is slower.}
 }
 \value{
-a numeric value (typically decimal year). When \code{Lrecr > par$Linf} 
+a numeric value (typically decimal year). When \code{Lrecr > par$Linf}
 or \code{Lt > par$Linf} or \code{Lt < Lrecr}, \code{NA} is returned.
 }
 \description{

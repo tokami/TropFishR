@@ -17,7 +17,7 @@
 #' (default: 0.01). Smaller values give higher precision, but hindcast calculation
 #' is slower.
 #'
-#' @return a numeric value (typically decimal year). When \code{Lrecr > par$Linf} 
+#' @return a numeric value (typically decimal year). When \code{Lrecr > par$Linf}
 #' or \code{Lt > par$Linf} or \code{Lt < Lrecr}, \code{NA} is returned.
 #' @export
 #'
@@ -45,13 +45,16 @@ calc_trecr <- function(
   if(Lrecr > par$Linf | Lt > par$Linf | Lt < Lrecr){
     trecr <- NA
   }else{
-    Lt.i <- rep(NaN, 500/tincr)
-    Lt.i[1] <- Lt
+    # Lt.i <- rep(NaN, 500/tincr)
+    # Lt.i[1] <- Lt
+    Lt.i <- Lt
     if(class(t)=="Date"){
-      t.i <- seq(date2yeardec(t), by = -tincr, length.out = length(Lt.i))
+      # t.i <- seq(date2yeardec(t), by = -tincr, length.out = length(Lt.i))
+      t.i <- date2yeardec(t)
     }else{
       if(class(t)=="numeric"){
-        t.i <- seq(t, by = -tincr, length.out = length(Lt.i))
+        # t.i <- seq(t, by = -tincr, length.out = length(Lt.i))
+        t.i <- t
       }else{
         stop("Error: t must be of class 'Date' or 'numeric'" )
       }
@@ -59,19 +62,25 @@ calc_trecr <- function(
     seasonalized <- !is.null(par$C)
     if(!seasonalized){par$ts <- 0; par$C <- 0}
 
-    i <- 2
-    while(i <= length(t.i) & Lt.i[i-1] > Lrecr){
-      t2 <- t.i[i-1]
-      t1 <- t.i[i]
+    # i <- 2
+    # while(i <= length(t.i) & Lt.i[i-1] > Lrecr){
+    while(Lt.i > Lrecr){
+      # t2 <- t.i[i-1]
+      # t1 <- t.i[i]
+      t2 <- t.i
+      t1 <- t.i-tincr
       slope <- {1 - exp(-(
         par$K*(t2-t1)
         - (((par$C*par$K)/(2*pi))*sin(2*pi*(t1-par$ts)))
         + (((par$C*par$K)/(2*pi))*sin(2*pi*(t2-par$ts)))
       ))}
-      Lt.i[i] <- (par$Linf*slope - Lt.i[i-1]) / (slope - 1)
-      i <- i + 1
+      # Lt.i[i] <- (par$Linf*slope - Lt.i[i-1]) / (slope - 1)
+      Lt.i <- (par$Linf*slope - Lt.i) / (slope - 1)
+      t.i <- t1
+      # i <- i + 1
     }
-    trecr <- t.i[max(which(Lt.i > Lrecr))]
+    # trecr <- t.i[which.min((Lt.i - Lrecr)^2)] # min SS
+    trecr <- t.i
   }
   # return result
   return(trecr)
