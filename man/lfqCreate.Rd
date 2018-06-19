@@ -4,9 +4,9 @@
 \alias{lfqCreate}
 \title{Create lfq data from length measurements}
 \usage{
-lfqCreate(data, Lname, Dname, Fname = NA, bin_size = 2,
-  length_unit = "cm", plus_group = FALSE, aggregate_dates = FALSE,
-  plot = FALSE)
+lfqCreate(data, Lname, Dname, Fname = NA, bin_size = 1, species = NA,
+  stock = NA, comment = "", Lmin = 0, length_unit = "cm",
+  plus_group = FALSE, aggregate_dates = FALSE, plot = FALSE)
 }
 \arguments{
 \item{data}{data with at least two columns, one with the length measurements, one
@@ -20,6 +20,12 @@ with the sampling date}
 one time}
 
 \item{bin_size}{size of the bins in cm (Default: 2)}
+
+\item{species}{character; to store species name in lfq list}
+
+\item{stock}{character; to store stock ID or name in lfq list}
+
+\item{comment}{optional character; to store comments conerning the lfq list}
 
 \item{length_unit}{unit of length measurements, either "cm" (default), "mm" or "m"}
 
