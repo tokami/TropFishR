@@ -101,8 +101,8 @@
 #' plotLBB.ts(res)
 #' }
 #'
-#' @importFrom R2jags jags.parallel
-#' @import Hmisc
+#' @import R2jags
+#' @importFrom Hmisc wtd.quantile
 #'
 #' @references
 #' R. Froese, H. Winker, G. Coro, N. Demirel, A.C. Tsikliras, D. Dimarchopoulou,
@@ -582,7 +582,7 @@ LBB <- function(lfq, startYear=NA, endYear=NA, years=NA, binSize=NA, LinfUser=NA
         Ldat$YR.ucl[i] <- Ldat$YR[i]+Ldat$YR[i]*rel.ucl
 
         ## get MSFD D3.3 indicators
-        Ldat$L95[i]      <- wtd.quantile(x=L.y,weights=r.Freq.y,probs=c(0.95))
+        Ldat$L95[i]      <- Hmisc::wtd.quantile(x=L.y,weights=r.Freq.y,probs=c(0.95))
         Ldat$perc.mat[i] <- ifelse(is.na(res$Lm50)==F,sum(r.Freq.y[L.y>res$Lm50])/sum(r.Freq.y),NA)
 
         ## annual plots
