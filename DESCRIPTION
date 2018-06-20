@@ -7,7 +7,8 @@ Author: Tobias K. Mildenberger, Marc H. Taylor, Matthias Wolff
 Maintainer: Tobias K. Mildenberger <t.k.mildenberger@gmail.com>
 SystemRequirements: JAGS 4.x.y
 Depends:
-    R (>= 3.4.0)
+    R (>= 3.4.0),
+    rjags (>= 4-6)    
 Imports:
     msm,
     reshape2,
@@ -19,7 +20,6 @@ Imports:
     doParallel,
     ks,
     Hmisc,
-    rjags (>= 4-6),
     coda (>= 0.19-1),    
     R2jags (>= 0.5-7)
 LazyData: TRUE

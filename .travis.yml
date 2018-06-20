@@ -1,4 +1,6 @@
-language: r
+language: R
 sudo: required
-before_install:
-- sudo apt-get install jags
+cache: packages
+
+apt_packages:
+- r-cran-rjags
