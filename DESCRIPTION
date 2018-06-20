@@ -5,9 +5,9 @@ Version: 1.6.0
 Date: 2018-06-20
 Author: Tobias K. Mildenberger, Marc H. Taylor, Matthias Wolff
 Maintainer: Tobias K. Mildenberger <t.k.mildenberger@gmail.com>
-SystemRequirements: JAGS (http://mcmc-jags.sourceforge.net)
+SystemRequirements: JAGS 4.x.y
 Depends:
-    R (>= 3.0.0)
+    R (>= 3.4.0)
 Imports:
     msm,
     reshape2,
@@ -20,7 +20,7 @@ Imports:
     ks,
     Hmisc,
     rjags (>= 4-6),
-    coda (>= 0.19-1),
+    coda (>= 0.19-1),    
     R2jags (>= 0.5-7)
 LazyData: TRUE
 Description: A compilation of fish stock assessment methods for the
@@ -31,6 +31,7 @@ Description: A compilation of fish stock assessment methods for the
     (<http://www.fao.org/docrep/W5449E/W5449E00.htm>), as well as
     other more recent methods.
 License: GPL-3
+NeedsCompilation: yes
 BugReports: https://github.com/tokami/TropFishR/issues
 URL: https://github.com/tokami/TropFishR
 RoxygenNote: 6.0.1
@@ -41,5 +42,6 @@ Suggests:
     utils,
     knitr,
     rmarkdown,
-    plyr
+    plyr,
+    tcltk
 VignetteBuilder: knitr
