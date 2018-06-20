@@ -12,13 +12,13 @@ notifications:
 before_install:
   - sudo add-apt-repository ppa:marutter/rrutter -y
   - sudo apt-get update
-  - sudo apt-get jags
-##  - sudo apt-get install r-cran-rjags
+  - sudo apt-get install r-cran-rjags
+##  - sudo apt-get jags
 
 r_packages:
   - covr
+  - rjags
   - R2jags
-  - rjags  
 
 after_success:
   - Rscript -e 'library(covr); codecov()'
