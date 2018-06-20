@@ -103,6 +103,7 @@
 #'
 #' @import R2jags
 #' @importFrom Hmisc wtd.quantile
+#' @importFrom coda mcmc
 #'
 #' @references
 #' R. Froese, H. Winker, G. Coro, N. Demirel, A.C. Tsikliras, D. Dimarchopoulou,
