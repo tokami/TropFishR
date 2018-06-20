@@ -1,8 +1,40 @@
-language: R
-sudo: required
-cache: packages
+# Sample .travis.yml for R projects
 
-addons:
-  apt:
-    packages:
-      - r-cran-rjags
+language: r
+warnings_are_errors: true
+sudo: required
+bioc_required: true
+bioc_packages:
+  - RBGL
+  - graph
+
+before_install:
+  - sudo add-apt-repository ppa:marutter/rrutter -y
+  - sudo apt-get update
+  - sudo apt-get install r-cran-rjags 
+
+env:
+ global:
+   - CRAN: http://cran.rstudio.com
+   - WARNINGS_ARE_ERRORS=1
+   - R_BUILD_ARGS=--no-manual 
+   - R_CHECK_ARGS=--no-manual --as-cran 
+   
+r_github_packages:
+  - Rexamine/stringi
+
+apt_packages:
+  - libv8-dev
+
+r_packages:
+  - rjags
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
+    
+r_github_packages:
+  - jimhester/covr
+after_success:
+- Rscript -e 'library(covr);coveralls()'
