@@ -10,5 +10,13 @@ notifications:
 r_packages:
   - covr
 
+before_install:
+  - sudo add-apt-repository ppa:marutter/rrutter -y
+  - sudo apt-get update
+  - sudo apt-get install r-cran-rjags
+
 after_success:
   - Rscript -e 'library(covr); codecov()'
+
+
+
