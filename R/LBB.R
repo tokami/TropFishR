@@ -317,7 +317,7 @@ LBB <- function(lfq, startYear=NA, endYear=NA, years=NA, binSize=NA, LinfUser=NA
     #-----------------------------------------
     # Start LF analysis by year
     #-----------------------------------------
-    cat("Running Jags model to fit SL and N distributions for",Species,"in", Years,"....\n")
+    cat("Running Jags model to fit SL and N distributions for",Species,"\nin", Years,"....\n")
     i = 0 # start counter
 
     for(Year in Years){
@@ -712,7 +712,7 @@ LBB <- function(lfq, startYear=NA, endYear=NA, years=NA, binSize=NA, LinfUser=NA
          ", Lc/Lc_opt =",format(Ldat$Lc[last]/Lc_opt.med,digits=2),
          ", L95th =", format(Ldat$L95[last],digits=3),ifelse(mmUser==F,"cm","mm"),
          ", L95th/Linf =",format(Ldat$L95[last]/Ldat$Linf[last],digits=2),
-         ", Lm50 =", format(res$Lm50,digits=3),ifelse(mmUser==F,"cm","mm"),
+         ", \nLm50 =", format(res$Lm50,digits=3),ifelse(mmUser==F,"cm","mm"),
          ", Mature =",format(Ldat$perc.mat[last]*100,digits=2),"%\n")
      } else if(GausSel==T){
          cat("GLmean/Linf=",format(Ldat$GLmean[last]/Ldat$Linf[last],digits=2),",SD/Linf =",
