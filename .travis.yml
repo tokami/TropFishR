@@ -2,5 +2,7 @@ language: R
 sudo: required
 cache: packages
 
-apt_packages:
-- r-cran-rjags
+addons:
+  apt:
+    packages:
+      - r-cran-rjags
