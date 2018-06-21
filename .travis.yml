@@ -1,5 +1,3 @@
-# Sample .travis.yml for R projects
-
 language: r
 warnings_are_errors: true
 sudo: required
@@ -11,7 +9,7 @@ bioc_packages:
 before_install:
   - sudo add-apt-repository ppa:marutter/rrutter -y
   - sudo apt-get update
-  - sudo apt-get install r-cran-rjags 
+  - sudo apt-get install r-cran-rjags
 
 env:
  global:
@@ -28,13 +26,9 @@ apt_packages:
 
 r_packages:
   - rjags
-
-notifications:
-  email:
-    on_success: change
-    on_failure: change
     
 r_github_packages:
   - jimhester/covr
 after_success:
-- Rscript -e 'library(covr);coveralls()'
+  - Rscript -e 'library(covr);coveralls()'
+
