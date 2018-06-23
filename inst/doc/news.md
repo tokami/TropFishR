@@ -1,3 +1,32 @@
+### TropFishR 1.6
+    
+---
+
+##### New features
+      - The Length-based Bayesian biomass estimator method (LBB) by
+        Froese et al. (2018) has been added to the package.
+      - Improved implementation of compilation of length-frequency
+        data allowing for faster compilation of lfq data with
+        lfqCreate and lfqModify (with argument bin_size) and allowing
+        compilation of large data sets
+      - New possibilities to easily modify length-frequency data
+        objects by means of "lfqModify", including aggregating catch
+        matrix per year, per quarter, or per month, subsetting lfq
+        data with range of length classes or sampling dates
+
+##### Documentation
+      - A new vignette "LBBmanual" with the introduction and
+        demonstration of LBB within TropFishR has been added.
+      
+##### Bug fixes
+      - Seasonal growth parameters are now added correctly to the lfq
+        object in lfqModify
+      
+      
+<br><br>
+
+
+
 ### TropFishR 1.2.1
     
 ---
@@ -22,7 +51,6 @@
 ---
 	
 ##### New features
-
       - Due to more efficient matrix computations ELEFAN is 2-4 times faster as before
       - missing seed values were added in ELEFAN_GA()
       - `plot.lfq()` allows plotting relative frequencies, this is
@@ -38,7 +66,6 @@
 
 
 ##### User-visible changes
-
       - better control over graphical devices with par(),
       when par() defined the default settings are not used
       - growth parameters can now be added to lfq lists as "par" elements, this
@@ -46,7 +73,6 @@
 
 
 ##### Documentation
-
       - new vignette with a short description of lfq data and
       how to import lfq data into R 
       - updated tutorial vignette
@@ -55,7 +81,6 @@
 
       
 ##### Bug fixes
-
       - crash report of ELEFAN_GA with interactive sessions (Rstudio) fixed
       and more stable on windows
       - plot.catchCurve() was not displaying the regression line, but

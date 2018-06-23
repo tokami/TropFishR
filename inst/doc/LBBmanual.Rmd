@@ -1,0 +1,139 @@
+---
+title: "A manual for the length-based Bayesian biomass estimator within TropFishR"
+author: "Tobias K. Mildenberger, Marc Taylor, Rainer Froese"
+date: "`r Sys.Date()`"
+output:
+    rmarkdown::html_vignette:
+    fig_caption: yes
+    number_sections: true
+    df_print: paged
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapsed: false
+vignette: >
+  %\VignetteIndexEntry{LBBmanual}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+header-includes:
+    \usepackage{hyperref}
+    \hypersetup{colorlinks=true,linkcolor=blue, linktocpage}
+---
+
+```{r ReaddataLoadLibraries, message=FALSE, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      cache = FALSE,
+                      warning = FALSE,
+                      eval = TRUE,
+                      error = FALSE,
+                      message = FALSE,
+                      include = TRUE,
+                      collapse = TRUE,
+                      comment = "#>",
+                      fig.show = "hold",
+                      fig.width=8, fig.height=6,
+                      fig.align="center")
+```
+
+
+##*Summary*
+This is a manual for the Legnth-based Bayesian biomass estimator method (LBB) by Froese et al. (2018). LBB is a new method for the analysis of length frequency data from the commercial fishery. It works for species that grow throughout their lives, such as most commercially-important fish and invertebrate species, and requires no input in addition to length frequency data (except length at maturity and priors on life history parameters). LBB estimates asymptotic length ($L_{inf}$), length at first capture ($L_c$), relative natural mortality ($M/K$) and relative fishing mortality ($F/M$) as means over the age range represented in the length-frequency sample. With these parameters as input, standard fisheries equations can be used to estimate depletion or current exploited biomass relative to unexploited biomass ($B/B_0$). In addition, these parameters allow the estimation of the length at first capture that would maximize catch and biomass for the given fishing effort ($Lc_{opt}$), and estimation of a proxy for the relative biomass capable of producing maximum sustainable yields ($B_{msy}/B_0$). Relative biomass estimates of LBB were not significantly different from the “true” values in simulated data and similar to independent estimates from full stock assessments. This document provides a simple step-by-step guide for researchers who want to apply LBB to their own data using TropFishR. The LBB version referred to in this guide is included in TropFishR (v1.6) (**LINK TO GITHUB TAG**), which is the one used in Froese et al. (2018). 
+
+
+
+##*Required software and R-packages*
+In addition to R, LBB requires the Gibbs sampler JAGS, which can be installed for your Operating System from this [web site](http://sourceforge.net/projects/mcmc-jags/files/JAGS/4.x).
+
+LBB uses functions from additional R-packages (R2jags, Hmisc, rjags, and coda). These packages are installed and loaded automatically with the installation of **`TropFishR`**. Following the installation of JAGS, the current version of TropFishR (v1.6) can be installed from CRAN as follows:
+
+```{r, echo = TRUE, include = TRUE, eval = FALSE}
+install.packages("TropFishR", repos = "https://cran.rstudio.com/")
+```
+
+The package is loaded into the R environment with:
+
+```{r plot, eval=TRUE, echo=TRUE}
+library(TropFishR)
+```
+
+Now, all required packages are installed and loaded into the R environment and we can start the analysis.
+
+
+##*Load your data*
+One of the most common software for tabulated visualisation and modification of ecological data is Microsoft Excel. It is straight-forward to load a .csv or .xls(x) file containing your data into R. This step is described in detail in the [lfq data tutorial](https://cran.r-project.org/package=TropFishR/vignettes/lfqData.html). For illustrating the use of the functions and the interpretation of results, we use here the simulated example data set "synLFQ8" included in **`TropFishR`**. This data set can be loaded into the R enviornment and plotted with:
+
+```{r, eval=TRUE,echo=TRUE, fig.width=7, fig.height=4}
+## load data set into R environment
+data("synLFQ8")
+## plot length-frequency data
+plot(synLFQ8, Fname = "catch")
+```
+
+For the purpose of this manual we want to demonstrate the use of LBB with yearly aggregated length-frequency data. We, thus, use the function lfqModify to aggregate the data and assign the yearly length-frequency data to an object called **'lfq'**:
+
+```{r, eval=TRUE,echo=TRUE}
+## aggregate lfq data per year
+lfq <- lfqModify(synLFQ8, aggregate = "year")
+```
+
+
+##*Apply the length-based Bayesian biomass estimator*
+As with any analysis, it is important to first examine the data visually. This can be done with the standard **`TropFishR`** function for plotting length-frequency data:
+
+```{r, eval=TRUE,echo=TRUE, fig.width=7, fig.height=4}
+## plot lfq data in standard TropFishR manner
+plot(lfq, Fname = "catch")
+```
+
+Additionally, the function **'plotLBB.data'** allows to visualise the data in the LBB manner:
+
+```{r, eval=TRUE,echo=TRUE, fig.width=7, fig.height=6}
+## plot data in LBB manner
+plotLBB.data(lfq)
+```
+
+LBB can use additional information about the length at maturity, which can be added to the lfq object with:
+
+```{r, eval=TRUE,echo=TRUE}
+## add length at maturity to lfq data
+lfq$Lm50 <- 38  
+```
+
+The function **'LBB'** is the core of the assessment method, which calls the function **'jags'** from the R2jags package. Using the argument `plot = TRUE`, the function will include a display of yearly assessment graphs in the output. The arguments `startYear`, `endYear`, and `years` allow the user to specify a subset of years to include in the assessment. The argument `GausSel` allows to assess the data assuming a gaussian shaped gear selectivity curve (if `TRUE`) or a trawl-like gear selectivity curve (if `FALSE`). The arguments containing '`User`' in their name (e.g. `LinfUser`) allow to specify parameters and priors manually. More information to individual function arguments can be found in the help documentation (**'help(LBB)'**). Depending on the number of years in the data set the assessment can take a few seconds.
+
+
+```{r, eval=TRUE,echo=TRUE, fig.width=7, fig.height=6, tidy=FALSE, size="\\tiny", out.width="0.8\\linewidth"}
+## run LBB model
+res <- LBB(lfq, plot = TRUE)
+```
+
+The red curve in the yearly plots shows the LBB fit, which provides estimates of $Z/K$, $M/K$, $F/K$, $Lc$ , and $Linf$. From $Linf$ and $M/K$, $Lopt$ is calculated and shown as reference. The function **'LBB'** prints a well-documented summary of the assessment results to the console, as shown above. The results, which are assigned to an object (here `res`) contain following elements: \begin{itemize} \item the input data, \item {\bfseries `GausSel'} (as defined above), \item the data frame {\bfseries `priors'}, showing used priors for $Linf$, $Z/K$,  $M/K$, $Lc$, $alpha$ and the fixed value for $F/K$, \item the data frame {\bfseries `refLev'} containing all estimated parameters and reference levels for each assessment year, \item the data frame {\bfseries `medianRefLev'} with the median and confidence intervals for all estimated parameters and reference levels over all assessment years, \item the data frame {\bfseries `lastRefLev'} with median and confidence intervals for all estimated parameters and reference levels for the last assessment year, \item and the data frame {\bfseries `LFall'} with the length frequency distribution aggregated over all assessment years. \end{itemize}
+
+Beside the graphs with the results for each assessment year, the function **'plotLBB'** allows to visualise the aggregated results over all assessment years:
+
+```{r, eval=TRUE,echo=TRUE, fig.width=4, fig.height=3.2}
+par(cex=0.7)
+## plot results
+plotLBB(res)
+```
+
+The plot is comparable to the single yearly plots, but show the aggregated data and results. The function **'plotLBB.ts'** plots the main parameters/reference levels and associated uncertainty as a function of the assessment year:
+
+```{r, eval=TRUE,echo=TRUE, fig.width=8, fig.height=3}
+## plot results as time series
+plotLBB.ts(res)
+```
+ 
+The time series plot shows $Lmean$ (bold black curve) relative to $Lopt$, and $Lc$ (dashed black curve) relative to $Lc_{opt}$ (left panel). The middle panel shows relative fishing pressure $F/M$ (black curve), with approximate 95\% confidence limits (dotted curves), with indication of the reference level where $F = M$ (green horizontal line). The right panel shows relative biomass $B/B0$ (black curve) with approximate 95\% confidence limits (dotted black curves), with indication of a proxy for Bmsy (green dashed line) and a proxy for $Bpa$ or $0.5 Bmsy$ (red dotted line).
+
+##*Discussion*
+The synthetic data used above simulated a decreasing trend in fishing mortality, thus creating a case where the LBB assumption of more or less constant growth and mortality scehdules was violated, as may be the case in pratical applications. The median asymptotic length as well as median Lopt are with `r round(res$medianRefLev[1,1],2)` cm and `r round(res$medianRefLev[2,1],2)` cm overestimated in comparison to the true values of 80 cm and 53.33 cm, respectively. The estimated `M/K` ratio is with `r round(res$medianRefLev[5,1],2)` close to the true value of `r 0.7/0.5`. The true parameters `F/K` and `Z/K` for each assessment year: `r c(1, 0.8, 0.4, 0.1) / 0.5` and `r round((c(1, 0.8, 0.4, 0.1) + 0.7) / 0.5,2)`  are close and for some years  within the confidence limits of the estimated ratios: `r round(res$refLev$FK,2)` and `r round(res$refLev$ZK,2)`. Also the relative fishing mortality rate '`F/M`' is with `r round(res$refLev$FM,2)` close to the true values of `r round(c(1, 0.8, 0.4, 0.1) / 0.7,2)`, except the last year all true values are contained within the 95\% confidence interval. The biomass relative to unexploited biomass '`B/B0`' is well estimated by LBB: `r round(res$refLev$BB0,2)` in comparison to the true values, `r c(0.16, 0.21, 0.41, 0.75)` and contained within the 95\% confidence interval. The decreasing trend in the fishing mortality used for the simulation of the synthetic data set is well identified by LBB and this small examples confirms the positive results presented in Froese et al. (2018).
+
+##*Authors' comment*
+If you have comments or questions please write an email to [Tobias Mildenberger](mailto:t.k.mildenberger@gmail.com) or [Dr. Rainer Froese](mailto:rfroese@geomar.de), or post an issue at [GitHub](https://github.com/tokami/TropFishR/issues). You can follow the development of **`TropFishR`** on [ResearchGate](https://www.researchgate.net/project/TropFishR?_esc=homefeed&_viewIds%5B0%5D=hVPmo2RDCok60qGq2z0JOroN&_viewIds%5B1%5D=zyj0j6jnUgNvrPXMrG9rouAP).
+
+
+##*References*
+Froese R, Winker H, Coro G, Demirel N, Tsikliras AC, Dimarchopoulou D, Scarcella G, Probst WN, Dureuil M, and Pauly D (2018). "A new approach for estimating stock status from length frequency data". ICES Journal of Marine Science. DOI: 10.1093/icesjms/fsy078
+
+Mildenberger TK, Taylor MH and Wolff M (2017). “TropFishR: an R package for fisheries analysis with length-frequency data.” Methods in Ecology and Evolution, 8(11), pp. 1520–1527. ISSN 2041-210X, doi: 10.1111/2041-210X.12791, http://dx.doi.org/10.1111/2041-210X.12791. 

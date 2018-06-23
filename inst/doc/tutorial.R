@@ -16,6 +16,7 @@ knitr::opts_chunk$set(echo = TRUE,
 #  install.packages("TropFishR", repos = "https://cran.rstudio.com/")
 
 ## ---- eval=TRUE,echo=TRUE------------------------------------------------
+devtools::install_github("tokami/TropFishR", ref="master")
 library(TropFishR)
 
 ## ------------------------------------------------------------------------
@@ -39,7 +40,7 @@ par(opar)
 # Powell Wetherall plot
 res_PW <- powell_wetherall(param = synLFQ7a,
                            catch_columns = 1:ncol(synLFQ7a$catch),
-                           reg_int = c(10,30))
+                           reg_int = c(10,28))
 # show results
 paste("Linf =",round(res_PW$Linf_est), "±", round(res_PW$se_Linf))
 
@@ -110,7 +111,7 @@ res_SA$par; res_SA$Rn_max
 #  # mean
 #  JKmeans <- apply(as.matrix(JKres), MARGIN = 1, FUN = mean)
 #  # confidence intervals
-#  JKconf <- apply(as.matrix(JKres), MARGIN = 1, FUN = function(x) t.test(x)$conf.int[c(1,2)])
+#  JKconf <- apply(as.matrix(JKres), MARGIN = 1, FUN = function(x) quantile(x, probs=c(0.025,0.975)))
 #  JKconf <- t(JKconf)
 #  colnames(JKconf) <- c("lower","upper")
 #  
@@ -154,7 +155,7 @@ paste("M =", as.numeric(Ms))
 # summarise catch matrix into vector and add plus group which is smaller than Linf
 synLFQ7b <- lfqModify(synLFQ7a, vectorise_catch = TRUE, plus_group = 118)
 # run catch curve
-res_cc <- catchCurve(synLFQ7b, reg_int = c(9,27), calc_ogive = TRUE)
+res_cc <- catchCurve(synLFQ7b, reg_int = c(8,26), calc_ogive = TRUE)
 # assign estimates to the data list
 synLFQ7b$Z <- res_cc$Z
 synLFQ7b$FM <- as.numeric(synLFQ7b$Z - synLFQ7b$M)
@@ -202,6 +203,7 @@ plot(TB1, mark = TRUE)
 mtext("(a)", side = 3, at = -1, line = 0.6)
 plot(TB2, type = "Isopleth", xaxis1 = "FM", mark = TRUE, contour = 6)
 mtext("(b)", side = 3, at = -0.1, line = 0.6)
+
 # Biological reference levels
 TB1$df_Es
 # Current yield and biomass levels

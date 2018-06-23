@@ -44,6 +44,7 @@ install.packages("TropFishR", repos = "https://cran.rstudio.com/")
 The package is loaded into the R environment with:
 
 ```{r, eval=TRUE,echo=TRUE}
+devtools::install_github("tokami/TropFishR", ref="master")
 library(TropFishR)
 ```
 
@@ -82,7 +83,7 @@ For synLFQ7, a bin size of 4 cm and a moving average of 5 seems appropriate and 
 # Powell Wetherall plot
 res_PW <- powell_wetherall(param = synLFQ7a,
                            catch_columns = 1:ncol(synLFQ7a$catch),
-                           reg_int = c(10,30))
+                           reg_int = c(10,28))
 # show results
 paste("Linf =",round(res_PW$Linf_est), "±", round(res_PW$se_Linf))
 ```
@@ -172,7 +173,7 @@ JKres <- do.call(cbind, JK)
 # mean
 JKmeans <- apply(as.matrix(JKres), MARGIN = 1, FUN = mean)
 # confidence intervals
-JKconf <- apply(as.matrix(JKres), MARGIN = 1, FUN = function(x) t.test(x)$conf.int[c(1,2)])
+JKconf <- apply(as.matrix(JKres), MARGIN = 1, FUN = function(x) quantile(x, probs=c(0.025,0.975)))
 JKconf <- t(JKconf)
 colnames(JKconf) <- c("lower","upper")
 
@@ -240,7 +241,7 @@ Total mortality rate is estimated with a sample of the catch representative for 
 # summarise catch matrix into vector and add plus group which is smaller than Linf
 synLFQ7b <- lfqModify(synLFQ7a, vectorise_catch = TRUE, plus_group = 118)
 # run catch curve
-res_cc <- catchCurve(synLFQ7b, reg_int = c(9,27), calc_ogive = TRUE)
+res_cc <- catchCurve(synLFQ7b, reg_int = c(8,26), calc_ogive = TRUE)
 # assign estimates to the data list
 synLFQ7b$Z <- res_cc$Z
 synLFQ7b$FM <- as.numeric(synLFQ7b$Z - synLFQ7b$M)
@@ -301,13 +302,14 @@ plot(TB1, mark = TRUE)
 mtext("(a)", side = 3, at = -1, line = 0.6)
 plot(TB2, type = "Isopleth", xaxis1 = "FM", mark = TRUE, contour = 6)
 mtext("(b)", side = 3, at = -0.1, line = 0.6)
+
 # Biological reference levels
 TB1$df_Es
 # Current yield and biomass levels
 TB1$currents
 ```
 
-Please note that the resolution of the $L_c$ and F changes is quite low and the range quite narrow due to the limitations in computation time of the vignette format. The results indicate that the fishing mortality of this example (F = `r {round(synLFQ7b$FM,2)}`) is higher than the fishing mortality for MSY ($F_{MSY} =$ `r {round(TB1$df_Es$Fmsy,2)}`), which confirms the indication of the slightly increased exploitation rate (E = `r {round(synLFQ7b$E,2)}`). The prediction plot shows that the yield could be increased when fishing mortality and mesh size is increased. The units are grams per recruit.
+Please note that the resolution of the $L_c$ and F changes is quite low and the range quite narrow due to the limitations in computation time of the vignette format. The results indicate that the fishing mortality of this example (F = `r {round(synLFQ7b$FM,2)}`) is higher than the maximum fishing mortality ($F_{max} =$ `r {round(TB1$df_Es$Fmsy,2)}`), which confirms the indication of the slightly increased exploitation rate (E = `r {round(synLFQ7b$E,2)}`). The prediction plot shows that the yield could be increased when fishing mortality and mesh size is increased. The units are grams per recruit.
 
 
 ##*Summary*
