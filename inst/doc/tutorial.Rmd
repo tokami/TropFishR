@@ -43,8 +43,9 @@ install.packages("TropFishR", repos = "https://cran.rstudio.com/")
 ```
 The package is loaded into the R environment with:
 
-```{r, eval=TRUE,echo=TRUE}
-devtools::install_github("tokami/TropFishR", ref="master")
+```{r, eval=FALSE, echo=TRUE}
+library(devtools)
+install_github("tokami/TropFishR", ref="master")
 library(TropFishR)
 ```
 

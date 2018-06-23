@@ -15,9 +15,10 @@ knitr::opts_chunk$set(echo = TRUE,
 ## ---- echo = TRUE, include = TRUE, eval = FALSE--------------------------
 #  install.packages("TropFishR", repos = "https://cran.rstudio.com/")
 
-## ---- eval=TRUE,echo=TRUE------------------------------------------------
-devtools::install_github("tokami/TropFishR", ref="master")
-library(TropFishR)
+## ---- eval=FALSE, echo=TRUE----------------------------------------------
+#  library(devtools)
+#  install_github("tokami/TropFishR", ref="master")
+#  library(TropFishR)
 
 ## ------------------------------------------------------------------------
 data("synLFQ7")

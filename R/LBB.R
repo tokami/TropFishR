@@ -39,28 +39,33 @@
 #' @param MergeLF Logical; indicating if the data of subsequent years should be merged
 #'    with data of preceeding years. (Default: FALSE).
 #' @param plot Logical; should the individual year plot be displayed? (Default: FALSE).
-#' @param mfrow A vector of the form ‘c(nr, nc)’.  Subsequent figures will be drawn in an
-#'    ‘nr’-by-‘nc’ array on the device by _rows_ (‘mfrow’). If NA (default), a panel with
+#' @param mfrow A vector of the form 'c(nr, nc)'.  Subsequent figures will be drawn in an
+#'    'nr'-by-'nc' array on the device by _rows_ ('mfrow'). If NA (default), a panel with
 #'    3 columns and several rows (dependent on number of years) is used.
 #'
-#' @details Requires the Gibbs sampler JAGS to be installed on your computer,
-#'   available for your Operating System from the following web
-#'   site: \link{http://sourceforge.net/projects/mcmc-jags/files/JAGS/4.x/}.
-#'   LBB is a new method for the analysis of length frequency data from the
-#'   commercial fishery. It works for species that grow throughout their lives,
-#'   such as most commercial fish and invertebrates, and requires no input in
-#'   addition to length frequency data. It estimates asymptotic length (Linf),
-#'   length at first capture (Lc), relative natural mortality (M/K) and relative
-#'   fishing mortality (F/M) as means over the age range represented in the
-#'   length-frequency sample. With these parameters as input, standard fisheries
-#'   equations can be used to estimate depletion or current exploited biomass
-#'   relative to unexploited biomass (B/B0). In addition, these parameters allow
-#'   the estimation of the length at first capture that would maximize catch and
-#'   biomass for the given fishing effort (Lc_opt), and estimation of a proxy
-#'   for the relative biomass capable of producing maximum sustainable yields
-#'   (Bmsy/B0). Relative biomass estimates of LBB were not significantly
-#'   different from the “true” values in simulated data and similar to independent
-#'   estimates from full stock assessments.
+#' @details Requires the Gibbs sampler JAGS to be installed on your
+#'     computer, available for your Operating System from the
+#'     following web site:
+#'     \href{http://sourceforge.net/projects/mcmc-jags/files/JAGS/4.x/}{http://sourceforge.net/projects/mcmc-jags/files/JAGS/4.x/}.
+#'     LBB is a new method for the analysis of length frequency data
+#'     from the commercial fishery. It works for species that grow
+#'     throughout their lives, such as most commercial fish and
+#'     invertebrates, and requires no input in addition to length
+#'     frequency data. It estimates asymptotic length (Linf), length
+#'     at first capture (Lc), relative natural mortality (M/K) and
+#'     relative fishing mortality (F/M) as means over the age range
+#'     represented in the length-frequency sample. With these
+#'     parameters as input, standard fisheries equations can be used
+#'     to estimate depletion or current exploited biomass relative to
+#'     unexploited biomass (B/B0). In addition, these parameters allow
+#'     the estimation of the length at first capture that would
+#'     maximize catch and biomass for the given fishing effort
+#'     (Lc_opt), and estimation of a proxy for the relative biomass
+#'     capable of producing maximum sustainable yields
+#'     (Bmsy/B0). Relative biomass estimates of LBB were not
+#'     significantly different from the "true" values in simulated
+#'     data and similar to independent estimates from full stock
+#'     assessments.
 #' 
 #' @author Rainer Froese, (\email{rfroese@geomar.de})
 #' 
@@ -104,6 +109,7 @@
 #' @import R2jags
 #' @importFrom Hmisc wtd.quantile
 #' @importFrom coda mcmc
+#' @importFrom stats quantile
 #'
 #' @references
 #' R. Froese, H. Winker, G. Coro, N. Demirel, A.C. Tsikliras, D. Dimarchopoulou,
@@ -1070,8 +1076,8 @@ plotLBB.year <- function(r.L.y,
 #'      and sampling date (column),
 #'   \item \strong{comments} comments;
 #' }
-#' @param mfrow A vector of the form ‘c(nr, nc)’.  Subsequent figures will be drawn in an
-#'    ‘nr’-by-‘nc’ array on the device by _rows_ (‘mfrow’). If NA (default), a panel with
+#' @param mfrow A vector of the form 'c(nr, nc)'.  Subsequent figures will be drawn in an
+#'    'nr'-by-'nc' array on the device by _rows_ ('mfrow'). If NA (default), a panel with
 #'    3 columns and several rows (dependent on number of years) is used.
 #' 
 #' @details expects lengths relative to Linf (L/Linf)

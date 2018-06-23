@@ -12,6 +12,7 @@
 #' @param species character; to store species name in lfq list
 #' @param stock character; to store stock ID or name in lfq list
 #' @param comment optional character; to store comments conerning the lfq list
+#' @param Lmin minimum length for the midLengths vector (default: 0)
 #' @param length_unit unit of length measurements, either "cm" (default), "mm" or "m"
 #' @param plus_group logical; should a plus group be created? If yes you will be
 #'    asked to insert the length for the plus group in the console (default: FALSE).

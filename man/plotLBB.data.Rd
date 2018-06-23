@@ -18,8 +18,8 @@ plotLBB.data(lfq, mfrow = NA)
   \item \strong{comments} comments;
 }}
 
-\item{mfrow}{A vector of the form ‘c(nr, nc)’.  Subsequent figures will be drawn in an
-‘nr’-by-‘nc’ array on the device by _rows_ (‘mfrow’). If NA (default), a panel with
+\item{mfrow}{A vector of the form 'c(nr, nc)'.  Subsequent figures will be drawn in an
+'nr'-by-'nc' array on the device by _rows_ ('mfrow'). If NA (default), a panel with
 3 columns and several rows (dependent on number of years) is used.}
 }
 \description{

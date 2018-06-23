@@ -8,7 +8,7 @@ Maintainer: Tobias K. Mildenberger <t.k.mildenberger@gmail.com>
 SystemRequirements: JAGS 4.x.y
 Depends:
     R (>= 3.0.0),
-    rjags
+    coda
 Imports:
     msm,
     reshape2,
@@ -18,10 +18,8 @@ Imports:
     propagate,
     parallel,
     doParallel,
-    ks,
     Hmisc,
-    R2jags,
-    coda
+    R2jags
 LazyData: TRUE
 Description: A compilation of fish stock assessment methods for the
     analysis of length-frequency data in the context of data-poor

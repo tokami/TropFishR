@@ -27,6 +27,8 @@ one time}
 
 \item{comment}{optional character; to store comments conerning the lfq list}
 
+\item{Lmin}{minimum length for the midLengths vector (default: 0)}
+
 \item{length_unit}{unit of length measurements, either "cm" (default), "mm" or "m"}
 
 \item{plus_group}{logical; should a plus group be created? If yes you will be
