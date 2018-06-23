@@ -4,21 +4,7 @@ year <- sub("-.*", "", meta$Date)
 note <- sprintf("R package version %s", meta$Version)#
 
 bibentry(
-  header = "Manual on CRAN:",
-  bibtype = "Manual",
-  title = "TropFishR: Tropical Fisheries Analysis with R",
-  author = c(
-    person(c("Tobias", "K."), "Mildenberger", role = c("aut", "cre"), email = "t.k.mildenberger@gmail.com"),
-    person(c("Marc", "H."), "Taylor", role = c("aut")),
-    person("Matthias", "Wolff", role = c("aut"))
-  ),
-  year = year,
-  note = note,
-  url = "https://CRAN.R-project.org/package=TropFishR"
-)
-
-bibentry(
-  header = "Overview article of TropFishR:",
+  header = "TropFishR package and article:",
   bibtype = "Article",
   title = "TropFishR: an R package for fisheries analysis with length-frequency data",
   author = c(
