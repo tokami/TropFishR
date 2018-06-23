@@ -2,7 +2,7 @@ Package: TropFishR
 Type: Package
 Title: Tropical Fisheries Analysis
 Version: 1.6.0
-Date: 2018-06-20
+Date: 2018-06-21
 Author: Tobias K. Mildenberger, Marc H. Taylor, Matthias Wolff
 Maintainer: Tobias K. Mildenberger <t.k.mildenberger@gmail.com>
 SystemRequirements: JAGS 4.x.y
@@ -42,6 +42,5 @@ Suggests:
     utils,
     knitr,
     rmarkdown,
-    plyr,
-    tcltk
+    plyr
 VignetteBuilder: knitr
