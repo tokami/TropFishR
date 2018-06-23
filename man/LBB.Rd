@@ -100,7 +100,7 @@ Requires the Gibbs sampler JAGS to be installed on your
     (Lc_opt), and estimation of a proxy for the relative biomass
     capable of producing maximum sustainable yields
     (Bmsy/B0). Relative biomass estimates of LBB were not
-    significantly different from the “true” values in simulated
+    significantly different from the "true" values in simulated
     data and similar to independent estimates from full stock
     assessments.
 }

@@ -101,10 +101,19 @@ lfq$Lm50 <- 38
 
 The function **'LBB'** is the core of the assessment method, which calls the function **'jags'** from the R2jags package. Using the argument `plot = TRUE`, the function will include a display of yearly assessment graphs in the output. The arguments `startYear`, `endYear`, and `years` allow the user to specify a subset of years to include in the assessment. The argument `GausSel` allows to assess the data assuming a gaussian shaped gear selectivity curve (if `TRUE`) or a trawl-like gear selectivity curve (if `FALSE`). The arguments containing '`User`' in their name (e.g. `LinfUser`) allow to specify parameters and priors manually. More information to individual function arguments can be found in the help documentation (**'help(LBB)'**). Depending on the number of years in the data set the assessment can take a few seconds.
 
-
-```{r, eval=TRUE,echo=TRUE, fig.width=7, fig.height=6, tidy=FALSE, size="\\tiny", out.width="0.8\\linewidth"}
+```{r, eval=FALSE,echo=TRUE}
 ## run LBB model
 res <- LBB(lfq, plot = TRUE)
+```
+
+
+```{r, eval=TRUE,echo=FALSE, fig.width=7, fig.height=6, tidy=FALSE, size="\\tiny", out.width="0.8\\linewidth"}
+if(require(rjags)){
+    res <- LBB(lfq, plot = TRUE)
+}else{
+    data("synLFQ8res")
+    res <- synLFQ8res
+}
 ```
 
 The red curve in the yearly plots shows the LBB fit, which provides estimates of $Z/K$, $M/K$, $F/K$, $Lc$ , and $Linf$. From $Linf$ and $M/K$, $Lopt$ is calculated and shown as reference. The function **'LBB'** prints a well-documented summary of the assessment results to the console, as shown above. The results, which are assigned to an object (here `res`) contain following elements: \begin{itemize} \item the input data, \item {\bfseries `GausSel'} (as defined above), \item the data frame {\bfseries `priors'}, showing used priors for $Linf$, $Z/K$,  $M/K$, $Lc$, $alpha$ and the fixed value for $F/K$, \item the data frame {\bfseries `refLev'} containing all estimated parameters and reference levels for each assessment year, \item the data frame {\bfseries `medianRefLev'} with the median and confidence intervals for all estimated parameters and reference levels over all assessment years, \item the data frame {\bfseries `lastRefLev'} with median and confidence intervals for all estimated parameters and reference levels for the last assessment year, \item and the data frame {\bfseries `LFall'} with the length frequency distribution aggregated over all assessment years. \end{itemize}

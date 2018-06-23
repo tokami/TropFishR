@@ -40,9 +40,17 @@ plotLBB.data(lfq)
 ## add length at maturity to lfq data
 lfq$Lm50 <- 38  
 
-## ---- eval=TRUE,echo=TRUE, fig.width=7, fig.height=6, tidy=FALSE, size="\\tiny", out.width="0.8\\linewidth"----
-## run LBB model
-res <- LBB(lfq, plot = TRUE)
+## ---- eval=FALSE,echo=TRUE-----------------------------------------------
+#  ## run LBB model
+#  res <- LBB(lfq, plot = TRUE)
+
+## ---- eval=TRUE,echo=FALSE, fig.width=7, fig.height=6, tidy=FALSE, size="\\tiny", out.width="0.8\\linewidth"----
+if(require(rjags)){
+    res <- LBB(lfq, plot = TRUE)
+}else{
+    data("synLFQ8res")
+    res <- synLFQ8res
+}
 
 ## ---- eval=TRUE,echo=TRUE, fig.width=4, fig.height=3.2-------------------
 par(cex=0.7)
