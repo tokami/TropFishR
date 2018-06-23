@@ -19,6 +19,7 @@ Imports:
     parallel,
     doParallel,
     Hmisc,
+    rjags,
     R2jags
 LazyData: TRUE
 Description: A compilation of fish stock assessment methods for the
