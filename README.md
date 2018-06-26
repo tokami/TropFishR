@@ -23,10 +23,10 @@ changes of specific package versions
 
      
 ## Installation
-Install the Gibbs sampler JAGS for your Operating System from this
-[web site](http://sourceforge.net/projects/mcmc-jags/files/JAGS/4.x).
+First, install the Gibbs sampler JAGS for your Operating System from this
+[web site](http://sourceforge.net/projects/mcmc-jags/files/JAGS).
 
-Download the released version of TropFishR from CRAN:
+Then, download the released version of TropFishR from CRAN:
 
 ```R
 install.packages(“TropFishR”)

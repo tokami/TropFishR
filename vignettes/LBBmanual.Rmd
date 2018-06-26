@@ -103,13 +103,14 @@ The function **'LBB'** is the core of the assessment method, which calls the fun
 
 ```{r, eval=FALSE,echo=TRUE}
 ## run LBB model
+options(mc.cores=2)
 res <- LBB(lfq, plot = TRUE)
 ```
 
 
 ```{r, eval=TRUE,echo=FALSE, fig.width=7, fig.height=6, tidy=FALSE, size="\\tiny", out.width="0.8\\linewidth"}
 if(require(rjags)){
-    load.module('dic')
+    options(mc.cores=2)
     res <- LBB(lfq, plot = TRUE)
 }else{
     data("synLFQ8res")
