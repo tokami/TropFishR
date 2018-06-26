@@ -7,7 +7,7 @@
 LBB(lfq, startYear = NA, endYear = NA, years = NA, binSize = NA,
   LinfUser = NA, LcutUser = NA, LcUser = NA, LstartUser = NA,
   MKUser = NA, mmUser = FALSE, GausSel = FALSE, MergeLF = FALSE,
-  plot = FALSE, mfrow = NA)
+  n.chains = 3, n.cluster = 3, plot = FALSE, mfrow = NA)
 }
 \arguments{
 \item{lfq}{A list of the class "lfq" consisting of following parameters:
@@ -57,6 +57,10 @@ if TRUE gaussian selectivity is assumed.}
 
 \item{MergeLF}{Logical; indicating if the data of subsequent years should be merged
 with data of preceeding years. (Default: FALSE).}
+
+\item{n.chains}{Number of Markov chains (default: 3).}
+
+\item{n.cluster}{Number of clusters to use to run parallel chains (default: 3).}
 
 \item{plot}{Logical; should the individual year plot be displayed? (Default: FALSE).}
 
