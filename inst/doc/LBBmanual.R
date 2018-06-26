@@ -46,8 +46,8 @@ lfq$Lm50 <- 38
 
 ## ---- eval=TRUE,echo=FALSE, fig.width=7, fig.height=6, tidy=FALSE, size="\\tiny", out.width="0.8\\linewidth"----
 if(require(rjags)){
-    load.module('dic')
-    res <- LBB(lfq, plot = TRUE)
+    res <- LBB(lfq, n.cluster = 1,
+               plot = TRUE)
 }else{
     data("synLFQ8res")
     res <- synLFQ8res
