@@ -44,7 +44,7 @@ Please use the R command `citation("TropFishR")` to receive information on
 how to cite this package.
 
 
-## Vignettes
+## Documentation
 The
 [tutorial](https://cran.r-project.org/package=TropFishR/vignettes/tutorial.html)
 demonstrates the use of the main functions of TropFishR for a
@@ -71,25 +71,8 @@ discuss with TropFishR users and developers, follow the project on
 
 
 ## References
-  1. Sparre, P., Venema, S.C., 1998. Introduction to tropical fish
-  stock assessment. Part 1. Manual. FAO Fisheries Technical Paper,
-  (306.1, Rev. 2). 407
-  p. [link](http://www.fao.org/docrep/w5449e/w5449e00.htm)
-  2. Sparre, P., Venema, S.C., 1999. Introduction to tropical fish
-  stock assessment. Part 2. Excercises. FAO Fisheries Technical Paper,
-  (306.2, Rev. 2). 94
-  p. [link](http://www.fao.org/docrep/w5448e/w5448e00.htm)
-  3. Mildenberger, T. K., Taylor, M. H. and Wolff,
-  M., 2017. TropFishR: an R package for fisheries analysis with
-  length-frequency data. Methods in Ecology and Evolution, 8:
-  1520-1527. doi:10.1111/2041-210X.12791
-  [link](https://doi.org/10.1111/2041-210X.12791)
-  4. Taylor, M. H., and Mildenberger, T. K., 2017. Extending
-  electronic length frequency analysis in R. Fisheries Management and
-  Ecology, 24:330-338.  doi:10.1111/fme.12232
-  [link](https://doi.org/10.1111/fme.12232)
-  5. Froese R, Winker H, Coro G, Demirel N, Tsikliras AC,
-     Dimarchopoulou D, Scarcella G, Probst WN, Dureuil M, and Pauly D
-     (2018). "A new approach for estimating stock status from length
-     frequency data". ICES Journal of Marine Science. doi:
-     10.1093/icesjms/fsy078 [link](https://doi.org/10.1093/icesjms/fsy078)
+1. Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment. Part 1. Manual. FAO Fisheries Technical Paper, (306.1, Rev. 2). 407p. [link](http://www.fao.org/docrep/w5449e/w5449e00.htm)
+2. Sparre, P., Venema, S.C., 1999. Introduction to tropical fish stock assessment. Part 2. Excercises. FAO Fisheries Technical Paper, (306.2, Rev. 2). 94p. [link](http://www.fao.org/docrep/w5448e/w5448e00.htm)
+3. Mildenberger, T. K., Taylor, M. H. and Wolff, M., 2017. TropFishR: an R package for fisheries analysis with length-frequency data. Methods in Ecology and Evolution, 8: 1520-1527. doi:10.1111/2041-210X.12791 [link](https://doi.org/10.1111/2041-210X.12791)
+4. Taylor, M. H., and Mildenberger, T. K., 2017. Extending electronic length frequency analysis in R. Fisheries Management and Ecology, 24:330-338. doi:10.1111/fme.12232 [link](https://doi.org/10.1111/fme.12232)
+5. Froese R, Winker H, Coro G, Demirel N, Tsikliras AC, Dimarchopoulou D, Scarcella G, Probst WN, Dureuil M, and Pauly D (2018). "A new approach for estimating stock status from length frequency data". ICES Journal of Marine Science. doi:10.1093/icesjms/fsy078 [link](https://doi.org/10.1093/icesjms/fsy078)
