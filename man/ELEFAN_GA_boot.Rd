@@ -5,7 +5,7 @@
 \title{Bootstrapped ELEFAN_GA}
 \usage{
 ELEFAN_GA_boot(lfq, seasonalised = FALSE, low_par = NULL, up_par = NULL,
-  parallel = TRUE, nresamp = 10, no_cores = detectCores() - 1,
+  parallel = TRUE, nresamp = 200, no_cores = detectCores() - 1,
   clusterType = "PSOCK", outfile = "output.txt", popSize = 60,
   maxiter = 50, run = 10, pmutation = 0.2, pcrossover = 0.8,
   elitism = base::max(1, round(popSize * 0.05)), MA = 5,
@@ -50,7 +50,7 @@ calculation at the population level, but rather for permutations. Depending on p
 operating system, the argument `clusterType` can be adjusted (see argument description for
 details). (Default: `parallel = TRUE`)}
 
-\item{nresamp}{numeric; the number of resamples (Default: `nresamp = 10`)}
+\item{nresamp}{numeric; the number of resamples (Default: `nresamp = 200`)}
 
 \item{no_cores}{numeric (Default: `no_cores = detectCores() - 1`)}
 
@@ -114,7 +114,7 @@ an object of class 'lfqBoot' with following objects
 data(alba)
 
 # settings
-MA <- 5
+MA <- 7
 low_par <- list(Linf = 8, K = 0.1, t_anchor = 0, C = 0, ts = 0)
 up_par <- list(Linf = 15, K = 5, t_anchor = 1, C = 1, ts = 1)
 popSize <- 60
@@ -127,11 +127,11 @@ nresamp <- 20
 # parallel version
 library(parallel)
 t1 <- Sys.time()
-set.seed(1)
 res <- ELEFAN_GA_boot(lfq=alba, MA = MA, seasonalised = FALSE,
   up_par = up_par, low_par = low_par,
   popSize = popSize, maxiter = maxiter, run = run, pmutation = pmutation,
-  nresamp = nresamp, parallel = TRUE, no_cores = detectCores()-1
+  nresamp = nresamp, parallel = TRUE, no_cores = detectCores()-1,
+  seed = 1
 )
 t2 <- Sys.time()
 t2 - t1
@@ -140,10 +140,10 @@ res
 
 # non-parallel version
 t1 <- Sys.time()
-set.seed(1)
 res <- ELEFAN_GA_boot(lfq=alba, seasonalised = FALSE, up_par = up_par, low_par = low_par,
   popSize = popSize, maxiter = maxiter, run = run,
-  pmutation = pmutation, nresamp = nresamp, MA=MA, parallel = FALSE
+  pmutation = pmutation, nresamp = nresamp, MA=MA, parallel = FALSE,
+  seed = 1
 )
 t2 <- Sys.time()
 t2 - t1
@@ -151,15 +151,15 @@ res
 
 # plot resulting distributions
 op <- par(
-  mfcol = c(1, ncol(res)-1),
+  mfcol = c(1, ncol(res$bootRaw)-1),
   mar=c(1,2,2,1),
   mgp = c(2,0.5,0), tcl = -0.25, cex=1
 )
-for(i in seq(ncol(res)-1)){
-  boxplot(res[[i]], boxwex = 0.25, col = 8)
-  text(1, median(res[[i]]), labels = round(median(res[[i]]),2),
+for(i in seq(ncol(res$bootRaw)-1)){
+  boxplot(res$bootRaw[[i]], boxwex = 0.25, col = 8)
+  text(1, median(res$bootRaw[[i]]), labels = round(median(res$bootRaw[[i]]),2),
     pos = 4, col = 4)
-  mtext(names(res)[i], line=0.25, side=3)
+  mtext(names(res$bootRaw)[i], line=0.25, side=3)
 }
 par(op)
 

@@ -3,7 +3,7 @@
 #' @param lfq a length frequency object of the class `lfq`.
 #' @param boot optional; an object of class 'lfqBoot' for reproducing
 #'    a lfq data by re-using seed values
-#' 
+#'
 #' @description The function resamples the `lfq` data by sample date.
 #'   Sampling is done in a non-parametric manner that follows the relative
 #'   frequencies of the original data, allowing for individual counts to be
@@ -11,7 +11,7 @@
 #'   and resulting in total counts (by sample) equal to the original data.
 #'
 #' @return a resampled version of the `lfq` class dataset.
-#' 
+#'
 #' @examples
 #' # load data
 #' data(alba)
@@ -34,17 +34,17 @@
 #' with(alba_diff, contour(x=dates, y=midLengths, z=t(delta), add=TRUE))
 #'
 #' @export
-#' 
+#'
 lfqResample <- function(lfq, boot = NULL){
-    
+
     ## reproduce used lfq data sets if boot object provided
     nI <- ifelse(!is.null(boot) & "seed" %in% names(boot), length(boot$seed),1)
 
     lfqList <- vector("list", nI)
     for(I in 1:nI){
-        
+
         lfqb <- lfq
-        
+
         if(!is.null(boot)) set.seed(boot$seed[I])
 
         for(i in seq(length(lfq$dates))){
@@ -114,7 +114,7 @@ lfqResample <- function(lfq, boot = NULL){
 #'    calculation at the population level, but rather for permutations. Depending on platform
 #'    operating system, the argument `clusterType` can be adjusted (see argument description for
 #'    details). (Default: `parallel = TRUE`)
-#' @param nresamp numeric; the number of permutations to run (Default: `nresamp = 10`)
+#' @param nresamp numeric; the number of permutations to run (Default: `nresamp = 200`)
 #' @param no_cores numeric (Default: `no_cores = detectCores() - 1`)
 #' @param clusterType (Default: `clusterType = "PSOCK"`)
 #' @param outfile character; text file name (Default: `outfile = "output.txt"`) which will
@@ -134,8 +134,8 @@ lfqResample <- function(lfq, boot = NULL){
 #' @param CI percentage for confidence intervals (Default: 95)
 #'
 #' @description `ELEFAN_SA_boot` performs a bootstrapped fitting of
-#'   von Bertalanffy growth function (VBGF) via the \link{ELEFAN_SA} function. 
-#'   Most of the arguments are simply passed to the function within many 
+#'   von Bertalanffy growth function (VBGF) via the \link{ELEFAN_SA} function.
+#'   Most of the arguments are simply passed to the function within many
 #'   permutations (resampling) of the original lfq data.
 #'
 #' @return a data.frame of fitted VBGF parameters (columns) by permutation (rows).
@@ -151,7 +151,7 @@ lfqResample <- function(lfq, boot = NULL){
 #' data(alba)
 #'
 #' # settings
-#' MA <- 5
+#' MA <- 7
 #' init_par <- list(Linf = 10, K = 1, t_anchor = 0.5)
 #' low_par <- list(Linf = 8, K = 0.1, t_anchor = 0)
 #' up_par <- list(Linf = 15, K = 5, t_anchor = 1)
@@ -163,10 +163,9 @@ lfqResample <- function(lfq, boot = NULL){
 #' # parallel version
 #' library(parallel)
 #' t1 <- Sys.time()
-#' set.seed(1)
 #' res <- ELEFAN_SA_boot(lfq=alba, MA = MA, seasonalised = FALSE,
 #'   init_par = init_par, up_par = up_par, low_par = low_par,
-#'   SA_time = SA_time, SA_temp = SA_temp,
+#'   SA_time = SA_time, SA_temp = SA_temp, seed = 1,
 #'   nresamp = nresamp, parallel = TRUE, no_cores = detectCores()-1
 #' )
 #' t2 <- Sys.time()
@@ -176,10 +175,9 @@ lfqResample <- function(lfq, boot = NULL){
 #'
 #' # non-parallel version
 #' t1 <- Sys.time()
-#' set.seed(1)
-#' res <- ELEFAN_SA_boot(lfq=alba, seasonalised = FALSE, 
+#' res <- ELEFAN_SA_boot(lfq=alba, seasonalised = FALSE,
 #'   init_par = init_par, up_par = up_par, low_par = low_par,
-#'   SA_time = SA_time, SA_temp = SA_temp,
+#'   SA_time = SA_time, SA_temp = SA_temp, seed = 1,
 #'   nresamp = nresamp, MA=MA, parallel = FALSE
 #' )
 #' t2 <- Sys.time()
@@ -188,55 +186,57 @@ lfqResample <- function(lfq, boot = NULL){
 #'
 #' # plot resulting distributions
 #' op <- par(
-#'   mfcol = c(1, ncol(res)-1),
+#'   mfcol = c(1, ncol(res$bootRaw)-1),
 #'   mar=c(1,2,2,1),
 #'   mgp = c(2,0.5,0), tcl = -0.25, cex=1
 #' )
-#' for(i in seq(ncol(res)-1)){
-#'   boxplot(res[[i]], boxwex = 0.25, col = 8)
-#'   text(1, median(res[[i]]), labels = round(median(res[[i]]),2),
+#' for(i in seq(ncol(res$bootRaw)-1)){
+#'   boxplot(res$bootRaw[[i]], boxwex = 0.25, col = 8)
+#'   text(1, median(res$bootRaw[[i]]),
+#'   labels = round(median(res$bootRaw[[i]]),2),
 #'     pos = 4, col = 4)
-#'   mtext(names(res)[i], line=0.25, side=3)
+#'   mtext(names(res$bootRaw)[i], line=0.25, side=3)
 #' }
 #' par(op)
 #'
 #' @export
-#' 
-ELEFAN_SA_boot <- function(lfq, seasonalised = FALSE, 
-                           init_par = list(Linf = 50, K = 0.5, t_anchor = 0.5, C = 0, ts = 0),
-                           low_par = NULL, up_par = NULL,
-                           parallel = TRUE, nresamp = 10, no_cores = detectCores() - 1,
-                           clusterType = "PSOCK",
-                           outfile = "output.txt",
-                           SA_time = 60, SA_temp = 1e5, maxit = NULL,
-                           MA = 5, addl.sqrt = FALSE, agemax = NULL,
-                           flagging.out = TRUE, seed = NULL, CI = 95
+#'
+ELEFAN_SA_boot <- function(
+  lfq, seasonalised = FALSE,
+  init_par = list(Linf = 50, K = 0.5, t_anchor = 0.5, C = 0, ts = 0),
+  low_par = NULL, up_par = NULL,
+  parallel = TRUE, nresamp = 200, no_cores = detectCores() - 1,
+  clusterType = "PSOCK",
+  outfile = "output.txt",
+  SA_time = 60, SA_temp = 1e5, maxit = NULL,
+  MA = 5, addl.sqrt = FALSE, agemax = NULL,
+  flagging.out = TRUE, seed = NULL, CI = 95
 ){
-  
-    if(!is.null(outfile)){unlink(outfile)} # delete old outfile
 
-    if(is.null(seed)){ seed <- round(runif(1, min = 0, max = 1e6))}
-    
-  
+  if(!is.null(outfile)){unlink(outfile)} # delete old outfile
+
+  if(is.null(seed)){ seed <- round(runif(1, min = 0, max = 1e6)) }
+
   if(parallel){ # Parallel version
     ARGS <- list(
       "lfqResample",
-      "lfq", "seasonalised", 
+      "lfq", "seasonalised",
       "init_par", "low_par", "up_par",
       "parallel", "nresamp", "no_cores",
-      "SA_temp", "SA_time", "maxit",
-      "MA", "addl.sqrt", "agemax", "flagging.out"
+      "SA_temp", "SA_time", "maxit", "seed",
+      "MA", "addl.sqrt", "agemax", "flagging.out",
+      "outfile"
     )
-    
+
     parFun <- function(x){
-        set.seed(seed + x)
-      
       # load packages and functions for each cluster
       library(TropFishR)
-      
+
+      set.seed(seed + x)
+
       # resample data
       lfqb <- lfqResample(lfq)
-      
+
       # call ELEFAN_SA
       fitboot <- ELEFAN_SA(
         lfqb, seasonalised = seasonalised,
@@ -248,33 +248,33 @@ ELEFAN_SA_boot <- function(lfq, seasonalised = FALSE,
         agemax = agemax, flagging.out = flagging.out,
         plot.score = FALSE, verbose = FALSE
       )
-      
+
       # print output (for checking progress in output.txt)
       if(!is.null(outfile)){
         sink(file=outfile, append = TRUE)
         print(paste("resamp", x, "completed @", Sys.time()))
         sink()
       }
-      
+
       # return result
-      return( unlist(fitboot$par) )
+      return( c(unlist(fitboot$par), seed + x) )
     }
-    
+
     cl <- parallel::makeCluster(no_cores, type=clusterType)
     nn <- split(1:nresamp, 1:nresamp)
     parallel::clusterExport(cl, varlist = ARGS, envir=environment())
     res <- parallel::parLapply(cl, nn, parFun)
     parallel::stopCluster(cl)
   }
-  
+
   if(!parallel){ # Non-parallel version
     res <- vector("list", nresamp) # empty results list
     for(x in seq(res)){
         set.seed(seed + x)
-        
+
         ## resample data
         lfqb <- lfqResample(lfq)
-      
+
       # call ELEFAN_SA
       fitboot <- ELEFAN_SA(
         lfqb, seasonalised = seasonalised,
@@ -286,81 +286,81 @@ ELEFAN_SA_boot <- function(lfq, seasonalised = FALSE,
         agemax = agemax, flagging.out = flagging.out,
         plot.score = FALSE, verbose = FALSE
       )
-      
+
       if(!is.null(outfile)){
         sink(file=outfile, append = TRUE)
         print(paste("resamp", x, "completed @", Sys.time()))
         sink()
       }
-      
-        ## return result
-        res[[x]] <- c(unlist(fitboot$par), seed + x)
+
+      ## return result
+      res[[x]] <- c(unlist(fitboot$par), seed + x)
     }
   }
-    
-    tmp0 <- as.data.frame(do.call("rbind", res))
-    tmp <- tmp0[,-ncol(tmp0)]
 
-    seeds <- as.numeric(tmp0[,ncol(tmp0)])
+  tmp0 <- as.data.frame(do.call("rbind", res))
+  tmp <- tmp0[,-ncol(tmp0)]
 
-    ## lfqboot object
-    bootRaw <- tmp
+  seeds <- as.numeric(tmp0[,ncol(tmp0)])
 
-    ## Conduct multivariate kernel smoothing
-    phiLcol <- which(names(bootRaw) == "phiL")
-    if(length(phiLcol > 0)){
-      x <- bootRaw[,-phiLcol]
-    } else {
-      x <- bootRaw
-    }
+  ## lfqboot object
+  bootRaw <- tmp
 
-    H <- ks::Hpi(x, nstage = 1)
-    fhat <- ks::kde(x = x, H = H, eval.points = x)
+  ## Conduct multivariate kernel smoothing
+  phiLcol <- which(names(bootRaw) == "phiL")
+  if(length(phiLcol > 0)){
+    x <- bootRaw[,-phiLcol]
+  } else {
+    x <- bootRaw
+  }
 
-    # maximum density
-    maxDens <- fhat$eval.points[which.max(fhat$estimate),]
-    nami <- names(maxDens)
-    maxDens <- as.numeric(maxDens)
-    names(maxDens) <- nami
+  H <- ks::Hpi(x, nstage = 1)
+  fhat <- ks::kde(x = x, H = H, eval.points = x)
 
-    medians <- apply(fhat$eval.points, 2, median, na.rm = TRUE)
+  # maximum density
+  maxDens <- fhat$eval.points[which.max(fhat$estimate),]
+  nami <- names(maxDens)
+  maxDens <- as.numeric(maxDens)
+  names(maxDens) <- nami
 
-    ## confidence intervals (univariate)
-    tmp <- (100-CI)/2/100
-    limCIuni <- apply(fhat$eval.points, 2, quantile, na.rm = TRUE, probs = c(tmp, 1-tmp))
-    rownames(limCIuni) <- c("lo","up")
+  medians <- apply(fhat$eval.points, 2, median, na.rm = TRUE)
 
-    ## confidence intervals (multivariate)
-    inCI <- fhat$estimate > quantile(fhat$estimate, probs = (100-CI)/100)
-    x_inCI <- x[inCI,]
-    limCI <- apply(x_inCI, 2, range)
-    rownames(limCI) <- c("lo","up")
+  ## confidence intervals (univariate)
+  tmp <- (100-CI)/2/100
+  limCIuni <- apply(fhat$eval.points, 2, quantile, na.rm = TRUE, probs = c(tmp, 1-tmp))
+  rownames(limCIuni) <- c("lo","up")
 
-    ## adding phiL to maxDen and CI assuming relationship
-    maxDens[length(maxDens)+1] <- log10(maxDens[which(names(maxDens) == "K")]) +
-        2 * log10(maxDens[which(names(maxDens) == "Linf")])
-    names(maxDens) <- c(names(maxDens)[-length(maxDens)],"phiL")
-    medians[length(medians)+1] <- log10(medians[which(names(medians) == "K")]) +
-        2 * log10(medians[which(names(medians) == "Linf")])
-    names(medians) <- c(names(medians)[-length(medians)],"phiL")
-    limCIuni <- cbind(limCIuni,log10(limCIuni[,which(names(maxDens) == "K")]) +
-        2 * log10(limCIuni[,which(names(maxDens) == "Linf")]))
-    colnames(limCIuni) <- c(colnames(limCIuni)[-ncol(limCI)],"phiL")    
-    limCI <- cbind(limCI,log10(limCI[,which(names(maxDens) == "K")]) +
-        2 * log10(limCI[,which(names(maxDens) == "Linf")]))
-    colnames(limCI) <- c(colnames(limCI)[-ncol(limCI)],"phiL")
+  ## confidence intervals (multivariate)
+  inCI <- fhat$estimate > quantile(fhat$estimate, probs = (100-CI)/100)
+  x_inCI <- x[inCI,]
+  limCI <- apply(x_inCI, 2, range)
+  rownames(limCI) <- c("lo","up")
 
-    ## save and return results
-    ret <- list()
-    ret$bootRaw <- bootRaw
-    ret$seed <- seeds
-    ret$maxDen <- maxDens
-    ret$median <- medians
-    ret$CI <- limCIuni
-    ret$multiCI <- limCI
-    class(ret) <- "lfqBoot"
+  ## adding phiL to maxDen and CI assuming relationship
+  maxDens[length(maxDens)+1] <- log10(maxDens[which(names(maxDens) == "K")]) +
+      2 * log10(maxDens[which(names(maxDens) == "Linf")])
+  names(maxDens) <- c(names(maxDens)[-length(maxDens)],"phiL")
+  medians[length(medians)+1] <- log10(medians[which(names(medians) == "K")]) +
+      2 * log10(medians[which(names(medians) == "Linf")])
+  names(medians) <- c(names(medians)[-length(medians)],"phiL")
+  limCIuni <- cbind(limCIuni,log10(limCIuni[,which(names(maxDens) == "K")]) +
+      2 * log10(limCIuni[,which(names(maxDens) == "Linf")]))
+  colnames(limCIuni) <- c(colnames(limCIuni)[-ncol(limCI)],"phiL")
+  limCI <- cbind(limCI,log10(limCI[,which(names(maxDens) == "K")]) +
+      2 * log10(limCI[,which(names(maxDens) == "Linf")]))
+  colnames(limCI) <- c(colnames(limCI)[-ncol(limCI)],"phiL")
 
-    return(ret)    
+  ## save and return results
+  ret <- list()
+  ret$bootRaw <- bootRaw
+  ret$seed <- seeds
+  ret$maxDen <- maxDens
+  ret$median <- medians
+  ret$CI <- limCIuni
+  ret$multiCI <- limCI
+  class(ret) <- "lfqBoot"
+
+  return(ret)
 }
 
 
@@ -401,7 +401,7 @@ ELEFAN_SA_boot <- function(lfq, seasonalised = FALSE,
 #'    calculation at the population level, but rather for permutations. Depending on platform
 #'    operating system, the argument `clusterType` can be adjusted (see argument description for
 #'    details). (Default: `parallel = TRUE`)
-#' @param nresamp numeric; the number of resamples (Default: `nresamp = 10`)
+#' @param nresamp numeric; the number of resamples (Default: `nresamp = 200`)
 #' @param no_cores numeric (Default: `no_cores = detectCores() - 1`)
 #' @param clusterType (Default: `clusterType = "PSOCK"`)
 #' @param outfile character; text file name (Default: `outfile = "output.txt"`) which will
@@ -432,7 +432,7 @@ ELEFAN_SA_boot <- function(lfq, seasonalised = FALSE,
 #' @description `ELEFAN_GA_boot` performs a bootstrapped fitting of
 #'   von Bertalanffy growth function (VBGF) via the \link{ELEFAN_GA} function. Most of the arguments
 #'   are simply passed to the function within many permutations (resampling) of the original
-#'   lfq data. 
+#'   lfq data.
 #'
 #' @return an object of class 'lfqBoot' with following objects
 #'    \itemize{
@@ -448,13 +448,13 @@ ELEFAN_SA_boot <- function(lfq, seasonalised = FALSE,
 #' @importFrom parallel makeCluster
 #' @importFrom parallel stopCluster
 #' @importFrom parallel parLapply
-#' 
+#'
 #' @examples
 #' # load data
 #' data(alba)
 #'
 #' # settings
-#' MA <- 5
+#' MA <- 7
 #' low_par <- list(Linf = 8, K = 0.1, t_anchor = 0, C = 0, ts = 0)
 #' up_par <- list(Linf = 15, K = 5, t_anchor = 1, C = 1, ts = 1)
 #' popSize <- 60
@@ -467,11 +467,11 @@ ELEFAN_SA_boot <- function(lfq, seasonalised = FALSE,
 #' # parallel version
 #' library(parallel)
 #' t1 <- Sys.time()
-#' set.seed(1)
 #' res <- ELEFAN_GA_boot(lfq=alba, MA = MA, seasonalised = FALSE,
 #'   up_par = up_par, low_par = low_par,
 #'   popSize = popSize, maxiter = maxiter, run = run, pmutation = pmutation,
-#'   nresamp = nresamp, parallel = TRUE, no_cores = detectCores()-1
+#'   nresamp = nresamp, parallel = TRUE, no_cores = detectCores()-1,
+#'   seed = 1
 #' )
 #' t2 <- Sys.time()
 #' t2 - t1
@@ -480,10 +480,10 @@ ELEFAN_SA_boot <- function(lfq, seasonalised = FALSE,
 #'
 #' # non-parallel version
 #' t1 <- Sys.time()
-#' set.seed(1)
 #' res <- ELEFAN_GA_boot(lfq=alba, seasonalised = FALSE, up_par = up_par, low_par = low_par,
 #'   popSize = popSize, maxiter = maxiter, run = run,
-#'   pmutation = pmutation, nresamp = nresamp, MA=MA, parallel = FALSE
+#'   pmutation = pmutation, nresamp = nresamp, MA=MA, parallel = FALSE,
+#'   seed = 1
 #' )
 #' t2 <- Sys.time()
 #' t2 - t1
@@ -491,52 +491,54 @@ ELEFAN_SA_boot <- function(lfq, seasonalised = FALSE,
 #'
 #' # plot resulting distributions
 #' op <- par(
-#'   mfcol = c(1, ncol(res)-1),
+#'   mfcol = c(1, ncol(res$bootRaw)-1),
 #'   mar=c(1,2,2,1),
 #'   mgp = c(2,0.5,0), tcl = -0.25, cex=1
 #' )
-#' for(i in seq(ncol(res)-1)){
-#'   boxplot(res[[i]], boxwex = 0.25, col = 8)
-#'   text(1, median(res[[i]]), labels = round(median(res[[i]]),2),
+#' for(i in seq(ncol(res$bootRaw)-1)){
+#'   boxplot(res$bootRaw[[i]], boxwex = 0.25, col = 8)
+#'   text(1, median(res$bootRaw[[i]]), labels = round(median(res$bootRaw[[i]]),2),
 #'     pos = 4, col = 4)
-#'   mtext(names(res)[i], line=0.25, side=3)
+#'   mtext(names(res$bootRaw)[i], line=0.25, side=3)
 #' }
 #' par(op)
 #'
 #' @export
 #'
-ELEFAN_GA_boot <- function(lfq, seasonalised = FALSE, low_par = NULL, up_par = NULL,
-                           parallel = TRUE, nresamp = 10, no_cores = detectCores() - 1,
-                           clusterType = "PSOCK",
-                           outfile = "output.txt",
-                           popSize = 60, maxiter = 50, run = 10,
-                           pmutation = 0.2, pcrossover = 0.8,
-                           elitism = base::max(1, round(popSize * 0.05)),
-                           MA = 5, addl.sqrt = FALSE, agemax = NULL,
-                           flagging.out = TRUE, seed = NULL, CI = 95
-                           ){
+ELEFAN_GA_boot <- function(
+  lfq, seasonalised = FALSE, low_par = NULL, up_par = NULL,
+  parallel = TRUE, nresamp = 200, no_cores = detectCores() - 1,
+  clusterType = "PSOCK",
+  outfile = "output.txt",
+  popSize = 60, maxiter = 50, run = 10,
+  pmutation = 0.2, pcrossover = 0.8,
+  elitism = base::max(1, round(popSize * 0.05)),
+  MA = 5, addl.sqrt = FALSE, agemax = NULL,
+  flagging.out = TRUE, seed = NULL, CI = 95
+){
 
     if(!is.null(outfile)){unlink(outfile)} # delete old outfile
 
     if(is.null(seed)){ seed <- round(runif(1, min = 0, max = 1e6))}
-    
+
 
     if(parallel){ # Parallel version
     ARGS <- list(
       "lfqResample",
       "lfq", "seasonalised", "low_par", "up_par",
       "parallel", "nresamp", "no_cores",
-      "popSize", "maxiter", "run",
+      "popSize", "maxiter", "run", "seed",
       "pmutation", "pcrossover", "elitism",
-      "MA", "addl.sqrt", "agemax", "flagging.out"
+      "MA", "addl.sqrt", "agemax", "flagging.out",
+      "outfile"
     )
 
 
     parFun <- function(x){
-      set.seed(seed + x)
-
       # load packages and functions for each cluster
       library(TropFishR)
+
+      set.seed(seed + x)
 
       # permutate data
       lfqb <- lfqResample(lfq)
@@ -561,7 +563,7 @@ ELEFAN_GA_boot <- function(lfq, seasonalised = FALSE, low_par = NULL, up_par = N
       }
 
       # return result
-      return(c(unlist(fitboot$par),x))
+      return(c(unlist(fitboot$par), seed + x))
     }
 
     cl <- parallel::makeCluster(no_cores, type=clusterType)
@@ -575,10 +577,10 @@ ELEFAN_GA_boot <- function(lfq, seasonalised = FALSE, low_par = NULL, up_par = N
     res <- vector("list", nresamp) # empty results list
     for(x in seq(res)){
 
-        set.seed(seed + x)
-        
-        ## resample data
-        lfqb <- lfqResample(lfq)
+      set.seed(seed + x)
+
+      ## resample data
+      lfqb <- lfqResample(lfq)
 
 
       # call ELEFAN_GA
@@ -603,70 +605,70 @@ ELEFAN_GA_boot <- function(lfq, seasonalised = FALSE, low_par = NULL, up_par = N
         res[[x]] <- c(unlist(fitboot$par), seed + x)
     }
   }
-    
-    tmp0 <- as.data.frame(do.call("rbind", res))
-    tmp <- tmp0[,-ncol(tmp0)]
 
-    seeds <- as.numeric(tmp0[,ncol(tmp0)])
+  tmp0 <- as.data.frame(do.call("rbind", res))
+  tmp <- tmp0[,-ncol(tmp0)]
 
-    ## lfqboot object
-    bootRaw <- tmp
+  seeds <- as.numeric(tmp0[,ncol(tmp0)])
 
-    ## Conduct multivariate kernel smoothing
-    phiLcol <- which(names(bootRaw) == "phiL")
-    if(length(phiLcol > 0)){
-      x <- bootRaw[,-phiLcol]
-    } else {
-      x <- bootRaw
-    }
+  ## lfqboot object
+  bootRaw <- tmp
 
-    H <- ks::Hpi(x, nstage = 1)
-    fhat <- ks::kde(x = x, H = H, eval.points = x)
+  ## Conduct multivariate kernel smoothing
+  phiLcol <- which(names(bootRaw) == "phiL")
+  if(length(phiLcol > 0)){
+    x <- bootRaw[,-phiLcol]
+  } else {
+    x <- bootRaw
+  }
 
-    # maximum density
-    maxDens <- fhat$eval.points[which.max(fhat$estimate),]
-    nami <- names(maxDens)
-    maxDens <- as.numeric(maxDens)
-    names(maxDens) <- nami
+  H <- ks::Hpi(x, nstage = 1)
+  fhat <- ks::kde(x = x, H = H, eval.points = x)
 
-    medians <- apply(fhat$eval.points, 2, median, na.rm = TRUE)
-    
-    ## confidence intervals (univariate)
-    tmp <- (100-CI)/2/100
-    limCIuni <- apply(fhat$eval.points, 2, quantile, na.rm = TRUE, probs = c(tmp, 1-tmp))
-    rownames(limCIuni) <- c("lo","up")
+  # maximum density
+  maxDens <- fhat$eval.points[which.max(fhat$estimate),]
+  nami <- names(maxDens)
+  maxDens <- as.numeric(maxDens)
+  names(maxDens) <- nami
 
-    ## confidence intervals (multivariate)
-    inCI <- fhat$estimate > quantile(fhat$estimate, probs = (100-CI)/100)
-    x_inCI <- x[inCI,]
-    limCI <- apply(x_inCI, 2, range)
-    rownames(limCI) <- c("lo","up")
+  medians <- apply(fhat$eval.points, 2, median, na.rm = TRUE)
 
-    ## adding phiL to maxDen and CI assuming relationship
-    maxDens[length(maxDens)+1] <- log10(maxDens[which(names(maxDens) == "K")]) +
-        2 * log10(maxDens[which(names(maxDens) == "Linf")])
-    names(maxDens) <- c(names(maxDens)[-length(maxDens)],"phiL")
-    medians[length(medians)+1] <- log10(medians[which(names(medians) == "K")]) +
-        2 * log10(medians[which(names(medians) == "Linf")])
-    names(medians) <- c(names(medians)[-length(medians)],"phiL")
-    limCIuni <- cbind(limCIuni,log10(limCIuni[,which(names(maxDens) == "K")]) +
-        2 * log10(limCIuni[,which(names(maxDens) == "Linf")]))
-    colnames(limCIuni) <- c(colnames(limCIuni)[-ncol(limCI)],"phiL")    
-    limCI <- cbind(limCI,log10(limCI[,which(names(maxDens) == "K")]) +
-        2 * log10(limCI[,which(names(maxDens) == "Linf")]))
-    colnames(limCI) <- c(colnames(limCI)[-ncol(limCI)],"phiL")
+  ## confidence intervals (univariate)
+  tmp <- (100-CI)/2/100
+  limCIuni <- apply(fhat$eval.points, 2, quantile, na.rm = TRUE, probs = c(tmp, 1-tmp))
+  rownames(limCIuni) <- c("lo","up")
 
-    ## save and return results
-    ret <- list()
-    ret$bootRaw <- bootRaw
-    ret$seed <- seeds
-    ret$maxDen <- maxDens
-    ret$median <- medians
-    ret$CI <- limCIuni
-    ret$multiCI <- limCI
-    class(ret) <- "lfqBoot"
+  ## confidence intervals (multivariate)
+  inCI <- fhat$estimate > quantile(fhat$estimate, probs = (100-CI)/100)
+  x_inCI <- x[inCI,]
+  limCI <- apply(x_inCI, 2, range)
+  rownames(limCI) <- c("lo","up")
 
-    return(ret)
+  ## adding phiL to maxDen and CI assuming relationship
+  maxDens[length(maxDens)+1] <- log10(maxDens[which(names(maxDens) == "K")]) +
+      2 * log10(maxDens[which(names(maxDens) == "Linf")])
+  names(maxDens) <- c(names(maxDens)[-length(maxDens)],"phiL")
+  medians[length(medians)+1] <- log10(medians[which(names(medians) == "K")]) +
+      2 * log10(medians[which(names(medians) == "Linf")])
+  names(medians) <- c(names(medians)[-length(medians)],"phiL")
+  limCIuni <- cbind(limCIuni,log10(limCIuni[,which(names(maxDens) == "K")]) +
+      2 * log10(limCIuni[,which(names(maxDens) == "Linf")]))
+  colnames(limCIuni) <- c(colnames(limCIuni)[-ncol(limCI)],"phiL")
+  limCI <- cbind(limCI,log10(limCI[,which(names(maxDens) == "K")]) +
+      2 * log10(limCI[,which(names(maxDens) == "Linf")]))
+  colnames(limCI) <- c(colnames(limCI)[-ncol(limCI)],"phiL")
+
+  ## save and return results
+  ret <- list()
+  ret$bootRaw <- bootRaw
+  ret$seed <- seeds
+  ret$maxDen <- maxDens
+  ret$median <- medians
+  ret$CI <- limCIuni
+  ret$multiCI <- limCI
+  class(ret) <- "lfqBoot"
+
+  return(ret)
 }
 
 
@@ -735,7 +737,7 @@ ELEFAN_GA_boot <- function(lfq, seasonalised = FALSE, low_par = NULL, up_par = N
 #' )
 #'
 #' @export
-#' 
+#'
 vbgfCI_time <- function(res, CI = 95, agemax = NULL,
   add_legend = TRUE, add_max_dens_legend = TRUE,
   xlab = "Relative time", ylab = "Length",
@@ -872,7 +874,7 @@ vbgfCI_time <- function(res, CI = 95, agemax = NULL,
 #'
 #' @return plot
 #' @export
-#' 
+#'
 add_phiprime <- function(gridsize = 20, ...){
   usr <- par()$usr
   Linf = seq(usr[1], usr[2], length.out = gridsize)
@@ -882,7 +884,7 @@ add_phiprime <- function(gridsize = 20, ...){
     K = K
   )
   grd$phiL <- log10(grd$K) + 2 * log10(grd$Linf)
-  
+
   M <- list(x = Linf, y = K, z = matrix(grd$phiL, nrow = gridsize, ncol = gridsize))
   contour(x = M, add = TRUE, ...)
 }
@@ -913,7 +915,7 @@ add_phiprime <- function(gridsize = 20, ...){
 #'
 #'
 univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
-  mar = c(1.5,2,2,0), oma = c(1.5,0,0,0.5), 
+  mar = c(1.5,2,2,0), oma = c(1.5,0,0,0.5),
   mgp = c(2,0.5,0), tcl = -0.25, cex = 1,
   ...
   ){
@@ -936,11 +938,11 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
     ts = expression(italic(t)[s]),
     phiL = expression(paste(phi,"'")),
     M_Then = expression(paste(M)),
-    M_Pauly = expression(paste(M)),    
+    M_Pauly = expression(paste(M)),
     Z = expression(paste(Z)),
     FM = expression(paste(F)),
     L50 = expression(paste(L50)),
-    L75 = expression(paste(L75)),    
+    L75 = expression(paste(L75)),
     N = expression(paste(N)),
     B = expression(paste(B)),
     F01 = expression(paste(F01)),
@@ -948,11 +950,11 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
     F05 = expression(paste(F05)),
     FF01 = expression(paste(FF01)),
     FFmax = expression(paste(FFmax)),
-    FF05 = expression(paste(FF05)),    
+    FF05 = expression(paste(FF05)),
     ypr = expression(paste(ypr)),
     yprrel = expression(paste(yprrel)),
-    bpr = expression(paste(bpr)),    
-    bprrel = expression(paste(bprrel))    
+    bpr = expression(paste(bpr)),
+    bprrel = expression(paste(bprrel))
   )
 
   # univariate plots
@@ -960,32 +962,32 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
 
         tmp <- as.numeric(na.omit(res[,i]))
 
-    x <- kde(tmp) 
+    x <- kde(tmp)
 
     h = hist(tmp, plot=FALSE, breaks = nbreaks)
-    
+
     xlim <- c(0, max(x$estimate))
     if(use_hist){
       xlim <- range(c(xlim, max(h$density)))
     }
     xlim <- xlim * c(0,1.1)
-    
-    plot(x$estimate, x$eval.points, t="n", 
+
+    plot(x$estimate, x$eval.points, t="n",
       xlim = xlim,
-      xaxs = "i", 
+      xaxs = "i",
       ylab="", xlab="", col=1, lty=1
     )
     usr <- par()$usr
-    
+
     CItxt <- paste0(round(100-CI), "%")
     inCI <- rle( x$estimate > x$cont[CItxt] )
     start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
     end.idx <- cumsum(inCI$lengths)
     limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
-    
+
     in1 <- which(x$estimate > x$cont["99%"])
     mean1 <- mean(x$eval.points[in1])
-    
+
     if(use_hist){
       rect(
         xleft = 0, ybottom = h$breaks[-length(h$breaks)],
@@ -996,37 +998,37 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
       for(j in seq(inCI$lengths)){
         if(inCI$values[j]){
           polygon(
-            y = c(x$eval.points[start.idx[j]:end.idx[j]], rev(x$eval.points[start.idx[j]:end.idx[j]])), 
-            x = c(x$estimate[start.idx[j]:end.idx[j]], rep(0, length(x$estimate[start.idx[j]:end.idx[j]]))), 
+            y = c(x$eval.points[start.idx[j]:end.idx[j]], rev(x$eval.points[start.idx[j]:end.idx[j]])),
+            x = c(x$estimate[start.idx[j]:end.idx[j]], rep(0, length(x$estimate[start.idx[j]:end.idx[j]]))),
             col = "grey90", #col = rgb(0,1,0,0.2),
             border = NA, lty = 3, lwd = 1
-          )        
+          )
         }
       }
     }
-    
+
     # abline(v = x$cont[CItxt], lty=2, col="grey50")
     lines(x$estimate, x$eval.points, lwd = 1, col = "grey50")
 
     # rug
     segments(x0 = 0, x1 = par()$cxy[1]*0.3, y0 = x$x, y1 = x$x, col=rgb(0,0,0,0.5), lwd=0.3)
-    
+
     # range of CI
     abline(h = limCI, lty = 1, lwd=1, col = 1)
-    text(y =c(limCI), x = mean(usr[1:2]), 
+    text(y =c(limCI), x = mean(usr[1:2]),
       labels = paste(sprintf("%.2f", round(c(limCI),2))),
       pos = c(1,3), offset = 0.25, col = 1
     )
     abline(h = mean1, lty = 1, lwd=1, col = 1)
-    text(y =  mean1, x = mean(usr[1:2]), 
+    text(y =  mean1, x = mean(usr[1:2]),
       labels = sprintf("%.2f", round(mean1,2)),
-      pos = 3, 
+      pos = 3,
       offset = 0.25, col = 1
     )
 
     varlab <- VARS[[match(names(res)[i], names(VARS))]]
     mtext(varlab, line=0.25, side=3)
-    
+
     box()
   }
   mtext("Density", side = 1, line = 0, outer = TRUE)
@@ -1084,16 +1086,16 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
 #' LinfK_scatterhist(alba_boot)
 #'
 #' @export
-#' 
+#'
 LinfK_scatterhist <- function(
   res, Linf.breaks = "Sturges", K.breaks = "Sturges",
-  gridsize = 151, H = ks::Hpi(res[,c("Linf", "K")]), 
+  gridsize = 151, H = ks::Hpi(res[,c("Linf", "K")]),
   shading = TRUE, shading.cols = colorRampPalette(c("white", blues9))(50),
   dens.contour = TRUE, probs = c(25,50,75,95),
-  phi.contour = FALSE, phi.levels = NULL, 
+  phi.contour = FALSE, phi.levels = NULL,
   phi.contour.col = 8, phi.contour.lty = 2, phi.contour.lwd = 1, phi.contour.labcex = 0.75,
   pt.pch = 16, pt.col = rgb(0,0,0,0.25), pt.cex = 0.5, pt.bg = 4,
-  xlab=expression(italic("L")[infinity]), ylab=expression(italic("K")), 
+  xlab=expression(italic("L")[infinity]), ylab=expression(italic("K")),
   xlim = NULL, ylim = NULL
 ){
   zones <- matrix(c(2,0,1,3), ncol=2, byrow=TRUE)
@@ -1118,7 +1120,7 @@ LinfK_scatterhist <- function(
   kk <- ks::kde(
                 x = res[,c("Linf", "K")], gridsize = gridsize, H = H,
                 binned = FALSE
-                )      
+                )
   }
 
 
@@ -1129,21 +1131,21 @@ LinfK_scatterhist <- function(
 
   # 2d density plot
   image(
-    x = kk$eval.points[[1]], y = kk$eval.points[[2]], z = kk$estimate, 
-    col = if(shading){shading.cols}else{NA}, 
+    x = kk$eval.points[[1]], y = kk$eval.points[[2]], z = kk$estimate,
+    col = if(shading){shading.cols}else{NA},
     xlab = xlab, ylab = ylab, xlim=xlim, ylim=ylim
   )
   if(phi.contour){
     if(is.null(phi.levels)){
       add_phiprime(
-        col = phi.contour.col, lty = phi.contour.lty, lwd = phi.contour.lwd, 
+        col = phi.contour.col, lty = phi.contour.lty, lwd = phi.contour.lwd,
         labcex = phi.contour.labcex
       )
     }else{
       add_phiprime(
         levels = phi.levels,
-        col = phi.contour.col, lty = phi.contour.lty, lwd = phi.contour.lwd, 
-        labcex = phi.contour.labcex        
+        col = phi.contour.col, lty = phi.contour.lty, lwd = phi.contour.lwd,
+        labcex = phi.contour.labcex
       )
     }
   }
@@ -1152,28 +1154,28 @@ LinfK_scatterhist <- function(
     plot(kk, type = "slice", add = TRUE, cont = probs)
   }
   box()
-  
+
   # x histogram
   par(mar=c(0,4,1,0))
   plot(xhist$mids, xhist$counts, axes=FALSE, xlab="", ylab="", t="n", ylim=c(0, top), xlim = xlim, yaxs="i", xaxs="i")
   rect(
-    xleft = xhist$breaks[-length(xhist$breaks)], ybottom = 0, 
+    xleft = xhist$breaks[-length(xhist$breaks)], ybottom = 0,
     xright = xhist$breaks[-1], ytop = xhist$counts,
     col = 8, border = 1
   )
-  
+
   # y histogram
   par(mar=c(4,0,0,1))
   plot(yhist$counts, yhist$mids, axes=FALSE, xlab="", ylab="", t="n", xlim=c(0, top), ylim = ylim, yaxs="i", xaxs="i")
   rect(
     xleft = 0, ybottom = yhist$breaks[-length(yhist$breaks)],
-    xright = yhist$counts, ytop = yhist$breaks[-1], 
+    xright = yhist$counts, ytop = yhist$breaks[-1],
     col = 8, border = 1
   )
-  
+
   par(op)
 }
-  
+
 
 
 
@@ -1216,7 +1218,7 @@ plotLFQboot <- function(x,    ## lfq object
         r <- rep(NA,nrow(catchmat))
         for(ii in 1:nrow(catchmat)){
             z <- catchmat[ii,]
-            
+
             if(all(z == 0)){
                 r[ii] <- 0
             }else{
@@ -1229,8 +1231,8 @@ plotLFQboot <- function(x,    ## lfq object
 
         barplot(catch[,1], col = rgb(1,0.1,0.4,0.2))
         barplot(r,add=TRUE, col = rgb(0.1,1,0.4,0.2))
-        
-        
+
+
     }
 
 

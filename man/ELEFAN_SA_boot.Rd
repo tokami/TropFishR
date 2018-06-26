@@ -6,7 +6,7 @@
 \usage{
 ELEFAN_SA_boot(lfq, seasonalised = FALSE, init_par = list(Linf = 50, K =
   0.5, t_anchor = 0.5, C = 0, ts = 0), low_par = NULL, up_par = NULL,
-  parallel = TRUE, nresamp = 10, no_cores = detectCores() - 1,
+  parallel = TRUE, nresamp = 200, no_cores = detectCores() - 1,
   clusterType = "PSOCK", outfile = "output.txt", SA_time = 60,
   SA_temp = 1e+05, maxit = NULL, MA = 5, addl.sqrt = FALSE,
   agemax = NULL, flagging.out = TRUE, seed = NULL, CI = 95)
@@ -61,7 +61,7 @@ calculation at the population level, but rather for permutations. Depending on p
 operating system, the argument `clusterType` can be adjusted (see argument description for
 details). (Default: `parallel = TRUE`)}
 
-\item{nresamp}{numeric; the number of permutations to run (Default: `nresamp = 10`)}
+\item{nresamp}{numeric; the number of permutations to run (Default: `nresamp = 200`)}
 
 \item{no_cores}{numeric (Default: `no_cores = detectCores() - 1`)}
 
@@ -97,8 +97,8 @@ a data.frame of fitted VBGF parameters (columns) by permutation (rows).
 }
 \description{
 `ELEFAN_SA_boot` performs a bootstrapped fitting of
-  von Bertalanffy growth function (VBGF) via the \link{ELEFAN_SA} function. 
-  Most of the arguments are simply passed to the function within many 
+  von Bertalanffy growth function (VBGF) via the \link{ELEFAN_SA} function.
+  Most of the arguments are simply passed to the function within many
   permutations (resampling) of the original lfq data.
 }
 \examples{
@@ -106,7 +106,7 @@ a data.frame of fitted VBGF parameters (columns) by permutation (rows).
 data(alba)
 
 # settings
-MA <- 5
+MA <- 7
 init_par <- list(Linf = 10, K = 1, t_anchor = 0.5)
 low_par <- list(Linf = 8, K = 0.1, t_anchor = 0)
 up_par <- list(Linf = 15, K = 5, t_anchor = 1)
@@ -118,10 +118,9 @@ nresamp <- 10
 # parallel version
 library(parallel)
 t1 <- Sys.time()
-set.seed(1)
 res <- ELEFAN_SA_boot(lfq=alba, MA = MA, seasonalised = FALSE,
   init_par = init_par, up_par = up_par, low_par = low_par,
-  SA_time = SA_time, SA_temp = SA_temp,
+  SA_time = SA_time, SA_temp = SA_temp, seed = 1,
   nresamp = nresamp, parallel = TRUE, no_cores = detectCores()-1
 )
 t2 <- Sys.time()
@@ -131,10 +130,9 @@ res
 
 # non-parallel version
 t1 <- Sys.time()
-set.seed(1)
-res <- ELEFAN_SA_boot(lfq=alba, seasonalised = FALSE, 
+res <- ELEFAN_SA_boot(lfq=alba, seasonalised = FALSE,
   init_par = init_par, up_par = up_par, low_par = low_par,
-  SA_time = SA_time, SA_temp = SA_temp,
+  SA_time = SA_time, SA_temp = SA_temp, seed = 1,
   nresamp = nresamp, MA=MA, parallel = FALSE
 )
 t2 <- Sys.time()
@@ -143,15 +141,16 @@ res
 
 # plot resulting distributions
 op <- par(
-  mfcol = c(1, ncol(res)-1),
+  mfcol = c(1, ncol(res$bootRaw)-1),
   mar=c(1,2,2,1),
   mgp = c(2,0.5,0), tcl = -0.25, cex=1
 )
-for(i in seq(ncol(res)-1)){
-  boxplot(res[[i]], boxwex = 0.25, col = 8)
-  text(1, median(res[[i]]), labels = round(median(res[[i]]),2),
+for(i in seq(ncol(res$bootRaw)-1)){
+  boxplot(res$bootRaw[[i]], boxwex = 0.25, col = 8)
+  text(1, median(res$bootRaw[[i]]),
+  labels = round(median(res$bootRaw[[i]]),2),
     pos = 4, col = 4)
-  mtext(names(res)[i], line=0.25, side=3)
+  mtext(names(res$bootRaw)[i], line=0.25, side=3)
 }
 par(op)
 
