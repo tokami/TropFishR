@@ -42,7 +42,7 @@ This is a manual for the Legnth-based Bayesian biomass estimator method (LBB) by
 
 
 ##*Required software and R-packages*
-In addition to R, LBB requires the Gibbs sampler JAGS, which can be installed for your Operating System from this [web site](http://sourceforge.net/projects/mcmc-jags/files/JAGS/4.x).
+In addition to R, LBB requires the Gibbs sampler JAGS, which can be installed for your Operating System from this [web site](http://sourceforge.net/projects/mcmc-jags/files/JAGS).
 
 LBB uses functions from additional R-packages (R2jags, Hmisc, rjags, and coda). These packages are installed and loaded automatically with the installation of **`TropFishR`**. Following the installation of JAGS, the current version of TropFishR (v1.6) can be installed from CRAN as follows:
 
