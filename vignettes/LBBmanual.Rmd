@@ -110,8 +110,7 @@ res <- LBB(lfq, plot = TRUE)
 
 ```{r, eval=TRUE,echo=FALSE, fig.width=7, fig.height=6, tidy=FALSE, size="\\tiny", out.width="0.8\\linewidth"}
 if(require(rjags)){
-    options(mc.cores=2)
-    res <- LBB(lfq, plot = TRUE)
+    res <- LBB(lfq, n.chains = 1, plot = TRUE)
 }else{
     data("synLFQ8res")
     res <- synLFQ8res
