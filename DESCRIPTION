@@ -8,7 +8,9 @@ Maintainer: Tobias K. Mildenberger <t.k.mildenberger@gmail.com>
 SystemRequirements: JAGS 4.x.y
 Depends:
     R (>= 3.0.0),
-    rjags
+    rjags,
+    coda,
+    R2jags
 Imports:
     msm,
     reshape2,
@@ -18,9 +20,7 @@ Imports:
     propagate,
     parallel,
     doParallel,
-    Hmisc,
-    coda,    
-    R2jags
+    Hmisc
 LazyData: TRUE
 Description: A compilation of fish stock assessment methods for the
     analysis of length-frequency data in the context of data-poor
@@ -30,7 +30,7 @@ Description: A compilation of fish stock assessment methods for the
     (<http://www.fao.org/docrep/W5449E/W5449E00.htm>), as well as
     other more recent methods.
 License: GPL-3
-NeedsCompilation: yes
+NeedsCompilation: no
 BugReports: https://github.com/tokami/TropFishR/issues
 URL: https://github.com/tokami/TropFishR
 RoxygenNote: 6.0.1
