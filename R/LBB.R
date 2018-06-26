@@ -38,7 +38,7 @@
 #'    if TRUE gaussian selectivity is assumed.
 #' @param MergeLF Logical; indicating if the data of subsequent years should be merged
 #'    with data of preceeding years. (Default: FALSE).
-#' @param n.chains Number of Markov chains (default: 3)
+#' @param n.cluster Number of clusters to use to run parallel chains (default = 3).
 #' @param plot Logical; should the individual year plot be displayed? (Default: FALSE).
 #' @param mfrow A vector of the form 'c(nr, nc)'.  Subsequent figures will be drawn in an
 #'    'nr'-by-'nc' array on the device by _rows_ ('mfrow'). If NA (default), a panel with
@@ -122,7 +122,7 @@
 #' 
 LBB <- function(lfq, startYear=NA, endYear=NA, years=NA, binSize=NA, LinfUser=NA, LcutUser=NA,
                 LcUser=NA, LstartUser=NA, MKUser=NA, mmUser=FALSE, GausSel=FALSE, MergeLF=FALSE,
-                n.chains = 3, plot=FALSE, mfrow = NA){
+                n.cluster = 3, plot=FALSE, mfrow = NA){
 
     ## informative warning messages if input not correct
     ## length at maturity
@@ -433,7 +433,8 @@ LBB <- function(lfq, startYear=NA, endYear=NA, years=NA, binSize=NA, LinfUser=NA
            jagsfitSLN <- R2jags::jags.parallel(data=jags.data, working.directory=NULL, inits=NULL, 
                                        parameters.to.save=jags.params, 
                                        model.file=paste(MODEL),
-                                       n.burnin=300, n.thin=10, n.iter=600, n.chains=n.chains)
+                                       n.burnin=300, n.thin=10, n.iter=600, n.chains=3,
+                                       n.cluster=n.cluster)
 
            # use median and percentiles
            Ldat$Lc[i]      <- median(jagsfitSLN$BUGSoutput$sims.list$Lc.d)
@@ -533,7 +534,8 @@ LBB <- function(lfq, startYear=NA, endYear=NA, years=NA, binSize=NA, LinfUser=NA
           jagsfitSLN <- R2jags::jags.parallel(data=jags.data, working.directory=NULL, inits=NULL, 
                                       parameters.to.save=jags.params, 
                                       model.file=paste(MODEL), 
-                                      n.burnin=300, n.thin=10, n.iter=1000, n.chains=n.chains)
+                                      n.burnin=300, n.thin=10, n.iter=1000, n.chains=3,
+                                      n.cluster=n.cluster)
 
           # use median and percentiles
           Ldat$GLmean[i]    <- median(jagsfitSLN$BUGSoutput$sims.list$GLmean.d)
