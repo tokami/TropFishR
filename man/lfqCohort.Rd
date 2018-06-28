@@ -2,68 +2,125 @@
 % Please edit documentation in R/lfqCohort.R
 \name{lfqCohort}
 \alias{lfqCohort}
-\title{Assign cohort and relative age to bins}
+\title{Assign cohort, relative ages and birth date to an lfq dataset}
 \usage{
-lfqCohort(lfq)
+lfqCohort(lfq, n.per.yr = 1, agemax = NULL)
 }
 \arguments{
-\item{lfq}{an lfq object with fitted VBGF parameters in `lfq$par` slot.}
+\item{lfq}{an lfq object with fitted VBGF parameters in the \code{lfq$par} slot.}
+
+\item{n.per.yr}{number of cohorts per year for slicing (Default: \code{n.per.year  = 1}).
+See details section for more information on slicing.
+This argument should be set to a higher values in cases of multiple cohorts per year.}
+
+\item{agemax}{maximum age of the stock, which is used to define the extent of growth
+curves via a call to \code{\link{lfqFitCurves}}. When not supplied
+(Default: \code{agemax = NULL}), the value is estimated based on the time rquired
+to achieve a length of 95\% of Linf.}
 }
 \value{
-a list of class `lfq` with additional list elements "cohort" and "rel.age"
+a list of class `lfq` containing the additional slots for relative age
+(\code{rel.age}), cohort number (\code{cohort}), and birthday (\code{bday}).
 }
 \description{
-Assign cohort and relative age to bins
+The \code{lfqCohort} function will assign cohort number (1 = oldest),
+relative age (since length equal zero), and birth date (at length equal zero) to
+an \code{lfq} object given a set of VBGF parameters (\code{lfq$par}).
+
+The method is can be used as a precursor to cohort-based analyses
+(e.g. catch curve, VPA), or as means of identifying recruitment patterns.
+Relative ages consider seasonalized VBGF (when applicable), thus aiding the
+correct assignment of ages to lfq data (see Pauly 1990).
+}
+\details{
+The method involves "slicing" the lfq data based on the VBGF parameters, and
+follows the general approach described by Pauly (1990), and demonstrated by
+Pauly et al. (1995) using the "GOTCH.A" program. By default, a single slice per year
+(\code{n.per.yr = 1}) is used, which sets slice boundaries of +/- 0.5 yr around the
+\code{t_anchor} parameter. For each lfq bin, cohort association is then determined by
+its inclusion within a given slice. Bins of length greater than Linf, are aggregated with
+the bin that includes Linf. In the case of multiple cohorts per year, a larger
+\code{n.per.yr} is needed in order to resolve intra-annual cohorts.
 }
 \examples{
+# Load data and add VGBF parameters
 data(synLFQ4)
-synLFQ4 <- lfqRestructure(synLFQ4, MA=11)
 synLFQ4$par <- list(Linf = 80, K = 0.5, t_anchor = 0.25, C = 0.75, ts = 0.5)
 
-plot(synLFQ4, Fname = "rcounts", ylim = c(0, max(synLFQ4$midLengths)))
-PAR2 <- synLFQ4$par
-PAR2$t_anchor <- (PAR2$t_anchor - 0.5) \%\% 1
-tmp <- lfqFitCurves(synLFQ4, par = PAR2,
-  draw = TRUE, col=8, lty=1
-)
-synLFQ4 <- lfqCohort(synLFQ4)
+# visualize cohorts with lfqCohort
+synLFQ4 <- lfqCohort(synLFQ4, n.per.yr = 1)
+plot(synLFQ4, Fname = "catch",
+  ylim = c(0, max(synLFQ4$midLengths)), image.col=NA)
 pal <- colorRampPalette(c(4,5,7,2))
 with(synLFQ4, image(x = dates, y = midLengths, z = t(cohort),
-  col = adjustcolor(pal(max(cohort, na.rm = TRUE)), 0.5),
+  col = adjustcolor(pal(max(cohort, na.rm = TRUE)), 0.75),
   add=TRUE
 ))
 
+# visualize relative age with lfqCohort
+synLFQ4 <- lfqCohort(synLFQ4, n.per.yr = 1)
+plot(synLFQ4, Fname = "catch",
+  ylim = c(0, max(synLFQ4$midLengths)), image.col=NA)
+pal <- colorRampPalette(c(4,5,7,2))
+with(synLFQ4, image(x = dates, y = midLengths, z = t(rel.age),
+  col = adjustcolor(pal(100), 0.75),
+  add=TRUE
+))
+
+
+### Demonstration of catch curve on all data vs single cohort
+
 ### Use all data in catch curve
 df <- data.frame(
-  rel.age = c(synLFQ4$rel.age[,-25]),
-  n = c(synLFQ4$catch[,-25]),
-  cohort = c(synLFQ4$cohort[,-25])
+  rel.age = c(synLFQ4$rel.age),
+  n = c(synLFQ4$catch),
+  cohort = c(synLFQ4$cohort)
 )
-df$age <- floor(df$rel.age)
 
 # floor of rel.age
+df$age <- floor(df$rel.age)
+
+# Catch curve using age (floor rounded ages)
 agg <- aggregate(n ~ age, data = df, FUN = sum)
 plot(log(n) ~ age, agg)
-fit <- lm(log(n) ~ age, subset(agg, age \%in\% seq(1,4)))
+fit <- lm(log(n) ~ age,
+  data = subset(agg, age >= 1 & age <= 4)
+)
 abline(fit)
-coef(fit)[2]
+-coef(fit)[2] # true value: Z = 1.0
 
-# direct rel.age
+# Catch curve using rel.age (unrounded ages)
 agg <- aggregate(n ~ rel.age, data = df, FUN = sum)
 plot(log(n) ~ rel.age, agg)
-fit <- lm(log(n) ~ rel.age, subset(agg, rel.age > 0.75 & rel.age < 3))
+fit <- lm(log(n) ~ rel.age,
+  data = subset(agg, rel.age >= 1 & rel.age <= 4)
+)
 abline(fit)
--coef(fit)[2]
+-coef(fit)[2] # true value: Z = 1.0
 
 
-### For a single cohort
-dfsub <- subset(df, cohort == 6)# most complete cohort
+### Catch curve for a single cohort
+agg <- aggregate(n ~ cohort, df, FUN = "sum")
+dfsub <- subset(df, cohort == 7)# most complete cohort
 
 # direct rel.age
 agg <- aggregate(n ~ rel.age, data = dfsub, FUN = sum)
-plot(log(n) ~ rel.age, agg)
-fit <- lm(log(n) ~ rel.age, subset(agg, rel.age > 1 & rel.age < 3))
+plot(log(n) ~ rel.age, agg )
+fit <- lm(log(n) ~ rel.age,
+  data = subset(agg, rel.age >= 1 & rel.age <= 2)
+)
 abline(fit)
--coef(fit)[2]
+-coef(fit)[2] # true value: Z = 1.0
 
+
+
+}
+\references{
+Pauly, D., Moreau, J., & Abad, N. (1995). Comparison of age-structured
+and length-converted catch curves of brown trout Salmo trutta in two
+French rivers. Fisheries Research, 22(3–4), 197–204.
+https://doi.org/10.1016/0165-7836(94)00323-O
+
+Pauly, Daniel. (1990). Length-converted catch curves and the seasonal
+growth of fishes. Fishbyte, 8(3), 33–38.
 }

@@ -35,7 +35,7 @@ as a \code{\link[graphics]{barplot}} (default: \code{plot = TRUE}).}
 (default: \code{hide.progressbar = FALSE})}
 
 \item{...}{further arguments passed to
-\code{link\[graphics]{barplot}} when \code{plot = TRUE}.}
+\code{\link[graphics]{barplot}} when \code{plot = TRUE}.}
 }
 \value{
 object of "histogram" class containing

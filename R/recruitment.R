@@ -36,7 +36,7 @@
 #' @param hide.progressbar logical. Should progress bar be displayed
 #' (default: \code{hide.progressbar = FALSE})
 #' @param ... further arguments passed to
-#' \code{link\[graphics]{barplot}} when \code{plot = TRUE}.
+#' \code{\link[graphics]{barplot}} when \code{plot = TRUE}.
 #'
 #' @return object of "histogram" class containing
 #' monthly recruitment pattern

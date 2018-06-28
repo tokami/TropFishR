@@ -1,154 +1,169 @@
-#' Assign cohort and relative age to bins
+#' @title Assign cohort, relative ages and birth date to an lfq dataset
 #'
-#' @param lfq an lfq object with fitted VBGF parameters in `lfq$par` slot.
+#' @description The \code{lfqCohort} function will assign cohort number (1 = oldest),
+#' relative age (since length equal zero), and birth date (at length equal zero) to
+#' an \code{lfq} object given a set of VBGF parameters (\code{lfq$par}).
 #'
-#' @return a list of class `lfq` with additional list elements "cohort" and "rel.age"
-#' 
+#' The method is can be used as a precursor to cohort-based analyses
+#' (e.g. catch curve, VPA), or as means of identifying recruitment patterns.
+#' Relative ages consider seasonalized VBGF (when applicable), thus aiding the
+#' correct assignment of ages to lfq data (see Pauly 1990).
+#'
+#'
+#' @param lfq an lfq object with fitted VBGF parameters in the \code{lfq$par} slot.
+#' @param n.per.yr number of cohorts per year for slicing (Default: \code{n.per.year  = 1}).
+#' See details section for more information on slicing.
+#' This argument should be set to a higher values in cases of multiple cohorts per year.
+#' @param agemax maximum age of the stock, which is used to define the extent of growth
+#' curves via a call to \code{\link{lfqFitCurves}}. When not supplied
+#' (Default: \code{agemax = NULL}), the value is estimated based on the time rquired
+#' to achieve a length of 95\% of Linf.
+#'
+#' @return a list of class `lfq` containing the additional slots for relative age
+#' (\code{rel.age}), cohort number (\code{cohort}), and birthday (\code{bday}).
+#'
+#' @details The method involves "slicing" the lfq data based on the VBGF parameters, and
+#' follows the general approach described by Pauly (1990), and demonstrated by
+#' Pauly et al. (1995) using the "GOTCH.A" program. By default, a single slice per year
+#' (\code{n.per.yr = 1}) is used, which sets slice boundaries of +/- 0.5 yr around the
+#' \code{t_anchor} parameter. For each lfq bin, cohort association is then determined by
+#' its inclusion within a given slice. Bins of length greater than Linf, are aggregated with
+#' the bin that includes Linf. In the case of multiple cohorts per year, a larger
+#' \code{n.per.yr} is needed in order to resolve intra-annual cohorts.
+#'
+#'
+#' @references
+#' Pauly, D., Moreau, J., & Abad, N. (1995). Comparison of age-structured
+#' and length-converted catch curves of brown trout Salmo trutta in two
+#' French rivers. Fisheries Research, 22(3–4), 197–204.
+#' https://doi.org/10.1016/0165-7836(94)00323-O
+#'
+#' Pauly, Daniel. (1990). Length-converted catch curves and the seasonal
+#' growth of fishes. Fishbyte, 8(3), 33–38.
+#'
+#' @export
 #'
 #' @examples
+#' # Load data and add VGBF parameters
 #' data(synLFQ4)
-#' synLFQ4 <- lfqRestructure(synLFQ4, MA=11)
 #' synLFQ4$par <- list(Linf = 80, K = 0.5, t_anchor = 0.25, C = 0.75, ts = 0.5)
 #'
-#' plot(synLFQ4, Fname = "rcounts", ylim = c(0, max(synLFQ4$midLengths)))
-#' PAR2 <- synLFQ4$par
-#' PAR2$t_anchor <- (PAR2$t_anchor - 0.5) %% 1
-#' tmp <- lfqFitCurves(synLFQ4, par = PAR2,
-#'   draw = TRUE, col=8, lty=1
-#' )
-#' synLFQ4 <- lfqCohort(synLFQ4)
+#' # visualize cohorts with lfqCohort
+#' synLFQ4 <- lfqCohort(synLFQ4, n.per.yr = 1)
+#' plot(synLFQ4, Fname = "catch",
+#'   ylim = c(0, max(synLFQ4$midLengths)), image.col=NA)
 #' pal <- colorRampPalette(c(4,5,7,2))
 #' with(synLFQ4, image(x = dates, y = midLengths, z = t(cohort),
-#'   col = adjustcolor(pal(max(cohort, na.rm = TRUE)), 0.5),
+#'   col = adjustcolor(pal(max(cohort, na.rm = TRUE)), 0.75),
 #'   add=TRUE
 #' ))
 #'
+#' # visualize relative age with lfqCohort
+#' synLFQ4 <- lfqCohort(synLFQ4, n.per.yr = 1)
+#' plot(synLFQ4, Fname = "catch",
+#'   ylim = c(0, max(synLFQ4$midLengths)), image.col=NA)
+#' pal <- colorRampPalette(c(4,5,7,2))
+#' with(synLFQ4, image(x = dates, y = midLengths, z = t(rel.age),
+#'   col = adjustcolor(pal(100), 0.75),
+#'   add=TRUE
+#' ))
+#'
+#'
+#' ### Demonstration of catch curve on all data vs single cohort
+#'
 #' ### Use all data in catch curve
 #' df <- data.frame(
-#'   rel.age = c(synLFQ4$rel.age[,-25]),
-#'   n = c(synLFQ4$catch[,-25]),
-#'   cohort = c(synLFQ4$cohort[,-25])
+#'   rel.age = c(synLFQ4$rel.age),
+#'   n = c(synLFQ4$catch),
+#'   cohort = c(synLFQ4$cohort)
 #' )
-#' df$age <- floor(df$rel.age)
 #'
 #' # floor of rel.age
+#' df$age <- floor(df$rel.age)
+#'
+#' # Catch curve using age (floor rounded ages)
 #' agg <- aggregate(n ~ age, data = df, FUN = sum)
 #' plot(log(n) ~ age, agg)
-#' fit <- lm(log(n) ~ age, subset(agg, age %in% seq(1,4)))
+#' fit <- lm(log(n) ~ age,
+#'   data = subset(agg, age >= 1 & age <= 4)
+#' )
 #' abline(fit)
-#' coef(fit)[2]
+#' -coef(fit)[2] # true value: Z = 1.0
 #'
-#' # direct rel.age
+#' # Catch curve using rel.age (unrounded ages)
 #' agg <- aggregate(n ~ rel.age, data = df, FUN = sum)
 #' plot(log(n) ~ rel.age, agg)
-#' fit <- lm(log(n) ~ rel.age, subset(agg, rel.age > 0.75 & rel.age < 3))
+#' fit <- lm(log(n) ~ rel.age,
+#'   data = subset(agg, rel.age >= 1 & rel.age <= 4)
+#' )
 #' abline(fit)
-#' -coef(fit)[2]
+#' -coef(fit)[2] # true value: Z = 1.0
 #'
 #'
-#' ### For a single cohort
-#' dfsub <- subset(df, cohort == 6)# most complete cohort
+#' ### Catch curve for a single cohort
+#' agg <- aggregate(n ~ cohort, df, FUN = "sum")
+#' dfsub <- subset(df, cohort == 7)# most complete cohort
 #'
 #' # direct rel.age
 #' agg <- aggregate(n ~ rel.age, data = dfsub, FUN = sum)
-#' plot(log(n) ~ rel.age, agg)
-#' fit <- lm(log(n) ~ rel.age, subset(agg, rel.age > 1 & rel.age < 3))
+#' plot(log(n) ~ rel.age, agg )
+#' fit <- lm(log(n) ~ rel.age,
+#'   data = subset(agg, rel.age >= 1 & rel.age <= 2)
+#' )
 #' abline(fit)
-#' -coef(fit)[2]
+#' -coef(fit)[2] # true value: Z = 1.0
 #'
-#' @export
-#' 
-lfqCohort <- function(lfq){
+#'
+#'
+lfqCohort <- function(lfq, n.per.yr = 1, agemax = NULL){
 
-    if(!("par" %in% names(lfq)) & (!("Linf" %in% names(lfq)) | !("K" %in% names(lfq)))){
-        stop("This method requires growth parameter!")
-    }else if(!("par" %in% names(lfq))){
-        PAR1 <- list(Linf = lfq$Linf, K = lfq$K, t_anchor = lfq$t_anchor)
-    }else if("par" %in% names(lfq)){
-        PAR1 <- lfq$par
+  if(is.null(agemax)){
+    if(!is.null(lfq$agemax)){
+      agemax <- lfq$agemax
+    } else {
+      agemax <- ceiling((1/-lfq$par$K)*log(1-((lfq$par$Linf*0.95)/lfq$par$Linf)))
     }
-    PAR2 <- PAR1
+  }
 
-    if(length(lfq$par$t_anchor) == 1){
-        PAR2$t_anchor <- (lfq$par$t_anchor - 0.5) %% 1      
-        lfq1 <- lfqFitCurves(lfq, par = PAR1, draw = FALSE)
-        lfq2 <- lfqFitCurves(lfq, par = PAR2, agemax = lfq1$agemax+0.5, draw = FALSE)
-    }else if(length(lfq$par$t_anchor) == 2){
-        taDiff1 <- (lfq$par$t_anchor[2] - lfq$par$t_anchor[1])/2 + lfq$par$t_anchor[1]
-        taDiff2 <- ((lfq$par$t_anchor[1]+1) - lfq$par$t_anchor[2])/2 + lfq$par$t_anchor[2]
-        PAR2$t_anchor <- c(taDiff1,taDiff2)
-        lfq1 <- lfqFitCurves(lfq, par = PAR1, draw = FALSE, spawningTimes = 2)        
-        lfq2 <- lfqFitCurves(lfq, par = PAR2, spawningTimes = 2,
-                             agemax = lfq1$agemax+max(c(taDiff1,taDiff2)), draw = FALSE)
-        PAR2a <- PAR2
-        PAR2a$t_anchor <- taDiff1
-        PAR2b <- PAR2
-        PAR2b$t_anchor <- taDiff2   
-        lfq2a <- lfqFitCurves(lfq, par = PAR2a, draw = FALSE)  
-        lfq2b <- lfqFitCurves(lfq, par = PAR2b, draw = FALSE)
-    }else{
-        stop("t_anchor has to have length 1 or 2! Not implemented yet for more than 2 spawning events per year!")
-    }
-
-    rel.age <- lfq$catch*NaN
-    cohort <- lfq$catch*NaN
-    if(length(lfq$par$t_anchor) == 1){
-        for(i in seq(length(lfq1$dates))){
-            t.use <- which(lfq2$Lt$t == date2yeardec(lfq1$dates[i]))
-            Lt.use <-  lfq2$Lt[t.use,]
-            ## upper cohort bound
-            upper <- suppressWarnings(apply(
-              outer(X = lfq1$midLengths, Y = Lt.use$Lt, FUN = "-"),
-              MARGIN = 1,
-              FUN = function(x){max(which(x < 0))}
-            ))
-            ## If no upper exists, match to the oldest cohort (i.e. row 1 of Lt.use)
-            upper <- replace(upper, upper == -Inf, 1)
-            rel.age[,i] <- Lt.use$rel.age[upper] - 0.5    
-            cohort[,i] <- Lt.use$ct[upper]
-        }
-    }else if(length(lfq$par$t_anchor) == 2){
-        for(i in seq(length(lfq1$dates))){
-            t.use <- which(lfq2$Lt$t == date2yeardec(lfq1$dates[i]))
-            Lt.use <-  lfq2$Lt[t.use,]
-            ## upper cohort bound
-            upper <- suppressWarnings(apply(
-                outer(X = lfq1$midLengths, Y = Lt.use$Lt, FUN = "-"),
-                MARGIN = 1,
-                FUN = function(x){max(which(x < 0))}
-            ))
-            ## If no upper exists, match to the oldest cohort (i.e. row 1 of Lt.use)
-            upper <- replace(upper, upper == -Inf, 1)
-            tmpa <- lfq2a$Lt[which(lfq2a$Lt$t == date2yeardec(lfq1$dates[i])),]
-            tmpb <- lfq2b$Lt[which(lfq2b$Lt$t == date2yeardec(lfq1$dates[i])),]
-            idx <- as.numeric(Lt.use$Lt %in% tmpa$Lt) + as.numeric(Lt.use$Lt %in% tmpb$Lt) * 2
-            rel.age[,i] <- Lt.use$rel.age[upper] - (c(taDiff1,taDiff2)[idx])[upper]
-            cohort[,i] <- Lt.use$ct[upper]
-        }
-    }
-
-    lfq$cohort <- cohort
-    lfq$rel.age <- rel.age
-
-    return(lfq)
-}
-
-
-lfqCohortMT <- function(lfq){
+  # record original par and make copy for adjusting t_anchor
   PAR <- lfq$par
   PAR2 <- PAR
-  PAR2$t_anchor <- (PAR$t_anchor - 0.5) %% 1
 
-  lfq <- lfqFitCurves(lfq, par = PAR, draw = FALSE)
-  lfq2 <- lfqFitCurves(lfq, par = PAR2, agemax = lfq$agemax+0.5, draw = FALSE)
+  # calc possible t_anchors (plus/minus 0.5 years to fitted lfq$par$t_anchor)
+  t_anchors <- sort(
+    seq(
+      from = (PAR$t_anchor - 0.5),
+      by = 1/n.per.yr,
+      length.out = n.per.yr
+    ) %% 1
+  )
 
-  rel.age <- lfq$catch*NaN
-  cohort <- lfq$catch*NaN
+  # positive adjustment to agemax (to correct for mid time of cohort)
+  t_shift <- 1/n.per.yr/2
+
+  # calc Lt for each t_anchor; record bday to identify unique cohorts
+  Lts <- vector("list", length(t_anchors))
+  for(n in seq(Lts)){
+    PAR2$t_anchor <- t_anchors[n]
+    Lts[[n]] <- lfqFitCurves(lfq, par = PAR2,
+      agemax = agemax + t_shift,
+      draw = FALSE)$Lt
+    Lts[[n]]$bday <- Lts[[n]]$t - Lts[[n]]$rel.age + t_shift
+  }
+  Lts <- do.call("rbind", Lts)
+
+  # assign cohort number based on bday (oldest = 1)
+  bdays <- sort(unique(Lts$bday))
+  Lts$ct <- match(Lts$bday, bdays)
+
+  # create output matrices for rel.age, cohort number, and bday
+  rel.age <- cohort <- bday <- lfq$catch*NaN
   for(i in seq(length(lfq$dates))){
-    t.use <- which(lfq2$Lt$t == date2yeardec(lfq$dates[i]))
-    Lt.use <-  lfq2$Lt[t.use,]
+    t.use <- which(Lts$t == date2yeardec(lfq$dates[i]))
+    Lt.use <-  Lts[t.use,]
+    Lt.use <- Lt.use[order(Lt.use$Lt, decreasing = TRUE),]
 
-    # upper cohort bound
+    # identify upper cohort boundary
     upper <- suppressWarnings(apply(
       outer(X = lfq$midLengths, Y = Lt.use$Lt, FUN = "-"),
       MARGIN = 1,
@@ -158,13 +173,15 @@ lfqCohortMT <- function(lfq){
     # If no upper exists, match to the oldest cohort (i.e. row 1 of Lt.use)
     upper <- replace(upper, upper == -Inf, 1)
 
-    rel.age[,i] <- Lt.use$rel.age[upper]-0.5
+    # extract result
+    rel.age[,i] <- Lt.use$rel.age[upper]
     cohort[,i] <- Lt.use$ct[upper]
+    bday[,i] <- Lt.use$bday[upper]
   }
 
   lfq$cohort <- cohort
   lfq$rel.age <- rel.age
+  lfq$bday <- bday
 
   return(lfq)
-
 }
