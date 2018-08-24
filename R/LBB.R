@@ -131,6 +131,7 @@ LBB <- function(lfq, startYear=NA, endYear=NA, years=NA, binSize=NA, LinfUser=NA
         stop("Lm50 missing! Please provide the length at maturity as element 'Lm50' in the argument 'lfq'.")
     }
 
+
     ## make selection
     startDate <- endDate <- NA
     if(!is.na(startYear)) startDate <- as.Date(paste0(startYear,"-01-01"))
@@ -138,16 +139,16 @@ LBB <- function(lfq, startYear=NA, endYear=NA, years=NA, binSize=NA, LinfUser=NA
     res <- lfqModify(lfq, minDate = startDate, maxDate=endDate, years = years,
                      bin_size=binSize, Lmax=LinfUser, Lmin=LcutUser)
 
-    years <- as.numeric(format(lfq$dates, "%Y"))
+    years <- as.numeric(format(res$dates, "%Y"))
 
     ##--------------------------------------------------------------------------------------    
     ## Put data into vectors
     ##--------------------------------------------------------------------------------------
-    if(class(lfq$catch) == "matrix"){
-        nrowC <- nrow(lfq$catch)
-        ncolC <- ncol(lfq$catch)
-    }else if(class(lfq$catch) == "numeric"){
-        nrowC <- length(lfq$catch)
+    if(class(res$catch) == "matrix"){
+        nrowC <- nrow(res$catch)
+        ncolC <- ncol(res$catch)
+    }else if(class(res$catch) == "numeric"){
+        nrowC <- length(res$catch)
         ncolC <- 1
     }else{
         stop("lfq$catch has to be either a matrix or a numeric vector!")
@@ -156,8 +157,8 @@ LBB <- function(lfq, startYear=NA, endYear=NA, years=NA, binSize=NA, LinfUser=NA
     StartYear  <- min(years)
     EndYear    <- max(years)
     AllYear    <- rep(years, each = nrowC)
-    AllLength  <- rep(lfq$midLengths, ncolC)
-    AllFreq    <- as.numeric(lfq$catch)
+    AllLength  <- rep(res$midLengths, ncolC)
+    AllFreq    <- as.numeric(res$catch)
     Years      <- sort(unique(AllYear))
     nYears     <- length(years)
     Stock      <- ifelse(!is.null(res$stock), res$stock, "unknown stock")
@@ -257,6 +258,30 @@ LBB <- function(lfq, startYear=NA, endYear=NA, years=NA, binSize=NA, LinfUser=NA
         Lstart.i   <- which(LF.all>=Lstart)[1]
         Lmax.i     <- length(LF.all$Length)
         peak.i     <- which.max(LF.all$Freq)
+
+        ## new error message for unrealistic Linf and Lc input
+        if(is.na(Lstart.i<(peak.i+1))){
+            plot(x=LF.all$Length,y=LF.all$Freq, bty="l",main=Stock,
+                 xlim = range(Lstart,LF.all$Length,Linf.st,LcUser,LinfUser,na.rm=TRUE))
+            lines(x=c(Lstart,Lstart),y=c(0,0.9*max(LF.all$Freq)),lty="dashed")
+            text(x=Lstart,y=max(LF.all$Freq),"Lstart")
+            if(is.na(LinfUser)){
+                lines(x=c(Linf.st,Linf.st),y=c(0,0.9*max(LF.all$Freq)),lty="dashed")
+                text(x=Linf.st,y=max(LF.all$Freq),"Lmax")
+            }else{
+                lines(x=c(LinfUser,LinfUser),y=c(0,0.9*max(LF.all$Freq)),lty="dashed")
+                text(x=LinfUser,y=max(LF.all$Freq),"Linf")     
+            }
+            if(is.na(LcUser)){
+                lines(x=c(Lc.st,Lc.st),y=c(0,0.9*max(LF.all$Freq)),lty="dashed")
+                text(x=Lc.st,y=max(LF.all$Freq),"Lc")
+            }else{
+                lines(x=c(LcUser,LcUser),y=c(0,0.9*max(LF.all$Freq)),lty="dashed")
+                text(x=LcUser,y=max(LF.all$Freq),"Lc")                
+            }                        
+            stop("Lstart cannot be estimated: set LstartUser or change LinfUser/LcUser if used\n")
+        }
+        
         if(Lstart.i<(peak.i+1)) Lstart <- LF.all$Length[peak.i+1] # make sure fully selected length starts after peak 
         if((Lmax.i-Lstart.i)<4) Lstart <- LF.all$Length[Lstart.i-1] # make sure enough length classes are available
     }
