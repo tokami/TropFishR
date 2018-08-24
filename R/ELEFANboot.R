@@ -35,7 +35,7 @@
 #'
 #' @export
 #'
-lfqResample <- function(lfq, boot = NULL){
+lfqResample <- function(lfq, sampSize = NA, boot = NULL){
 
     ## reproduce used lfq data sets if boot object provided
     nI <- ifelse(!is.null(boot) & "seed" %in% names(boot), length(boot$seed),1)
@@ -48,7 +48,12 @@ lfqResample <- function(lfq, boot = NULL){
         if(!is.null(boot)) set.seed(boot$seed[I])
 
         for(i in seq(length(lfq$dates))){
-            inds <- sample(x = lfq$midLengths, size = sum(lfq$catch[,i]),
+            if(is.na(sampSize) | is.nan(sampSize)){
+                sampSizi <- sum(lfq$catch[,i])
+            }else{
+                sampSizi <- sampSize
+            }
+            inds <- sample(x = lfq$midLengths, size = sampSizi,
                           prob = lfq$catch[,i], replace = TRUE)
             bin.width <- diff(lfq$midLengths) # bin width (should allow for uneven bin sizes)
             bin.lower <- lfq$midLengths - (c(bin.width[1], bin.width)/2) # upper bin limit
@@ -892,16 +897,18 @@ add_phiprime <- function(gridsize = 20, ...){
 
 
 
-#' Univariate kernal density estimate plot of VBGF parameter from bootstrapping results
+#' Univariate kernel density estimate plot of VBGF parameter from bootstrapping results
 #'
 #' @param res list of class `lfqBoot`
 #' @param CI numeric. Confidence interval level (Default: 95)
 #' @param use_hist logical. Plot histogram in addition to smoothed kernel density.
 #' @param nbreaks numeric. Number of breaks in the histogram.
+#' @param truePar if true parameters known lines can be added to graph
 #' @param mar vector. Inner margins settings. See `?par`.
 #' @param oma vector. Outer margins settings.See `?par`.
 #' @param mgp vector. See `?par`.
 #' @param tcl vector. See `?par`.
+#' @param mfrow vector. See `?par` (default: NA).
 #' @param cex numeric. See `?par`.
 #' @param ... Additional arguments passed to `par`.
 #'
@@ -915,124 +922,141 @@ add_phiprime <- function(gridsize = 20, ...){
 #'
 #'
 univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
-  mar = c(1.5,2,2,0), oma = c(1.5,0,0,0.5),
-  mgp = c(2,0.5,0), tcl = -0.25, cex = 1,
-  ...
-  ){
-    na <- ncol(res)
+                               truePar = NA, display_val=TRUE, display_median=FALSE,
+                               display_legend = FALSE, display_rugs = FALSE,
+                               mar = c(1.5,2,2,0), oma = c(1.5,0,0,0.5),
+                               mgp = c(2,0.5,0), tcl = -0.25, cex = 1, mfrow=NA,
+                               ...
+                               ){
+    na <- ifelse(display_legend,ncol(res)+1,ncol(res))
     nc <- min(c(6,na))
     nr <- ceiling(na/nc)
+    if(is.na(mfrow[1])) mfrow <- c(nr,nc)
     op <- par(no.readonly = TRUE)
     par(
     # mfcol = c(floor(sqrt(ncol(res))), ceiling(sqrt(ncol(res)))),
     mfcol = c(1, ncol(res)),
-    mar = mar, oma = oma, mfrow = c(nr,nc),
+    mar = mar, oma = oma, mfrow = mfrow, 
     mgp = mgp, tcl = tcl, cex = cex, ...
   )
 
   VARS <- list(
-    Linf = expression(italic(L)[infinity]),
-    K = expression(italic(K)),
-    t_anchor = expression(italic(t)[anchor]),
-    C = expression(italic(C)),
-    ts = expression(italic(t)[s]),
-    phiL = expression(paste(phi,"'")),
-    M_Then = expression(paste(M)),
-    M_Pauly = expression(paste(M)),
-    Z = expression(paste(Z)),
-    FM = expression(paste(F)),
-    L50 = expression(paste(L50)),
-    L75 = expression(paste(L75)),
-    N = expression(paste(N)),
-    B = expression(paste(B)),
-    F01 = expression(paste(F01)),
-    Fmax = expression(paste(Fmax)),
-    F05 = expression(paste(F05)),
-    FF01 = expression(paste(FF01)),
-    FFmax = expression(paste(FFmax)),
-    FF05 = expression(paste(FF05)),
-    ypr = expression(paste(ypr)),
-    yprrel = expression(paste(yprrel)),
-    bpr = expression(paste(bpr)),
-    bprrel = expression(paste(bprrel))
+    Linf = expression(bolditalic(L)[infinity]),
+    K = expression(bolditalic(K)),
+    t_anchor = expression(bolditalic(t)[anchor]),
+    C = expression(bolditalic(C)),
+    ts = expression(bolditalic(t)[s]),
+    phiL = expression(bolditalic("phi'")),
+    M_Then = expression(bolditalic(M)),
+    M_Pauly = expression(bolditalic(M)),
+    Z = expression(bolditalic(Z)),
+    FM = expression(bolditalic(F)),
+    L50 = expression(bolditalic("L50")),
+    L75 = expression(bolditalic("L75")),
+    N = expression(bolditalic(N)),
+    B = expression(bolditalic(B)),
+    F01 = expression(bolditalic("F01")),
+    Fmax = expression(bolditalic(Fmax)),
+    F05 = expression(bolditalic("F05")),
+    FF01 = expression(bolditalic("FF01")),
+    FFmax = expression(bolditalic(FFmax)),
+    FF05 = expression(bolditalic("FF05")),
+    ypr = expression(bolditalic(ypr)),
+    yprrel = expression(bolditalic(yprrel)),
+    bpr = expression(bolditalic(bpr)),
+    bprrel = expression(bolditalic(bprrel))
   )
 
   # univariate plots
     for(i in seq(ncol(res))){
-
         tmp <- as.numeric(na.omit(res[,i]))
-
-    x <- kde(tmp)
-
-    h = hist(tmp, plot=FALSE, breaks = nbreaks)
-
-    xlim <- c(0, max(x$estimate))
-    if(use_hist){
-      xlim <- range(c(xlim, max(h$density)))
-    }
-    xlim <- xlim * c(0,1.1)
-
-    plot(x$estimate, x$eval.points, t="n",
-      xlim = xlim,
-      xaxs = "i",
-      ylab="", xlab="", col=1, lty=1
-    )
-    usr <- par()$usr
-
-    CItxt <- paste0(round(100-CI), "%")
-    inCI <- rle( x$estimate > x$cont[CItxt] )
-    start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
-    end.idx <- cumsum(inCI$lengths)
-    limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
-
-    in1 <- which(x$estimate > x$cont["99%"])
-    mean1 <- mean(x$eval.points[in1])
-
-    if(use_hist){
-      rect(
-        xleft = 0, ybottom = h$breaks[-length(h$breaks)],
-        xright = h$density, ytop = h$breaks[-1],
-        col = "grey90", border = "grey50"
-      )
-    }else{
-      for(j in seq(inCI$lengths)){
-        if(inCI$values[j]){
-          polygon(
-            y = c(x$eval.points[start.idx[j]:end.idx[j]], rev(x$eval.points[start.idx[j]:end.idx[j]])),
-            x = c(x$estimate[start.idx[j]:end.idx[j]], rep(0, length(x$estimate[start.idx[j]:end.idx[j]]))),
-            col = "grey90", #col = rgb(0,1,0,0.2),
-            border = NA, lty = 3, lwd = 1
-          )
+        x <- kde(tmp)
+        h = hist(tmp, plot=FALSE, breaks = nbreaks)
+        xlim <- c(0, max(x$estimate))
+        if(use_hist){
+          xlim <- range(c(xlim, max(h$density)))
         }
+        xlim <- xlim * c(0,1.1)
+
+        plot(x$estimate, x$eval.points, t="n",
+          xlim = xlim,
+          xaxs = "i",
+          ylab="", xlab="", col=1, lty=1
+        )
+        usr <- par()$usr
+
+        CItxt <- paste0(round(100-CI), "%")
+        inCI <- rle( x$estimate > x$cont[CItxt] )
+        start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
+        end.idx <- cumsum(inCI$lengths)
+        limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
+
+        in1 <- which(x$estimate > x$cont["99%"])
+        mean1 <- mean(x$eval.points[in1])
+
+        if(use_hist){
+          rect(
+            xleft = 0, ybottom = h$breaks[-length(h$breaks)],
+            xright = h$density, ytop = h$breaks[-1],
+            col = "grey90", border = "grey50"
+          )
+        }else{
+          for(j in seq(inCI$lengths)){
+            if(inCI$values[j]){
+              polygon(
+                y = c(x$eval.points[start.idx[j]:end.idx[j]], rev(x$eval.points[start.idx[j]:end.idx[j]])),
+                x = c(x$estimate[start.idx[j]:end.idx[j]], rep(0, length(x$estimate[start.idx[j]:end.idx[j]]))),
+                col = "grey90", #col = rgb(0,1,0,0.2),
+                border = NA, lty = 3, lwd = 1
+              )
+            }
+          }
+        }
+
+        ## abline(v = x$cont[CItxt], lty=2, col="grey50")
+        lines(x$estimate, x$eval.points, lwd = 1, col = "grey50")
+
+        ## rug
+        if(display_rugs) segments(x0 = 0, x1 = par()$cxy[1]*0.3, y0 = x$x, y1 = x$x, col=rgb(0,0,0,0.5), lwd=0.3)
+
+        ## true pars
+        if(!is.na(truePar[1])){
+            trupari <- truePar[match(names(res)[i], names(truePar))]
+            abline(h=trupari, lty=2, col=2)
+        }
+
+        # range of CI
+        abline(h = limCI, lty = 2, lwd=1, col = 1)
+        if(display_val) text(y =c(limCI), x = mean(usr[1:2]),
+          labels = paste(sprintf("%.2f", round(c(limCI),2))),
+          pos = c(1,3), offset = 0.25, col = 1)
+        
+        ## median
+        if(display_median) abline(h=median(x$x), col=4, lty=2)
+
+        ## maximum density
+        abline(h = mean1, lty = 1, lwd=1, col = 1)
+        if(display_val) text(y =  mean1, x = mean(usr[1:2]),
+          labels = sprintf("%.2f", round(mean1,2)),
+          pos = 3,
+          offset = 0.25, col = 1
+        )
+
+        varlab <- VARS[[match(names(res)[i], names(VARS))]]
+        mtext(varlab, line=0.25, side=3, font = 2)
+
+        box()
       }
+    mtext("Density", side = 1, line = 0, outer = TRUE)
+
+    if(display_legend){
+        plot.new()
+        legend("center",
+               legend=c("true","median","max density","CI"),
+               lty=c(2,2,1,2), col=c(2,4,1,1), bty="n")
     }
 
-    # abline(v = x$cont[CItxt], lty=2, col="grey50")
-    lines(x$estimate, x$eval.points, lwd = 1, col = "grey50")
-
-    # rug
-    segments(x0 = 0, x1 = par()$cxy[1]*0.3, y0 = x$x, y1 = x$x, col=rgb(0,0,0,0.5), lwd=0.3)
-
-    # range of CI
-    abline(h = limCI, lty = 1, lwd=1, col = 1)
-    text(y =c(limCI), x = mean(usr[1:2]),
-      labels = paste(sprintf("%.2f", round(c(limCI),2))),
-      pos = c(1,3), offset = 0.25, col = 1
-    )
-    abline(h = mean1, lty = 1, lwd=1, col = 1)
-    text(y =  mean1, x = mean(usr[1:2]),
-      labels = sprintf("%.2f", round(mean1,2)),
-      pos = 3,
-      offset = 0.25, col = 1
-    )
-
-    varlab <- VARS[[match(names(res)[i], names(VARS))]]
-    mtext(varlab, line=0.25, side=3)
-
-    box()
-  }
-  mtext("Density", side = 1, line = 0, outer = TRUE)
-  par(op)
+    par(op)
 }
 
 

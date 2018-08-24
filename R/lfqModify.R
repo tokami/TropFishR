@@ -108,8 +108,7 @@ lfqModify <- function(lfq, par = NULL,
 
 
     ## merge two lfq data sets (ADD weighing factor)
-    if(!any(is.na(lfq2))){
-        if(class(lfq2) != "lfq") stop("Your lfq2 data set has to have class 'lfq'!")
+    if(class(lfq2) == "lfq"){
         
         ## extract variables
         dates2 <- lfq2$dates
@@ -171,7 +170,6 @@ lfqModify <- function(lfq, par = NULL,
         dates <- mergi$dates
         midLengths <- mergi2$midLengths
         catch <- designMat
-        
     }
     
 
