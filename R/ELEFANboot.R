@@ -299,14 +299,15 @@ ELEFAN_SA_boot <- function(
       }
 
       ## return result
-      res[[x]] <- c(unlist(fitboot$par), seed + x)
+      res[[x]] <- c(unlist(fitboot$par), seed + x, fitboot$Rn_max)
     }
   }
 
-  tmp0 <- as.data.frame(do.call("rbind", res))
-  tmp <- tmp0[,-ncol(tmp0)]
+    tmp0 <- as.data.frame(do.call("rbind", res))
+    tmp <- tmp0[,-c(ncol(tmp0)-1,ncol(tmp0))]    
 
-  seeds <- as.numeric(tmp0[,ncol(tmp0)])
+    seeds <- as.numeric(tmp0[,(ncol(tmp0)-1)])
+    scores <- as.numeric(tmp0[,ncol(tmp0)])    
 
   ## lfqboot object
   bootRaw <- tmp
@@ -358,7 +359,8 @@ ELEFAN_SA_boot <- function(
   ## save and return results
   ret <- list()
   ret$bootRaw <- bootRaw
-  ret$seed <- seeds
+    ret$seed <- seeds
+    ret$Rn_max <- round(scores,3)
   ret$maxDen <- maxDens
   ret$median <- medians
   ret$CI <- limCIuni
@@ -607,14 +609,15 @@ ELEFAN_GA_boot <- function(
       }
 
       # return result
-        res[[x]] <- c(unlist(fitboot$par), seed + x)
+        res[[x]] <- c(unlist(fitboot$par), seed + x, fitboot$Rn_max)
     }
   }
 
   tmp0 <- as.data.frame(do.call("rbind", res))
-  tmp <- tmp0[,-ncol(tmp0)]
+    tmp <- tmp0[,-c(ncol(tmp0)-1,ncol(tmp0))]
 
-  seeds <- as.numeric(tmp0[,ncol(tmp0)])
+    seeds <- as.numeric(tmp0[,(ncol(tmp0)-1)])
+    scores <- as.numeric(tmp0[,ncol(tmp0)])    
 
   ## lfqboot object
   bootRaw <- tmp
@@ -666,7 +669,8 @@ ELEFAN_GA_boot <- function(
   ## save and return results
   ret <- list()
   ret$bootRaw <- bootRaw
-  ret$seed <- seeds
+    ret$seed <- seeds
+    ret$Rn_max <- round(scores,3)
   ret$maxDen <- maxDens
   ret$median <- medians
   ret$CI <- limCIuni
