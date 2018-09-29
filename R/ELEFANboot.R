@@ -351,7 +351,7 @@ ELEFAN_SA_boot <- function(
   names(medians) <- c(names(medians)[-length(medians)],"phiL")
   limCIuni <- cbind(limCIuni,log10(limCIuni[,which(names(maxDens) == "K")]) +
       2 * log10(limCIuni[,which(names(maxDens) == "Linf")]))
-  colnames(limCIuni) <- c(colnames(limCIuni)[-ncol(limCI)],"phiL")
+  colnames(limCIuni) <- c(colnames(limCIuni)[-ncol(limCIuni)],"phiL")
   limCI <- cbind(limCI,log10(limCI[,which(names(maxDens) == "K")]) +
       2 * log10(limCI[,which(names(maxDens) == "Linf")]))
   colnames(limCI) <- c(colnames(limCI)[-ncol(limCI)],"phiL")
@@ -661,7 +661,7 @@ ELEFAN_GA_boot <- function(
   names(medians) <- c(names(medians)[-length(medians)],"phiL")
   limCIuni <- cbind(limCIuni,log10(limCIuni[,which(names(maxDens) == "K")]) +
       2 * log10(limCIuni[,which(names(maxDens) == "Linf")]))
-  colnames(limCIuni) <- c(colnames(limCIuni)[-ncol(limCI)],"phiL")
+  colnames(limCIuni) <- c(colnames(limCIuni)[-ncol(limCIuni)],"phiL")
   limCI <- cbind(limCI,log10(limCI[,which(names(maxDens) == "K")]) +
       2 * log10(limCI[,which(names(maxDens) == "Linf")]))
   colnames(limCI) <- c(colnames(limCI)[-ncol(limCI)],"phiL")
