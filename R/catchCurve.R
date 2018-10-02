@@ -217,13 +217,13 @@ catchCurve <- function(param,
         bootRaw <- boot$bootRaw
 
 
-        if (any(is.null(bootRaw$Linf), is.null(bootRaw$K)))
+        if(any(is.null(bootRaw$Linf), is.null(bootRaw$K)))
           stop("LCCC with boot requires a boot object with columns Linf and K")
 
 
         ## resample data sets
         ## set.seed(boot$seed[bi])
-        lfqAll <- lfqResample(param, boot)
+        lfqAll <- lfqResample(param, boot=boot)
 
 
         Zs <- vector("numeric",nrow(bootRaw))
@@ -530,14 +530,15 @@ catchCurve <- function(param,
                 }
             }
         }
+        resMaxDen <- c(boot$maxDen, resMaxDen)
+        names(resMaxDen) <- c(names(boot$maxDen),
+                              colnames(bootRaw)[(ncol(bootRaw)-(nx)+1):ncol(bootRaw)])
         resCIs <- cbind(boot$CI,t(do.call(rbind,ciList)))
-        colnames(resCIs) <- colnames(bootRaw)
-        rownames(resCIs) <- c("lo","up")
-        resMaxDen <- c(boot$maxDen, t(as.data.frame(resMaxDen)))
-        names(resMaxDen) <- colnames(bootRaw)
+        colnames(resCIs) <- names(resMaxDen)
+        rownames(resCIs) <- c("lo","up")        
         resMed <- c(boot$median, resMed)
-        names(resMed) <- colnames(bootRaw)
-
+        names(resMed) <- names(resMaxDen)
+        
         if(FALSE){
         ## check with FM
         if("FM" %in% colnames(resMaxDen)){
