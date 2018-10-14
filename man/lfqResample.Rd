@@ -4,7 +4,7 @@
 \alias{lfqResample}
 \title{Resampling of length-frequency data}
 \usage{
-lfqResample(lfq, boot = NULL)
+lfqResample(lfq, sampSize = NA, boot = NULL)
 }
 \arguments{
 \item{lfq}{a length frequency object of the class `lfq`.}

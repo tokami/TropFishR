@@ -93,7 +93,17 @@ M_empirical(Linf = 80, K_l = 0.5, temp = 25, tmax = 30,
      method = c("Pauly_Linf","Hoenig"))
 
 ## bootstrapping application of M
-## coming soon
+\donttest{
+## where 'res' is an object of class "lfqBoot" resulting from ELEFAN_GA_boot or ELEFAN_SA_boot
+res <- M_empirical(method = "Then_growth", boot = res)
+
+## only the methods 'Then_growth' and "Pauly_Linf" are implemented for the bootstrapping approach so far, if other methods should be applied be use:
+
+resThenTmax <- res
+## overwrite nat M column but keep name 'M_Then':
+resThenTmax$bootRaw$M_Then <- rep(M_empirical(tmax=10, method="Then_tmax"), nrow(res$bootRaw))
+}
+
 
 }
 \references{
