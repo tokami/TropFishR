@@ -227,6 +227,7 @@ catchCurve <- function(param,
 
 
         Zs <- vector("numeric",nrow(bootRaw))
+        ints <- vector("numeric",nrow(bootRaw))        
         ## seZ <- vector("numeric",nrow(bootRaw))
         ## confZ <- vector("numeric",nrow(bootRaw))
         t50s <- vector("numeric", nrow(bootRaw))
@@ -399,6 +400,7 @@ catchCurve <- function(param,
 
             if(class(lm1) == "try-error" | nrow(df.CC.cut) < 3 | coefficients(lm1)[2] > 0){
                 Zs[bi] <- NA
+                ints[bi] <- NA                
                 if(calc_ogive){
                       L50s[bi] <- NA
                       L75s[bi] <- NA
@@ -424,6 +426,7 @@ catchCurve <- function(param,
                 }
 
                 Zs[bi] <- Z_lm1
+                ints[bi] <- intercept_lm1
                 ## seZ[bi] <- SE_Z_lm1
                 ## confZ[bi] <- conf_Z_lm1
                 if(calc_ogive){
@@ -555,6 +558,8 @@ catchCurve <- function(param,
         ret$median <- resMed        
         ret$CI <- resCIs
         if("multiCI" %in% names(boot)) ret$multiCI <- boot$multiCI
+        ret$misc <- c(boot$misc, list(binSize = binSize, yearSel = yearSel,
+                       yearCombine = yearCombine, intsCC = ints))
         class(ret) <- "lfqBoot"
         return(ret)
         
