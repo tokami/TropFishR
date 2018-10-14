@@ -1533,8 +1533,6 @@ plotBoot <- function(lfq,    ## lfq object
                      draw = TRUE, ylim=NULL, xlim=NULL,
                      ...){    
 
-    boot <- res
-    
     dates <- lfq$dates
     classes <- lfq$midLengths
 
@@ -1818,7 +1816,7 @@ plotBoot <- function(lfq,    ## lfq object
         ## final plot
         plot(x = xplot, y = yplot, ylim = ylims, ty="p",
              xlab = xlabel, ylab = ylabel, xlim = xlims,
-             cex = cex)
+             cex = 1)
         if(display=="CI"){
             polygon(x=c(seqi,rev(seqi)), y=c(intCI[1]-seqi*zCI[1],
                                              rev(intCI[2]-seqi*zCI[2])),
