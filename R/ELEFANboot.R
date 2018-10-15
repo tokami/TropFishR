@@ -1752,6 +1752,7 @@ plotBoot <- function(lfq,    ## lfq object
             t_L1 <- VBGF(param = list(Linf = grPars[1], K = grPars[2],
                                       t0 = 0), L = lowerLengths)            
         }
+
         ## delta t
         deti <- rep(NA,length(midLengths))
         for(x1 in 1:(length(deti)-1)){
@@ -1784,21 +1785,29 @@ plotBoot <- function(lfq,    ## lfq object
         lnC_dt <- log(catch / deti)
         lnC_dt[which(lnC_dt == -Inf)] <- NA   ### OR zero???
         yplot <- lnC_dt
-        ylabel <- "ln(C / dt)"
+        ylabel <- "ln(N / dt)"
+
+        
+        ## remove all NAs and Infs
+        temp <- cbind(xplot,yplot)
+        temp <- as.matrix(na.exclude(temp))
+        temp <- temp[(!(temp[,1] == Inf | temp[,1] == -Inf)),]
+        temp <- temp[(!(temp[,2] == Inf | temp[,2] == -Inf)),]
+        xplot <- temp[,1]
+        yplot <- temp[,2]
 
 
         ##for final plot
-
         if(is.null(ylim)){
             minyplot <- ifelse(min(yplot,na.rm=TRUE) < 0, min(yplot,na.rm=TRUE),0)
-            maxyplot <- max(yplot,na.rm=TRUE) + 1
+            maxyplot <- max(yplot[is.finite(yplot)],na.rm=TRUE) + 1
             ylims <- c(minyplot,maxyplot)
         }else ylims <- ylim
         
 
         if(is.null(xlim)){
-            xlims <- c(min(xplot[which(yplot > 0)], na.rm = TRUE),
-                       max(xplot[which(yplot > 0)], na.rm = TRUE))
+            xlims <- c(min(xplot[which(yplot > 0 & is.finite(yplot))], na.rm = TRUE),
+                       max(xplot[which(yplot > 0 & is.finite(yplot))], na.rm = TRUE))
         }else xlims <- xlim
 
 
@@ -1806,17 +1815,28 @@ plotBoot <- function(lfq,    ## lfq object
         if(xlab != "default") xlabel = xlab
         if(ylab != "default") ylabel = ylab
 
+        maxi1 <- which.min(abs(xplot-boot$misc$regint[1]))
+        maxi2 <- which.min(abs(xplot-boot$misc$regint[2]))
 
-
-        maxi1 <- which.max(yplot)
-        maxi2 <- which.max(xplot[!is.na(yplot)])
+##        ind <- 1:length(yplot)
+##        ind <- ind[is.finite(yplot)]
+##        maxi1 <- ind[which.max(yplot[is.finite(yplot)])]
+##        maxi2 <- ind[which.max(xplot[is.finite(yplot)])]
+        
         step <- 0.01
-        seqi <- seq(xplot[maxi1+1],xplot[maxi2]+step,step)
+        seqi <- seq(xplot[maxi1]-step,xplot[maxi2]+step,step)
+
+        datcc <- boot$misc$datcc
         
         ## final plot
-        plot(x = xplot, y = yplot, ylim = ylims, ty="p",
+        plot(x = xplot, y = yplot, ylim = ylims, ty="n",
              xlab = xlabel, ylab = ylabel, xlim = xlims,
              cex = 1)
+        for(i in 1:length(datcc)){
+            if(!all(is.na(datcc[[i]])))
+                points(datcc[[i]]$x,datcc[[i]]$y, pch=19, col="grey80")
+        }
+        points(x = xplot, y = yplot)            
         if(display=="CI"){
             polygon(x=c(seqi,rev(seqi)), y=c(intCI[1]-seqi*zCI[1],
                                              rev(intCI[2]-seqi*zCI[2])),
@@ -1827,8 +1847,9 @@ plotBoot <- function(lfq,    ## lfq object
                 lines(seqi, ints[i]-seqi*zs[i], col="grey80",lwd=2)
             }            
         }
-        points(xplot[(maxi1+1):maxi2],yplot[(maxi1+1):maxi2],
+        points(xplot[(maxi1):maxi2],yplot[(maxi1):maxi2],
                pch=19,col="blue")
         box()
     }
 }
+
