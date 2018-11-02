@@ -342,7 +342,10 @@ predict_mod <- function(
         Fmax <- vector("numeric",nrow(bootRaw))
         F05 <- vector("numeric",nrow(bootRaw))
         totYs <- vector("list",nrow(bootRaw))
-        meanBs <- vector("list",nrow(bootRaw))        
+        meanBs <- vector("list",nrow(bootRaw))
+        nmaxs <- vector("numeric",nrow(bootRaw))
+        n01s <- vector("numeric",nrow(bootRaw))
+        n05s <- vector("numeric",nrow(bootRaw))        
         for(bi in 1:nrow(bootRaw)){
 
             lfqTemp <- lfqAll[[bi]]
@@ -554,6 +557,9 @@ predict_mod <- function(
                 ## for plotting
                 totYs[[bi]] <- pred_res_df$totY
                 meanBs[[bi]] <- pred_res_df$meanB
+                nmaxs[bi] <- Nmax
+                n01s[bi] <- N01
+                n05s[bi] <- N05                
 
 
                 ## if FMvecVPA not used and selectivity parameters could not be estimated
@@ -881,7 +887,10 @@ predict_mod <- function(
         ret$misc <- boot$misc
         ret$misc$FM_change <- FM_change
         ret$misc$totY <- totYs
-        ret$misc$meanB <- meanBs        
+        ret$misc$meanB <- meanBs
+        ret$misc$nmax <- nmaxs
+        ret$misc$n01 <- n01s
+        ret$misc$n05 <- n05s
         class(ret) <- "lfqBoot"
         return(ret)
 

@@ -974,7 +974,7 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
         bprrel = expression(bolditalic(bprrel))
     )
 
-                                        # univariate plots
+    ## univariate plots
     for(i in seq(ncol(res))){
         tmp <- as.numeric(na.omit(res[,i]))
         x <- try(kde(tmp),silent=TRUE)
@@ -994,7 +994,7 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
             xlim <- xlim * c(0,1.1)
 
             ylims <- range(x$eval.points)
-            if(!is.null(ylim)){
+            if(!is.null(ylim) && !is.na(ylim)){
                 if(!is.na(ylim[[i]][1])){
                     ylims[1] <- ylim[[i]][1]
                     ylims[2] <- ylim[[i]][2]
@@ -1052,7 +1052,7 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
                 abline(h=trupari, lty=2, col=2)
             }
 
-                                        # range of CI
+            ## range of CI
             abline(h = limCI, lty = 2, lwd=1, col = 1)
             if(display_val) text(y =c(limCI), x = mean(usr[1:2]),
                                  labels = paste(sprintf("%.2f", round(c(limCI),2))),
@@ -1075,9 +1075,9 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
         }
         varlab <- VARS[[match(names(res)[i], names(VARS))]]
         mtext(varlab, line=0.25, side=3, font = 2)
-        box()                    
     }
     mtext("Density", side = 1, line = 0, outer = TRUE)
+    box(lwd=1.2)
 
     if(display_legend){
         plot.new()
@@ -1546,6 +1546,7 @@ plotBoot <- function(lfq,    ## lfq object
                      best="maxDen",  ## alternative: "median"
                      Fname = "catch",  # alternative : "catch"
                      pCCori = FALSE,
+                     pRef="fmax",
                      par = NULL,
                      agemax = NULL,
                      rel = FALSE,
@@ -1882,20 +1883,22 @@ plotBoot <- function(lfq,    ## lfq object
         plot(x = xplot, y = yplot, ylim = ylims, ty="n",
              xlab = xlabel, ylab = ylabel, xlim = xlims,
              cex = 1)
+
+        if(pCCori) points(x = xplot, y = yplot)
+        if("bootRaw" %in% display){
+            for(i in 1:length(ints)){
+                lines(seqi, ints[i]-seqi*zs[i], col="grey80",lwd=2)
+            }                        
+        }
         for(i in 1:length(datcc)){
             if(!all(is.na(datcc[[i]])))
                 points(datcc[[i]]$x,datcc[[i]]$y, pch=19, col="black")
-        }
-        if(pCCori) points(x = xplot, y = yplot)            
-        if(display=="CI"){
+        }        
+        if("CI" %in% display){
             polygon(x=c(seqi,rev(seqi)), y=c(intCI[1]-seqi*zCI[1],
                                              rev(intCI[2]-seqi*zCI[2])),
                     col=rgb(t(col2rgb("blue"))/255,alpha=0.3),border=NA)
-            lines(seqi, intX-seqi*zX, col="blue",lwd=2)
-        }else{
-            for(i in 1:length(ints)){
-                lines(seqi, ints[i]-seqi*zs[i], col="grey80",lwd=2)
-            }            
+            lines(seqi, intX-seqi*zX, col="blue",lwd=2.5)
         }
         if(pCCori) points(xplot[(maxi1):maxi2],yplot[(maxi1):maxi2],
                           pch=19,col="blue")
@@ -1906,7 +1909,7 @@ plotBoot <- function(lfq,    ## lfq object
 
         px <- boot$misc$FM_change
         xlabel <- "Fishing mortality"
-        ylabel1 <- "Yield"
+        ylabel1 <- "Yield per recruit"
         ylabel2 <- "Biomass"
         ylabel3 <- "Value"
         
@@ -1924,46 +1927,124 @@ plotBoot <- function(lfq,    ## lfq object
 
 
         toti <- boot$misc$totY
-        nmax <- unlist(lapply(toti, max, na.rm=TRUE))
 
 
-        ## median
-        medi <- median(nmax, na.rm = TRUE)
-        
-        ## confidence intervals
-        citmp <- (100-CI)/2/100
-        ciList <- quantile(nmax,  probs = c(citmp, 1-citmp), na.rm = TRUE)
-        
-        ## max densities
-        x <- ks::kde(as.numeric(na.omit(nmax)))
-        ind <- which(x$estimate > x$cont["99%"])
-        maxden <- mean(x$eval.points[ind])        
-        
-        ## determine which resamples are in the CI
-        inCI <- x$estimate > quantile(x$estimate, probs = (100-CI)/100 )
-        limCI <- data.frame(t = px, min = NaN, max = NaN)
-        for(i in seq(px)){
-            limCI$min[i] <- min(totys[i, which(inCI) ], na.rm = TRUE)
-            limCI$max[i] <- max(totys[i, which(inCI) ], na.rm = TRUE)
-        }
-
-        ## final plot
-        plot(x = px, y = py, ylim = ylims, ty="n",
-             xlab = xlabel, ylab = ylabel1, xlim = xlims,
-             cex = 1)
-
-        for(i in 1:length(boot$misc$totY)){
-            lines(px, boot$misc$totY[[i]], col = "grey")
-        }
-
-        lines(px, limCI$max, col = ci.col, lwd = ci.lwd, lty = ci.lty)
-        lines(px, limCI$min, col = ci.col, lwd = ci.lwd, lty = ci.lty)            
+        if(pRef=="fmax"){
+            nmax <- unlist(lapply(toti, max, na.rm=TRUE))
+            fmaxR <- range(boot$bootRaw$Fmax, na.rm=TRUE)
+            ## median
+            medi <- median(nmax, na.rm = TRUE)
             
-        lines(px, boot$misc$totY[[which.min(abs(nmax-maxden))]],
-              col = maxd.col, lwd = maxd.lwd, lty = maxd.lty)        
+            ## confidence intervals
+            citmp <- (100-CI)/2/100
+            ciList <- quantile(nmax,  probs = c(citmp, 1-citmp), na.rm = TRUE)
+            
+            ## max densities
+            x <- ks::kde(as.numeric(na.omit(nmax)))
+            ind <- which(x$estimate > x$cont["99%"])
+            maxden <- mean(x$eval.points[ind])        
+            
+            ## determine which resamples are in the CI
+            inCI <- x$estimate > quantile(x$estimate, probs = (100-CI)/100 )
+            limCI <- data.frame(t = px, min = NaN, max = NaN)
+            for(i in seq(px)){
+                limCI$min[i] <- min(totys[i, which(inCI) ], na.rm = TRUE)
+                limCI$max[i] <- max(totys[i, which(inCI) ], na.rm = TRUE)
+            }
 
+            ## final plot
+            plot(x = px, y = py, ylim = ylims, ty="n",
+                 xlab = xlabel, ylab = ylabel1, xlim = xlims,
+                 cex = 1)
 
-        box(lwd=1.2)        
+            rect(fmaxR[1],-1,fmaxR[2],ylims[2]*2, border=NA, col=rgb(t(col2rgb("blue"))/255,alpha=0.3))
+            text(mean(fmaxR), y=ylims[2]*0.98, labels="Fmax", cex=1.2, font=2)
+
+            nbreaks = 10
+
+            tmp <- as.numeric(na.omit(boot$bootRaw$Fmax))
+            x <- try(kde(tmp),silent=TRUE)
+            if(class(x) != "try-error"){
+                h = hist(tmp, plot=FALSE, breaks = nbreaks)
+                tmp <- seq(fmaxR[1],fmaxR[2], length.out = length(h$breaks))
+                tmp2 <- h$density
+                tmp2 <- tmp2/max(tmp2)
+                rect(xleft = tmp[-length(tmp)], ybottom = 0,
+                     xright = tmp[-1], ytop = tmp2*(0.2*ylims[2]),
+                     col = rgb(t(col2rgb("black"))/255,alpha=0.8),
+                     border = "grey50")
+            }
+
+            for(i in 1:length(boot$misc$totY)){
+                lines(px, boot$misc$totY[[i]], col = rgb(t(col2rgb("black"))/255,alpha=0.3))
+            }
+
+            ##        lines(px, limCI$max, col = ci.col, lwd = ci.lwd, lty = ci.lty)
+            ##        lines(px, limCI$min, col = ci.col, lwd = ci.lwd, lty = ci.lty)            
+            
+            lines(px, boot$misc$totY[[which.min(abs(nmax-maxden))]],
+                  col = maxd.col, lwd = maxd.lwd, lty = maxd.lty)        
+            box(lwd=1.2)                    
+        }else if(pRef=="f01"){
+            n01 <- unlist(lapply(seq(length(boot$misc$nmax)),
+                          function(x) boot$misc$totY[[x]][boot$misc$n01[x]]))
+            
+            f01R <- range(boot$bootRaw$F01, na.rm=TRUE)
+            ## median
+            medi <- median(n01, na.rm = TRUE)
+            
+            ## confidence intervals
+            citmp <- (100-CI)/2/100
+            ciList <- quantile(n01,  probs = c(citmp, 1-citmp), na.rm = TRUE)
+            
+            ## max densities
+            x <- ks::kde(as.numeric(na.omit(n01)))
+            ind <- which(x$estimate > x$cont["99%"])
+            maxden <- mean(x$eval.points[ind])        
+            
+            ## determine which resamples are in the CI
+            inCI <- x$estimate > quantile(x$estimate, probs = (100-CI)/100 )
+            limCI <- data.frame(t = px, min = NaN, max = NaN)
+            for(i in seq(px)){
+                limCI$min[i] <- min(totys[i, which(inCI) ], na.rm = TRUE)
+                limCI$max[i] <- max(totys[i, which(inCI) ], na.rm = TRUE)
+            }
+
+            ## final plot
+            plot(x = px, y = py, ylim = ylims, ty="n",
+                 xlab = xlabel, ylab = ylabel1, xlim = xlims,
+                 cex = 1)
+
+            rect(f01R[1],-1,f01R[2],ylims[2]*2, border=NA, col=rgb(t(col2rgb("blue"))/255,alpha=0.3))
+            text(mean(f01R), y=ylims[2]*0.98, labels="F01", cex=1.2, font=2)
+
+            nbreaks = 10
+
+            tmp <- as.numeric(na.omit(boot$bootRaw$Fmax))
+            x <- try(kde(tmp),silent=TRUE)
+            if(class(x) != "try-error"){
+                h = hist(tmp, plot=FALSE, breaks = nbreaks)
+                tmp <- seq(f01R[1],f01R[2], length.out = length(h$breaks))
+                tmp2 <- h$density
+                tmp2 <- tmp2/max(tmp2)
+                rect(xleft = tmp[-length(tmp)], ybottom = 0,
+                     xright = tmp[-1], ytop = tmp2*(0.2*ylims[2]),
+                     col = rgb(t(col2rgb("black"))/255,alpha=0.8),
+                     border = "grey50")
+            }
+
+            for(i in 1:length(boot$misc$totY)){
+                lines(px, boot$misc$totY[[i]], col = rgb(t(col2rgb("black"))/255,alpha=0.3))
+            }
+
+            ##        lines(px, limCI$max, col = ci.col, lwd = ci.lwd, lty = ci.lty)
+            ##        lines(px, limCI$min, col = ci.col, lwd = ci.lwd, lty = ci.lty)            
+            
+            lines(px, boot$misc$totY[[which.min(abs(n01-maxden))]],
+                  col = maxd.col, lwd = maxd.lwd, lty = maxd.lty)        
+            box(lwd=1.2)                                
+        }
+        
     }
 }
 
