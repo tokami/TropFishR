@@ -96,7 +96,7 @@
 #' data("alba")
 #' lfq <- alba
 #' lfq$par <- list(
-#'   Linf = 9,5, K = 2.3, t_anchor = 0.28
+#'   Linf = 9.5, K = 2.3, t_anchor = 0.28
 #' )
 #' lfq <- lfqRestructure(lfq, MA = 7)
 #' plot(lfq)

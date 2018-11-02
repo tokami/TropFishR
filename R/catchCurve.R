@@ -558,7 +558,7 @@ catchCurve <- function(param,
         rownames(resCIs) <- c("lo","up")        
         resMed <- c(boot$median, resMed)
         names(resMed) <- names(resMaxDen)
-        
+
         if(FALSE){
         ## check with FM
         if("FM" %in% colnames(resMaxDen)){

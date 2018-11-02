@@ -932,8 +932,9 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
                                display_legend = FALSE, display_rugs = FALSE,
                                mar = c(1.5,2,2,0), oma = c(1.5,0,0,0.5),
                                mgp = c(2,0.5,0), tcl = -0.25, cex = 1, mfrow=NA,
-                               ...
+                               ylim=NA,...
                                ){
+    res <- res$bootRaw
     na <- ifelse(display_legend,ncol(res)+1,ncol(res))
     nc <- min(c(6,na))
     nr <- ceiling(na/nc)
@@ -976,82 +977,105 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
                                         # univariate plots
     for(i in seq(ncol(res))){
         tmp <- as.numeric(na.omit(res[,i]))
-        x <- kde(tmp)
-        h = hist(tmp, plot=FALSE, breaks = nbreaks)
-        xlim <- c(0, max(x$estimate))
-        if(use_hist){
-            xlim <- range(c(xlim, max(h$density)))
-        }
-        xlim <- xlim * c(0,1.1)
-
-        plot(x$estimate, x$eval.points, t="n",
-             xlim = xlim,
-             xaxs = "i",
-             ylab="", xlab="", col=1, lty=1
-             )
-        usr <- par()$usr
-
-        CItxt <- paste0(round(100-CI), "%")
-        inCI <- rle( x$estimate > x$cont[CItxt] )
-        start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
-        end.idx <- cumsum(inCI$lengths)
-        limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
-
-        in1 <- which(x$estimate > x$cont["99%"])
-        mean1 <- mean(x$eval.points[in1])
-
-        if(use_hist){
-            rect(
-                xleft = 0, ybottom = h$breaks[-length(h$breaks)],
-                xright = h$density, ytop = h$breaks[-1],
-                col = "grey90", border = "grey50"
-            )
+        x <- try(kde(tmp),silent=TRUE)
+        if(class(x) == "try-error"){
+            plot(seq(0,1,0.2),
+                 seq(min(tmp)*0.9,max(tmp)*1.1,length.out = 6), t="n",
+                 xlim = xlim,
+                 xaxs = "i",
+                 ylab="", xlab="", col=1, lty=1
+                 )
         }else{
-            for(j in seq(inCI$lengths)){
-                if(inCI$values[j]){
-                    polygon(
-                        y = c(x$eval.points[start.idx[j]:end.idx[j]], rev(x$eval.points[start.idx[j]:end.idx[j]])),
-                        x = c(x$estimate[start.idx[j]:end.idx[j]], rep(0, length(x$estimate[start.idx[j]:end.idx[j]]))),
-                        col = "grey90", #col = rgb(0,1,0,0.2),
-                        border = NA, lty = 3, lwd = 1
-                    )
+            h = hist(tmp, plot=FALSE, breaks = nbreaks)
+            xlim <- c(0, max(x$estimate))
+            if(use_hist){
+                xlim <- range(c(xlim, max(h$density)))
+            }
+            xlim <- xlim * c(0,1.1)
+
+            ylims <- range(x$eval.points)
+            if(!is.null(ylim)){
+                if(!is.na(ylim[[i]][1])){
+                    ylims[1] <- ylim[[i]][1]
+                    ylims[2] <- ylim[[i]][2]
+                }
+            }
+
+            plot(x$estimate, x$eval.points, t="n",
+                 xlim = xlim,
+                 ylim = ylims,
+                 xaxs = "i",
+                 ylab="", xlab="", col=1, lty=1
+                 )
+            usr <- par()$usr
+
+            CItxt <- paste0(round(100-CI), "%")
+            inCI <- rle( x$estimate > x$cont[CItxt] )
+            start.idx <- c(1, cumsum(inCI$lengths[-length(inCI$lengths)])+1)
+            end.idx <- cumsum(inCI$lengths)
+            limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
+
+            in1 <- which(x$estimate > x$cont["99%"])
+            mean1 <- mean(x$eval.points[in1])
+
+            if(use_hist){
+                rect(
+                    xleft = 0, ybottom = h$breaks[-length(h$breaks)],
+                    xright = h$density, ytop = h$breaks[-1],
+                    col = "grey90", border = "grey50"
+                )
+            }else{
+                for(j in seq(inCI$lengths)){
+                    if(inCI$values[j]){
+                        polygon(
+                            y = c(x$eval.points[start.idx[j]:end.idx[j]], rev(x$eval.points[start.idx[j]:end.idx[j]])),
+                            x = c(x$estimate[start.idx[j]:end.idx[j]], rep(0, length(x$estimate[start.idx[j]:end.idx[j]]))),
+                            col = "grey90", #col = rgb(0,1,0,0.2),
+                            border = NA, lty = 3, lwd = 1
+                        )
+                    }
                 }
             }
         }
 
         ## abline(v = x$cont[CItxt], lty=2, col="grey50")
-        lines(x$estimate, x$eval.points, lwd = 1, col = "grey50")
+        if(class(x) != "try-error"){
+            lines(x$estimate, x$eval.points, lwd = 1, col = "grey50")
 
-        ## rug
-        if(display_rugs) segments(x0 = 0, x1 = par()$cxy[1]*0.3, y0 = x$x, y1 = x$x, col=rgb(0,0,0,0.5), lwd=0.3)
+            ## rug
+            if(display_rugs)
+                segments(x0 = 0, x1 = par()$cxy[1]*0.3, y0 = x$x, y1 = x$x, col=rgb(0,0,0,0.5), lwd=0.3)
 
-        ## true pars
-        if(!is.na(truePar[1])){
-            trupari <- truePar[match(names(res)[i], names(truePar))]
-            abline(h=trupari, lty=2, col=2)
-        }
+            ## true pars
+            if(!is.na(truePar[1])){
+                trupari <- truePar[match(names(res)[i], names(truePar))]
+                abline(h=trupari, lty=2, col=2)
+            }
 
                                         # range of CI
-        abline(h = limCI, lty = 2, lwd=1, col = 1)
-        if(display_val) text(y =c(limCI), x = mean(usr[1:2]),
-                             labels = paste(sprintf("%.2f", round(c(limCI),2))),
-                             pos = c(1,3), offset = 0.25, col = 1)
-        
-        ## median
-        if(display_median) abline(h=median(x$x), col=4, lty=2)
+            abline(h = limCI, lty = 2, lwd=1, col = 1)
+            if(display_val) text(y =c(limCI), x = mean(usr[1:2]),
+                                 labels = paste(sprintf("%.2f", round(c(limCI),2))),
+                                 pos = c(1,3), offset = 0.25, col = 1)
+            
+            ## median
+            if(display_median) abline(h=median(x$x), col=4, lty=2)
 
-        ## maximum density
-        abline(h = mean1, lty = 1, lwd=1, col = 1)
-        if(display_val) text(y =  mean1, x = mean(usr[1:2]),
-                             labels = sprintf("%.2f", round(mean1,2)),
-                             pos = 3,
-                             offset = 0.25, col = 1
-                             )
+            ## maximum density
+            abline(h = mean1, lty = 1, lwd=1, col = 1)
+            if(display_val) text(y =  mean1, x = mean(usr[1:2]),
+                                 labels = sprintf("%.2f", round(mean1,2)),
+                                 pos = 3,
+                                 offset = 0.25, col = 1
+                                 )
 
+
+        }else{
+            abline(h=unique(tmp), lty = 3)
+        }
         varlab <- VARS[[match(names(res)[i], names(VARS))]]
         mtext(varlab, line=0.25, side=3, font = 2)
-
-        box()
+        box()                    
     }
     mtext("Density", side = 1, line = 0, outer = TRUE)
 
@@ -1511,12 +1535,17 @@ NULL
 #'
 #' @export
 #'
+
+
+
+
 plotBoot <- function(lfq,    ## lfq object
                      boot, ## boot object
-                     plot="lfq",   ## alternative: catchCurve
+                     pType="lfq",   ## alternative: catchCurve
                      display="CI",  ## alternative: bootRaw
                      best="maxDen",  ## alternative: "median"
                      Fname = "catch",  # alternative : "catch"
+                     pCCori = FALSE,
                      par = NULL,
                      agemax = NULL,
                      rel = FALSE,
@@ -1531,14 +1560,20 @@ plotBoot <- function(lfq,    ## lfq object
                      date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by="months"),
                      date.format = "'%y-%b", xlab = "default", ylab = "default",
                      draw = TRUE, ylim=NULL, xlim=NULL,
+                     CI = 95,
+                     add_legend = TRUE, add_max_dens_legend = TRUE,
+                     perm.col = adjustcolor("grey50",0.1), perm.lwd = 1,
+                     ci.col = 1, ci.lty = 2, ci.lwd = 1,
+                     maxd.col = 1, maxd.lty = 1, maxd.lwd = 2,
                      ...){    
 
     dates <- lfq$dates
     classes <- lfq$midLengths
 
-    if(plot=="lfq"){
-
+    if(pType=="lfq"){
+        
         catch <- get(Fname, lfq)
+
         
         xlabel=""
         ylabel="Length classes"
@@ -1547,28 +1582,6 @@ plotBoot <- function(lfq,    ## lfq object
         if(xlab != "default") xlabel = xlab
         if(ylab != "default") ylabel = ylab
 
-        
-        for(i in 1:ncol(catch)){
-
-            catchlist <- lapply(tmp, function(z) z$catch[,i])
-            catchmat <- do.call(cbind, catchlist)
-
-
-            r <- rep(NA,nrow(catchmat))
-            for(ii in 1:nrow(catchmat)){
-                z <- catchmat[ii,]
-
-                if(all(z == 0)){
-                    r[ii] <- 0
-                }else{
-                    tmp <- ks::kde(z)
-                    r[ii] <- round(mean(tmp$eval.points[which(tmp$estimate > tmp$cont["99%"])]))
-                }
-            }
-
-            barplot(catch[,1], col = rgb(1,0.1,0.4,0.2))
-            barplot(r,add=TRUE, col = rgb(0.1,1,0.4,0.2))
-        }
         ## display relative catches (relative to number of samples per month)
         if(rel){
             catchrel <- catch
@@ -1577,30 +1590,15 @@ plotBoot <- function(lfq,    ## lfq object
             }
             catch <- catchrel
             catch[is.nan(catch)] <- 0
-
-            ## combined lfq plot
-            if(any(!is.na(y))){
-                catchrelY <- catchY
-                for(i in 1:ncol(catchY)){
-                    catchrelY[,i] <- catchY[,i]/colSums(catchY, na.rm = TRUE)[i]
-                }
-                catchY <- catchrelY
-                catchY[is.nan(catchY)] <- 0
-            }
         }
         ## bin height scaling
         sc <- unclass(min(diff(dates)) * hist.sc / max(abs(catch)))
-
-        if(any(!is.na(y))){
-            ## bin height scaling
-            scY <- unclass(min(diff(dates)) * hist.sc / max(abs(catchY)))
-        }
 
         bin.width <- diff(classes)
         bin.lower <- classes - c(bin.width[1], bin.width)/2
         bin.upper <- classes + c(bin.width, bin.width[length(bin.width)])/2
 
-                                        # image colour
+        ## image colour
         if(is.null(image.col)){
             pal <- colorRampPalette(c(rgb(1,0.8,0.8), rgb(1,1,1), rgb(0.8,0.8,1)))
             image.col <- pal(21)
@@ -1609,7 +1607,7 @@ plotBoot <- function(lfq,    ## lfq object
             image.col <- NA
         }
 
-                                        # zlim value + type
+        ## zlim value + type
         if(is.null(zlim) & zlimtype == "balanced"){
             zlim = c(-1,1) * max(abs(catch), na.rm=TRUE)
         }
@@ -1617,17 +1615,12 @@ plotBoot <- function(lfq,    ## lfq object
             zlim = range(catch, na.rm = TRUE)
         }
 
+
         ## Initial plot
-        if(any(!is.na(y))){
-            catchComb <- catch + catchY
-            image(
-                x=mergi$dates, y=mergi2$classes, z=t(catchComb), col=image.col, zlim=zlim,
-                xaxt="n", xlab = xlab, ylab = ylab, ...)
-        }else{
-            image(
-                x=dates, y=classes, z=t(catch), col=image.col, zlim=zlim,
-                xaxt="n", xlab = xlab, ylab = ylab, ...)
-        }
+        image(
+            x=dates, y=classes, z=t(catch), col=image.col, zlim=zlim,
+            xaxt="n", xlab = xlab, ylab = ylab, ...)
+
 
         if(!is.null(region.col)){
             usr <- par()$usr
@@ -1635,8 +1628,7 @@ plotBoot <- function(lfq,    ## lfq object
             if(par()$ylog) usr[3:4] <- 10^usr[3:4]
             rect(usr[1], usr[3], usr[2], usr[4], col=region.col)
         }
-
-                                        # add time axis
+        ## add time axis
         if(date.axis == "modern"){
             axis.Date(side = 1, x=dates, at=date.at, format = date.format)
         }else if(date.axis == "traditional"){
@@ -1652,58 +1644,116 @@ plotBoot <- function(lfq,    ## lfq object
         }
 
         ## Histograms
-        if(any(!is.na(y))){
-            bin.width <- diff(mergi2$classes)
-            bin.lower <- mergi2$classes - c(bin.width[1], bin.width)/2
-            bin.upper <- mergi2$classes + c(bin.width, bin.width[length(bin.width)])/2
-            for(i in seq(length(mergi$dates))){
-                score.sc <- catch[,i] * sc
-                score.scY <- catchY[,i] * scY
-                for(j in seq(mergi2$classes)){
-                    polygon(
-                        x = c(mergi$dates[i], mergi$dates[i], mergi$dates[i]-score.sc[j], mergi$dates[i]-score.sc[j]),
-                        y = c(bin.lower[j], bin.upper[j], bin.upper[j], bin.lower[j]),
-                        col = hist.col[(score.sc[j]>0)+1],
-                        border = "grey20", lwd = 1)
-                    polygon(
-                        x = c(mergi$dates[i], mergi$dates[i], mergi$dates[i]-score.scY[j], mergi$dates[i]-score.scY[j]),
-                        y = c(bin.lower[j], bin.upper[j], bin.upper[j], bin.lower[j]),
-                        col = hist.col[(score.scY[j]>0)+3],
-                        border = "grey20", lwd = 1)
-
-                }
-            }
-        }else{
-            for(i in seq(length(dates))){
-                score.sc <- catch[,i] * sc
-                for(j in seq(classes)){
+        for(i in seq(length(dates))){
+            score.sc <- catch[,i] * sc
+            for(j in seq(classes)){
                                         # if(score.sc[j] != 0){
-                    polygon(
-                        x = c(dates[i], dates[i], dates[i]-score.sc[j], dates[i]-score.sc[j]),
-                        y = c(bin.lower[j], bin.upper[j], bin.upper[j], bin.lower[j]),
-                        col = hist.col[(score.sc[j]>0)+1],
-                        border = "grey20", lwd = 1)
+                polygon(
+                    x = c(dates[i], dates[i], dates[i]-score.sc[j], dates[i]-score.sc[j]),
+                    y = c(bin.lower[j], bin.upper[j], bin.upper[j], bin.lower[j]),
+                    col = hist.col[(score.sc[j]>0)+1],
+                    border = "grey20", lwd = 1)
                                         # }
-                }
             }
         }
 
-                                        # optional addition of cohort growth curves
-        if("par" %in% names(x) & is.null(par) & draw){
-            Lt <- lfqFitCurves(lfq = x, par = x$par,
-                               agemax = x$agemax, draw = TRUE, col=curve.col
-                               )
-        }
-        if(!is.null(par) & draw){
-            Lt <- lfqFitCurves(x, par = par,
-                               agemax = agemax, draw = TRUE, col=curve.col
-                               )
+
+        ## plotting cohort growth curves with uncertainty
+        res <- boot$bootRaw
+        if(is.null(agemax))
+            agemax <- max(ceiling((1/-res$K)*log(1-((res$Linf*0.95)/res$Linf))))
+
+        ## expand ci line attributes to length of CI (if needed, values are recycled)
+        ci.col <- rep_len(ci.col, length(CI))
+        ci.lty <- rep_len(ci.lty, length(CI))
+        ci.lwd <- rep_len(ci.lwd, length(CI))
+
+        ## remove phi' if included in res
+        colind <- which(names(res) %in% c("Linf","K","t_anchor"))
+        if("C" %in% names(res)) colind <- c(colind, which(names(res) %in% c("C","ts")))
+        x <- res[,colind]
+        d <- ncol(x)
+
+        ## First a fitting round to look for shifts in t_anchor
+        age = seq(0, agemax, 0.01)
+        Lt0 <- matrix(NaN, nrow=length(age), ncol=nrow(x))
+        Lt_minus <- matrix(NaN, nrow=length(age), ncol=nrow(x))
+        Lt_plus <- matrix(NaN, nrow=length(age), ncol=nrow(x))
+        for(i in seq(ncol(Lt0))){
+            par0 <- par_minus <- par_plus <- as.list(x[i,])
+            par_minus$t_anchor <- par0$t_anchor-1
+            par_plus$t_anchor <- par0$t_anchor+1
+            Lt0[,i] <- TropFishR::VBGF(param = par0, t = age)
+            Lt_minus[,i] <- TropFishR::VBGF(param = par_minus, t = age)
+            Lt_plus[,i] <- TropFishR::VBGF(param = par_plus, t = age)
         }
 
-                                        # frame
-        box()
+        ## replace negative lengths with NA
+        Lt0 <- replace(Lt0, Lt0<0, NaN)
+        Lt_minus <- replace(Lt_minus, Lt_minus<0, NaN)
+        Lt_plus <- replace(Lt_plus, Lt_plus<0, NaN)
+
+        ## determine if a positive or negative shift improves overall covariance for each permutation
+        cov0 <- cov(Lt0, use = "pair")
+        shift <- 0 * seq(ncol(Lt0))
+        for(i in seq(ncol(Lt0))){
+            cov_minus <- cov(x = Lt_minus[,i], y = Lt0, use = "pair")
+            cov_plus <- cov(x = Lt_plus[,i], y = Lt0, use = "pair")
+            shift[i] <- c(0,-1,1)[which.max(c(sum(cov0[i,]), sum(cov_minus), sum(cov_plus)))]
+        }
+
+
+        ## fixed predictions
+        agenew <- seq(0+min(shift), agemax+max(shift), 0.01)
+        Lt <- matrix(NaN, nrow=length(agenew), ncol=nrow(x))
+        for(i in seq(ncol(Lt))){
+            par0 <- as.list(x[i,])
+            par0$t_anchor <- par0$t_anchor + shift[i]
+            Lt[,i] <- TropFishR::VBGF(param = par0, t = agenew)
+        }
+
+
+        ## multivariate kernel density estimate for max. density
+        H <- ks::Hpi(x, nstage = 1)
+        fhat <- ks::kde(x = x, H = H, eval.points = x)
+
+        ## maximum density
+        max_dens <- fhat$eval.points[which.max(fhat$estimate),] ## maximum density
+
+        ## predict density estimate of original data
+        x$estimate <- fhat$estimate
+
+        ## determine which resamples are in the CI
+        inCI <- x$estimate > quantile(x$estimate, probs = (100-CI)/100 )
+        limCI <- data.frame(t = agenew, min = NaN, max = NaN)
+        for(i in seq(agenew)){
+            limCI$min[i] <- min(Lt[i, which(inCI) ], na.rm = TRUE)
+            limCI$max[i] <- max(Lt[i, which(inCI) ], na.rm = TRUE)
+        }
+
+        
+        years <- as.numeric(as.character(unique(format(dates, "%Y"))))
+        minyear <- min(years) - agemax
+        maxyear <- max(years)
+        years2 <- seq(minyear,maxyear,1)
+        for(i in 1:length(years2)){
+            tmp <- years2[i] + max_dens$t_anchor + agenew
+            xvals <- TropFishR::yeardec2date(tmp)
+
+            lines(xvals, limCI$max, col = ci.col, lwd = ci.lwd, lty = ci.lty)
+            lines(xvals, limCI$min, col = ci.col, lwd = ci.lwd, lty = ci.lty)            
+            
+            lines(xvals,
+                  TropFishR::VBGF(param = as.list(max_dens), t = agenew),
+                  col = maxd.col, lwd = maxd.lwd, lty = maxd.lty)
+        }
+
+        ## frame
+        box(lwd=1.2)
+
+        
         ## catch curve plot
-    }else if(plot == "catchCurve"){
+    }else if(pType == "cc"){
 
         binSize <- boot$misc$binSize
         yearSel <- boot$misc$yearSel
@@ -1822,34 +1872,98 @@ plotBoot <- function(lfq,    ## lfq object
 ##        ind <- ind[is.finite(yplot)]
 ##        maxi1 <- ind[which.max(yplot[is.finite(yplot)])]
 ##        maxi2 <- ind[which.max(xplot[is.finite(yplot)])]
-        
+
         step <- 0.01
         seqi <- seq(xplot[maxi1]-step,xplot[maxi2]+step,step)
 
         datcc <- boot$misc$datcc
-        
+
         ## final plot
         plot(x = xplot, y = yplot, ylim = ylims, ty="n",
              xlab = xlabel, ylab = ylabel, xlim = xlims,
              cex = 1)
         for(i in 1:length(datcc)){
             if(!all(is.na(datcc[[i]])))
-                points(datcc[[i]]$x,datcc[[i]]$y, pch=19, col="grey80")
+                points(datcc[[i]]$x,datcc[[i]]$y, pch=19, col="black")
         }
-        points(x = xplot, y = yplot)            
+        if(pCCori) points(x = xplot, y = yplot)            
         if(display=="CI"){
             polygon(x=c(seqi,rev(seqi)), y=c(intCI[1]-seqi*zCI[1],
                                              rev(intCI[2]-seqi*zCI[2])),
-                    col=rgb(t(col2rgb("blue"))/255,alpha=0.2),border=NA)
+                    col=rgb(t(col2rgb("blue"))/255,alpha=0.3),border=NA)
             lines(seqi, intX-seqi*zX, col="blue",lwd=2)
         }else{
             for(i in 1:length(ints)){
                 lines(seqi, ints[i]-seqi*zs[i], col="grey80",lwd=2)
             }            
         }
-        points(xplot[(maxi1):maxi2],yplot[(maxi1):maxi2],
-               pch=19,col="blue")
-        box()
+        if(pCCori) points(xplot[(maxi1):maxi2],yplot[(maxi1):maxi2],
+                          pch=19,col="blue")
+        box(lwd=1.2)
+
+        ## yield per recruit plot
+    }else if(pType == "ypr"){
+
+        px <- boot$misc$FM_change
+        xlabel <- "Fishing mortality"
+        ylabel1 <- "Yield"
+        ylabel2 <- "Biomass"
+        ylabel3 <- "Value"
+        
+        py <- boot$misc$totY[[1]]
+
+        ylims <- range(unlist(lapply(boot$misc$totY, range, na.rm=TRUE)))
+        xlims <- range(px)
+
+
+        ## fixed predictions
+        totys <- matrix(NaN, nrow=length(px), ncol=nrow(boot$bootRaw))
+        for(i in seq(ncol(totys))){
+            totys[,i] <- boot$misc$totY[[i]]
+        }
+
+
+        toti <- boot$misc$totY
+        nmax <- unlist(lapply(toti, max, na.rm=TRUE))
+
+
+        ## median
+        medi <- median(nmax, na.rm = TRUE)
+        
+        ## confidence intervals
+        citmp <- (100-CI)/2/100
+        ciList <- quantile(nmax,  probs = c(citmp, 1-citmp), na.rm = TRUE)
+        
+        ## max densities
+        x <- ks::kde(as.numeric(na.omit(nmax)))
+        ind <- which(x$estimate > x$cont["99%"])
+        maxden <- mean(x$eval.points[ind])        
+        
+        ## determine which resamples are in the CI
+        inCI <- x$estimate > quantile(x$estimate, probs = (100-CI)/100 )
+        limCI <- data.frame(t = px, min = NaN, max = NaN)
+        for(i in seq(px)){
+            limCI$min[i] <- min(totys[i, which(inCI) ], na.rm = TRUE)
+            limCI$max[i] <- max(totys[i, which(inCI) ], na.rm = TRUE)
+        }
+
+        ## final plot
+        plot(x = px, y = py, ylim = ylims, ty="n",
+             xlab = xlabel, ylab = ylabel1, xlim = xlims,
+             cex = 1)
+
+        for(i in 1:length(boot$misc$totY)){
+            lines(px, boot$misc$totY[[i]], col = "grey")
+        }
+
+        lines(px, limCI$max, col = ci.col, lwd = ci.lwd, lty = ci.lty)
+        lines(px, limCI$min, col = ci.col, lwd = ci.lwd, lty = ci.lty)            
+            
+        lines(px, boot$misc$totY[[which.min(abs(nmax-maxden))]],
+              col = maxd.col, lwd = maxd.lwd, lty = maxd.lty)        
+
+
+        box(lwd=1.2)        
     }
 }
 

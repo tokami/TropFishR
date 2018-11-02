@@ -474,7 +474,8 @@ VPA <- function(param,
         ret$median <- resMed        
         ret$CI <- resCIs
         if("multiCI" %in% names(boot)) ret$multiCI <- boot$multiCI
-        ret$FMvecVPA <- FMsVPA
+        ret$misc <- boot$misc
+        ret$misc$FMvecVPA <- FMsVPA
         class(ret) <- "lfqBoot"
         return(ret)
 
