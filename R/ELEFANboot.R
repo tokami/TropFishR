@@ -994,12 +994,13 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
             xlim <- xlim * c(0,1.1)
 
             ylims <- range(x$eval.points)
-            if(!is.null(ylim) && !is.na(ylim)){
+            if(any(!is.null(ylim)) && any(!is.na(ylim))){
                 if(!is.na(ylim[[i]][1])){
                     ylims[1] <- ylim[[i]][1]
                     ylims[2] <- ylim[[i]][2]
                 }
             }
+
 
             plot(x$estimate, x$eval.points, t="n",
                  xlim = xlim,
@@ -1075,9 +1076,9 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
         }
         varlab <- VARS[[match(names(res)[i], names(VARS))]]
         mtext(varlab, line=0.25, side=3, font = 2)
+        box(lwd=1.2)        
     }
     mtext("Density", side = 1, line = 0, outer = TRUE)
-    box(lwd=1.2)
 
     if(display_legend){
         plot.new()
@@ -1141,17 +1142,19 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
 #'
 #' @export
 #'
-LinfK_scatterhist <- function(
-                              res, Linf.breaks = "Sturges", K.breaks = "Sturges",
+LinfK_scatterhist <- function(res, Linf.breaks = "Sturges", K.breaks = "Sturges",
                               gridsize = 151, H = ks::Hpi(res[,c("Linf", "K")]),
                               shading = TRUE, shading.cols = colorRampPalette(c("white", blues9))(50),
                               dens.contour = TRUE, probs = c(25,50,75,95),
                               phi.contour = FALSE, phi.levels = NULL,
-                              phi.contour.col = 8, phi.contour.lty = 2, phi.contour.lwd = 1, phi.contour.labcex = 0.75,
+                              phi.contour.col = 8, phi.contour.lty = 2, phi.contour.lwd = 1,
+                              phi.contour.labcex = 0.75,
                               pt.pch = 16, pt.col = rgb(0,0,0,0.25), pt.cex = 0.5, pt.bg = 4,
                               xlab=expression(italic("L")[infinity]), ylab=expression(italic("K")),
                               xlim = NULL, ylim = NULL
                               ){
+
+    res <- res$bootRaw
     zones <- matrix(c(2,0,1,3), ncol=2, byrow=TRUE)
     op <- par(no.readonly = TRUE)
     nf <- layout(zones, widths=c(4/5,1/5), heights=c(1/5,4/5), respect = FALSE)
