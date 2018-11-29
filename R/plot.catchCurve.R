@@ -160,8 +160,7 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
     if(xlab != "default") xlabel = xlab
     if(ylab != "default") ylabel = ylab
 
-    browser()
-    
+
     ## final plot
     plot(x = xplot, y = yplot, ylim = ylims, xaxt=xaxt,
          xlab = '', xaxt = 'n', ylab = ylabel, xlim = xlims,
