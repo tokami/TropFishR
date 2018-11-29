@@ -1566,6 +1566,7 @@ plotBoot <- function(lfq,    ## lfq object
                      draw = TRUE, ylim=NULL, xlim=NULL,
                      CI = 95,
                      add_legend = TRUE, add_max_dens_legend = TRUE,
+                     points.col = "black", points.pch=19,
                      perm.col = adjustcolor("grey50",0.1), perm.lwd = 1,
                      ci.col = 1, ci.lty = 2, ci.lwd = 1,
                      maxd.col = 1, maxd.lty = 1, maxd.lwd = 2,
@@ -1895,7 +1896,7 @@ plotBoot <- function(lfq,    ## lfq object
         }
         for(i in 1:length(datcc)){
             if(!all(is.na(datcc[[i]])))
-                points(datcc[[i]]$x,datcc[[i]]$y, pch=19, col="black")
+                points(datcc[[i]]$x,datcc[[i]]$y, pch=points.pch, col=points.col)
         }        
         if("CI" %in% display){
             polygon(x=c(seqi,rev(seqi)), y=c(intCI[1]-seqi*zCI[1],
