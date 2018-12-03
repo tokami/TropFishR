@@ -1853,22 +1853,11 @@ plotBoot <- function(lfq,    ## lfq object
 
 
         ##for final plot
-        if(is.null(ylim)){
-            minyplot <- ifelse(min(yplot,na.rm=TRUE) < 0, min(yplot,na.rm=TRUE),0)
-            maxyplot <- max(yplot[is.finite(yplot)],na.rm=TRUE) + 1
-            ylims <- c(minyplot,maxyplot)
-        }else ylims <- ylim
-        
-
-        if(is.null(xlim)){
-            xlims <- c(min(xplot[which(yplot > 0 & is.finite(yplot))], na.rm = TRUE),
-                       max(xplot[which(yplot > 0 & is.finite(yplot))], na.rm = TRUE))
-        }else xlims <- xlim
-
 
         ## use user defined labels if given
         if(xlab != "default") xlabel = xlab
         if(ylab != "default") ylabel = ylab
+
 
         maxi1 <- which.min(abs(xplot-boot$misc$regint[1]))
         maxi2 <- which.min(abs(xplot-boot$misc$regint[2]))
@@ -1878,19 +1867,41 @@ plotBoot <- function(lfq,    ## lfq object
 ##        maxi1 <- ind[which.max(yplot[is.finite(yplot)])]
 ##        maxi2 <- ind[which.max(xplot[is.finite(yplot)])]
 
-        step <- 0.01
-        seqi <- seq(xplot[maxi1]-step,xplot[maxi2]+step,step)
 
         datcc <- boot$misc$datcc
 
+        xrang <- range(unlist(lapply(datcc, function(x) x$x)))
+        yrang <- range(unlist(lapply(datcc, function(x) x$y)))
+        maxa1 <- xrang[1]
+        maxa2 <- xrang[2]        
+
+        step <- 0.01
+
+        if(is.null(ylim)){
+##            minyplot <- ifelse(min(yplot,na.rm=TRUE) < 0, min(yplot,na.rm=TRUE),0)
+##            maxyplot <- max(yplot[is.finite(yplot)],na.rm=TRUE) + 1
+##            ylims <- c(minyplot,maxyplot)
+            ylims <- c(0,max(yrang))
+        }else ylims <- ylim
+        
+
+        if(is.null(xlim)){
+##            xlims <- c(min(xplot[which(yplot > 0 & is.finite(yplot))], na.rm = TRUE),
+##                       max(xplot[which(yplot > 0 & is.finite(yplot))], na.rm = TRUE))
+            xlims <- xrang            
+        }else xlims <- xlim        
+
+
         ## final plot
-        plot(x = xplot, y = yplot, ylim = ylims, ty="n",
+        plot(x = xrang, y = yrang, ylim = ylims, ty="n",
              xlab = xlabel, ylab = ylabel, xlim = xlims,
              cex = 1)
 
         if(pCCori) points(x = xplot, y = yplot)
         if("bootRaw" %in% display){
             for(i in 1:length(ints)){
+                tmp <- range(datcc[[i]]$x)
+                seqi <- seq(tmp[1]-step,tmp[2]+step,step)                        
                 lines(seqi, ints[i]-seqi*zs[i], col="grey80",lwd=2)
             }                        
         }
@@ -1899,6 +1910,7 @@ plotBoot <- function(lfq,    ## lfq object
                 points(datcc[[i]]$x,datcc[[i]]$y, pch=points.pch, col=points.col)
         }        
         if("CI" %in% display){
+            seqi <- seq(maxa1-step,maxa2+step,step)                                    
             polygon(x=c(seqi,rev(seqi)), y=c(intCI[1]-seqi*zCI[1],
                                              rev(intCI[2]-seqi*zCI[2])),
                     col=rgb(t(col2rgb("blue"))/255,alpha=0.3),border=NA)
