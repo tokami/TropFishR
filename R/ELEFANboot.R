@@ -1870,8 +1870,8 @@ plotBoot <- function(lfq,    ## lfq object
 
         datcc <- boot$misc$datcc
 
-        xrang <- range(unlist(lapply(datcc, function(x) x$x)))
-        yrang <- range(unlist(lapply(datcc, function(x) x$y)))
+        xrang <- range(unlist(lapply(datcc, function(x) ifelse(!is.na(x),x$x,NA))),na.rm=TRUE)
+        yrang <- range(unlist(lapply(datcc, function(x) ifelse(!is.na(x),x$y,NA))),na.rm=TRUE)
         maxa1 <- xrang[1]
         maxa2 <- xrang[2]        
 
