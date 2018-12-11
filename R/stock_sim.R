@@ -1,5 +1,5 @@
 #' @title Stock simulation
-#
+#' 
 #' @description  This function estimates stock size, biomass and yield of a stock from
 #'    fishing mortality per age class or length group. This function is embedded in the
 #'    Thompson and Bell model (prediction model: \code{\link{predict_mod}}).
@@ -78,205 +78,243 @@
 stock_sim <- function(param, age_unit = "year",
                       stock_size_1 = NA, plus_group = NA){
 
-  res <- param
+    res <- param
 
-  meanValue <- res$meanValue
+    meanValue <- res$meanValue
 
-  #mortalities
-  FM <- res$FM
-  if(!is.null(res$M)){
-    nM <- res$M
-    Z <- FM + nM
-  }else{
-    Z <- res$Z
-    nM <- mean(Z - FM,na.rm=T)
-  }
-
-  if('midLengths' %in% names(res)) classes <- as.character(res$midLengths)
-  if('age' %in% names(res)) classes <- as.character(res$age)
-  # create column without plus group (sign) if present
-  classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
-  classes.num <- as.numeric(classes.num[,1])
-
-  # age based
-  if('age' %in% names(res)){
-
-
-      meanWeight <- res$meanWeight
-      
-    # delta t
-    dt <- c(diff(classes.num),NA)
-    if(age_unit == 'month'){
-      dt <- dt * 1/12
+    ## mortalities
+    FM <- res$FM
+    if(!is.null(res$M)){
+        nM <- res$M
+        Z <- FM + nM
+    }else{
+        Z <- res$Z
+        nM <- mean(Z - FM,na.rm=T)
     }
 
-    #population per age group
-    N <- rep(NA,length(classes.num))
-    N[1] <- ifelse(is.na(stock_size_1),1000,stock_size_1)
+    if('midLengths' %in% names(res)) classes <- as.character(res$midLengths)
+    if('age' %in% names(res)) classes <- as.character(res$age)
+    ##  create column without plus group (sign) if present
+    classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
+    classes.num <- as.numeric(classes.num[,1])
 
-    for(x1 in 2:length(N)){
-      N[x1] <- N[x1-1] * exp(-Z[x1-1] * dt[x1-1])
-      # if(x1 == length(N)){
-      #   N[x1] <- N[x1-1] * exp(-Z[x1-1] * dt[x1-1])
-      # }
+    ##  age based
+    if('age' %in% names(res)){
+
+        ## length at maturity
+        Lmat <- ifelse(is.null(res$Lmat), NA, res$Lmat)
+        wmat <- ifelse(is.null(res$wmat), NA, res$wmat)        
+        ## mature individuals
+        if(all(c("Linf","K") %in% names(param))){
+            mids <- VBGF(param, t = classes.num)
+            matP <- 1 / (1 + exp(-(mids - Lmat) /
+                                   (wmat / ( log(0.75/(1-0.75)) - log(0.25/(1-0.25))))))
+        }else{
+            ## writeLines("For estimation of SSB please provide Lmat, wmat and VBGF parameters.")
+            matP <- NA
+        }        
+
+        ## mean weight
+        meanWeight <- res$meanWeight
+        
+        ## delta t
+        dt <- c(diff(classes.num),NA)
+        if(age_unit == 'month'){
+            dt <- dt * 1/12
+        }
+
+        ## population per age group
+        N <- rep(NA,length(classes.num))
+        N[1] <- ifelse(is.na(stock_size_1),1000,stock_size_1)
+
+        for(x1 in 2:length(N)){
+            N[x1] <- N[x1-1] * exp(-Z[x1-1] * dt[x1-1])
+            ##  if(x1 == length(N)){
+            ##    N[x1] <- N[x1-1] * exp(-Z[x1-1] * dt[x1-1])
+            ##  }
+        }
+
+        ## number of deaths per time step month or year
+        dead <- c(abs(diff(N)),NA)
+
+        ## catch in numbers
+        C <- dead * (FM / Z)
+
+        ## yield in kg or g
+        Y <- C * meanWeight
+
+        ## mean biomass in kg or g
+        B <- Y / (FM * dt)
+
+        ## value expressed in money units
+        V <- Y * meanValue
+
+        ## SSB
+        SSB <- B * matP
+
+        ## total catch, yield, value and average biomass
+        totals <- data.frame(totC = sum(C, na.rm=TRUE),
+                             totY = sum(Y, na.rm=TRUE),
+                             totV = sum(V, na.rm=TRUE),
+                             meanB = sum((B * dt), na.rm=TRUE) / sum(dt, na.rm=TRUE),
+                             meanSSB = sum((SSB * dt), na.rm=TRUE) /
+                                 sum(dt, na.rm=TRUE))
+        ##  more complicated biomass concept if dt is not constant, see Chapter 5
+
+        res2 <- list(dt = dt, N = N, dead = dead, C = C,
+                     Y = Y, B = B, SSB = SSB, V = V,
+                     totals = totals)
+
+        ## with plus group
+        if(!is.na(plus_group)){
+
+            df <- do.call(cbind,res2[1:(length(res2)-1)])
+            df <- df[1:plus_group,]
+            classes <- classes[1:plus_group]
+
+            ## new class
+            classes[length(classes)] <-
+                paste(classes[length(classes)],"+",sep='')
+
+            ## num deaths
+            df[plus_group, "dead"] <- df[plus_group, "N"]
+
+            ## catch
+            new.C <- (FM[plus_group] / Z[plus_group]) * df[plus_group, "N"]
+            catch.plus.dif <- new.C - df[plus_group, "C"]
+            df[plus_group, "C"] <- new.C
+
+            ## yield
+            df[plus_group, "Y"] <- meanWeight[plus_group] * catch.plus.dif
+
+            ## value
+            df[plus_group, "V"] <-
+                df[plus_group, "Y"] * meanValue[plus_group]
+
+            ## biomass       ####not sure....omitted in manual
+            df[plus_group, "B"] <-
+                df[plus_group, "Y"] / (FM[plus_group] * df[plus_group, "dt"])
+
+            df[plus_group, "SSB"] <- df[plus_group, "B"] * matP[plus_group]
+            
+
+            res2 <- as.list(as.data.frame(df))
+
+            df2 <- do.call(cbind,res)
+            df2 <- df2[1:plus_group,]
+            res <- as.list(as.data.frame(df2))
+            res$age <- classes
+
+            ## total catch, yield, value and average biomass
+            totals <- data.frame(totC = sum(res2$C, na.rm=TRUE),
+                                 totY = sum(res2$Y, na.rm=TRUE),
+                                 totV = sum(res2$V, na.rm=TRUE),
+                                 meanB = sum((res2$B * res2$dt), na.rm=TRUE) / sum(dt, na.rm=TRUE),
+                                 meanSSB = sum((res2$SSB * res2$dt), na.rm=TRUE) / sum(dt, na.rm=TRUE))
+            ## more complicated biomass concept if dt is not constant, see Chapter 5
+
+            res2 <- c(res2,totals = list(totals))
+        }
     }
 
-    #number of deaths per time step month or year
-    dead <- c(abs(diff(N)),NA)
-
-    #catch in numbers
-    C <- dead * (FM / Z)
-
-    #yield in kg or g
-    Y <- C * meanWeight
-
-    #mean biomass in kg or g
-    B <- Y / (FM * dt)
-
-    #value expressed in money units
-    V <- Y * meanValue
-
-    #total catch, yield, value and average biomass
-    totals <- data.frame(totC = sum(C, na.rm=TRUE),
-                         totY = sum(Y, na.rm=TRUE),
-                         totV = sum(V, na.rm=TRUE),
-                         meanB = sum((B * dt), na.rm=TRUE) / sum(dt, na.rm=TRUE))   ### more complicated biomass concept if dt is not constant, see Chapter 5
-
-    res2 <- list(dt = dt, N = N, dead = dead, C = C,
-                 Y = Y, B = B, V = V,
-                 totals = totals)
-
-    #with plus group
-    if(!is.na(plus_group)){
-
-      df <- do.call(cbind,res2[1:7])
-      df <- df[1:plus_group,]
-      classes <- classes[1:plus_group]
-
-      #new class
-      classes[length(classes)] <-
-        paste(classes[length(classes)],"+",sep='')
-
-      #num deaths
-      df[plus_group, "dead"] <- df[plus_group, "N"]
-
-      #catch
-      new.C <- (FM[plus_group] / Z[plus_group]) * df[plus_group, "N"]
-      catch.plus.dif <- new.C - df[plus_group, "C"]
-      df[plus_group, "C"] <- new.C
-
-      #yield
-      df[plus_group, "Y"] <- meanWeight[plus_group] * catch.plus.dif
-
-      #value
-      df[plus_group, "V"] <-
-        df[plus_group, "Y"] * meanValue[plus_group]
-
-      #biomass       ####not sure....omitted in manual
-      df[plus_group, "B"] <-
-        df[plus_group, "Y"] / (FM[plus_group] * df[plus_group, "dt"])
+    ##  length based
+    if('midLengths' %in% names(res)){
 
 
-      res2 <- as.list(as.data.frame(df))
+        if("par" %in% names(res)){
+            Winf <- ifelse("Winf" %in% names(res$par), res$par$Winf, NA)
+            Linf <- ifelse("Linf" %in% names(res$par), res$par$Linf, NA)
+            K <- res$par$K
+            t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
+            C <- ifelse("C" %in% names(res$par), res$par$C, 0)
+            ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
+        }else{
+            Winf <- ifelse("Winf" %in% names(res), res$Winf, NA)
+            Linf <- ifelse("Linf" %in% names(res), res$Linf, NA)
+            K <- res$K
+            t0 <- ifelse("t0" %in% names(res), res$t0, 0)
+            C <- ifelse("C" %in% names(res), res$C, 0)
+            ts <- ifelse("ts" %in% names(res), res$ts, 0)
+        }
 
-      df2 <- do.call(cbind,res)
-      df2 <- df2[1:plus_group,]
-      res <- as.list(as.data.frame(df2))
-      res$age <- classes
+        a <- res$a
+        b <- res$b
 
-      #total catch, yield, value and average biomass
-      totals <- data.frame(totC = sum(res2$C, na.rm=TRUE),
-                           totY = sum(res2$Y, na.rm=TRUE),
-                           totV = sum(res2$V, na.rm=TRUE),
-                           meanB = sum((res2$B * res2$dt), na.rm=TRUE) / sum(dt, na.rm=TRUE))   ### more complicated biomass concept if dt is not constant, see Chapter 5
+        ## length at maturity
+        Lmat <- ifelse(is.null(res$Lmat), NA, res$Lmat)
+        wmat <- ifelse(is.null(res$wmat), NA, res$wmat)        
+        ## mature individuals
+        mids <- classes.num
+        matP <- 1 / (1 + exp(-(mids - Lmat) /
+                             (wmat / ( log(0.75/(1-0.75)) - log(0.25/(1-0.25))))))
 
-      res2 <- c(res2,totals = list(totals))
-    }
-  }
+        ## calculate size class interval
+        int <- classes.num[2] - classes.num[1]
 
-  # length based
-  if('midLengths' %in% names(res)){
+        ## t of lower and upper length classes
+        lowL <- classes.num - (int / 2)
+        upL <- classes.num + (int/2)
+
+        ## H
+        H <- ((Linf - lowL)/(Linf - upL)) ^ (nM/(2*K))
+
+        ## population
+        N <- rep(NA,length(classes.num))
+        N[1] <- ifelse(is.na(stock_size_1), 1000, stock_size_1)
+        for(x1 in 2:length(classes.num)){
+            N[x1] <- N[x1-1] * ((1/H[x1-1]) - (FM[x1-1]/Z[x1-1])) /
+                (H[x1-1] - (FM[x1-1]/Z[x1-1]))
+        }
+
+        ## number of deaths per time step month or year
+        dead <- c(abs(diff(N)),NA)
+
+        ## catch
+        C <- dead * (FM/Z)
+
+        ## average weight
+        W <- a * ((lowL + upL)/2 ) ^ b
+
+        ## yield
+        Y <- C * W
+
+        ## Value
+        V <- Y * meanValue
+
+        ## biomass
+        B <- (dead / Z ) * W
+
+        ## SSB
+        SSB <- B * matP
+
+        ## last length group
+        x2 <- length(classes.num)
+        C[x2] <- N[x2] * FM[x2]/Z[x2]
+        W[x2] <- a * ((lowL[x2] + Linf)/2 ) ^ b
+        Y[x2] <- C[x2] * W[x2]
+        B[x2] <- N[x2] / Z[x2] * W[x2]
+        V[x2] <- Y[x2] * meanValue[x2]
+        SSB[x2] <- B[x2] * matP[x2]
 
 
-      if("par" %in% names(res)){
-              Winf <- ifelse("Winf" %in% names(res$par), res$par$Winf, NA)
-              Linf <- ifelse("Linf" %in% names(res$par), res$par$Linf, NA)
-              K <- res$par$K
-              t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
-              C <- ifelse("C" %in% names(res$par), res$par$C, 0)
-              ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
-          }else{
-              Winf <- ifelse("Winf" %in% names(res), res$Winf, NA)
-              Linf <- ifelse("Linf" %in% names(res), res$Linf, NA)
-              K <- res$K
-              t0 <- ifelse("t0" %in% names(res), res$t0, 0)
-              C <- ifelse("C" %in% names(res), res$C, 0)
-              ts <- ifelse("ts" %in% names(res), res$ts, 0)
-          }
+        ## total catch, yield, value and average biomass
+        totals <- data.frame(totC = sum(C, na.rm=TRUE),
+                             totY = sum(Y, na.rm=TRUE),
+                             totV = sum(V, na.rm=TRUE),
+                             meanB = sum(B, na.rm=TRUE),
+                             meanSSB = sum(SSB, na.rm=TRUE))
 
-    a <- res$a
-    b <- res$b
-
-    #calculate size class interval
-    int <- classes.num[2] - classes.num[1]
-
-    # t of lower and upper length classes
-    lowL <- classes.num - (int / 2)
-    upL <- classes.num + (int/2)
-
-    # H
-    H <- ((Linf - lowL)/(Linf - upL)) ^ (nM/(2*K))
-
-    #population
-    N <- rep(NA,length(classes.num))
-    N[1] <- ifelse(is.na(stock_size_1), 1000, stock_size_1)
-    for(x1 in 2:length(classes.num)){
-      N[x1] <- N[x1-1] * ((1/H[x1-1]) - (FM[x1-1]/Z[x1-1])) /
-        (H[x1-1] - (FM[x1-1]/Z[x1-1]))
+        res2 <- list(N = N,
+                     dead = dead,
+                     C = C,
+                     Y = Y,
+                     B = B,
+                     SSB = SSB,
+                     V = V,
+                     totals = totals)
     }
 
-    #number of deaths per time step month or year
-    dead <- c(abs(diff(N)),NA)
-
-    #catch
-    C <- dead * (FM/Z)
-
-    #average weight
-    W <- a * ((lowL + upL)/2 ) ^ b
-
-    #yield
-    Y <- C * W
-
-    #Value
-    V <- Y * meanValue
-
-    #biomass
-    B <- (dead / Z ) * W
-
-    #last length group
-    x2 <- length(classes.num)
-    C[x2] <- N[x2] * FM[x2]/Z[x2]
-    W[x2] <- a * ((lowL[x2] + Linf)/2 ) ^ b
-    Y[x2] <- C[x2] * W[x2]
-    B[x2] <- N[x2] / Z[x2] * W[x2]
-    V[x2] <- Y[x2] * meanValue[x2]
-
-    #total catch, yield, value and average biomass
-    totals <- data.frame(totC = sum(C, na.rm=TRUE),
-                         totY = sum(Y, na.rm=TRUE),
-                         totV = sum(V, na.rm=TRUE),
-                         meanB = sum((B), na.rm=TRUE))
-
-    res2 <- list(N = N,
-                 dead = dead,
-                 C = C,
-                 Y = Y,
-                 B = B,
-                 V = V,
-                 totals = totals)
-  }
-
-  ret <- c(res,res2)
-  return(ret)
+    ret <- c(res,res2)
+    return(ret)
 }
 

@@ -191,7 +191,7 @@
 #'          and biomass values of current exploitation or selectivity (if E_curr or
 #'          Lc_tc_curr provided).
 #'   }
-#'   \item \code{type = 'ThomBell'}
+#'   \item \code{type = 'ThompBell'}
 #'   \itemize{
 #'      \item \strong{dt}: delta t,
 #'      \item \strong{N}: population number,
@@ -207,7 +207,7 @@
 #'      \item \strong{meanB}: average biomasses for different x factors,
 #'      \item \strong{F_change}: fishing mortality changes;
 #'   }
-#'   \item \code{type = 'ThomBell'} and \code{Lc_change} provided
+#'   \item \code{type = 'ThompBell'} and \code{Lc_change} provided
 #'   \itemize{
 #'      \item \strong{FM_change}: fishing mortality changes,
 #'      \item \strong{Lc_change}: changes in length at first capture,
@@ -901,7 +901,8 @@ predict_mod <- function(
         res <- param
         res$FM_relative = FM_relative
 
-                                        # Beverton and Holt's ypr
+
+        ## Beverton and Holt's ypr
         if(type == "ypr"){
             if(FM_relative) stop(noquote("ypr does not work with relative changes in FM, please provide absolute values."))
             if("par" %in% names(res)){
@@ -1187,12 +1188,13 @@ predict_mod <- function(
             }
         }
 
-                                        # Thompson and Bell model
+        ## Thompson and Bell model
         if(type == "ThompBell"){
             meanWeight <- res$meanWeight
             meanValue <- res$meanValue
+            
 
-                                        #mortalities
+            ## mortalities
             FM <- res$FM
             if(is.null(res$M) & is.null(res$Z)) stop(noquote("Either M or Z (in 'param') has to be provided!"))
             if(!is.null(res$M)){
@@ -1293,22 +1295,30 @@ predict_mod <- function(
                 }
 
 
-                pred_res_list <- list()
+                pred_res_list <- vector("list",length(FM_change))
                 for(x7 in 1:length(FM_change)){
                     param$Z <- pred_mat[,x7] + nM
                     param$FM <- pred_mat[,x7]
                     resL <- stock_sim(param, age_unit = age_unit,
                                       stock_size_1 = stock_size_1, plus_group = plus_group)
-                    pred_res_list[[x7]] <- resL$totals
+                    pred_res_list[[x7]] <- resL$totals                    
                 }
 
+                ## SSB0 for SPR
+                param$FM <- pred_mat[,1] * 0.0
+                param$Z <- param$FM + nM
+                tmp <- stock_sim(param, age_unit = age_unit,
+                                 stock_size_1 = stock_size_1, plus_group = plus_group)
+                SSB0 <- tmp$totals$meanSSB
+                
+
                 pred_res_df <- do.call(rbind, pred_res_list)
+                pred_res_df$SPR <- pred_res_df$meanSSB/SSB0
                 pred_res_df$FM_change <- FM_change
                 pred_res_df$E_change <- E_change
 
                 res2 <- pred_res_df
                 res3 <- c(res,res2)
-
 
                 ## reference points
                 ## Fmax
@@ -1383,6 +1393,15 @@ predict_mod <- function(
                                       stock_size_1 = stock_size_1, plus_group=plus_group)
                     mati2 <- res2$totals
 
+                    ## SPR
+                    param.loop <- res
+                    param.loop$FM <- sel * 0.0
+                    param.loop$Z <- param.loop$FM + nM                    
+                    res2 <- stock_sim(param = param.loop, age_unit = age_unit,
+                                      stock_size_1 = stock_size_1, plus_group=plus_group)
+                    SSB0 <- res2$totals$meanSSB
+                    SPR <- mati2$meanSSB/SSB0
+
                     df_currents <- data.frame(curr.Lc = curr.Lc,
                                               curr.tc = curr.tc,
                                               curr.E = curr.E,
@@ -1390,7 +1409,9 @@ predict_mod <- function(
                                               curr.C = mati2$totC,
                                               curr.Y = mati2$totY,
                                               curr.V = mati2$totV,
-                                              curr.B = mati2$meanB)
+                                              curr.B = mati2$meanB,
+                                              curr.SSB = mati2$meanSSB,
+                                              curr.SPR = SPR)
                     ret$currents <- df_currents
                 }
             }
@@ -1434,12 +1455,15 @@ predict_mod <- function(
                 pred.FM_Lc_com_res_loopY_list <- vector("list",length(FM_Lc_com_mat.list))
                 pred.FM_Lc_com_res_loopB_list <- vector("list",length(FM_Lc_com_mat.list))
                 pred.FM_Lc_com_res_loopV_list <- vector("list",length(FM_Lc_com_mat.list))
+                pred.FM_Lc_com_res_loopSSB_list <- vector("list",length(FM_Lc_com_mat.list))
+                pred.FM_Lc_com_res_loopSPR_list <- vector("list",length(FM_Lc_com_mat.list))   
 
                 if (!hide.progressbar) {
                     nlk <- prod(length(FM_Lc_com_mat.list),dim(FM_Lc_com_mat.list[[1]])[2])
                     pb <- txtProgressBar(min=1, max=nlk, style=3)
                     counter <- 1
                 }
+
 
                 for(x21 in 1:length(FM_Lc_com_mat.list)){  #loop for length of list == Lc changes
                     mati <- FM_Lc_com_mat.list[[x21]]
@@ -1453,22 +1477,34 @@ predict_mod <- function(
                                           stock_size_1 = stock_size_1, plus_group=plus_group)
                         pred.FM_Lc_com_res_loop1_list[[x22]] <- res2$totals
 
-                                        # update counter and progress bar
+                        ## update counter and progress bar
                         if (!hide.progressbar) {
                             setTxtProgressBar(pb, counter)
                             counter <- counter + 1
                         }
                     }
+
+                    ## SSB0 for SPR
+                    param.loop$FM <- 0.0 * FM_Lc_com_mat.list[[1]][,1]
+                    param.loop$Z <- param.loop$FM + nM
+                    tmp <- stock_sim(param = param.loop, age_unit = age_unit,
+                                     stock_size_1 = stock_size_1, plus_group=plus_group)
+                    SSB0 <- tmp$totals$meanSSB
+                    
                     prev_mat <- do.call(rbind, pred.FM_Lc_com_res_loop1_list)
                     prev_matC <- prev_mat[,'totC']
                     prev_matY <- prev_mat[,'totY']
                     prev_matB <- prev_mat[,'meanB']
+                    prev_matSSB <- prev_mat[,'meanSSB']                                        
                     prev_matV <- prev_mat[,'totV']
-
+                    prev_matSPR <- prev_mat[,'meanSSB'] / SSB0
+                    
                     pred.FM_Lc_com_res_loopC_list[[x21]] <- prev_matC
                     pred.FM_Lc_com_res_loopY_list[[x21]] <- prev_matY
                     pred.FM_Lc_com_res_loopB_list[[x21]] <- prev_matB
+                    pred.FM_Lc_com_res_loopSSB_list[[x21]] <- prev_matSSB                      
                     pred.FM_Lc_com_res_loopV_list[[x21]] <- prev_matV
+                    pred.FM_Lc_com_res_loopSPR_list[[x21]] <- prev_matSPR
                 }
 
                                         #for catch
@@ -1486,6 +1522,16 @@ predict_mod <- function(
                 rownames(mat_FM_Lc_com.B) <- Lc
                 colnames(mat_FM_Lc_com.B) <- FM_change
 
+                                        #for SSB
+                mat_FM_Lc_com.SSB <- do.call(rbind, pred.FM_Lc_com_res_loopSSB_list)
+                rownames(mat_FM_Lc_com.SSB) <- Lc
+                colnames(mat_FM_Lc_com.SSB) <- FM_change
+
+                                        #for SPR
+                mat_FM_Lc_com.SPR <- do.call(rbind, pred.FM_Lc_com_res_loopSPR_list)
+                rownames(mat_FM_Lc_com.SPR) <- Lc
+                colnames(mat_FM_Lc_com.SPR) <- FM_change
+
                                         #for value
                 mat_FM_Lc_com.V <- do.call(rbind, pred.FM_Lc_com_res_loopV_list)
                 rownames(mat_FM_Lc_com.V) <- Lc
@@ -1495,6 +1541,8 @@ predict_mod <- function(
                 mat_FM_Lc_com.C <- t(mat_FM_Lc_com.C)
                 mat_FM_Lc_com.Y <- t(mat_FM_Lc_com.Y)
                 mat_FM_Lc_com.B <- t(mat_FM_Lc_com.B)
+                mat_FM_Lc_com.SSB <- t(mat_FM_Lc_com.SSB)
+                mat_FM_Lc_com.SPR <- t(mat_FM_Lc_com.SPR)                                
                 mat_FM_Lc_com.V <- t(mat_FM_Lc_com.V)
 
 
@@ -1564,6 +1612,8 @@ predict_mod <- function(
                               mat_FM_Lc_com.Y = mat_FM_Lc_com.Y,
                               mat_FM_Lc_com.V = mat_FM_Lc_com.V,
                               mat_FM_Lc_com.B = mat_FM_Lc_com.B,
+                              mat_FM_Lc_com.SSB = mat_FM_Lc_com.SSB,
+                              mat_FM_Lc_com.SPR = mat_FM_Lc_com.SPR,
                               df_Es = df_Es))
 
 
@@ -1591,6 +1641,15 @@ predict_mod <- function(
                                       stock_size_1, plus_group=plus_group)
                     mati2 <- res2$totals
 
+                    ## SPR
+                    param.loop <- res
+                    param.loop$FM <- 0.0 * sel
+                    param.loop$Z <- nM + param.loop$FM
+                    res2 <- stock_sim(param = param.loop, age_unit = age_unit,
+                                      stock_size_1 = stock_size_1, plus_group=plus_group)
+                    SSB0 <- res2$totals$meanSSB
+                    SPR <- mati2$meanSSB/SSB0                    
+
                     df_currents <- data.frame(curr.Lc = curr.Lc,
                                               curr.tc = curr.tc,
                                               curr.E = curr.E,
@@ -1598,7 +1657,9 @@ predict_mod <- function(
                                               curr.C = mati2$totC,
                                               curr.Y = mati2$totY,
                                               curr.V = mati2$totV,
-                                              curr.B = mati2$meanB)
+                                              curr.B = mati2$meanB,
+                                              curr.SSB = mati2$meanSSB,
+                                              curr.SPR = SPR)
                     ret$currents <- df_currents
                 }
             }
@@ -1610,5 +1671,4 @@ predict_mod <- function(
 
         return(ret)
     }
-
 }
