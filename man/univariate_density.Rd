@@ -2,11 +2,13 @@
 % Please edit documentation in R/ELEFANboot.R
 \name{univariate_density}
 \alias{univariate_density}
-\title{Univariate kernal density estimate plot of VBGF parameter from bootstrapping results}
+\title{Univariate kernel density estimate plot of VBGF parameter from bootstrapping results}
 \usage{
 univariate_density(res, CI = 95, use_hist = FALSE, nbreaks = 10,
-  mar = c(1.5, 2, 2, 0), oma = c(1.5, 0, 0, 0.5), mgp = c(2, 0.5, 0),
-  tcl = -0.25, cex = 1, ...)
+  truePar = NA, display_val = TRUE, display_median = FALSE,
+  display_legend = FALSE, display_rugs = FALSE, mar = c(1.5, 2, 2, 0),
+  oma = c(1.5, 0, 0, 0.5), mgp = c(2, 0.5, 0), tcl = -0.25, cex = 1,
+  mfrow = NA, ...)
 }
 \arguments{
 \item{res}{list of class `lfqBoot`}
@@ -16,6 +18,8 @@ univariate_density(res, CI = 95, use_hist = FALSE, nbreaks = 10,
 \item{use_hist}{logical. Plot histogram in addition to smoothed kernel density.}
 
 \item{nbreaks}{numeric. Number of breaks in the histogram.}
+
+\item{truePar}{if true parameters known lines can be added to graph}
 
 \item{mar}{vector. Inner margins settings. See `?par`.}
 
@@ -27,13 +31,15 @@ univariate_density(res, CI = 95, use_hist = FALSE, nbreaks = 10,
 
 \item{cex}{numeric. See `?par`.}
 
+\item{mfrow}{vector. See `?par` (default: NA).}
+
 \item{...}{Additional arguments passed to `par`.}
 }
 \value{
 plot
 }
 \description{
-Univariate kernal density estimate plot of VBGF parameter from bootstrapping results
+Univariate kernel density estimate plot of VBGF parameter from bootstrapping results
 }
 \examples{
 

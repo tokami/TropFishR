@@ -108,9 +108,8 @@ lfqModify <- function(lfq, par = NULL,
 
 
     ## merge two lfq data sets (ADD weighing factor)
-    if(!any(is.na(lfq2))){
-        if(class(lfq2) != "lfq") stop("Your lfq2 data set has to have class 'lfq'!")
-        
+    if(class(lfq2) == "lfq"){
+
         ## extract variables
         dates2 <- lfq2$dates
         midLengths2 <- lfq2$midLengths
@@ -126,18 +125,22 @@ lfqModify <- function(lfq, par = NULL,
         mergi2 <- merge(data.frame(midLengths=midLengths,x=midLengths),
                         data.frame(midLengths=midLengths2,y=midLengths2),
                         by="midLengths",all=TRUE)
-        indY <- which(is.na(mergi2$y) & mergi2$midLengths > max(midLengths2))
+
+        indY <- which(is.na(mergi2$y))## & mergi2$midLengths > max(midLengths2))
         matY <- matrix(0, nrow=length(indY), ncol=ncol(catch2))
         catch2 <- rbind(catch2,matY)
-        indY <- which(is.na(mergi2$y) & mergi2$midLengths < min(midLengths2))
-        matY <- matrix(0, nrow=length(indY), ncol=ncol(catch2))
-        catch2 <- rbind(matY,catch2)
-        ind <- which(is.na(mergi2$x) & mergi2$midLengths > max(midLengths))
+        
+##        indY <- which(is.na(mergi2$y) & mergi2$midLengths < min(midLengths2))
+##        matY <- matrix(0, nrow=length(indY), ncol=ncol(catch2))
+##        catch2 <- rbind(matY,catch2)
+        
+        ind <- which(is.na(mergi2$x))## & mergi2$midLengths > max(midLengths))
         mat <- matrix(0, nrow=length(ind), ncol=ncol(catch))
         catch <- rbind(catch,mat)
-        ind <- which(is.na(mergi2$x) & mergi2$midLengths < min(midLengths))
-        mat <- matrix(0, nrow=length(ind), ncol=ncol(catch))
-        catch <- rbind(mat,catch)
+        
+##        ind <- which(is.na(mergi2$x) & mergi2$midLengths < min(midLengths))
+##        mat <- matrix(0, nrow=length(ind), ncol=ncol(catch))
+##        catch <- rbind(mat,catch)
 
         
         ## both catch matrices should have same sampling dates
@@ -152,7 +155,7 @@ lfqModify <- function(lfq, par = NULL,
         temp <- designMat
         ind = 1
         for(i in which(!is.na(mergi$y))){
-                temp[,i] <- catch2[,ind]
+            temp[,i] <- catch2[,ind]
             ind <- ind + 1
         }
         catch2 <- temp
@@ -171,7 +174,6 @@ lfqModify <- function(lfq, par = NULL,
         dates <- mergi$dates
         midLengths <- mergi2$midLengths
         catch <- designMat
-        
     }
     
 

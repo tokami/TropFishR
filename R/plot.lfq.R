@@ -56,6 +56,7 @@
 #' @param ylab label of y axis (default : "Length classes")
 #' @param draw logical; indicating whether growth curves should be added to
 #'     lfq plot if parameters are provided (default : TRUE)
+#' @param border colour of borders of histrograms ("grey20" by default; to get rid: NA)
 #' @param ... additional options of the plot function
 #'
 #'
@@ -160,7 +161,7 @@ plot.lfq <- function(x,
   date.axis = "traditional",  # alternative : "modern"
   date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by="months"),
   date.format = "'%y-%b", xlab = "", ylab = "Length classes",
-  draw = TRUE,
+  draw = TRUE, border = "grey20", cex.axis=1,
   ...){
 
     dates <- x$dates
@@ -273,12 +274,13 @@ plot.lfq <- function(x,
         catchComb <- catch + catchY
         image(
             x=mergi$dates, y=mergi2$classes, z=t(catchComb), col=image.col, zlim=zlim,
-            xaxt="n", xlab = xlab, ylab = ylab, ...)
+            xaxt="n", xlab = xlab, ylab = ylab, yaxt="n",...)
     }else{
         image(
             x=dates, y=classes, z=t(catch), col=image.col, zlim=zlim,
-            xaxt="n", xlab = xlab, ylab = ylab, ...)
+            xaxt="n", xlab = xlab, ylab = ylab, yaxt="n",...)
     }
+    axis(2, cex.axis=cex.axis)
 
     if(!is.null(region.col)){
       usr <- par()$usr
@@ -289,9 +291,9 @@ plot.lfq <- function(x,
 
     # add time axis
     if(date.axis == "modern"){
-      axis.Date(side = 1, x=dates, at=date.at, format = date.format)
+      axis.Date(side = 1, x=dates, at=date.at, format = date.format, cex.axis=cex.axis)
     }else if(date.axis == "traditional"){
-      axis.Date(side = 1, x = dates, at = date.at, format = "%b")
+      axis.Date(side = 1, x = dates, at = date.at, format = "%b", cex.axis=cex.axis)
       year <- seq(min(as.numeric(format(dates, "%Y"))), max(as.numeric(format(dates, "%Y"))), 1)
       date_seq <- seq.Date(dates[1],dates[length(dates)], by = "month")
       date_label <- format(date_seq, "%m")
@@ -315,14 +317,14 @@ plot.lfq <- function(x,
                     x = c(mergi$dates[i], mergi$dates[i], mergi$dates[i]-score.sc[j], mergi$dates[i]-score.sc[j]),
                     y = c(bin.lower[j], bin.upper[j], bin.upper[j], bin.lower[j]),
                     col = hist.col[(score.sc[j]>0)+1],
-                    border = "grey20", lwd = 1)
+                    border = border, lwd = 1)
                 polygon(
                     x = c(mergi$dates[i], mergi$dates[i], mergi$dates[i]-score.scY[j], mergi$dates[i]-score.scY[j]),
                     y = c(bin.lower[j], bin.upper[j], bin.upper[j], bin.lower[j]),
                     col = hist.col[(score.scY[j]>0)+3],
-                    border = "grey20", lwd = 1)
-
+                    border = border, lwd = 1)
             }
+            abline(v=mergi$dates[i], lty=1, col="grey20")
         }
     }else{
     for(i in seq(length(dates))){
@@ -333,7 +335,7 @@ plot.lfq <- function(x,
             x = c(dates[i], dates[i], dates[i]-score.sc[j], dates[i]-score.sc[j]),
             y = c(bin.lower[j], bin.upper[j], bin.upper[j], bin.lower[j]),
             col = hist.col[(score.sc[j]>0)+1],
-            border = "grey20", lwd = 1)
+            border = border, lwd = 1)
         # }
       }
     }

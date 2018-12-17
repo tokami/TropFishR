@@ -178,7 +178,7 @@ VPA <- function(param,
 
 
         ## resample data sets
-        lfqAll <- lfqResample(param, boot)
+        lfqAll <- lfqResample(param, boot=boot)
         ##  set.seed(boot$seed[bi])
 
 
@@ -458,13 +458,14 @@ VPA <- function(param,
                 }
             }
         }
+        resMaxDen <- c(boot$maxDen, resMaxDen)
+        names(resMaxDen) <- c(names(boot$maxDen),
+                              colnames(bootRaw)[(ncol(bootRaw)-(nx)+1):ncol(bootRaw)])
         resCIs <- cbind(boot$CI,t(do.call(rbind,ciList)))
-        colnames(resCIs) <- colnames(bootRaw)
-        rownames(resCIs) <- c("lo","up")
-        resMaxDen <- c(boot$maxDen, t(as.data.frame(resMaxDen)))
-        names(resMaxDen) <- colnames(bootRaw)
+        colnames(resCIs) <- names(resMaxDen)
+        rownames(resCIs) <- c("lo","up")        
         resMed <- c(boot$median, resMed)
-        names(resMed) <- colnames(bootRaw)
+        names(resMed) <- names(resMaxDen)
         
         ret <- list()
         ret$bootRaw <- bootRaw
@@ -473,7 +474,8 @@ VPA <- function(param,
         ret$median <- resMed        
         ret$CI <- resCIs
         if("multiCI" %in% names(boot)) ret$multiCI <- boot$multiCI
-        ret$FMvecVPA <- FMsVPA
+        ret$misc <- boot$misc
+        ret$misc$FMvecVPA <- FMsVPA
         class(ret) <- "lfqBoot"
         return(ret)
 

@@ -40,7 +40,7 @@
 
 plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
                             col=c('blue',"darkgreen","orange","darkred"),
-                            cex = 1.5, xlim = NULL, ylim = NULL,
+                            cex = 1.5, xlim = NULL, ylim = NULL, xaxt=NULL,
                             xlab = "default", ylab = "default", ...){
     pes <- x
 
@@ -160,8 +160,9 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
     if(xlab != "default") xlabel = xlab
     if(ylab != "default") ylabel = ylab
 
+
     ## final plot
-    plot(x = xplot, y = yplot, ylim = ylims,
+    plot(x = xplot, y = yplot, ylim = ylims, xaxt=xaxt,
          xlab = '', xaxt = 'n', ylab = ylabel, xlim = xlims,
          cex = cex)
 

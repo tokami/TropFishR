@@ -189,12 +189,12 @@ TFSA2DLMtool <- function(uncertaintyCap = FALSE,
 #' @param wla coefficient from length-weight relationship
 #' @param wlb exponent from length-weight relationship
 #' 
-#' @return F/F01 estimated by LCCC + length-based VPA + YPR
+#' @return F/F01 or F/Fmax estimated by LCCC + length-based VPA + YPR
 #' 
 #' @export
 #'
 #'
-TFSA <- function(lfq, m, wla, wlb, fmsy){   ## import slist
+TFSA <- function(lfq, m, wla, wlb, fref="fmax"){   ## import slist
     if(all(lfq$catch == 0)){
         return(NA)
     }else{
@@ -245,10 +245,16 @@ TFSA <- function(lfq, m, wla, wlb, fmsy){   ## import slist
                     if(is(resypr, "try-error")){
                         return(NA)
                     }else{
-                        f01 <- as.numeric(resypr$df_Es[which(names(resypr$df_Es) == "F01")])  ## F01 as proxy for Fmsy
-                        ff01 <- fm/f01
-    ##                    print(paste0("Ref:  ",f01," -- ", fmsy))
-                        return(ff01)                
+                        if(fref == "f01"){
+                            fmsy <- as.numeric(resypr$df_Es[which(names(resypr$df_Es) == "F01")])  ## F01 as proxy for Fmsy
+                        }else if(fref == "fmax"){
+                            fmsy <- as.numeric(resypr$df_Es[which(names(resypr$df_Es) == "Fmax")])
+                        }else{
+                            stop("fref not found, Use either f01 or fmax!")
+                        }
+                        ffmsy <- fm/fmsy
+                        ##                    print(paste0("Ref:  ",f01," -- ", fmsy))
+                        return(as.numeric(ffmsy))
                     }
                 }            
             }

@@ -199,6 +199,7 @@ catchCurve <- function(param,
                        calc_ogive = FALSE,
                        reg_int = NULL,
                        reg_num = 1,
+                       agerange = NULL,
                        auto = FALSE,
                        boot = NULL,
                        natMort = NULL,
@@ -217,16 +218,19 @@ catchCurve <- function(param,
         bootRaw <- boot$bootRaw
 
 
-        if (any(is.null(bootRaw$Linf), is.null(bootRaw$K)))
+        if(any(is.null(bootRaw$Linf), is.null(bootRaw$K)))
           stop("LCCC with boot requires a boot object with columns Linf and K")
 
 
         ## resample data sets
         ## set.seed(boot$seed[bi])
-        lfqAll <- lfqResample(param, boot)
+        lfqAll <- lfqResample(param, boot=boot)
 
 
         Zs <- vector("numeric",nrow(bootRaw))
+        ints <- vector("numeric",nrow(bootRaw))
+        cuts <- vector("list",nrow(bootRaw))
+        dats <- vector("list",nrow(bootRaw))        
         ## seZ <- vector("numeric",nrow(bootRaw))
         ## confZ <- vector("numeric",nrow(bootRaw))
         t50s <- vector("numeric", nrow(bootRaw))
@@ -392,13 +396,26 @@ catchCurve <- function(param,
             xvar2 <- xvar[indexX]
             cutter <- c(maxY+1, which(xvar == max(xvar2,na.rm=TRUE)))
 
+
+
+            if(!is.null(agerange)){  ## limit range of regression line within given interval
+                agecut <- c(which.min(abs(xvar-agerange[1])),
+                            which.min(abs(xvar-agerange[2])))
+                cutter <- c(max(c(agecut[1],cutter[1])),
+                            min(c(agecut[2],cutter[2])))
+            }
+
             ## calculations + model
             df.CC <- as.data.frame(cbind(xvar,yvar))
             df.CC.cut <- df.CC[cutter[1]:cutter[2],]
+            
             lm1 <- try(lm(yvar ~ xvar, data = df.CC.cut), silent = TRUE)
 
             if(class(lm1) == "try-error" | nrow(df.CC.cut) < 3 | coefficients(lm1)[2] > 0){
                 Zs[bi] <- NA
+                ints[bi] <- NA
+                cuts[[bi]] <- NA
+                dats[[bi]] <- NA
                 if(calc_ogive){
                       L50s[bi] <- NA
                       L75s[bi] <- NA
@@ -424,6 +441,9 @@ catchCurve <- function(param,
                 }
 
                 Zs[bi] <- Z_lm1
+                ints[bi] <- intercept_lm1
+                cuts[[bi]] <- xvar[cutter]
+                dats[[bi]] <- data.frame(x=df.CC.cut$xvar, y=df.CC.cut$yvar) 
                 ## seZ[bi] <- SE_Z_lm1
                 ## confZ[bi] <- conf_Z_lm1
                 if(calc_ogive){
@@ -530,13 +550,14 @@ catchCurve <- function(param,
                 }
             }
         }
+        resMaxDen <- c(boot$maxDen, resMaxDen)
+        names(resMaxDen) <- c(names(boot$maxDen),
+                              colnames(bootRaw)[(ncol(bootRaw)-(nx)+1):ncol(bootRaw)])
         resCIs <- cbind(boot$CI,t(do.call(rbind,ciList)))
-        colnames(resCIs) <- colnames(bootRaw)
-        rownames(resCIs) <- c("lo","up")
-        resMaxDen <- c(boot$maxDen, t(as.data.frame(resMaxDen)))
-        names(resMaxDen) <- colnames(bootRaw)
+        colnames(resCIs) <- names(resMaxDen)
+        rownames(resCIs) <- c("lo","up")        
         resMed <- c(boot$median, resMed)
-        names(resMed) <- colnames(bootRaw)
+        names(resMed) <- names(resMaxDen)
 
         if(FALSE){
         ## check with FM
@@ -554,6 +575,10 @@ catchCurve <- function(param,
         ret$median <- resMed        
         ret$CI <- resCIs
         if("multiCI" %in% names(boot)) ret$multiCI <- boot$multiCI
+        ret$misc <- c(boot$misc, list(binSize = binSize, yearSel = yearSel,
+                                      yearCombine = yearCombine, intsCC = ints,
+                                      regint = range(unlist(cuts),na.rm=TRUE),
+                                      datcc = dats))
         class(ret) <- "lfqBoot"
         return(ret)
         

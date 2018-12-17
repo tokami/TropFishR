@@ -4,7 +4,7 @@
 \alias{TFSA}
 \title{Traditional Fish Stock Assessment with TropFishR}
 \usage{
-TFSA(lfq, m, wla, wlb, fmsy)
+TFSA(lfq, m, wla, wlb, fref = "fmax")
 }
 \arguments{
 \item{lfq}{lfq data}
@@ -16,7 +16,7 @@ TFSA(lfq, m, wla, wlb, fmsy)
 \item{wlb}{exponent from length-weight relationship}
 }
 \value{
-F/F01 estimated by LCCC + length-based VPA + YPR
+F/F01 or F/Fmax estimated by LCCC + length-based VPA + YPR
 }
 \description{
 Estimate F/F01 based on the length converted catch curve, length-based VPA and
