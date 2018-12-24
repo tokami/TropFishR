@@ -5,9 +5,10 @@
 \title{Catch curve}
 \usage{
 catchCurve(param, catch_columns = NA, cumulative = FALSE,
-  calc_ogive = FALSE, reg_int = NULL, reg_num = 1, auto = FALSE,
-  boot = NULL, natMort = NULL, robustReg = FALSE, yearSel = NA,
-  yearCombine = FALSE, binSize = NA, plot = TRUE, CI = 95)
+  calc_ogive = FALSE, reg_int = NULL, reg_num = 1, agerange = NULL,
+  auto = FALSE, boot = NULL, natMort = NULL, robustReg = FALSE,
+  yearSel = NA, yearCombine = FALSE, binSize = NA, plot = TRUE,
+  CI = 95)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:

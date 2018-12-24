@@ -7,7 +7,6 @@ Author: Tobias K. Mildenberger, Marc H. Taylor, Matthias Wolff
 Maintainer: Tobias K. Mildenberger <t.k.mildenberger@gmail.com>
 Depends:
     R (>= 3.0.0),
-    R2jags (>= 0.5-7)
 Imports:
     msm,
     reshape2,
@@ -18,8 +17,7 @@ Imports:
     parallel,
     doParallel,
     ks,
-    Hmisc,
-    R2jags
+    Hmisc
 LazyData: TRUE
 Description: A compilation of fish stock assessment methods for the
     analysis of length-frequency data in the context of data-poor
