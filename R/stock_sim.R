@@ -220,14 +220,16 @@ stock_sim <- function(param, age_unit = "year",
     ##  length based
     if('midLengths' %in% names(res)){
 
-
         if("par" %in% names(res)){
             Winf <- ifelse("Winf" %in% names(res$par), res$par$Winf, NA)
             Linf <- ifelse("Linf" %in% names(res$par), res$par$Linf, NA)
             K <- res$par$K
             t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
             C <- ifelse("C" %in% names(res$par), res$par$C, 0)
-            ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
+            ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)
+            ## maturity parameters            
+            Lmat <- ifelse("Lmat" %in% names(res$par), res$par$Lmat, NA)
+            wmat <- ifelse("wmat" %in% names(res$par), res$par$wmat, NA)     
         }else{
             Winf <- ifelse("Winf" %in% names(res), res$Winf, NA)
             Linf <- ifelse("Linf" %in% names(res), res$Linf, NA)
@@ -235,14 +237,14 @@ stock_sim <- function(param, age_unit = "year",
             t0 <- ifelse("t0" %in% names(res), res$t0, 0)
             C <- ifelse("C" %in% names(res), res$C, 0)
             ts <- ifelse("ts" %in% names(res), res$ts, 0)
+            ## maturity parameters
+            Lmat <- ifelse("Lmat" %in% names(res), res$Lmat, NA)
+            wmat <- ifelse("wmat" %in% names(res), res$wmat, NA)            
         }
 
         a <- res$a
         b <- res$b
 
-        ## length at maturity
-        Lmat <- ifelse(is.null(res$Lmat), NA, res$Lmat)
-        wmat <- ifelse(is.null(res$wmat), NA, res$wmat)        
         ## mature individuals
         mids <- classes.num
         matP <- 1 / (1 + exp(-(mids - Lmat) /

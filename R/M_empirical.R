@@ -403,12 +403,12 @@ MstochThen <- function(boot, CI=95){
         }
     }
     resCIs <- cbind(boot$CI,as.matrix(ciList))
-    colnames(resCIs) <- colnames(bootRaw)
+    colnames(resCIs) <- c(colnames(boot$CI), "M_Then")
     rownames(resCIs) <- c("lo","up")
     resMaxDen <- c(boot$maxDen, resMaxDen)
-    names(resMaxDen) <- colnames(bootRaw)
+    names(resMaxDen) <- colnames(resCIs)
     resMed <- c(boot$median, resMed)
-    names(resMed) <- colnames(bootRaw)
+    names(resMed) <- colnames(resCIs)
     
 
     ret <- list()
