@@ -49,6 +49,10 @@ install_github("tokami/TropFishR", ref="master")
 library(TropFishR)
 ```
 
+```{r, eval=TRUE, echo=FALSE}
+library(TropFishR)
+```
+
 The tutorial will make use of a synthetic LFQ data set included in the package ("synLFQ7"). To load the data set into the R environment use:
 
 ```{r}

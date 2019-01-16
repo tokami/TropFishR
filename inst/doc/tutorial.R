@@ -20,6 +20,9 @@ knitr::opts_chunk$set(echo = TRUE,
 #  install_github("tokami/TropFishR", ref="master")
 #  library(TropFishR)
 
+## ---- eval=TRUE, echo=FALSE----------------------------------------------
+library(TropFishR)
+
 ## ------------------------------------------------------------------------
 data("synLFQ7")
 

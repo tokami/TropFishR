@@ -1,16 +1,12 @@
 Package: TropFishR
 Type: Package
 Title: Tropical Fisheries Analysis
-Version: 1.6.0
-Date: 2018-06-21
+Version: 1.6.1
+Date: 2019-01-17
 Author: Tobias K. Mildenberger, Marc H. Taylor, Matthias Wolff
 Maintainer: Tobias K. Mildenberger <t.k.mildenberger@gmail.com>
-SystemRequirements: JAGS 4.x.y
 Depends:
-    R (>= 3.0.0),
-    rjags,
-    coda,
-    R2jags
+    R (>= 3.0.0)
 Imports:
     msm,
     reshape2,
