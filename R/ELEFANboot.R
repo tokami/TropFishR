@@ -262,7 +262,7 @@ ELEFAN_SA_boot <- function(
             }
 
                                         # return result
-            return( c(unlist(fitboot$par), seed + x) )
+            return( c(unlist(fitboot$par), seed + x, fitboot$Rn_max) )
         }
 
         cl <- parallel::makeCluster(no_cores, type=clusterType)
@@ -571,7 +571,7 @@ ELEFAN_GA_boot <- function(
             }
 
                                         # return result
-            return(c(unlist(fitboot$par), seed + x))
+            return(c(unlist(fitboot$par), seed + x, fitboot$Rn_max))
         }
 
         cl <- parallel::makeCluster(no_cores, type=clusterType)
@@ -613,12 +613,11 @@ ELEFAN_GA_boot <- function(
             res[[x]] <- c(unlist(fitboot$par), seed + x, fitboot$Rn_max)
         }
     }
-
     tmp0 <- as.data.frame(do.call("rbind", res))
     tmp <- tmp0[,-c(ncol(tmp0)-1,ncol(tmp0))]
 
     seeds <- as.numeric(tmp0[,(ncol(tmp0)-1)])
-    scores <- as.numeric(tmp0[,ncol(tmp0)])    
+    scores <- as.numeric(tmp0[,ncol(tmp0)])
 
     ## lfqboot object
     bootRaw <- tmp
