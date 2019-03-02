@@ -479,10 +479,16 @@ predict_mod <- function(
                 ## selectivity information  (add possibility to provide externally estimated L50 and L75 in list)
                 ## checking for L50/L75 estimation in catch curve
                 if("L50" %in% names(bootRaw) & "L75" %in% names(bootRaw)){
-                    s_list <- list(selecType = "trawl_ogive",
-                                   L50 = bootRaw$L50[bi],
-                                   L75 = bootRaw$L75[bi])
-                    selecType = s_list$selecType
+                    if(bootRaw$L50[bi] == bootRaw$L75[bi]){
+                        s_list <- list(selecType = "knife_edge",
+                                   L50 = bootRaw$L50[bi])
+                        selecType = s_list$selecType                        
+                    }else{
+                        s_list <- list(selecType = "trawl_ogive",
+                                       L50 = bootRaw$L50[bi],
+                                       L75 = bootRaw$L75[bi])
+                        selecType = s_list$selecType                        
+                    }
                     if(is.na(bootRaw$L50[bi]) | is.nan(bootRaw$L50[bi]) |
                        is.null(bootRaw$L50[bi]) | bootRaw$L50[bi] == Inf |
                        bootRaw$L50[bi] == -Inf | bootRaw$L50[bi] < 0 |
