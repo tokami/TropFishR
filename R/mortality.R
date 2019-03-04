@@ -782,6 +782,10 @@ catchCurve <- function(lfq,
     if("M" %in% names(par) && length(par$M)==1){
         par$FM <- lapply(par$Z, function(x) x - par$M)
         par$E <- lapply(par$FM, function(x) x/par$Z)
+            if(length(par$FM) == 1){
+                par$FM <- unlist(par$FM)
+                par$E <- unlist(par$E)                
+            }        
     }
     names(ret)[names(ret) == "xvar"] <- xname
     names(ret)[names(ret) == "yvar"] <- yname
@@ -830,8 +834,8 @@ catchCurve <- function(lfq,
         t50 <- T1/T2
         t75 <- (T1 + log(3))/T2
         t95 <-  (T1 - log((1 / 0.95) - 1)) / T2
-        if(!is.null(res$Linf) & !is.null(res$K)){
-            if(is.null(res$t0)) t0 = 0
+        if(!is.null(res$par$Linf) & !is.null(res$par$K)){
+            if(is.null(res$par$t0)) t0 = 0
             L50 <- Linf*(1-exp(-K*(t50-t0)))
             L75 <- Linf*(1-exp(-K*(t75-t0)))
             L95 <- Linf*(1-exp(-K*(t95-t0)))
@@ -990,7 +994,11 @@ Z_BevertonHolt <- function(lfq,
         par$Z <- Z
         if("M" %in% names(par) && length(par$M)==1){
             par$FM <- lapply(par$Z, function(x) x - par$M)
-            par$E <- lapply(par$FM, function(x) x/par$Z)            
+            par$E <- lapply(par$FM, function(x) x/par$Z)
+            if(length(par$FM) == 1){
+                par$FM <- unlist(par$FM)
+                par$E <- unlist(par$E)                
+            }            
         }      
         ret$par <- par
         return(ret)
@@ -1030,7 +1038,11 @@ Z_BevertonHolt <- function(lfq,
         par$Z <- Z.BH
         if("M" %in% names(par) && length(par$M)==1){
             par$FM <- lapply(par$Z, function(x) x - par$M)
-            par$E <- lapply(par$FM, function(x) x/par$Z)            
+            par$E <- lapply(par$FM, function(x) x/par$Z)
+            if(length(par$FM) == 1){
+                par$FM <- unlist(par$FM)
+                par$E <- unlist(par$E)                
+            }
         }      
         ret$par <- par      
         return(ret)
@@ -1119,9 +1131,9 @@ Z_CPUE <- function(cpue, method = "standard", omit_age1 = FALSE){
                for(i in 1:length(result_Z)){
                    df.HZ[[paste(cohort[i+1])]] <- result_Z[[i]]
                }
-               ret <- c(res,list(
-                                Z_mat = df.HZ
-                            ))
+               ret <- res
+               par$Z <- df.HZ
+               ret$par <- par                 
                return(ret)
            },
 
@@ -1132,9 +1144,17 @@ Z_CPUE <- function(cpue, method = "standard", omit_age1 = FALSE){
                CPUE.H.d <- CPUE[1:length(CPUE)]
                Z.H = - log( (sum(CPUE.H.n)) /
                             (sum(CPUE.H.d)))
-               ret <- c(res,list(
-                                Z = Z.H
-                            ))
+               ret <- res
+               par$Z <- Z.H
+               if("M" %in% names(par) && length(par$M)==1){
+                   par$FM <- lapply(par$Z, function(x) x - par$M)
+                   par$E <- lapply(par$FM, function(x) x/par$Z)                   
+                   if(length(par$FM) == 1){
+                       par$FM <- unlist(par$FM)
+                       par$E <- unlist(par$E)                
+                   }                   
+               }      
+               ret$par <- par                 
                return(ret)
            },
            "RobsonChapman" ={
@@ -1150,7 +1170,11 @@ Z_CPUE <- function(cpue, method = "standard", omit_age1 = FALSE){
                par$Z <- Z.H
                if("M" %in% names(par) && length(par$M)==1){
                    par$FM <- lapply(par$Z, function(x) x - par$M)
-                   par$E <- par$FM/par$Z
+                   par$E <- lapply(par$FM, function(x) x/par$Z)                   
+                   if(length(par$FM) == 1){
+                       par$FM <- unlist(par$FM)
+                       par$E <- unlist(par$E)                
+                   }                   
                }      
                ret$par <- par                 
                return(ret)

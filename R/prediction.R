@@ -1311,17 +1311,17 @@ predict_mod <- function(lfq, type, FM_change = NA,
         ## Only FM change provided without Lc_tc change
         if((is.null(tc_change) & is.null(Lc_change))){  ##  | length(s_list) == 1){
 
-            ##if(is.null(res$FM) | length(res$FM) == 1) stop(noquote("Please provide fishing mortality FM (in 'res$par') as a vector per size class!"))
+            ##if(is.null(res$par$FM) | length(res$par$FM) == 1) stop(noquote("Please provide fishing mortality FM (in 'res$par') as a vector per size class!"))
 
-            if(is.null(res$FM)) stop(noquote("Please provide fishing mortality FM (in 'lfq$par')!"))
-            if(length(res$FM) == 1){
+            if(is.null(res$par$FM)) stop(noquote("Please provide fishing mortality FM (in 'lfq$par')!"))
+            if(length(res$par$FM) == 1){
                 if(length(s_list) > 1 | !is.null(Lc[1])){
                     print(noquote("Fishing mortality per length class not povided, using selectivity information to derive fishing mortality per length class."))
                     if(length(s_list) == 1){
                         s_list <- list(selecType = "knife_edge", L50 = Lc[1])
                     }
                     sel <- select_ogive(s_list, Lt = Lt)
-                    FM <- res$FM * sel
+                    FM <- res$par$FM * sel
                 }else{
                     stop(noquote("Please provide either fishing mortality FM (in 'lfq$par') per length class or a Lc value!"))
                 }

@@ -538,9 +538,9 @@ powell_wetherall <- function(lfq, catch_columns = NA,
 
     res <- lfq
     catch <- res$catch
-    if(!"par" %in% names(lfq)) stop(noquote("Please provide the required parameters in res$par!"))
-    par <- res$par
-    
+    if("par" %in% names(res)){
+        par <- res$par
+    }else par <- list()        
 
     if(class(catch) == "data.frame" | class(catch) == "matrix"){
         if(is.na(catch_columns[1])){
@@ -559,22 +559,6 @@ powell_wetherall <- function(lfq, catch_columns = NA,
         ## create column without plus group (sign) if present
         classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
         classes.num <- as.numeric(classes.num[,1])
-
-        if("par" %in% names(res)){
-            Linf <- res$par$Linf
-            K <- res$par$K
-            ta <- ifelse("ta" %in% names(res$par), res$par$ta, 0)            
-            t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
-            C <- ifelse("C" %in% names(res$par), res$par$C, 0)
-            ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
-        }else{
-            Linf <- res$Linf
-            K <- res$K
-            ta <- ifelse("ta" %in% names(res), res$ta, 0)            
-            t0 <- ifelse("t0" %in% names(res), res$t0, 0)
-            C <- ifelse("C" %in% names(res), res$C, 0)
-            ts <- ifelse("ts" %in% names(res), res$ts, 0)
-        }
 
         ## Error message if catch and age do not have same length
         if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
