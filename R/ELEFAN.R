@@ -193,7 +193,7 @@
 #'
 #' @export
 
-ELEFAN <- function(x, Linf_fix = NA, Linf_range = NA,
+ELEFAN <- function(lfq, Linf_fix = NA, Linf_range = NA,
                    K_range = exp(seq(log(0.1), log(10), length.out=100)),
                    C = 0, ts = 0,
                    MA = 5, addl.sqrt = FALSE,
@@ -204,7 +204,7 @@ ELEFAN <- function(x, Linf_fix = NA, Linf_range = NA,
                    add.values = TRUE, rsa.colors = terrain.colors(20),
                    plot_title = TRUE){
 
-    res <- x
+    res <- lfq
     classes <- res$midLengths
     catch <- res$catch
     dates <- res$dates

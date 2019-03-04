@@ -1,3 +1,45 @@
+### TropFishR 1.6.2
+    
+---
+
+##### New features
+
+
+##### User-visible changes
+      - argument "x" of all ELEFAN functions (ELEFAN, ELEFAN\_GA, and
+        ELEFAN\_SA) was changed to lfq
+	  - Parameter "t_anchor" was renamed to "ta"
+	  - All life-history parameters (e.g. Linf, K, M, a, b) are now
+        stored in a sub-list of the lfq list called "par" and can be
+        accessed with `lfq$par`
+		
+
+##### Documentation
+      - Vignettes were updated
+	  - Tutorial and thus recommended assessment steps changed
+
+
+##### Bug fixes
+      - "score_mat" is again reported by the ELEFAN function
+
+      
+      
+<br><br>
+
+
+### TropFishR 1.6.1
+    
+---
+
+##### User-visible changes
+      - All LBB related functions and vignettes have been removed
+        again from the package due to problems stated by users
+
+      
+<br><br>
+
+
+
 ### TropFishR 1.6
     
 ---
