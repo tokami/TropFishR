@@ -12,6 +12,14 @@ ELEFAN_GA(lfq, seasonalised = FALSE, low_par = NULL, up_par = NULL,
   plot.score = TRUE, ...)
 }
 \arguments{
+\item{lfq}{a list consisting of following parameters:
+\itemize{
+  \item \strong{midLengths} midpoints of the length classes,
+  \item \strong{dates} dates of sampling times (class Date),
+  \item \strong{catch} matrix with catches/counts per length class (row)
+     and sampling date (column);
+}}
+
 \item{seasonalised}{logical; indicating if the seasonalised von Bertalanffy
 growth function should be applied (default: FALSE).}
 
@@ -99,14 +107,6 @@ written by the user and supplied as argument.}
 (Default: plot.score=TRUE).}
 
 \item{...}{additional parameters to pass to \code{\link[GA]{ga}}}
-
-\item{x}{a list consisting of following parameters:
-\itemize{
-  \item \strong{midLengths} midpoints of the length classes,
-  \item \strong{dates} dates of sampling times (class Date),
-  \item \strong{catch} matrix with catches/counts per length class (row)
-     and sampling date (column);
-}}
 }
 \value{
 A list with the input parameters and following list objects:

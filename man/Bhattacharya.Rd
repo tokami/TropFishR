@@ -4,10 +4,10 @@
 \alias{Bhattacharya}
 \title{Bhattacharya's method}
 \usage{
-Bhattacharya(param, n_rnorm = 1000, savePlots = FALSE)
+Bhattacharya(lfq, n_rnorm = 1000, savePlots = FALSE)
 }
 \arguments{
-\item{param}{a list consisting of following parameters:
+\item{lfq}{a list consisting of following parameters:
 \itemize{
   \item \code{midLengths} midpoints of the length class as vector,
   \item \code{catch} a vector with the catch per length class or a matrix with
@@ -59,7 +59,7 @@ This method includes the \code{\link{identify}} function, which allows to
 
 \donttest{
  data(synLFQ1)
- Bhattacharya(param = synLFQ1)
+ Bhattacharya(lfq = synLFQ1)
 }
 
 }

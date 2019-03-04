@@ -7,40 +7,32 @@
 https://cran.r-project.org/web/packages/fishmethods/index.html
 }
 \usage{
-M_empirical(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
-  temp = NULL, tmax = NULL, tm50 = NULL, GSI = NULL, Wdry = NULL,
-  Wwet = NULL, Bl = NULL, schooling = FALSE, method)
+M_empirical(lfq, method, schooling = FALSE)
 }
 \arguments{
-\item{Linf}{infinite total length (TL) from a von Bertalanffy
-growth curve in cm.}
-
-\item{Winf}{infinite weight form a von Bertalanffy growth curve
-in wet weight-grams.}
-
-\item{K_l}{is the growth coefficient (per year) from a von Bertalanffy growth
-curve for length.}
-
-\item{K_w}{is the growth coefficient (per year) from a von Bertalanffy growth
-curve for weight.}
-
-\item{temp}{average annual temperature at the surface in degrees centigrade.}
-
-\item{tmax}{the oldest age observed for the species.}
-
-\item{tm50}{age when 50\% of the population is mature [year]
-("age of massive maturation").}
-
-\item{GSI}{gonadosomatic index (wet ovary weight over wet body weight).}
-
-\item{Wdry}{total dry weight in grams.}
-
-\item{Wwet}{total wet weight at mean length in grams.}
-
-\item{Bl}{vector with body lengths in cm for size dependent mortality estimates (method = "Gislason")}
-
-\item{schooling}{logical; if TRUE it is accounted for the schooling behaviour of
-the species, only for Pauly's methods. Default is FALSE.}
+\item{lfq}{a list consisting of following parameters:
+\itemize{
+  \item \strong{midLengths}: midpoints of the length classes (length-frequency
+  data; in cm) for size dependent mortality estimates (method = "Gislason")
+\item \strong{par}: and following parameters (not all are required; dependent on method):
+ \itemize{
+\item \strong{Linf} infinite total length (TL) from a von Bertalanffy
+   growth curve in cm.
+\item \strong{Winf} infinite weight form a von Bertalanffy growth curve
+   in wet weight-grams.
+\item \strong{K} is the growth coefficient (per year) from a von Bertalanffy growth
+   curve for length.
+\item \strong{K_w} is the growth coefficient (per year) from a von Bertalanffy growth
+   curve for weight.
+\item \strong{temp} average annual temperature at the surface in degrees centigrade.
+\item \strong{tmax} the oldest age observed for the species.
+\item \strong{tm50} age when 50\% of the population is mature [year]
+     ("age of massive maturation").
+\item \strong{GSI} gonadosomatic index (wet ovary weight over wet body weight).
+\item \strong{Wdry} total dry weight in grams.
+\item \strong{Wwet} total wet weight at mean length in grams.
+ }
+}}
 
 \item{method}{vector of method names. Any combination of following methods can
 be employed: "AlversonCarney", "Gislason" (size dependent mortality estimates), "GundersonDygert", "Hoenig",
@@ -48,6 +40,9 @@ be employed: "AlversonCarney", "Gislason" (size dependent mortality estimates), 
 "RikhterEfanov", "Roff", "Then_growth", or "Then_tmax".
 Please refer to Details to see which input parameters
 are required by each method.}
+
+\item{schooling}{logical; if TRUE it is accounted for the schooling behaviour of
+the species, only for Pauly's methods. Default is FALSE.}
 }
 \value{
 A matrix of M estimates.
@@ -80,8 +75,12 @@ If accounting for schooling behaviour M is multiplied by 0.8 according to
    Pauly (1983).
 }
 \examples{
-M_empirical(Linf = 80, K_l = 0.5, temp = 25, tmax = 30,
-     method = c("Pauly_Linf","Hoenig"))
+## with included data set
+res <- M_empirical(synLFQ3, method="Then_growth")
+
+## with specific parameters
+pars <- list(par=list(Linf = 80, K = 0.5, temp = 25, tmax = 30))
+M_empirical(pars, method = c("Pauly_Linf","Hoenig"))
 
 }
 \references{

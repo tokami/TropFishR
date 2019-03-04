@@ -4,10 +4,10 @@
 \alias{startingPoint2tanchor}
 \title{Convert FiSAT's starting point to ta value}
 \usage{
-startingPoint2tanchor(param, par, startingLength, startingSample)
+startingPoint2tanchor(lfq, par, startingLength, startingSample)
 }
 \arguments{
-\item{param}{list with dates, midLengths, and catch}
+\item{lfq}{list with dates, midLengths, and catch}
 
 \item{par}{list with growth parameters 'Linf' and 'K' of VBGF}
 

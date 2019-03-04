@@ -4,10 +4,10 @@
 \alias{Z_CPUE}
 \title{Estimate Z from CPUE data}
 \usage{
-Z_CPUE(param, method = "standard", omit_age1 = FALSE)
+Z_CPUE(cpue, method = "standard", omit_age1 = FALSE)
 }
 \arguments{
-\item{param}{a list consisting of following parameters:
+\item{cpue}{a list consisting of following parameters:
 \itemize{
   \item \code{cohort}: a vector with with a cohort label,
   \item \code{age}: a vector with ages,
@@ -35,16 +35,16 @@ In Heincke's and RobsonChapman's method age groups older than 4 are lumped,
   not fully exploited by the fishery.
 }
 \examples{
-# load data
+## load data
 data(synCPUE)
 
-# run model with standard method
+## run model with standard method
 Z_CPUE(synCPUE, method = "standard")
 
-# run model with Heincke's method
+## run model with Heincke's method
 Z_CPUE(synCPUE, method = "Heincke")
 
-# run model with Robson and Chapman's method
+## run model with Robson and Chapman's method
 Z_CPUE(synCPUE, method = "RobsonChapman", omit_age1 = TRUE)
 
 }

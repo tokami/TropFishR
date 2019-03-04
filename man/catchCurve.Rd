@@ -4,20 +4,29 @@
 \alias{catchCurve}
 \title{Catch curve}
 \usage{
-catchCurve(param, catch_columns = NA, cumulative = FALSE,
+catchCurve(lfq, catch_columns = NA, cumulative = FALSE,
   calc_ogive = FALSE, reg_int = NULL, reg_num = 1, auto = FALSE,
   plot = TRUE)
 }
 \arguments{
-\item{param}{a list consisting of following parameters:
+\item{lfq}{a list consisting of following parameters:
 \itemize{
-  \item \code{midLengths} or \code{age}: midpoints of the length classes (length-frequency
+  \item \strong{midLengths} or \strong{age}: midpoints of the length classes (length-frequency
   data) or ages (age composition data),
-  \item \code{Linf}: infinite length for investigated species in cm [cm],
-  \item \code{K}: growth coefficent for investigated species per year [1/year],
-  \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
-  \item \code{catch}: catches, vector or matrix with catches of subsequent years if
+  \item \strong{catch}: catches, vector or matrix with catches of subsequent years if
   the catch curve with constat time intervals should be applied;
+ \item \strong{par}: a list with growth paramters:
+ \itemize{
+    \item \strong{Linf}: infinite length for investigated species in cm [cm],
+    \item \strong{K}: growth coefficent for investigated species per year [1/year],
+    \item \strong{ta}: time point anchoring growth curves in year-length
+  coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0),
+  \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 0),
+    \item \strong{t0}: theoretical time zero, at which individuals of this species hatch,
+    \item \strong{C}: amplitude of growth oscillation of soVBGF (range: 0 to 1, default: 0),
+    \item \strong{ts}: summer point of soVBGF (ts = WP - 0.5) (range: 0 to 1, default: 0);
+    
+ }
 }}
 
 \item{catch_columns}{numerical; indicating the column of the catch matrix which should be
@@ -73,7 +82,7 @@ in case calc_ogive == TRUE, additionally:
 This function applies the (length-converted) linearised catch
    curve to age composition and length-frequency data,
    respectively. It allows to estimate the instantaneous total mortality rate (Z).
-   Optionally, the gear selectivity can be estimated and the cumulative catch
+ p  Optionally, the gear selectivity can be estimated and the cumulative catch
    curve cna be applied.
 }
 \details{
@@ -103,38 +112,38 @@ This function includes the \link{identify} function, which asks you to
 \examples{
 \donttest{
 #_______________________________________________
-# Variable paramter system (with catch vector)
-# based on length frequency data
+## Variable paramter system (with catch vector)
+## based on length frequency data
 data(goatfish)
 output <- catchCurve(goatfish)
 summary(output$linear_mod)
 
-# based on age composition data
+## based on age composition data
 data(whiting)
 catchCurve(whiting, catch_columns = 1)
 
 #_______________________________________________
-# Constant parameter system based on age composition data (with catch matrix)
+## Constant parameter system based on age composition data (with catch matrix)
 catchCurve(whiting)
 
 #_______________________________________________
-# Cumulative Catch Curve
-# based on length frequency data
+## Cumulative Catch Curve
+## based on length frequency data
 data(goatfish)
 catchCurve(goatfish, cumulative = TRUE)
 
-# based on age composition data
+## based on age composition data
 data(synCAA2)
 catchCurve(synCAA2, cumulative = TRUE)
 
 #_______________________________________________
-# Catch Curve with estimation of selection ogive
+## Catch Curve with estimation of selection ogive
 data(synLFQ3)
 output <- catchCurve(synLFQ3, calc_ogive = TRUE)
 summary(output$linear_mod_sel)
  }
 
-# the same with predefined selection for regression line:
+### the same with predefined selection for regression line:
 output <- catchCurve(synLFQ3, calc_ogive = TRUE, reg_int = c(9,21))
 plot(output, plot_selec = TRUE)
 

@@ -4,27 +4,34 @@
 \alias{VPA}
 \title{Virtual Population Analysis (VPA)}
 \usage{
-VPA(param, catch_columns = NA, catch_unit = NA, catch_corFac = NA,
+VPA(lfq, catch_columns = NA, catch_unit = NA, catch_corFac = NA,
   terminalF = NA, terminalE = NA, analysis_type = "VPA",
   algorithm = "new", plus_group = TRUE, plot = FALSE)
 }
 \arguments{
-\item{param}{a list consisting of following parameters:
+\item{lfq}{a list consisting of following parameters:
 \itemize{
-  \item \code{midLengths} or \code{age}: midpoints of the length class
-  (length-frequency data) or ages (age composition data),
-  \item \code{Linf}: infinite length for investigated species in cm [cm],
-  \item \code{K}: growth coefficent for investigated species per year [1/year],
-  \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
-  \item \code{M}: natural mortality [1/year] (numeric value or vector of identical
-     length than midLengths),
-  \item \code{a}: length-weight relationship coefficent (W = a * L^b; for kg/cm3),
-  \item \code{b}: length-weight relationship coefficent (W = a * L^b),
-  \item \code{catch}: catch as vector for pseudo cohort analysis,
+  \item \strong{midLengths} or \strong{age}: midpoints of the length classes (length-frequency
+  data) or ages (age composition data),
+\item \strong{catch}: catch as vector for pseudo cohort analysis,
      or a matrix with catches of subsequent years to follow a real cohort.
      For age-based VPA/CA catch has to be provided in numbers, e.g. '000 individuals
      for length-based VPA/CA catch can also be provided in weight, e.g. kg (use
      argument \code{catch_unit}).
+ \item \strong{par}: a list with growth paramters:
+ \itemize{
+    \item \strong{Linf}: infinite length for investigated species in cm [cm],
+    \item \strong{K}: growth coefficent for investigated species per year [1/year],
+    \item \strong{ta}: time point anchoring growth curves in year-length
+  coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0),
+    \item \strong{t0}: theoretical time zero, at which individuals of this species hatch,
+    \item \strong{C}: amplitude of growth oscillation of soVBGF (range: 0 to 1, default: 0),
+    \item \strong{ts}: summer point of soVBGF (ts = WP - 0.5) (range: 0 to 1, default: 0);
+    \item \strong{M}: natural mortality [1/year] (numeric value or vector of identical
+     length than midLengths),
+  \item \strong{a}: length-weight relationship coefficent (W = a * L^b; for kg/cm3),
+  \item \strong{b}: length-weight relationship coefficent (W = a * L^b),  
+ }
 }}
 
 \item{catch_columns}{numerical; indicating the column of the catch matrix which should be
@@ -59,8 +66,6 @@ A list with the input parameters and following list objects:
   \item \strong{classes.num}: numeric age classes or length groups (without plus sign),
   \item \strong{catch.cohort}: a vector with the catch values which were used for
   the analysis (exists only if catch was a matrix),
-  \item \strong{FM_calc}: a vector with the ifshing mortality (M),
-  \item \strong{Z}: a vector with the total mortality (Z),
   \item \strong{survivors}: a vector with the number of fish surviving to the
       next age class or length group (same unit than input catch vector),
   \item \strong{annualMeanNr}: ta vector with the mean number of fish per year
@@ -72,6 +77,11 @@ A list with the input parameters and following list objects:
   to natural mortality,
   \item \strong{plot_mat}: matrix with rearranged survivors, nat losses
   and catches for plotting;
+  \item \strong{par}: a list with input parameters and additionally:
+  \itemize{
+  \item \strong{Zl}: a vector with the total mortality (Z) for each length class,
+  \item \strong{FMl}: vector with the fishing mortality (FM) for each length class;
+}
 }
 }
 \description{
@@ -107,7 +117,7 @@ The main difference between virtual population analysis (VPA) and cohort
 #_______________________________________________
 # Virtual Popuation Analysis with age-composition data
 data(whiting)
-output <- VPA(param = whiting, catch_columns = 1, terminalE = 0.5, analysis_type = "VPA")
+output <- VPA(lfq = whiting, catch_columns = 1, terminalE = 0.5, analysis_type = "VPA")
 plot(output)
 #_______________________________________________
 # Pope's Cohort Analysis with age-composition data

@@ -4,12 +4,12 @@
 \alias{growth_length_age}
 \title{Estimation of growth parameter using length-at-age data}
 \usage{
-growth_length_age(param, method, Linf_est = NA, Linf_init = 10,
+growth_length_age(laa, method, Linf_est = NA, Linf_init = 10,
   K_init = 0.1, t0_init = 0, CI = FALSE, ci.level = 0.95,
   age_plot = NULL, do.sim = FALSE, nsim = 10000)
 }
 \arguments{
-\item{param}{a list consisting of following parameters:
+\item{laa}{a list consisting of following parameters:
 \itemize{
   \item \strong{age}: age measurements,
   \item \strong{length}: corresponding lengths in cm.
@@ -89,7 +89,7 @@ growth_length_age(dat, method = "GullandHolt")
 growth_length_age(dat, method = "BertalanffyPlot", Linf_est = 50)
 
 # non linear least squares method
-output <- growth_length_age(param = dat, method = "LSM",
+output <- growth_length_age(laa = dat, method = "LSM",
      Linf_init = 30, CI = TRUE, age_plot=NULL)
 summary(output$mod)
 

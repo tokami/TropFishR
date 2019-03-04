@@ -12,6 +12,14 @@ ELEFAN(lfq, Linf_fix = NA, Linf_range = NA, K_range = exp(seq(log(0.1),
   add.values = TRUE, rsa.colors = terrain.colors(20), plot_title = TRUE)
 }
 \arguments{
+\item{lfq}{a list consisting of following parameters:
+\itemize{
+  \item \strong{midLengths} midpoints of the length classes,
+  \item \strong{dates} dates of sampling times (class Date),
+  \item \strong{catch} matrix with catches/counts per length class (row)
+     and sampling date (column);
+}}
+
 \item{Linf_fix}{numeric; if used the K-Scan method is applied with a fixed
 Linf value (i.e. varying K only).}
 
@@ -68,14 +76,6 @@ Overridden when \code{contour = TRUE}.}
 (default: terrain.colors(20))}
 
 \item{plot_title}{logical; indicating whether title to score plots should be displayed}
-
-\item{x}{a list consisting of following parameters:
-\itemize{
-  \item \strong{midLengths} midpoints of the length classes,
-  \item \strong{dates} dates of sampling times (class Date),
-  \item \strong{catch} matrix with catches/counts per length class (row)
-     and sampling date (column);
-}}
 }
 \value{
 A list with the input parameters and following list objects:

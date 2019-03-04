@@ -63,7 +63,7 @@ This function plots objects of the class "predict_mod", which are results
 \examples{
 \dontrun{
 # Nemipterus marginatus - age structured data
-threadfin <- list(Winf = 286,K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4)
+threadfin <- list(par = list(Winf = 286,K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4))
 
 output <- predict_mod(threadfin, FM_change = seq(0,6,0.1),
    tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
@@ -71,9 +71,9 @@ plot(output)
 
 # hake - length structured data
 data(hake)
-hake$Lr <- 35
+hake$par$Lr <- 35
 select.list <- list(selecType = 'trawl_ogive', L50 = 20, L75 = 24)
-output <- predict_mod(param = hake, FM_change = seq(0,0.4,0.05),
+output <- predict_mod(lfq = hake, FM_change = seq(0,0.4,0.05),
                       curr.E = 0.4, curr.Lc = 40,
                       Lc_change = seq(5,80,1), s_list = select.list,
                       type = 'ypr', plot = FALSE)

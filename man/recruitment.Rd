@@ -4,10 +4,10 @@
 \alias{recruitment}
 \title{Recruitment patterns}
 \usage{
-recruitment(param, tsample, catch_column = NA, plot = FALSE)
+recruitment(lfq, tsample, catch_column = NA, plot = FALSE)
 }
 \arguments{
-\item{param}{a list consisting of following parameters:
+\item{lfq}{a list consisting of following parameters:
 \itemize{
   \item \code{midLengths}: midpoints of the length classes (length-frequency
   data),
@@ -73,24 +73,24 @@ required, for the seasonalised vBGF C, ts and D.
 dat <- list(midLengths = seq(2,98,4),
                catch = c(0.6,17.6,93,83.2,12.6,0.3,0,0,0,1,17.1,51.4,
                26.1,2.2,0.2,4.5,21.6,17.6,3.7,8.7,10.6,6.3,5.6,2.9,0.8),
-               Linf = 100,
-               K = 0.5,
-               t0 = 0)
-recruitment(param = dat, tsample = 0.25)
+               par = list(Linf = 100,
+                          K = 0.5,
+                          t0 = 0))
+recruitment(lfq = dat, tsample = 0.25)
 
 
 # several samples
 data(synLFQ4)
 
 # add growth parameters
-synLFQ4$Linf <- 80
-synLFQ4$K <- 0.5
-synLFQ4$t0 <- 0.25
+synLFQ4$par$Linf <- 80
+synLFQ4$par$K <- 0.5
+synLFQ4$par$t0 <- 0.25
 
 # retrieve sampling times from catch matrix
 s_dates <- as.POSIXlt(synLFQ4$dates, format="\%d.\%m.\%Y")
 
-recruitment(param = synLFQ4, tsample = s_dates$yday/365, plot = TRUE)
+recruitment(lfq = synLFQ4, tsample = s_dates$yday/365, plot = TRUE)
 
 
 plot(synLFQ4, Fname = "catch",

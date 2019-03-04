@@ -69,7 +69,7 @@ A list with the input parameters and following list objects:
 }
 }
 \description{
-Thsi function estimates von Bertalanffy growth function (VBGF)
+This function estimates von Bertalanffy growth function (VBGF)
    curves for a set of growth parameters.
 }
 \details{

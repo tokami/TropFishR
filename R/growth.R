@@ -4,7 +4,7 @@
 #'      in the observed length frequency distribution by resolving it into
 #'      Gaussian components.
 #'
-#' @param param a list consisting of following parameters:
+#' @param lfq a list consisting of following parameters:
 #' \itemize{
 #'   \item \code{midLengths} midpoints of the length class as vector,
 #'   \item \code{catch} a vector with the catch per length class or a matrix with
@@ -25,7 +25,7 @@
 #'
 #' \donttest{
 #'  data(synLFQ1)
-#'  Bhattacharya(param = synLFQ1)
+#'  Bhattacharya(lfq = synLFQ1)
 #' }
 #'
 #' @details This method includes the \code{\link{identify}} function, which allows to
@@ -67,317 +67,34 @@
 #' @export
 
 
-Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
+Bhattacharya <- function(lfq, n_rnorm = 1000, savePlots = FALSE){
 
-  res <- param
-  if("midLengths" %in% names(res) == TRUE){
-    midLengths <- as.character(res$midLengths)
-    # create column without plus group (sign) if present
-    midLengths.num <- do.call(rbind,strsplit(midLengths, split="\\+"))
-    midLengths.num <- as.numeric(midLengths.num[,1])
-  }else stop(
-    noquote('The parameter list does not contain an object with name "midLengths"'))
-  if("catch" %in% names(res) == TRUE){
-    catch <- res$catch
-  }else stop(
-    noquote('The parameter list does not contain an object with name "catch"'))
+    res <- lfq
+    if("midLengths" %in% names(res) == TRUE){
+        midLengths <- as.character(res$midLengths)
+        ## create column without plus group (sign) if present
+        midLengths.num <- do.call(rbind,strsplit(midLengths, split="\\+"))
+        midLengths.num <- as.numeric(midLengths.num[,1])
+    }else stop(
+              noquote('The parameter list does not contain an object with name "midLengths"'))
+    if("catch" %in% names(res) == TRUE){
+        catch <- res$catch
+    }else stop(
+              noquote('The parameter list does not contain an object with name "catch"'))
 
-  #Transform matrix into vector if provided
-  if(class(catch) == 'matrix'){
-    catch.vec <- rowSums(catch, na.rm = TRUE)
-  }else catch.vec <- catch
-  if(length(midLengths.num) != length(catch.vec)) stop(
-    noquote("midLengths and catch do not have the same length!"))
+    ##Transform matrix into vector if provided
+    if(class(catch) == 'matrix'){
+        catch.vec <- rowSums(catch, na.rm = TRUE)
+    }else catch.vec <- catch
+    if(length(midLengths.num) != length(catch.vec)) stop(
+                                                        noquote("midLengths and catch do not have the same length!"))
 
-  #calculate size class interval
-  interval <- midLengths.num[2] - midLengths.num[1]
+    ##calculate size class interval
+    interval <- midLengths.num[2] - midLengths.num[1]
 
-  #STEP 1: fills second column of bhat with counts per size class
-  bhat.table <- data.frame('mean.length.classes' = midLengths.num,
-                           'N1.plus' = catch.vec,
-                           'log.N1.plus' = NA,
-                           'delta.log.N1.plus' = NA,
-                           'L' = NA,
-                           'delta.log.N' = NA,
-                           'log.N1' = NA,
-                           'N1' = NA,
-                           'N2.plus' = NA)
-
-  bhat.table.list <- vector("list", 13)
-  a.b.list <- vector("list", 12)
-  l.s.list <- vector("list", 12)
-  temp.list <- vector("list", 12)
-  coho_plot <- vector("list",12)
-
-
-  colour.xy <- c('blue','darkgreen','red','goldenrod2','purple','orange',
-                 'lightgreen','skyblue','brown','darkblue','darkorange','darkred')
-  colour.vec <- rep('black', length(bhat.table$L))
-
-  writeLines("Starting on the left, please choose from black points which \nlie on a straight line! Do not include points which might be \naffected by the next distribution! \nTo stop the process press right click (and choose \n'Stop' if necessary)")
-  flush.console()
-
-  for(xy in 1:12){
-
-    #STEP 2: fills third column
-    bhat.table$log.N1.plus <- round(log(bhat.table$N1.plus),digits=3)
-
-    #STEP 3: fills fourth coulmn
-    if(xy > 1) bhat.table$log.N1.plus[last_choices[2]] <- 0
-    for(i in 2:length(bhat.table$log.N1.plus)){
-      delta.value <- bhat.table$log.N1.plus[i] - bhat.table$log.N1.plus[i-1]
-      bhat.table$delta.log.N1.plus[i] <- delta.value
-    }
-
-    #STEP 4: fills fifth coulmn
-    checki <- !is.na(bhat.table$delta.log.N1.plus) &
-      bhat.table$delta.log.N1.plus != 'Inf'
-    bhat.table$L[checki] <- bhat.table$mean.length.classes[checki] - (interval/2)
-
-    #STEP 5: plot of fifth against fourth column
-    checki2 <- !is.na(bhat.table$delta.log.N1.plus) &
-      bhat.table$delta.log.N1.plus != 'Inf'
-    bhat.table$L[checki2] <- (bhat.table$mean.length.classes[checki2] - (interval/2))
-
-    #STEP 6: select points for regression line
-    if(xy == 1){bhat.table.list[[1]] <- bhat.table}
-
-    repeat {
-
-      if("id.co1" %in% ls()){
-        if(length(id.co1$ind) == 0) break
-      }
-
-      repeat {
-        # histogramm
-        dev.new()#noRStudioGD = TRUE)
-        par(mfrow = c(2,1),
-            oma = c(6.5, 0.5, 2, 1) + 0.1,
-            mar = c(0, 4, 0.5, 0) + 0.1)
-        layout(matrix(c(1,2),nrow=2), heights = c(1,2.5))
-
-        freqis <- rep(bhat.table.list[[1]]$mean.length.classes, bhat.table.list[[1]]$N1.plus)
-        if(xy == 1){
-          hist(freqis, breaks = 50, main = '', xaxt = 'n', probability = TRUE)
-          mtext(side = 3, "Click on two points. Escape to Quit.",
-                      xpd = NA, cex = 1.25)
-        }
-        if(xy > 1){
-          hist(freqis, breaks = 50, main = '', xaxt = 'n',
-                        probability = TRUE, ylim = c(0,maxlim))
-          mtext(side = 3, "Click on two points. Escape to Quit.",
-                      xpd = NA, cex = 1.25)
-        }
-        if(xy > 1){
-          for(tempRep in 1:(xy-1)){
-            lines(temp.list[[tempRep]]$xfit, temp.list[[tempRep]]$yyfit,
-                  col=colour.xy[tempRep], lwd=1.5)
-          }
-        }
-        # bhatta plot
-        if(xy == 1){
-          plot(bhat.table.list[[1]]$L, bhat.table.list[[1]]$delta.log.N1.plus,
-               col = colour.vec, pch = 16,
-               ylab = expression(paste(delta," log N+")))
-          abline(h = 0)
-          text(bhat.table.list[[1]]$L, bhat.table.list[[1]]$delta.log.N1.plus,
-               labels = row.names(bhat.table.list[[1]]), cex= 0.7, pos=3)
-          title(xlab = "L", outer = TRUE, line = 2.5)
-        }
-        if(xy > 1){
-          plot(bhat.table.list[[1]]$L, bhat.table.list[[1]]$delta.log.N1.plus, pch = 4,
-               col = colour.vec,
-               ylab = expression(paste(delta," log N+")))
-          abline(h = 0)
-          abline(a = a.b.list[[xy-1]][1], b=a.b.list[[xy-1]][2],
-                 col=colour.xy[xy-1], lwd = 1.5)
-          points(bhat.table$L[(last_choices[2]+1):length(bhat.table$L)],
-                 bhat.table$delta.log.N1.plus[(last_choices[2]+1):length(bhat.table$L)],
-                 col = 'black', pch = 16)
-          text(bhat.table$L[(last_choices[2]+1):length(bhat.table$L)],
-               bhat.table$delta.log.N1.plus[(last_choices[2]+1):length(bhat.table$L)],
-               labels=row.names(bhat.table.list[[1]][
-                 (last_choices[2]+1):length(bhat.table$delta.log.N1.plus),]),
-               cex = 0.7, pos = 3)
-          title(xlab = "L", outer = TRUE, line = 2.5)
-        }
-        # identify regression line
-        if(xy > 1) rm(id.co1)
-        id.co1 <- identify(bhat.table$L, bhat.table$delta.log.N1.plus, n = 2, pos = TRUE)
-        if(length(id.co1$ind) == 0) break
-
-        colour.vec[id.co1$ind[1]:id.co1$ind[2]] <- colour.xy[xy]
-        dev.off()
-
-        #STEP 7: calculate mean length and standard deviation of regression line
-        x.co1 <- bhat.table$L[id.co1$ind[1]:id.co1$ind[2]]
-
-        # Break loop if selection does not embrace at least 3 points
-        if(length(x.co1) < 3){
-          writeLines("Your selection is not possible. You have to choose two \npoints which include at least one other point. At least \nthree points are required for a regression line. Please choose again!")
-          flush.console()
-        }
-        if(length(x.co1) >= 3){
-          break
-        }
-      }
-
-      if(xy == 1 & length(id.co1$ind) == 0){
-        writeLines("You did not choose any points! Please run the function again \nand choose points to include in the calculation of the \nGaussian components of the observed frequency.")
-        flush.console()
-        cancel <- TRUE
-        break
-      }
-      if(xy > 1 & length(id.co1$ind) == 0){
-        cancel <- FALSE
-        break
-      }
-
-      y.co1 <- bhat.table$delta.log.N1.plus[id.co1$ind[1]:id.co1$ind[2]]
-      m.co1 <- lm(y.co1 ~ x.co1)
-      sum.m.co1 <- summary(m.co1)
-      a.co1 <- sum.m.co1$coefficients[1]
-      b.co1 <- sum.m.co1$coefficients[2]
-      l.mean.co1 <- -a.co1/b.co1   #mean length: L(mean)(N1) = -a/b
-      s.co1 <- sqrt(-1/b.co1)      #standard deviation: s(N1) = sqrt(-1/b)
-
-      a.b.list[[xy]] <- c(a.co1,b.co1)
-      l.s.list[[xy]] <- c(l.mean.co1,s.co1)
-
-
-      #STEP 8: fill sixth column
-      #set.seed ????
-      normal.dis.co1 <- rnorm(n=n_rnorm, mean = l.mean.co1, sd=s.co1)
-      max.class.ind.co1 <- which(round(max(normal.dis.co1), digits = 0) >= (
-        bhat.table$mean.length.classes - (interval/2)) &
-          round(max(normal.dis.co1),digits = 0) < (
-            bhat.table$mean.length.classes + (interval/2)))
-      if(length(max.class.ind.co1) == 0) max.class.ind.co1 <- length(bhat.table$mean.length.classes)
-      max.class.co1 <- bhat.table$mean.length.classes[max.class.ind.co1]
-      for(i in 1:max.class.ind.co1){
-        delta.N <- round(a.co1 + b.co1 * bhat.table$L[i],digits=3)
-        bhat.table$delta.log.N[i] <- delta.N
-      }
-
-
-      # Draw plot for checking
-      if(xy == 1) min.class.ind.co1 <- 1
-      if(xy > 1){
-        min.class.ind.co1 <- which(round(min(normal.dis.co1), digits = 0) >= (
-          bhat.table$mean.length.classes - (interval/2)) &
-            round(min(normal.dis.co1),digits = 0) < (
-              bhat.table$mean.length.classes + (interval/2)))
-        if(length(min.class.ind.co1) == 0) min.class.ind.co1 <- 1
-      }
-      min.class.co1 <- bhat.table$mean.length.classes[min.class.ind.co1]
-
-      xfit <- seq(min.class.co1, max.class.co1, length = 100)
-      yfit <- dnorm(xfit, mean=l.mean.co1, sd=s.co1)
-
-      freqis <- rep(bhat.table.list[[1]]$mean.length.classes,
-                    bhat.table.list[[1]]$N1.plus)
-      h <- hist(freqis, breaks = 50, plot = FALSE)
-
-      dev.new()#noRStudioGD = TRUE)
-      par(mfrow = c(2,1),
-          oma = c(6.5, 0.5, 2, 1) + 0.1,
-          mar = c(0, 4, 0.5, 0) + 0.1)
-      layout(matrix(c(1,2),nrow=2), heights = c(1,2.5))
-      # histogram
-      yyfit <-  yfit * abs((max(yfit) - max(h$density)) / max(yfit))
-      if(xy == 1) maxlim <- ifelse(max(yyfit) > max(h$density), max(yyfit), max(h$density))
-      hist(freqis, breaks = 50, main = "", xaxt = 'n',
-           probability = TRUE, ylim = c(0,maxlim))
-      if(xy > 1){
-        for(tempRep in 1:(xy-1)){
-          lines(temp.list[[tempRep]]$xfit, temp.list[[tempRep]]$yyfit,
-                col=colour.xy[tempRep], lwd=1.5)
-        }
-      }
-      lines(xfit, yyfit, col=colour.xy[xy], lwd=1.5)
-      temp.list[[xy]] <- list(xfit = xfit,
-                              yyfit = yyfit)
-      # bhatta plot
-      plot(bhat.table.list[[1]]$L, bhat.table.list[[1]]$delta.log.N1.plus, pch = 4,
-           col = colour.vec,
-           ylab = expression(paste(delta," log N+")))
-      abline(h = 0)
-      abline(a = a.co1, b=b.co1, col=colour.xy[xy], lwd = 1.5)
-      points(bhat.table$L[(id.co1$ind[2]+1):length(bhat.table$L)],
-             bhat.table$delta.log.N1.plus[(id.co1$ind[2]+1):length(bhat.table$L)],
-             col = 'black', pch = 16)
-      text(bhat.table$L[(id.co1$ind[1]):(id.co1$ind[2])],
-           bhat.table$delta.log.N1.plus[(id.co1$ind[1]):(id.co1$ind[2])],
-           labels=row.names(bhat.table.list[[1]][(id.co1$ind[1]):
-             (id.co1$ind[2]),]),
-           cex= 0.7, pos=3)
-      points(bhat.table$L[(id.co1$ind[1]):(id.co1$ind[2])],
-             bhat.table$delta.log.N1.plus[(id.co1$ind[1]):(id.co1$ind[2])],
-             col = colour.xy[xy], pch = 16)
-      text(bhat.table$L[(id.co1$ind[2]+1):length(bhat.table$L)],
-           bhat.table$delta.log.N1.plus[(id.co1$ind[2]+1):length(bhat.table$L)],
-           labels=row.names(bhat.table.list[[1]][
-             (id.co1$ind[2]+1):length(bhat.table$delta.log.N1.plus),]),
-           cex= 0.7, pos=3)
-      title(xlab = "L", outer = TRUE, line = 2.5)
-
-      if(savePlots == TRUE) coho_plot[[xy]] <- recordPlot() ##coho_plot[xy] <- quartz.save(file = paste("Cohort",xy,"plot", sep='_'),type = "jpeg")
-
-      repSel <- readline(prompt = writeLines("Are you satisfied with your selection and want to continue? \n'y' or 'redo':"))
-
-      if(repSel == '') repSel <- readline(prompt = writeLines("Please type 'y' or 'redo' into the console! \nAre you satisfied with your selection and want to continue? \n'y' or 'redo':"))
-
-      dev.off()
-
-      if(repSel == 'y') break
-    }
-
-    #STEP 9: fills one value in seventh column and one in eigth column, get clean starting value
-    if(length(id.co1$ind) == 0) break
-    choosen <- seq(id.co1$ind[1],id.co1$ind[2],interval)
-    # if odd, take midpoint:
-    if(length(choosen) %% 2 == 1){
-      mid_choice <- id.co1$ind[1] + (id.co1$ind[2]-id.co1$ind[1])/2
-    }else{
-      # if even, take one after midpoint:
-      mid_choice <- (id.co1$ind[1] + (id.co1$ind[2]-id.co1$ind[1])/2) + (interval/2)
-    }
-    bhat.table$log.N1[mid_choice] <- log(bhat.table$N1.plus[mid_choice])
-    bhat.table$N1[mid_choice] <- bhat.table$N1.plus[mid_choice]
-
-
-    #STEP 10: fills rest of seventh column
-    for(i in (mid_choice+1):length(bhat.table$delta.log.N)){
-      log.N1 <- bhat.table$log.N1[i-1] + bhat.table$delta.log.N[i]
-      bhat.table$log.N1[i] <- log.N1
-    }
-
-    #STEP 11: fills rest of eigth column
-    for(i in (mid_choice+1):length(bhat.table$delta.log.N)){
-      N1i <- round(exp(bhat.table$log.N1[i]),digits=2)
-      bhat.table$N1[i] <- N1i
-    }
-
-    #STEP 12: fills ninth column
-    bhat.table$N1[which(which(is.na(bhat.table$N1)) <
-                          max.class.ind.co1)] <- bhat.table$N1.plus[
-                            which(which(is.na(bhat.table$N1)) <
-                                    max.class.ind.co1)]
-
-    bhat.table$N2.plus <- bhat.table$N1.plus - bhat.table$N1
-
-    bhat.table$N2.plus[which(is.na(bhat.table$N2.plus))] <-
-      bhat.table$N1.plus[which(is.na(bhat.table$N2.plus))]
-
-
-    #for creation of new bhat table
-    bhat.table2 <- bhat.table
-    bhat.table2$N2.plus[which(bhat.table2$N2.plus < 0)] <- 0
-    bhat.table2$N1[which(bhat.table2$N2.plus < 0)] <- bhat.table2$N1.plus
-
-    #creation of new table for continuation
-    bhat.table <- data.frame('mean.length.classes' = bhat.table2$mean.length.classes,
-                             'N1.plus' = bhat.table2$N2.plus,
+    ##STEP 1: fills second column of bhat with counts per size class
+    bhat.table <- data.frame('mean.length.classes' = midLengths.num,
+                             'N1.plus' = catch.vec,
                              'log.N1.plus' = NA,
                              'delta.log.N1.plus' = NA,
                              'L' = NA,
@@ -386,78 +103,370 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
                              'N1' = NA,
                              'N2.plus' = NA)
 
-    #arrange dataframe for saving
-    colnames(bhat.table2) <- c('mean.length.classes',paste('N',xy,'.plus',sep=''),
-                               paste('log.N',xy,'.plus',sep=''),
-                               paste('delta.log.N',xy,'.plus',sep=''),'L',
-                               'delta.log.N',paste('log.N',xy,sep=''),
-                               paste('N',xy,sep=''),paste('N',xy+1,'.plus',sep=''))
+    bhat.table.list <- vector("list", 13)
+    a.b.list <- vector("list", 12)
+    l.s.list <- vector("list", 12)
+    temp.list <- vector("list", 12)
+    coho_plot <- vector("list",12)
 
-    #save data
-    bhat.table.list[[xy+1]] <- bhat.table2
-    last_choices <- id.co1$ind
-    a.b.list[[xy]] <- c(a.b.list[[xy]],id.co1$ind[1],id.co1$ind[2])
-  }
 
-  # Bhatta table
-  bhat.table.list <- bhat.table.list[!sapply(bhat.table.list, is.null)]
-  bhat.table.list2 <- bhat.table.list[-1]
-  bhat.table.list_new <- lapply(bhat.table.list2, function(x)  return(x[,3:9]))
-  bhat.results <- do.call(cbind, bhat.table.list_new)
-  if(!is.null(bhat.results)){
-    ret_pri <- cbind(bhat.table.list[[1]][,1:2], bhat.results)
-  }else ret_pri <- bhat.table.list[[1]]
+    colour.xy <- c('blue','darkgreen','red','goldenrod2','purple','orange',
+                   'lightgreen','skyblue','brown','darkblue','darkorange','darkred')
+    colour.vec <- rep('black', length(bhat.table$L))
 
-  # Intercept & Slope
-  a.b.list <- a.b.list[!sapply(a.b.list,is.null)]
-  if(length(a.b.list) > 0){
-    a.b.df <- do.call(rbind,a.b.list)
-    a.b.df <- cbind(1:length(a.b.df[,1]),a.b.df)
-    colnames(a.b.df) <- c("Cohort","Intercept","Slope","Start_point","End_point")
-  }else a.b.df = NA
+    writeLines("Starting on the left, please choose from black points which \nlie on a straight line! Do not include points which might be \naffected by the next distribution! \nTo stop the process press right click (and choose \n'Stop' if necessary)")
+    flush.console()
 
-  # Lmean and SD
-  l.s.list <- l.s.list[!sapply(l.s.list,is.null)]
-  if(length(l.s.list) > 1){
-    l.s.df <- do.call(rbind,l.s.list)
-    l.s.df <- cbind(1:length(l.s.df[,1]),l.s.df)
-    # seperation index (SI)
-    SIs <- rep(NA,length(l.s.df[,1]))
-    for(i in 1:(length(l.s.df[,1])-1)){
-      SIs[i] <- abs(l.s.df[i+1,2]-l.s.df[i,2]) / abs(l.s.df[i+1,3]-l.s.df[i,3])
+    for(xy in 1:12){
+
+        ##STEP 2: fills third column
+        bhat.table$log.N1.plus <- round(log(bhat.table$N1.plus),digits=3)
+
+        ##STEP 3: fills fourth coulmn
+        if(xy > 1) bhat.table$log.N1.plus[last_choices[2]] <- 0
+        for(i in 2:length(bhat.table$log.N1.plus)){
+            delta.value <- bhat.table$log.N1.plus[i] - bhat.table$log.N1.plus[i-1]
+            bhat.table$delta.log.N1.plus[i] <- delta.value
+        }
+
+        ##STEP 4: fills fifth coulmn
+        checki <- !is.na(bhat.table$delta.log.N1.plus) &
+            bhat.table$delta.log.N1.plus != 'Inf'
+        bhat.table$L[checki] <- bhat.table$mean.length.classes[checki] - (interval/2)
+
+        ##STEP 5: plot of fifth against fourth column
+        checki2 <- !is.na(bhat.table$delta.log.N1.plus) &
+            bhat.table$delta.log.N1.plus != 'Inf'
+        bhat.table$L[checki2] <- (bhat.table$mean.length.classes[checki2] - (interval/2))
+
+        ##STEP 6: select points for regression line
+        if(xy == 1){bhat.table.list[[1]] <- bhat.table}
+
+        repeat {
+
+            if("id.co1" %in% ls()){
+                if(length(id.co1$ind) == 0) break
+            }
+
+            repeat {
+                ## histogramm
+                dev.new()##noRStudioGD = TRUE)
+                par(mfrow = c(2,1),
+                    oma = c(6.5, 0.5, 2, 1) + 0.1,
+                    mar = c(0, 4, 0.5, 0) + 0.1)
+                layout(matrix(c(1,2),nrow=2), heights = c(1,2.5))
+
+                freqis <- rep(bhat.table.list[[1]]$mean.length.classes, bhat.table.list[[1]]$N1.plus)
+                if(xy == 1){
+                    hist(freqis, breaks = 50, main = '', xaxt = 'n', probability = TRUE)
+                    mtext(side = 3, "Click on two points. Escape to Quit.",
+                          xpd = NA, cex = 1.25)
+                }
+                if(xy > 1){
+                    hist(freqis, breaks = 50, main = '', xaxt = 'n',
+                         probability = TRUE, ylim = c(0,maxlim))
+                    mtext(side = 3, "Click on two points. Escape to Quit.",
+                          xpd = NA, cex = 1.25)
+                }
+                if(xy > 1){
+                    for(tempRep in 1:(xy-1)){
+                        lines(temp.list[[tempRep]]$xfit, temp.list[[tempRep]]$yyfit,
+                              col=colour.xy[tempRep], lwd=1.5)
+                    }
+                }
+                ## bhatta plot
+                if(xy == 1){
+                    plot(bhat.table.list[[1]]$L, bhat.table.list[[1]]$delta.log.N1.plus,
+                         col = colour.vec, pch = 16,
+                         ylab = expression(paste(delta," log N+")))
+                    abline(h = 0)
+                    text(bhat.table.list[[1]]$L, bhat.table.list[[1]]$delta.log.N1.plus,
+                         labels = row.names(bhat.table.list[[1]]), cex= 0.7, pos=3)
+                    title(xlab = "L", outer = TRUE, line = 2.5)
+                }
+                if(xy > 1){
+                    plot(bhat.table.list[[1]]$L, bhat.table.list[[1]]$delta.log.N1.plus, pch = 4,
+                         col = colour.vec,
+                         ylab = expression(paste(delta," log N+")))
+                    abline(h = 0)
+                    abline(a = a.b.list[[xy-1]][1], b=a.b.list[[xy-1]][2],
+                           col=colour.xy[xy-1], lwd = 1.5)
+                    points(bhat.table$L[(last_choices[2]+1):length(bhat.table$L)],
+                           bhat.table$delta.log.N1.plus[(last_choices[2]+1):length(bhat.table$L)],
+                           col = 'black', pch = 16)
+                    text(bhat.table$L[(last_choices[2]+1):length(bhat.table$L)],
+                         bhat.table$delta.log.N1.plus[(last_choices[2]+1):length(bhat.table$L)],
+                         labels=row.names(bhat.table.list[[1]][
+                             (last_choices[2]+1):length(bhat.table$delta.log.N1.plus),]),
+                         cex = 0.7, pos = 3)
+                    title(xlab = "L", outer = TRUE, line = 2.5)
+                }
+                ## identify regression line
+                if(xy > 1) rm(id.co1)
+                id.co1 <- identify(bhat.table$L, bhat.table$delta.log.N1.plus, n = 2, pos = TRUE)
+                if(length(id.co1$ind) == 0) break
+
+                colour.vec[id.co1$ind[1]:id.co1$ind[2]] <- colour.xy[xy]
+                dev.off()
+
+                ##STEP 7: calculate mean length and standard deviation of regression line
+                x.co1 <- bhat.table$L[id.co1$ind[1]:id.co1$ind[2]]
+
+                ## Break loop if selection does not embrace at least 3 points
+                if(length(x.co1) < 3){
+                    writeLines("Your selection is not possible. You have to choose two \npoints which include at least one other point. At least \nthree points are required for a regression line. Please choose again!")
+                    flush.console()
+                }
+                if(length(x.co1) >= 3){
+                    break
+                }
+            }
+
+            if(xy == 1 & length(id.co1$ind) == 0){
+                writeLines("You did not choose any points! Please run the function again \nand choose points to include in the calculation of the \nGaussian components of the observed frequency.")
+                flush.console()
+                cancel <- TRUE
+                break
+            }
+            if(xy > 1 & length(id.co1$ind) == 0){
+                cancel <- FALSE
+                break
+            }
+
+            y.co1 <- bhat.table$delta.log.N1.plus[id.co1$ind[1]:id.co1$ind[2]]
+            m.co1 <- lm(y.co1 ~ x.co1)
+            sum.m.co1 <- summary(m.co1)
+            a.co1 <- sum.m.co1$coefficients[1]
+            b.co1 <- sum.m.co1$coefficients[2]
+            l.mean.co1 <- -a.co1/b.co1   ##mean length: L(mean)(N1) = -a/b
+            s.co1 <- sqrt(-1/b.co1)      ##standard deviation: s(N1) = sqrt(-1/b)
+
+            a.b.list[[xy]] <- c(a.co1,b.co1)
+            l.s.list[[xy]] <- c(l.mean.co1,s.co1)
+
+
+            ##STEP 8: fill sixth column
+            ##set.seed ????
+            normal.dis.co1 <- rnorm(n=n_rnorm, mean = l.mean.co1, sd=s.co1)
+            max.class.ind.co1 <- which(round(max(normal.dis.co1), digits = 0) >= (
+                bhat.table$mean.length.classes - (interval/2)) &
+                round(max(normal.dis.co1),digits = 0) < (
+                    bhat.table$mean.length.classes + (interval/2)))
+            if(length(max.class.ind.co1) == 0) max.class.ind.co1 <- length(bhat.table$mean.length.classes)
+            max.class.co1 <- bhat.table$mean.length.classes[max.class.ind.co1]
+            for(i in 1:max.class.ind.co1){
+                delta.N <- round(a.co1 + b.co1 * bhat.table$L[i],digits=3)
+                bhat.table$delta.log.N[i] <- delta.N
+            }
+
+
+            ## Draw plot for checking
+            if(xy == 1) min.class.ind.co1 <- 1
+            if(xy > 1){
+                min.class.ind.co1 <- which(round(min(normal.dis.co1), digits = 0) >= (
+                    bhat.table$mean.length.classes - (interval/2)) &
+                    round(min(normal.dis.co1),digits = 0) < (
+                        bhat.table$mean.length.classes + (interval/2)))
+                if(length(min.class.ind.co1) == 0) min.class.ind.co1 <- 1
+            }
+            min.class.co1 <- bhat.table$mean.length.classes[min.class.ind.co1]
+
+            xfit <- seq(min.class.co1, max.class.co1, length = 100)
+            yfit <- dnorm(xfit, mean=l.mean.co1, sd=s.co1)
+
+            freqis <- rep(bhat.table.list[[1]]$mean.length.classes,
+                          bhat.table.list[[1]]$N1.plus)
+            h <- hist(freqis, breaks = 50, plot = FALSE)
+
+            dev.new()##noRStudioGD = TRUE)
+            par(mfrow = c(2,1),
+                oma = c(6.5, 0.5, 2, 1) + 0.1,
+                mar = c(0, 4, 0.5, 0) + 0.1)
+            layout(matrix(c(1,2),nrow=2), heights = c(1,2.5))
+            ## histogram
+            yyfit <-  yfit * abs((max(yfit) - max(h$density)) / max(yfit))
+            if(xy == 1) maxlim <- ifelse(max(yyfit) > max(h$density), max(yyfit), max(h$density))
+            hist(freqis, breaks = 50, main = "", xaxt = 'n',
+                 probability = TRUE, ylim = c(0,maxlim))
+            if(xy > 1){
+                for(tempRep in 1:(xy-1)){
+                    lines(temp.list[[tempRep]]$xfit, temp.list[[tempRep]]$yyfit,
+                          col=colour.xy[tempRep], lwd=1.5)
+                }
+            }
+            lines(xfit, yyfit, col=colour.xy[xy], lwd=1.5)
+            temp.list[[xy]] <- list(xfit = xfit,
+                                    yyfit = yyfit)
+            ## bhatta plot
+            plot(bhat.table.list[[1]]$L, bhat.table.list[[1]]$delta.log.N1.plus, pch = 4,
+                 col = colour.vec,
+                 ylab = expression(paste(delta," log N+")))
+            abline(h = 0)
+            abline(a = a.co1, b=b.co1, col=colour.xy[xy], lwd = 1.5)
+            points(bhat.table$L[(id.co1$ind[2]+1):length(bhat.table$L)],
+                   bhat.table$delta.log.N1.plus[(id.co1$ind[2]+1):length(bhat.table$L)],
+                   col = 'black', pch = 16)
+            text(bhat.table$L[(id.co1$ind[1]):(id.co1$ind[2])],
+                 bhat.table$delta.log.N1.plus[(id.co1$ind[1]):(id.co1$ind[2])],
+                 labels=row.names(bhat.table.list[[1]][(id.co1$ind[1]):
+                                                       (id.co1$ind[2]),]),
+                 cex= 0.7, pos=3)
+            points(bhat.table$L[(id.co1$ind[1]):(id.co1$ind[2])],
+                   bhat.table$delta.log.N1.plus[(id.co1$ind[1]):(id.co1$ind[2])],
+                   col = colour.xy[xy], pch = 16)
+            text(bhat.table$L[(id.co1$ind[2]+1):length(bhat.table$L)],
+                 bhat.table$delta.log.N1.plus[(id.co1$ind[2]+1):length(bhat.table$L)],
+                 labels=row.names(bhat.table.list[[1]][
+                     (id.co1$ind[2]+1):length(bhat.table$delta.log.N1.plus),]),
+                 cex= 0.7, pos=3)
+            title(xlab = "L", outer = TRUE, line = 2.5)
+
+            if(savePlots == TRUE) coho_plot[[xy]] <- recordPlot() ####coho_plot[xy] <- quartz.save(file = paste("Cohort",xy,"plot", sep='_'),type = "jpeg")
+
+            repSel <- readline(prompt = writeLines("Are you satisfied with your selection and want to continue? \n'y' or 'redo':"))
+
+            if(repSel == '') repSel <- readline(prompt = writeLines("Please type 'y' or 'redo' into the console! \nAre you satisfied with your selection and want to continue? \n'y' or 'redo':"))
+
+            dev.off()
+
+            if(repSel == 'y') break
+        }
+
+        ##STEP 9: fills one value in seventh column and one in eigth column, get clean starting value
+        if(length(id.co1$ind) == 0) break
+        choosen <- seq(id.co1$ind[1],id.co1$ind[2],interval)
+        ## if odd, take midpoint:
+        if(length(choosen) %% 2 == 1){
+            mid_choice <- id.co1$ind[1] + (id.co1$ind[2]-id.co1$ind[1])/2
+        }else{
+            ## if even, take one after midpoint:
+            mid_choice <- (id.co1$ind[1] + (id.co1$ind[2]-id.co1$ind[1])/2) + (interval/2)
+        }
+        bhat.table$log.N1[mid_choice] <- log(bhat.table$N1.plus[mid_choice])
+        bhat.table$N1[mid_choice] <- bhat.table$N1.plus[mid_choice]
+
+
+        ##STEP 10: fills rest of seventh column
+        for(i in (mid_choice+1):length(bhat.table$delta.log.N)){
+            log.N1 <- bhat.table$log.N1[i-1] + bhat.table$delta.log.N[i]
+            bhat.table$log.N1[i] <- log.N1
+        }
+
+        ##STEP 11: fills rest of eigth column
+        for(i in (mid_choice+1):length(bhat.table$delta.log.N)){
+            N1i <- round(exp(bhat.table$log.N1[i]),digits=2)
+            bhat.table$N1[i] <- N1i
+        }
+
+        ##STEP 12: fills ninth column
+        bhat.table$N1[which(which(is.na(bhat.table$N1)) <
+                            max.class.ind.co1)] <- bhat.table$N1.plus[
+                                                                  which(which(is.na(bhat.table$N1)) <
+                                                                        max.class.ind.co1)]
+
+        bhat.table$N2.plus <- bhat.table$N1.plus - bhat.table$N1
+
+        bhat.table$N2.plus[which(is.na(bhat.table$N2.plus))] <-
+            bhat.table$N1.plus[which(is.na(bhat.table$N2.plus))]
+
+
+        ##for creation of new bhat table
+        bhat.table2 <- bhat.table
+        bhat.table2$N2.plus[which(bhat.table2$N2.plus < 0)] <- 0
+        bhat.table2$N1[which(bhat.table2$N2.plus < 0)] <- bhat.table2$N1.plus
+
+        ##creation of new table for continuation
+        bhat.table <- data.frame('mean.length.classes' = bhat.table2$mean.length.classes,
+                                 'N1.plus' = bhat.table2$N2.plus,
+                                 'log.N1.plus' = NA,
+                                 'delta.log.N1.plus' = NA,
+                                 'L' = NA,
+                                 'delta.log.N' = NA,
+                                 'log.N1' = NA,
+                                 'N1' = NA,
+                                 'N2.plus' = NA)
+
+        ##arrange dataframe for saving
+        colnames(bhat.table2) <- c('mean.length.classes',paste('N',xy,'.plus',sep=''),
+                                   paste('log.N',xy,'.plus',sep=''),
+                                   paste('delta.log.N',xy,'.plus',sep=''),'L',
+                                   'delta.log.N',paste('log.N',xy,sep=''),
+                                   paste('N',xy,sep=''),paste('N',xy+1,'.plus',sep=''))
+
+        ##save data
+        bhat.table.list[[xy+1]] <- bhat.table2
+        last_choices <- id.co1$ind
+        a.b.list[[xy]] <- c(a.b.list[[xy]],id.co1$ind[1],id.co1$ind[2])
     }
-    l.s.df <- cbind(l.s.df,SIs)
-    colnames(l.s.df) <- c("Cohort","Lmean","SD","SI")
-  }else l.s.df <- NA
 
-  temp.list <- temp.list[!sapply(temp.list, is.null)]
-  coho_plot <- coho_plot[!sapply(coho_plot,is.null)]
+    ## Bhatta table
+    bhat.table.list <- bhat.table.list[!sapply(bhat.table.list, is.null)]
+    bhat.table.list2 <- bhat.table.list[-1]
+    bhat.table.list_new <- lapply(bhat.table.list2, function(x)  return(x[,3:9]))
+    bhat.results <- do.call(cbind, bhat.table.list_new)
+    if(!is.null(bhat.results)){
+        ret_pri <- cbind(bhat.table.list[[1]][,1:2], bhat.results)
+    }else ret_pri <- bhat.table.list[[1]]
 
-  ret <- list(res,
-              regression_lines = a.b.df,
-              Lmean_SD_list = l.s.df,
-              bhat_results = ret_pri,
-              distributions = temp.list,
-              cohort_plots = coho_plot)
-  class(ret) <- "Bhattacharya"
-  if(cancel != TRUE){
-    plot(ret)
-    return(ret)
-  }
+    ## Intercept & Slope
+    a.b.list <- a.b.list[!sapply(a.b.list,is.null)]
+    if(length(a.b.list) > 0){
+        a.b.df <- do.call(rbind,a.b.list)
+        a.b.df <- cbind(1:length(a.b.df[,1]),a.b.df)
+        colnames(a.b.df) <- c("Cohort","Intercept","Slope","Start_point","End_point")
+    }else a.b.df = NA
+
+    ## Lmean and SD
+    l.s.list <- l.s.list[!sapply(l.s.list,is.null)]
+    if(length(l.s.list) > 1){
+        l.s.df <- do.call(rbind,l.s.list)
+        l.s.df <- cbind(1:length(l.s.df[,1]),l.s.df)
+        ## seperation index (SI)
+        SIs <- rep(NA,length(l.s.df[,1]))
+        for(i in 1:(length(l.s.df[,1])-1)){
+            SIs[i] <- abs(l.s.df[i+1,2]-l.s.df[i,2]) / abs(l.s.df[i+1,3]-l.s.df[i,3])
+        }
+        l.s.df <- cbind(l.s.df,SIs)
+        colnames(l.s.df) <- c("Cohort","Lmean","SD","SI")
+    }else l.s.df <- NA
+
+    temp.list <- temp.list[!sapply(temp.list, is.null)]
+    coho_plot <- coho_plot[!sapply(coho_plot,is.null)]
+
+    ret <- list(res,
+                regression_lines = a.b.df,
+                Lmean_SD_list = l.s.df,
+                bhat_results = ret_pri,
+                distributions = temp.list,
+                cohort_plots = coho_plot)
+    class(ret) <- "Bhattacharya"
+    if(cancel != TRUE){
+        plot(ret)
+        return(ret)
+    }
 }
+
 #' @title Powell-Wetherall method
-#
+#' 
 #' @description A method to estimate the instantaneous total mortality rate (Z) and
 #'    the infinite length of the von Bertalanffy growth equation
 #'    (Powell, 1979; Wetherall et al., 1987).
 #'
-#' @param param a list consisting of following parameters:
+#' @param lfq a list consisting of following parameters:
 #' \itemize{
-#'   \item  \code{midLengths}: midpoints of the length groups,
-#'   \item \code{Linf}: infinite length for investigated species [cm],
-#'   \item \code{K}: growth coefficent for investigated species [1/year],
-#'   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
-#'   \item \code{catch}: catch as vector, or a matrix with catches of subsequent years;
+#'   \item \strong{midLengths} or \strong{age}: midpoints of the length classes (length-frequency
+#'   data) or ages (age composition data),
+#' \item \strong{catch}: catch
+#'  \item \strong{par}: a list with growth paramters:
+#'  \itemize{
+#'     \item \strong{Linf}: infinite length for investigated species in cm [cm],
+#'     \item \strong{K}: growth coefficent for investigated species per year [1/year],
+#'     \item \strong{ta}: time point anchoring growth curves in year-length
+#'   coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0),
+#'     \item \strong{t0}: theoretical time zero, at which individuals of this species hatch,
+#'     \item \strong{C}: amplitude of growth oscillation of soVBGF (range: 0 to 1, default: 0),
+#'     \item \strong{ts}: summer point of soVBGF (ts = WP - 0.5) (range: 0 to 1, default: 0);
+#'  }
 #' }
 #' @param catch_columns optional; in case catch is a matrix or data.frame, a number
 #'    indicating which column of the matrix should be analysed (Default: \code{NA}).
@@ -523,173 +532,190 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
 #'
 #' @export
 
-powell_wetherall <- function(param, catch_columns = NA,
+powell_wetherall <- function(lfq, catch_columns = NA,
                              savePlots = FALSE, reg_int = NULL,
                              main = "Powell-Wetherall plot"){
 
-  res <- param
-  catch <- res$catch
+    res <- lfq
+    catch <- res$catch
+    if(!"par" %in% names(lfq)) stop(noquote("Please provide the required parameters in res$par!"))
+    par <- res$par
+    
 
-  if(class(catch) == "data.frame" | class(catch) == "matrix"){
-    if(is.na(catch_columns[1])){
-      writeLines("By default the whole catch matrix is considered for this analysis. Please be aware that this \n method requires catches representing one year. You can choose separate columns of the catch \n matrix with 'catch_columns'.")
-    }else{
-      catchmat <- catch[,(catch_columns)]
-      if(length(catch_columns) > 1){
-        catch <- rowSums(catchmat, na.rm = TRUE)
-      }else catch <- catchmat
-    } # stop("Please provide a number indicating which column of the catch matrix should be analysed!")
-  }
-
-  if("midLengths" %in% names(res)){
-
-    classes <- as.character(res$midLengths)
-    # create column without plus group (sign) if present
-    classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
-    classes.num <- as.numeric(classes.num[,1])
-
-    Linf <- res$Linf
-    K <- res$K
-
-    # Error message if catch and age do not have same length
-    if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
-      if(length(classes) != length(catch[,1])) stop("Ages and catch do not have the same length!")
-    }else if(class(catch) == 'numeric'){
-      if(length(classes) != length(catch)) stop("Ages and catch do not have the same length!")
+    if(class(catch) == "data.frame" | class(catch) == "matrix"){
+        if(is.na(catch_columns[1])){
+            writeLines("By default the whole catch matrix is considered for this analysis. Please be aware that this \n method requires catches representing one year. You can choose separate columns of the catch \n matrix with 'catch_columns'.")
+        }else{
+            catchmat <- catch[,(catch_columns)]
+            if(length(catch_columns) > 1){
+                catch <- rowSums(catchmat, na.rm = TRUE)
+            }else catch <- catchmat
+        } ## stop("Please provide a number indicating which column of the catch matrix should be analysed!")
     }
 
-    # calculate cumulative catch
-    cumCatch <- rev(cumsum(rev(catch)))
+    if("midLengths" %in% names(res)){
 
-    # calculate  C * (L1 + L2) / 2
-    c_midlength <- catch * classes.num
+        classes <- as.character(res$midLengths)
+        ## create column without plus group (sign) if present
+        classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
+        classes.num <- as.numeric(classes.num[,1])
 
-    # calculate L prime   ===   x
-    interval <-  (classes.num[2] - classes.num[1]) / 2
-    Lprime <- classes.num - interval
+        if("par" %in% names(res)){
+            Linf <- res$par$Linf
+            K <- res$par$K
+            ta <- ifelse("ta" %in% names(res$par), res$par$ta, 0)            
+            t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
+            C <- ifelse("C" %in% names(res$par), res$par$C, 0)
+            ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
+        }else{
+            Linf <- res$Linf
+            K <- res$K
+            ta <- ifelse("ta" %in% names(res), res$ta, 0)            
+            t0 <- ifelse("t0" %in% names(res), res$t0, 0)
+            C <- ifelse("C" %in% names(res), res$C, 0)
+            ts <- ifelse("ts" %in% names(res), res$ts, 0)
+        }
 
-    # calculate L mean
-    sum_midL_c <- rep(NA,length(classes.num))
-    Lmean <- rep(NA,length(classes.num))
-    for(i in 1:length(c_midlength)){
-      sum_midL_c[i] <- sum(c_midlength[i:length(c_midlength)])
-      Lmean[i] <- sum(c_midlength[i:length(c_midlength)]) /
-        sum(catch[i:length(catch)])
-    }
+        ## Error message if catch and age do not have same length
+        if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
+            if(length(classes) != length(catch[,1])) stop("Ages and catch do not have the same length!")
+        }else if(class(catch) == 'numeric'){
+            if(length(classes) != length(catch)) stop("Ages and catch do not have the same length!")
+        }
 
-    # calculate Lmean - Lprime
-    Lmean_Lprime <- Lmean - Lprime
+        ## calculate cumulative catch
+        cumCatch <- rev(cumsum(rev(catch)))
 
-    #identify plot
-    if(is.null(reg_int)){
-      repeat{
-        writeLines("Please choose the minimum and maximum point in the \ngraph to include for the regression line!")
-        flush.console()
-        dev.new()#noRStudioGD = TRUE)
+        ## calculate  C * (L1 + L2) / 2
+        c_midlength <- catch * classes.num
+
+        ## calculate L prime   ===   x
+        interval <-  (classes.num[2] - classes.num[1]) / 2
+        Lprime <- classes.num - interval
+
+        ## calculate L mean
+        sum_midL_c <- rep(NA,length(classes.num))
+        Lmean <- rep(NA,length(classes.num))
+        for(i in 1:length(c_midlength)){
+            sum_midL_c[i] <- sum(c_midlength[i:length(c_midlength)])
+            Lmean[i] <- sum(c_midlength[i:length(c_midlength)]) /
+                sum(catch[i:length(catch)])
+        }
+
+        ## calculate Lmean - Lprime
+        Lmean_Lprime <- Lmean - Lprime
+
+        ##identify plot
+        if(is.null(reg_int)){
+            repeat{
+                writeLines("Please choose the minimum and maximum point in the \ngraph to include for the regression line!")
+                flush.console()
+                dev.new()##noRStudioGD = TRUE)
+                plot(x = Lprime,y = Lmean_Lprime,
+                     xlab = "Lprime", ylab = "Lmean - Lprime")
+                text(Lprime+0.5, Lmean_Lprime+0.5, labels=as.character(order(Lprime)), cex= 0.7)
+                mtext(side = 3, "Click on two points. Escape to Quit.",
+                      xpd = NA, cex = 1.25)
+                cutter <- identify(x = Lprime,y = Lmean_Lprime,
+                                   labels = order(Lprime), n=2)
+
+                if(length(cutter) == 0){
+                    stop(noquote("You did not choose any points! Please run the function again \nand choose points to include into the estimation of Z."))
+
+                }
+
+                length.cutter <- length(cutter[1]:cutter[2])
+                ## Break loop if selection does not embrace at least 3 points
+                if(length.cutter < 3){
+                    writeLines("Your selection is not possible. You have to choose two \npoints which include at least one other point. At least \nthree points are required for a regression line. Please choose again!")
+                    flush.console()
+                }
+                if(length.cutter >= 3){
+                    break
+                }
+            }
+        }
+        if(!is.null(reg_int)){
+            cutter <- reg_int
+        }
+        if(length(cutter) != 2) stop("You have to provide 2 numbers in reg_int.")
+
+        ##calculations + model
+        df.BH <- as.data.frame(cbind(classes.num,Lmean_Lprime,Lprime))
+        df.BH.cut <- df.BH[cutter[1]:cutter[2],]
+        lm1 <- lm(Lmean_Lprime ~ Lprime, data = df.BH.cut)
+        sum_lm1 <- summary(lm1)
+        r_lm1 <- sum_lm1$r.squared
+        intercept_lm1 <- sum_lm1$coefficients[1]
+        slope_lm1 <- sum_lm1$coefficients[2]
+        se_slope_lm1 <- sum_lm1$coefficients[4]
+        se_intercept_lm1 <- sum_lm1$coefficients[3]
+
+        ##fit of regression line
+        lm1.fit <- sum_lm1$r.squared
+
+        SE_slope <- abs(se_slope_lm1)
+        confi_slope <- abs(se_slope_lm1) * qt(0.975,sum_lm1$df[2])
+        conf_slope <- slope_lm1 + c(-confi_slope,confi_slope)
+
+        SE_intercept <- abs(se_intercept_lm1)
+        confi_intercept <- abs(se_intercept_lm1) * qt(0.975,sum_lm1$df[1])
+        conf_intercept <- intercept_lm1 + c(-confi_intercept,confi_intercept)
+
+        ## Linf with SE and confidence interval
+        Linf.BH <- (-intercept_lm1 / slope_lm1)
+        se_Linf.BH <- (abs(SE_intercept)/abs(intercept_lm1) +
+                       abs(SE_slope)/abs(slope_lm1)) *
+            (abs(intercept_lm1) / abs(slope_lm1))
+        confi_Linf <- (abs(SE_intercept)/abs(intercept_lm1) +
+                       abs(SE_slope)/abs(slope_lm1)) *
+            (abs(intercept_lm1) / abs(slope_lm1)) * qt(0.975,sum_lm1$df[2])
+        conf_Linf.BH <- Linf.BH + c(-confi_Linf,confi_Linf)
+
+        ## Z/K with SE and confidence interval
+        ZK.BH <- (-(1+slope_lm1)/slope_lm1)
+        se_ZK.BH <- abs(SE_slope)
+        confi_ZK <- se_ZK.BH * qt(0.975,sum_lm1$df[2])
+        conf_ZK.BH <- ZK.BH + c(-confi_ZK,confi_ZK)
+
+        ##final plot
         plot(x = Lprime,y = Lmean_Lprime,
-             xlab = "Lprime", ylab = "Lmean - Lprime")
-        text(Lprime+0.5, Lmean_Lprime+0.5, labels=as.character(order(Lprime)), cex= 0.7)
-        mtext(side = 3, "Click on two points. Escape to Quit.",
-              xpd = NA, cex = 1.25)
-       cutter <- identify(x = Lprime,y = Lmean_Lprime,
-                           labels = order(Lprime), n=2)
+             xlab = "Lprime", ylab = "Lmean - Lprime",
+             cex = 1.5, main = main)
+        par(new=T)
+        points(x = df.BH.cut$Lprime,y = df.BH.cut$Lmean_Lprime,
+               pch = 19, col = 'blue', cex = 1.5)
+        abline(a=intercept_lm1,b=slope_lm1,col="blue",lwd = 1.7)
+        if(savePlots == TRUE){
+            ploti <- recordPlot()
+        }else ploti = NA
 
-        if(length(cutter) == 0){
-          stop(noquote("You did not choose any points! Please run the function again \nand choose points to include into the estimation of Z."))
 
-        }
-
-        length.cutter <- length(cutter[1]:cutter[2])
-        # Break loop if selection does not embrace at least 3 points
-        if(length.cutter < 3){
-          writeLines("Your selection is not possible. You have to choose two \npoints which include at least one other point. At least \nthree points are required for a regression line. Please choose again!")
-          flush.console()
-        }
-        if(length.cutter >= 3){
-          break
-        }
-      }
+        ##save all in list
+        ret <- c(res,list(
+                         Lmean_Lprime = Lmean_Lprime,
+                         Lprime = Lprime,
+                         se_Linf = se_Linf.BH,
+                         confidenceInt_Linf = conf_Linf.BH,
+                         se_ZK = se_ZK.BH,
+                         confidenceInt_ZK = conf_ZK.BH,
+                         plot = ploti
+                     ))
+        
+        par$Linf_est <- Linf.BH
+        par$ZK <- ZK.BH
+        ret$par <- par
+        return(ret)
     }
-    if(!is.null(reg_int)){
-      cutter <- reg_int
-    }
-    if(length(cutter) != 2) stop("You have to provide 2 numbers in reg_int.")
-
-    #calculations + model
-    df.BH <- as.data.frame(cbind(classes.num,Lmean_Lprime,Lprime))
-    df.BH.cut <- df.BH[cutter[1]:cutter[2],]
-    lm1 <- lm(Lmean_Lprime ~ Lprime, data = df.BH.cut)
-    sum_lm1 <- summary(lm1)
-    r_lm1 <- sum_lm1$r.squared
-    intercept_lm1 <- sum_lm1$coefficients[1]
-    slope_lm1 <- sum_lm1$coefficients[2]
-    se_slope_lm1 <- sum_lm1$coefficients[4]
-    se_intercept_lm1 <- sum_lm1$coefficients[3]
-
-    #fit of regression line
-    lm1.fit <- sum_lm1$r.squared
-
-    SE_slope <- abs(se_slope_lm1)
-    confi_slope <- abs(se_slope_lm1) * qt(0.975,sum_lm1$df[2])
-    conf_slope <- slope_lm1 + c(-confi_slope,confi_slope)
-
-    SE_intercept <- abs(se_intercept_lm1)
-    confi_intercept <- abs(se_intercept_lm1) * qt(0.975,sum_lm1$df[1])
-    conf_intercept <- intercept_lm1 + c(-confi_intercept,confi_intercept)
-
-    # Linf with SE and confidence interval
-    Linf.BH <- (-intercept_lm1 / slope_lm1)
-    se_Linf.BH <- (abs(SE_intercept)/abs(intercept_lm1) +
-                     abs(SE_slope)/abs(slope_lm1)) *
-      (abs(intercept_lm1) / abs(slope_lm1))
-    confi_Linf <- (abs(SE_intercept)/abs(intercept_lm1) +
-                     abs(SE_slope)/abs(slope_lm1)) *
-      (abs(intercept_lm1) / abs(slope_lm1)) * qt(0.975,sum_lm1$df[2])
-    conf_Linf.BH <- Linf.BH + c(-confi_Linf,confi_Linf)
-
-    # Z/K with SE and confidence interval
-    ZK.BH <- (-(1+slope_lm1)/slope_lm1)
-    se_ZK.BH <- abs(SE_slope)
-    confi_ZK <- se_ZK.BH * qt(0.975,sum_lm1$df[2])
-    conf_ZK.BH <- ZK.BH + c(-confi_ZK,confi_ZK)
-
-    #final plot
-    plot(x = Lprime,y = Lmean_Lprime,
-         xlab = "Lprime", ylab = "Lmean - Lprime",
-         cex = 1.5, main = main)
-    par(new=T)
-    points(x = df.BH.cut$Lprime,y = df.BH.cut$Lmean_Lprime,
-           pch = 19, col = 'blue', cex = 1.5)
-    abline(a=intercept_lm1,b=slope_lm1,col="blue",lwd = 1.7)
-    if(savePlots == TRUE){
-      ploti <- recordPlot()
-    }else ploti = NA
-
-
-    #save all in list
-    ret <- c(res,list(
-      Lmean_Lprime = Lmean_Lprime,
-      Lprime = Lprime,
-      Linf_est = Linf.BH,
-      se_Linf = se_Linf.BH,
-      confidenceInt_Linf = conf_Linf.BH,
-      ZK = ZK.BH,
-      se_ZK = se_ZK.BH,
-      confidenceInt_ZK = conf_ZK.BH,
-      plot = ploti
-    ))
-    return(ret)
-  }
 }
+
 #' @title Von Bertalanffy Growth function (VBGF)
-#
+#' 
 #' @description  This function applies the von Bertalanffy growth function (VBGF).
 #'    It allows to calculate ages from lengths or lengths from ages based on the special,
 #'    generalised or seasonalised VBGF.
 #'
-#' @param t ages for which to calculate corresponding lengths, or
-#' @param L lengths for which to calculate corresponding ages
-#' @param param a list with following potential objects:
+#' @param pars a list with following potential objects:
 #' \itemize{
 #'   \item \code{Linf}: infinite length for investigated species in cm, or
 #'   \item \code{Winf}: infinite weight for investigated species in gramm
@@ -701,7 +727,9 @@ powell_wetherall <- function(param, catch_columns = NA,
 #'   \item \code{ts}: onset of the first oscillation relative to t0
 #'   \item \code{C}: intensity of (sinusoid) growth oscillations. Default is no oscillation (C = 0)
 #' }
-#'
+#' @param t ages for which to calculate corresponding lengths, or
+#' @param L lengths for which to calculate corresponding ages
+#' 
 #' @keywords function growth VBGF
 #'
 #' @examples
@@ -747,80 +775,81 @@ powell_wetherall <- function(param, catch_columns = NA,
 #'
 #' @export
 
-VBGF <- function(param, t = NA, L = NA){
-  res <- param
-  if(is.na(t[1]) & is.na(L[1])) stop("Either length L or age t has to be provided to calculate the corresponding.")
-  Linf <- ifelse("Linf" %in% names(res),res$Linf, NA)
-  Winf <- ifelse("Winf" %in% names(res),res$Winf, NA)
-  if("K" %in% names(res)){
-    K <- res$K
-  }else stop("Please provide a K parameter in 'param'.")
-  t0 <- ifelse("t0" %in% names(res),res$t0, 0)
-  b <- ifelse("b" %in% names(res),res$b, 3)
-  D <- ifelse("D" %in% names(res),res$D, 1)
-  L0 <- ifelse("L0" %in% names(res),res$L0, NA)
-  ts <- ifelse("ts" %in% names(res),res$ts, 0)
-  C <- ifelse("C" %in% names(res),res$C, 0)
-  if("ta" %in% names(res)) t0 <- res$ta
+VBGF <- function(pars, t = NA, L = NA){
+    
+    res <- pars
+    if(is.na(t[1]) & is.na(L[1])) stop("Either length L or age t has to be provided to calculate the corresponding.")
+    Linf <- ifelse("Linf" %in% names(res),res$Linf, NA)
+    Winf <- ifelse("Winf" %in% names(res),res$Winf, NA)
+    if("K" %in% names(res)){
+        K <- res$K
+    }else stop("Please provide a K parameter in 'pars'.")
+    t0 <- ifelse("t0" %in% names(res),res$t0, 0)
+    b <- ifelse("b" %in% names(res),res$b, 3)
+    D <- ifelse("D" %in% names(res),res$D, 1)
+    L0 <- ifelse("L0" %in% names(res),res$L0, NA)
+    ts <- ifelse("ts" %in% names(res),res$ts, 0)
+    C <- ifelse("C" %in% names(res),res$C, 0)
+    if("ta" %in% names(res)) t0 <- res$ta
 
 
-  if(is.na(Linf) & is.na(Winf)) stop("You have to provide either Linf or Winf.")
-  if(is.na(L[1]) & is.na(t[1])) stop("Please provide a vector with either potential ages or lengths.")
+    if(is.na(Linf) & is.na(Winf)) stop("You have to provide either Linf or Winf.")
+    if(is.na(L[1]) & is.na(t[1])) stop("Please provide a vector with either potential ages or lengths.")
 
-  if(is.na(L0)){
-    # generalised seasonalised VBGF for length
-    if((is.na(Winf) & is.na(L[1])) |
-       (!is.na(Winf) & !is.na(Linf) & is.na(L[1]))){
-      res <- Linf * (1 - exp(-(K * D * (t - t0) + (((C*K*D)/(2*pi)) * sin(2*pi*(t-ts))) -
-                                  (((C*K*D)/(2*pi)) * sin(2*pi*(t0-ts)))))) ^ (1/D)
+    if(is.na(L0)){
+        ## generalised seasonalised VBGF for length
+        if((is.na(Winf) & is.na(L[1])) |
+           (!is.na(Winf) & !is.na(Linf) & is.na(L[1]))){
+            res <- Linf * (1 - exp(-(K * D * (t - t0) + (((C*K*D)/(2*pi)) * sin(2*pi*(t-ts))) -
+                                     (((C*K*D)/(2*pi)) * sin(2*pi*(t0-ts)))))) ^ (1/D)
+        }
+
+        ## OLD:
+        ## res <- Linf * (1 - exp(-K * D * (t - t0) -
+        ##                                       ((C*K*D)/(2*pi)) *
+        ##                                       ((sin(2*pi*(t-ts))) +
+        ##                                          (sin(2*pi*(t0-ts))))))^ (1/D)
+
+
+        if((is.na(Winf) & is.na(t[1])) |
+           (!is.na(Winf) & !is.na(Linf) & is.na(t[1]))){
+            if(D == 1 & C == 0) res <- t0 - (log(1-L/Linf)/K)
+            ## lookup table for soVBGF
+            if(D != 1 | C != 0){
+                tmax <- (t0 * K * D - log(1 - exp(D*log(L[length(L)]/Linf)))) / (K*D)
+                if(is.na(tmax)) tmax <- 40
+                lookup_age <- seq((t0 - 1),(tmax+10),0.001)
+                lookup_length <-  Linf * (1 - exp(-(K * D * (lookup_age - t0) + (((C*K*D)/(2*pi)) *
+                                                                                 sin(2*pi*(lookup_age-ts))) -
+                                                    (((C*K*D)/(2*pi)) * sin(2*pi*(t0-ts)))))) ^ (1/D)
+
+                ## OLD:
+                ## lookup_length <-  Linf * (1 - exp(-K * D * (lookup_age - t0) -
+                ##                                     ((C*K*D)/(2*pi)) *
+                ##                                     ((sin(2*pi*(lookup_age-ts))) +
+                ##                                        (sin(2*pi*(t0-ts))))))^ (1/D)
+
+                lookup_ind <- lapply(X = L, FUN = function(x) which.min((lookup_length - x)^2))
+                res <- lookup_age[unlist(lookup_ind)]
+            }
+        }
+
+
+        ## generalised VBGF for weight
+        if(is.na(Linf) & is.na(L[1])) res <- Winf * (1 - exp(-K * D * (t - t0)))^(b/D)
+        if(is.na(Linf) & is.na(t[1])) res <- (D * K * t0 - log(1 - exp((D * log(L/Winf))/(b)))) / (K*D)
     }
 
-    # OLD:
-    # res <- Linf * (1 - exp(-K * D * (t - t0) -
-    #                                       ((C*K*D)/(2*pi)) *
-    #                                       ((sin(2*pi*(t-ts))) +
-    #                                          (sin(2*pi*(t0-ts))))))^ (1/D)
+    ## special VBGF for length with L0
+    if(!is.na(L0) & is.na(L[1])) res <- Linf - (Linf - L0) * exp(-K * t)
+    if(!is.na(L0) & is.na(t[1])) res <- log((L - Linf) / -(Linf - L0)) / -K
 
-
-    if((is.na(Winf) & is.na(t[1])) |
-       (!is.na(Winf) & !is.na(Linf) & is.na(t[1]))){
-      if(D == 1 & C == 0) res <- t0 - (log(1-L/Linf)/K)
-      # lookup table for soVBGF
-      if(D != 1 | C != 0){
-        tmax <- (t0 * K * D - log(1 - exp(D*log(L[length(L)]/Linf)))) / (K*D)
-        if(is.na(tmax)) tmax <- 40
-        lookup_age <- seq((t0 - 1),(tmax+10),0.001)
-        lookup_length <-  Linf * (1 - exp(-(K * D * (lookup_age - t0) + (((C*K*D)/(2*pi)) *
-                                                                          sin(2*pi*(lookup_age-ts))) -
-                                            (((C*K*D)/(2*pi)) * sin(2*pi*(t0-ts)))))) ^ (1/D)
-
-        # OLD:
-        # lookup_length <-  Linf * (1 - exp(-K * D * (lookup_age - t0) -
-        #                                     ((C*K*D)/(2*pi)) *
-        #                                     ((sin(2*pi*(lookup_age-ts))) +
-        #                                        (sin(2*pi*(t0-ts))))))^ (1/D)
-
-        lookup_ind <- lapply(X = L, FUN = function(x) which.min((lookup_length - x)^2))
-        res <- lookup_age[unlist(lookup_ind)]
-      }
-    }
-
-
-    # generalised VBGF for weight
-    if(is.na(Linf) & is.na(L[1])) res <- Winf * (1 - exp(-K * D * (t - t0)))^(b/D)
-    if(is.na(Linf) & is.na(t[1])) res <- (D * K * t0 - log(1 - exp((D * log(L/Winf))/(b)))) / (K*D)
-  }
-
-  # special VBGF for length with L0
-  if(!is.na(L0) & is.na(L[1])) res <- Linf - (Linf - L0) * exp(-K * t)
-  if(!is.na(L0) & is.na(t[1])) res <- log((L - Linf) / -(Linf - L0)) / -K
-
-  return(res)
+    return(res)
 }
 
 #' @title Fitting VBGF growth curves through lfq data
 #'
-#' @description Thsi function estimates von Bertalanffy growth function (VBGF)
+#' @description This function estimates von Bertalanffy growth function (VBGF)
 #'    curves for a set of growth parameters.
 #'
 #' @param lfq a list of the class "lfq" consisting of following parameters:
@@ -930,114 +959,115 @@ VBGF <- function(param, t = NA, L = NA){
 #' @export
 
 lfqFitCurves <- function(lfq,
-  par = list(Linf = 100, K = 0.1, ta = 0.25, C = 0, ts = 0),
-  agemax = NULL, flagging.out = TRUE,
-  lty = 2, lwd = 1, col = 1,
-  draw = FALSE, tincr = 0.05
-){
+                         par = list(Linf = 100, K = 0.1, ta = 0.25, C = 0, ts = 0),
+                         agemax = NULL, flagging.out = TRUE,
+                         lty = 2, lwd = 1, col = 1,
+                         draw = FALSE, tincr = 0.05
+                         ){
 
-  if(is.null(par$Linf) | is.null(par$K) | is.null(par$ta)) stop("Linf, K and ta have to provided in par.")
+    if(is.null(par$Linf) | is.null(par$K) | is.null(par$ta)) stop("Linf, K and ta have to provided in par.")
 
-  # ISSUE: if seasonalised max age can be different and 0.95 very coarse
-  if(is.null(agemax)){
-    agemax <- ceiling((1/-par$K)*log(1-((par$Linf*0.95)/par$Linf)))
-  }
-
-  yeardec <- date2yeardec(lfq$dates)
-
-  tmax <- max(yeardec, na.rm = TRUE) # maximum sample date
-  tmin <- min(yeardec, na.rm = TRUE) # minimum sample date
-  ncohort <- agemax + ceiling(diff(range(yeardec))) # number of cohorts
-  tA.use <- par$ta # VBGF anchor time in year
-  tAs <- seq(floor(tmax-ncohort), floor(tmax), by=1) + (tA.use+1e6)%%1   # anchor times
-  tAs <- tAs[which(tAs < tmax)]
-  ncohort <- length(tAs)
-
-
-  par2 <- par
-  t <- c(yeardec,max(yeardec)+0.2)  # for plotting, otherwise growth curves are cut at last sampling time
-  Lt <- vector(mode="list", ncohort)
-  for(ct in seq(ncohort)){
-    par2$ta <- tAs[ct]
-    rel.age <- t-tAs[ct] # relative age to anchor time
-    t.use <- which(rel.age <= agemax & rel.age > 0)
-    t.ct <- t[t.use]
-    rel.age <- rel.age[t.use]
-    if(length(t.ct) > 0){
-      Lt.ct <- VBGF(param = par2, t = t.ct) ## do.call(what = VBGF,  par2)    # Lt.ct <- VBGF(lfq = par2, t = yeardec)   #
-      Lt[[ct]] <- data.frame(t=t.ct, Lt=Lt.ct, ct=ct, rel.age=rel.age)
-      if(draw){
-        tmp <- par2
-        t_tmp <- seq(tAs[ct], max(t.ct)+tincr, by=tincr)
-        tmp$L <- VBGF(tmp, t = t_tmp) ## do.call(what = VBGF,  tmp)
-        tmp$t <- yeardec2date(t_tmp)
-        lines(L ~ t, tmp, lty=lty, lwd=lwd, col=col)
-      }
+    ## ISSUE: if seasonalised max age can be different and 0.95 very coarse
+    if(is.null(agemax)){
+        agemax <- ceiling((1/-par$K)*log(1-((par$Linf*0.95)/par$Linf)))
     }
-  }
-  Lt <- do.call(rbind, Lt)
-  Lt <- Lt[which(Lt$Lt>=0),]# trim negative lengths
+
+    yeardec <- date2yeardec(lfq$dates)
+
+    tmax <- max(yeardec, na.rm = TRUE) ## maximum sample date
+    tmin <- min(yeardec, na.rm = TRUE) ## minimum sample date
+    ncohort <- agemax + ceiling(diff(range(yeardec))) ## number of cohorts
+    tA.use <- par$ta ## VBGF anchor time in year
+    tAs <- seq(floor(tmax-ncohort), floor(tmax), by=1) + (tA.use+1e6)%%1   ## anchor times
+    tAs <- tAs[which(tAs < tmax)]
+    ncohort <- length(tAs)
 
 
-  # calc scores
-  grd <- expand.grid(Lt=lfq$midLengths, t=date2yeardec(lfq$dates))
-  grd$Fs <- c(lfq$rcounts)  # turn matrix into 1-D vector
-  grd$cohort_peaks <- c(lfq$peaks_mat) # turn matrix into 1-D vector
-  grd$hit <- 0 # empty vector to record bins that are "hit" by a growth curve
-  bin.width <- diff(lfq$midLengths) # bin width (should allow for uneven bin sizes)
-  grd$bin.lower <- lfq$midLengths - (c(bin.width[1], bin.width)/2) # upper bin limit
-  grd$bin.upper <- lfq$midLengths + (c(bin.width, bin.width[length(bin.width)])/2) # lower bin limit
-
-  # mark all length classes (in all sampling times) which are hit
-  tmp <-
-    outer(X = c(grd$t), Y = Lt$t, FUN = "==") &
-    outer(X = c(grd$bin.lower), Y = Lt$Lt, FUN = "<=") &
-    outer(X = c(grd$bin.upper), Y = Lt$Lt, FUN = ">"
-  )
-
-  tmp2 <- apply(X = tmp, MARGIN = 1, FUN = sum, na.rm = TRUE)
-  if(flagging.out){
-    grd$hit <- tmp2
-  } else {
-    grd$hit <- as.numeric(tmp2 > 0)
-  }
-
-  # Count only one crossing of positive peaks within a cohort peak
-  if(flagging.out){
-    ch <- unique(grd$cohort_peaks)
-    if(0 %in% ch) ch <- ch[-which(0 %in% ch)]
-    for(ci in seq(length(ch))){
-      chi <- ch[ci]
-      peaki <- which(grd$cohort_peaks == chi)
-      dpch <- grd$hit[peaki]
-      if(sum(dpch, na.rm = TRUE) > 1){
-        grd$hit[peaki] <- 0
-        maxi <- which.max(grd$Fs[peaki])
-        grd$hit[peaki[maxi]] <- 1
-      }
+    par2 <- par
+    t <- c(yeardec,max(yeardec)+0.2)  ## for plotting, otherwise growth curves are cut at last sampling time
+    Lt <- vector(mode="list", ncohort)
+    for(ct in seq(ncohort)){
+        par2$ta <- tAs[ct]
+        rel.age <- t-tAs[ct] ## relative age to anchor time
+        t.use <- which(rel.age <= agemax & rel.age > 0)
+        t.ct <- t[t.use]
+        rel.age <- rel.age[t.use]
+        if(length(t.ct) > 0){
+            Lt.ct <- VBGF(pars = par2, t = t.ct) #### do.call(what = VBGF,  par2)    ## Lt.ct <- VBGF(lfq = par2, t = yeardec)   ##
+            Lt[[ct]] <- data.frame(t=t.ct, Lt=Lt.ct, ct=ct, rel.age=rel.age)
+            if(draw){
+                tmp <- par2
+                t_tmp <- seq(tAs[ct], max(t.ct)+tincr, by=tincr)
+                tmp$L <- VBGF(tmp, t = t_tmp) #### do.call(what = VBGF,  tmp)
+                tmp$t <- yeardec2date(t_tmp)
+                lines(L ~ t, tmp, lty=lty, lwd=lwd, col=col)
+            }
+        }
     }
-  }
+    Lt <- do.call(rbind, Lt)
+    Lt <- Lt[which(Lt$Lt>=0),]## trim negative lengths
 
 
-  ESP <- sum(grd$Fs * grd$hit, na.rm = TRUE)
-  fASP <- ESP/lfq$ASP
-  fESP <- (10^(ESP/lfq$ASP)) /10
+    ## calc scores
+    grd <- expand.grid(Lt=lfq$midLengths, t=date2yeardec(lfq$dates))
+    grd$Fs <- c(lfq$rcounts)  ## turn matrix into 1-D vector
+    grd$cohort_peaks <- c(lfq$peaks_mat) ## turn matrix into 1-D vector
+    grd$hit <- 0 ## empty vector to record bins that are "hit" by a growth curve
+    bin.width <- diff(lfq$midLengths) ## bin width (should allow for uneven bin sizes)
+    grd$bin.lower <- lfq$midLengths - (c(bin.width[1], bin.width)/2) ## upper bin limit
+    grd$bin.upper <- lfq$midLengths + (c(bin.width, bin.width[length(bin.width)])/2) ## lower bin limit
 
-  lfq$Lt <- Lt
-  lfq$agemax <- agemax
-  lfq$ncohort <- ncohort
-  lfq$ESP <- ESP
-  lfq$fASP <- fASP
-  lfq$fESP <- fESP
-  lfq$Rn_max <- fESP
+    ## mark all length classes (in all sampling times) which are hit
+    tmp <-
+        outer(X = c(grd$t), Y = Lt$t, FUN = "==") &
+        outer(X = c(grd$bin.lower), Y = Lt$Lt, FUN = "<=") &
+        outer(X = c(grd$bin.upper), Y = Lt$Lt, FUN = ">"
+              )
 
-  return(lfq)
+    tmp2 <- apply(X = tmp, MARGIN = 1, FUN = sum, na.rm = TRUE)
+    if(flagging.out){
+        grd$hit <- tmp2
+    } else {
+        grd$hit <- as.numeric(tmp2 > 0)
+    }
+
+    ## Count only one crossing of positive peaks within a cohort peak
+    if(flagging.out){
+        ch <- unique(grd$cohort_peaks)
+        if(0 %in% ch) ch <- ch[-which(0 %in% ch)]
+        for(ci in seq(length(ch))){
+            chi <- ch[ci]
+            peaki <- which(grd$cohort_peaks == chi)
+            dpch <- grd$hit[peaki]
+            if(sum(dpch, na.rm = TRUE) > 1){
+                grd$hit[peaki] <- 0
+                maxi <- which.max(grd$Fs[peaki])
+                grd$hit[peaki[maxi]] <- 1
+            }
+        }
+    }
+
+
+    ESP <- sum(grd$Fs * grd$hit, na.rm = TRUE)
+    fASP <- ESP/lfq$ASP
+    fESP <- (10^(ESP/lfq$ASP)) /10
+
+    lfq$Lt <- Lt
+    lfq$agemax <- agemax
+    lfq$ncohort <- ncohort
+    lfq$ESP <- ESP
+    lfq$fASP <- fASP
+    lfq$fESP <- fESP
+    lfq$Rn_max <- fESP
+
+    return(lfq)
 }
+
 #' @title ELEFAN
 #'
 #' @description Electronic LEngth Frequency ANalysis for estimating growth parameter.
 #'
-#' @param x a list consisting of following parameters:
+#' @param lfq a list consisting of following parameters:
 #' \itemize{
 #'   \item \strong{midLengths} midpoints of the length classes,
 #'   \item \strong{dates} dates of sampling times (class Date),
@@ -1456,7 +1486,7 @@ ELEFAN <- function(lfq, Linf_fix = NA, Linf_range = NA,
 #' @description Electronic LEngth Frequency ANalysis with simulated annealing
 #'    for estimating growth parameters.
 #'
-#' @param x a list consisting of following parameters:
+#' @param lfq a list consisting of following parameters:
 #' \itemize{
 #'   \item \strong{midLengths} midpoints of the length classes,
 #'   \item \strong{dates} dates of sampling times (class Date),
@@ -1621,7 +1651,7 @@ ELEFAN_SA <- function(lfq,
     Linf_est <- classes[n_classes]
 
 
-                                        # initial parameters
+    ## initial parameters
     init_par_ALL <- list(Linf = Linf_est,
                          K = 0.5, ta = 0.5, C = 0, ts = 0)
     init_Linf <- ifelse("Linf" %in% names(init_par),
@@ -1640,7 +1670,7 @@ ELEFAN_SA <- function(lfq,
                       get("ts", init_par),
                       get("ts", init_par_ALL))
 
-                                        # lower parameter bounds
+    ## lower parameter bounds
     low_par_ALL <- list(Linf = Linf_est * 0.5,
                         K = 0.01,
                         ta = 0,
@@ -1662,7 +1692,7 @@ ELEFAN_SA <- function(lfq,
                      get("ts", low_par),
                      get("ts", low_par_ALL))
 
-                                        # upper parameter bounds
+    ## upper parameter bounds
     up_par_ALL <- list(Linf = Linf_est * 1.5,
                        K = 1,
                        ta = 1,
@@ -1685,13 +1715,13 @@ ELEFAN_SA <- function(lfq,
                     get("ts", up_par_ALL))
 
 
-                                        # ELEFAN 0
+    ## ELEFAN 0
     res <- lfqRestructure(res, MA = MA, addl.sqrt = addl.sqrt)
     catch_aAF_F <- res$rcounts
     peaks_mat <- res$peaks_mat
     ASP <- res$ASP
 
-                                        # seasonalised cost function
+    ## seasonalised cost function
     soSAfun <- function(lfq, par=c(init_Linf, init_K, init_tanc, init_C, init_ts),
                         agemax, flagging.out){
         Lt <- lfqFitCurves(lfq,
@@ -1699,7 +1729,7 @@ ELEFAN_SA <- function(lfq,
                            flagging.out = flagging.out, agemax = agemax)
         return(-Lt$fESP)
     }
-                                        # cost function
+    ## cost function
     SAfun <- function(lfq, par=c(init_Linf, init_K, init_tanc),
                       agemax, flagging.out){
         Lt <- lfqFitCurves(lfq,
@@ -1709,7 +1739,7 @@ ELEFAN_SA <- function(lfq,
     }
 
 
-    ## control list
+#### control list
     control <- list(temperature = SA_temp,
                     verbose = verbose)
     if(!is.null(SA_time)) control$max.time = SA_time
@@ -1718,7 +1748,7 @@ ELEFAN_SA <- function(lfq,
 
 
     if(seasonalised){
-                                        # Simulated annealing with seasonalised VBGF
+        ## Simulated annealing with seasonalised VBGF
         writeLines(paste(
             "Simulated annealing is running. \nThis will take approximately",
             round(SA_time/60,digits=2),
@@ -1740,7 +1770,7 @@ ELEFAN_SA <- function(lfq,
         pars <- as.list(SAfit$par)
         names(pars) <- c("Linf","K","ta", "C", "ts")
     }else{
-                                        # Simulated annealing
+        ## Simulated annealing
         writeLines(paste(
             "Simulated annealing is running. \nThis will take approximately",
             round(SA_time/60,digits=2),
@@ -1762,7 +1792,7 @@ ELEFAN_SA <- function(lfq,
         names(pars) <- c("Linf","K","ta")
     }
 
-                                        # Score graph in GA style
+    ## Score graph in GA style
     tmp <- as.data.frame(SAfit$trace.mat)
     meani <- aggregate(tmp$function.value, list(step = tmp$nb.steps),mean, na.rm = TRUE)
     exe <- aggregate(tmp$current.minimum, list(step = tmp$nb.steps),mean, na.rm = TRUE)
@@ -1795,11 +1825,11 @@ ELEFAN_SA <- function(lfq,
     final_res <- lfqFitCurves(lfq = res,par=pars,flagging.out = flagging.out,
                               agemax = agemax)
 
-                                        # growth performance index
+    ## growth performance index
     phiL <- log10(pars$K) + 2 * log10(pars$Linf)
     pars$phiL <- phiL
 
-                                        # Results
+    ## Results
     res$ncohort <- final_res$ncohort
     res$agemax <- final_res$agemax
     res$par <- pars
@@ -1812,12 +1842,13 @@ ELEFAN_SA <- function(lfq,
     }
     return(res)
 }
+
 #' @title ELEFAN_GA
 #'
 #' @description Electronic LEngth Frequency ANalysis with genetic algorithm
 #' used for estimating growth parameters.
 #'
-#' @param x a list consisting of following parameters:
+#' @param lfq a list consisting of following parameters:
 #' \itemize{
 #'   \item \strong{midLengths} midpoints of the length classes,
 #'   \item \strong{dates} dates of sampling times (class Date),
@@ -2135,12 +2166,13 @@ ELEFAN_GA <- function(lfq,
     }
     return(lfq)
 }
+
 #' @title Growth from tagging data
 #'
 #' @description  This function estimates growth parameters from tagging data. Munro plot
 #'    is applied
 #'
-#' @param param a list consisting of following parameters:
+#' @param tag a list consisting of following parameters:
 #' \itemize{
 #'   \item \strong{L1}: length at tagging [cm],
 #'   \item \strong{L2}: length at recapture [cm],
@@ -2161,16 +2193,16 @@ ELEFAN_GA <- function(lfq,
 #' dat <- list(L1 = c(40,46,29,30,18,31,48,49,59,58,61,65,57,55),
 #'    L2 = c(85,53,55,56,25,43,70,59,62,80,72,83,65,56),
 #'    delta_t = c(289,26,84,77,14,38,89,38,28,149,89,74,38,21))
-#' growth_tagging(param = dat, "Munro", time_unit = "day", Linf_range=c(80,120))
-#' growth_tagging(param = dat, "GullandHolt", time_unit = "day")
+#' growth_tagging(tag = dat, "Munro", time_unit = "day", Linf_range=c(80,120))
+#' growth_tagging(tag = dat, "GullandHolt", time_unit = "day")
 #'
 #'
 #' # from Sparre and Venema (1999)
 #' dat <- list(L1 = c(9.7,10.5,10.9,11.1,12.4,12.8,14.0,16.1,16.3,17.0,17.7),
 #'    L2 = c(10.2,10.9,11.8,12.0,15.5,13.6,14.3,16.4,16.5,17.2,18.0),
 #'    delta_t = c(53,33,108,102,272,48,53,73,63,106,111))
-#' growth_tagging(param = dat, "Munro", time_unit = "day", Linf_range = c(10,40))
-#' growth_tagging(param = dat, "GullandHolt", time_unit = "day")
+#' growth_tagging(tag = dat, "Munro", time_unit = "day", Linf_range = c(10,40))
+#' growth_tagging(tag = dat, "GullandHolt", time_unit = "day")
 #'
 #' @details
 #' If Munro plot is applied the optimal Linf value is found by minimizing the coefficient
@@ -2206,92 +2238,93 @@ ELEFAN_GA <- function(lfq,
 #'
 #' @export
 
-growth_tagging <- function(param, method,
-                            Linf_range = c(5,600),time_unit = "year"){
+growth_tagging <- function(tag, method,
+                           Linf_range = c(5,600),time_unit = "year"){
 
-  res <- param
+    res <- tag
 
-  L1 <- res$L1
-  L2 <- res$L2
-  if("delta_t" %in% names(res)) delta_t <- res$delta_t
-  if(!"delta_t" %in% names(res)) delta_t <- res$t2 - res$t1
+    L1 <- res$L1
+    L2 <- res$L2
+    if("delta_t" %in% names(res)) delta_t <- res$delta_t
+    if(!"delta_t" %in% names(res)) delta_t <- res$t2 - res$t1
 
-  switch(time_unit,
-         "year" ={
-           time_u <- 1
-         },
-         "month"={
-           time_u <- 12
-         },
-         "week"={
-           time_u <- 52
-         },
-         "day"={
-           time_u <- 365
-         })
+    switch(time_unit,
+           "year" ={
+               time_u <- 1
+           },
+           "month"={
+               time_u <- 12
+           },
+           "week"={
+               time_u <- 52
+           },
+           "day"={
+               time_u <- 365
+           })
 
-  # growth increment per time / growth rate
-  incr_time <- ((L2-L1) / delta_t ) * time_u
+    ## growth increment per time / growth rate
+    incr_time <- ((L2-L1) / delta_t ) * time_u
 
-  switch(method,
-         "GullandHolt"={
-           y <- incr_time
+    switch(method,
+           "GullandHolt"={
+               y <- incr_time
 
-           #mean Lt
-           x <- (L1 + L2) / 2
+               ##mean Lt
+               x <- (L1 + L2) / 2
 
-           sum_mod <- summary(lm(y ~ x))
-           coeffs <- sum_mod$coefficients
-           a <- sum_mod$coefficients[1]
-           b <- sum_mod$coefficients[2]
-           K <- -b
-           Linf <- a/K
-           R2 <- sum_mod$r.squared
-           # standard error and confidence limits
-           sb2 <- (1/(length(L1)-2)) * ((sd(y,na.rm = TRUE)/sd(x,na.rm = TRUE))^2 - b^2)
-           sb <- sqrt(sb2)
-           SE_b <- abs(b) * qt(0.975,sum_mod$df[2])
-           tg <- qt(0.975,sum_mod$df[2])
-           conf_int <- c(K - tg * sb,K + tg * sb)
+               sum_mod <- summary(lm(y ~ x))
+               coeffs <- sum_mod$coefficients
+               a <- sum_mod$coefficients[1]
+               b <- sum_mod$coefficients[2]
+               K <- -b
+               Linf <- a/K
+               R2 <- sum_mod$r.squared
+               ## standard error and confidence limits
+               sb2 <- (1/(length(L1)-2)) * ((sd(y,na.rm = TRUE)/sd(x,na.rm = TRUE))^2 - b^2)
+               sb <- sqrt(sb2)
+               SE_b <- abs(b) * qt(0.975,sum_mod$df[2])
+               tg <- qt(0.975,sum_mod$df[2])
+               conf_int <- c(K - tg * sb,K + tg * sb)
 
-           plot(y ~ x, pch = 16,
-                ylim = c(0,max(y,na.rm=TRUE)*1.1),
-                xlim = c(min(x,na.rm=TRUE)*0.9,Linf*1.05),
-                xlab = "mean L(t)",
-                ylab=expression(paste(delta,"L / ",delta,"t")),
-                main = "Gulland and Holt")
-           abline(a,b)
+               plot(y ~ x, pch = 16,
+                    ylim = c(0,max(y,na.rm=TRUE)*1.1),
+                    xlim = c(min(x,na.rm=TRUE)*0.9,Linf*1.05),
+                    xlab = "mean L(t)",
+                    ylab=expression(paste(delta,"L / ",delta,"t")),
+                    main = "Gulland and Holt")
+               abline(a,b)
 
-           tmp <- list(y = y, x = x, coeffs = coeffs, R2 = R2, conf_int = conf_int)
-         },
+               tmp <- list(y = y, x = x, coeffs = coeffs, R2 = R2, conf_int = conf_int)
+           },
 
-         "Munro"={
-           func <- function(Linf){
-             K <- ((log(Linf-L1) - log(Linf-L2)) / (delta_t)) * time_u
-             CV <- sd(K, na.rm = TRUE) / mean(K, na.rm = TRUE)
-           }
+           "Munro"={
+               func <- function(Linf){
+                   K <- ((log(Linf-L1) - log(Linf-L2)) / (delta_t)) * time_u
+                   CV <- sd(K, na.rm = TRUE) / mean(K, na.rm = TRUE)
+               }
 
-           opt_mod <- optimise(f = func, interval = Linf_range)
-           Linf <- opt_mod$minimum
-           K <- opt_mod$objective
-           indi_Ks <- ((log(Linf-L1) - log(Linf-L2)) / (delta_t)) * time_u
-           hist(indi_Ks, breaks = length(L1),
-                xlab = "K",
-                main = "Histogram  of individual Ks")
+               opt_mod <- optimise(f = func, interval = Linf_range)
+               Linf <- opt_mod$minimum
+               K <- opt_mod$objective
+               indi_Ks <- ((log(Linf-L1) - log(Linf-L2)) / (delta_t)) * time_u
+               hist(indi_Ks, breaks = length(L1),
+                    xlab = "K",
+                    main = "Histogram  of individual Ks")
 
-           tmp <- list(indi_Ks = indi_Ks)
-         })
+               tmp <- list(indi_Ks = indi_Ks)
+           })
 
-  res2 <- res
-  if(exists("x", where = tmp)) res2$x <- x
-  if(exists("y", where = tmp)) res2$y <- y
-  if(exists("coeffs", where = tmp)) res2$reg_coeffs <- coeffs
-  if(exists("R2", where = tmp)) res2$r2 <- R2
-  if(exists("indi_Ks", where = tmp)) res2$indi_Ks <- indi_Ks
-  ret <- c(res2,list(Linf = Linf, K = K))
-  if(exists("conf_int", where = tmp)) ret$conf_int_K <- conf_int
-  return(ret)
+    res2 <- res
+    if(exists("x", where = tmp)) res2$x <- x
+    if(exists("y", where = tmp)) res2$y <- y
+    if(exists("coeffs", where = tmp)) res2$reg_coeffs <- coeffs
+    if(exists("R2", where = tmp)) res2$r2 <- R2
+    if(exists("indi_Ks", where = tmp)) res2$indi_Ks <- indi_Ks
+    ret <- c(res2,list(Linf = Linf, K = K))
+    if(exists("conf_int", where = tmp)) ret$conf_int_K <- conf_int
+    return(ret)
 }
+
 #' @title Estimation of growth parameter using length-at-age data
 #'
 #' @description  This function estimates growth parameters from
@@ -2299,7 +2332,7 @@ growth_tagging <- function(param, method,
 #'    allows to perform different methods: Gulland and Holt, Ford Walford plot,
 #'    Chapman's method, Bertalanffy plot, or non linear least squares method (LSM).
 #'
-#' @param param a list consisting of following parameters:
+#' @param laa a list consisting of following parameters:
 #' \itemize{
 #'   \item \strong{age}: age measurements,
 #'   \item \strong{length}: corresponding lengths in cm.
@@ -2333,7 +2366,7 @@ growth_tagging <- function(param, method,
 #' growth_length_age(dat, method = "BertalanffyPlot", Linf_est = 50)
 #'
 #' # non linear least squares method
-#' output <- growth_length_age(param = dat, method = "LSM",
+#' output <- growth_length_age(laa = dat, method = "LSM",
 #'      Linf_init = 30, CI = TRUE, age_plot=NULL)
 #' summary(output$mod)
 #'
@@ -2378,241 +2411,330 @@ growth_tagging <- function(param, method,
 #'
 #' @export
 
-growth_length_age <- function(param, method, Linf_est = NA,
+growth_length_age <- function(laa, method, Linf_est = NA,
                               Linf_init = 10, K_init = 0.1, t0_init = 0,
                               CI = FALSE, ci.level = 0.95,
                               age_plot = NULL,
                               do.sim = FALSE,
                               nsim = 10000){
 
-  res <- param
-  t <- res$age
-  Lt <- res$length
+    res <- laa
+    t <- res$age
+    Lt <- res$length
 
-  switch(method,
-         "GullandHolt"={
-           # Can not deal with multiple observations (lengths) per age
-           if(length(unique(t)) == length(t)){
-             delta_t <- diff(t)
-           }else{
-             delta_t <- diff(unique(t))
-             Lt <- aggregate(Lt,list(t = t),mean,na.rm= TRUE)$x
-           }
+    switch(method,
+           "GullandHolt"={
+               ## Can not deal with multiple observations (lengths) per age
+               if(length(unique(t)) == length(t)){
+                   delta_t <- diff(t)
+               }else{
+                   delta_t <- diff(unique(t))
+                   Lt <- aggregate(Lt,list(t = t),mean,na.rm= TRUE)$x
+               }
 
-           # growth rate
-           y <- rep(NA,length(delta_t))
-           for(i in 1:length(delta_t)){
-             y[i] <- (Lt[i+1] - Lt[i])/delta_t[i]
-           }
+               ## growth rate
+               y <- rep(NA,length(delta_t))
+               for(i in 1:length(delta_t)){
+                   y[i] <- (Lt[i+1] - Lt[i])/delta_t[i]
+               }
 
-           #mean Lt
-           x <- rep(NA,(length(Lt)-1))
-           for(i in 1:(length(Lt)-1)){
-             x[i] <- (Lt[i] + Lt[i+1])/ 2
-           }
+               ##mean Lt
+               x <- rep(NA,(length(Lt)-1))
+               for(i in 1:(length(Lt)-1)){
+                   x[i] <- (Lt[i] + Lt[i+1])/ 2
+               }
 
-           mod <- lm(y ~ x)
-           sum_mod <- summary(lm(y ~ x))
-           a <- sum_mod$coefficients[1]
-           b <- sum_mod$coefficients[2]
-           R2 <- sum_mod$r.squared
-           K <- -b
-           Linf <- -a/b
+               mod <- lm(y ~ x)
+               sum_mod <- summary(lm(y ~ x))
+               a <- sum_mod$coefficients[1]
+               b <- sum_mod$coefficients[2]
+               R2 <- sum_mod$r.squared
+               K <- -b
+               Linf <- -a/b
 
-           plot(y ~ x, pch = 16,
-                ylim = c(0,max(y,na.rm=TRUE)*1.1),
-                xlab = "mean L(t)",
-                ylab=expression(paste(delta,"L / ",delta,"t")),
-                main = "Gulland and Holt")
-           abline(a,b)
+               plot(y ~ x, pch = 16,
+                    ylim = c(0,max(y,na.rm=TRUE)*1.1),
+                    xlab = "mean L(t)",
+                    ylab=expression(paste(delta,"L / ",delta,"t")),
+                    main = "Gulland and Holt")
+               abline(a,b)
 
-           tmp <- list(delta_t=delta_t,x=x,y=y,R2=R2)
+               tmp <- list(delta_t=delta_t,x=x,y=y,R2=R2)
 
-         },
-         "FordWalford"={
-           # Can not deal with multiple observations (lengths) per age
-           if(length(unique(t)) == length(t)){
-             delta_t <- diff(t)
-           }else{
-             delta_t <- diff(unique(t))
-             Lt <- aggregate(Lt,list(t = t),mean,na.rm= TRUE)$x
-           }
+           },
+           "FordWalford"={
+               ## Can not deal with multiple observations (lengths) per age
+               if(length(unique(t)) == length(t)){
+                   delta_t <- diff(t)
+               }else{
+                   delta_t <- diff(unique(t))
+                   Lt <- aggregate(Lt,list(t = t),mean,na.rm= TRUE)$x
+               }
 
-           if(!all(delta_t == 1)) stop("The Ford Walford method assumes constant time intervals!")
+               if(!all(delta_t == 1)) stop("The Ford Walford method assumes constant time intervals!")
 
-           delta_t <- delta_t[1]
+               delta_t <- delta_t[1]
 
-           y <- Lt[2:length(Lt)]
-           x <- Lt[-length(Lt)]
+               y <- Lt[2:length(Lt)]
+               x <- Lt[-length(Lt)]
 
-           mod <- lm(y ~ x)
-           sum_mod <- summary(lm(y ~ x))
-           a <- sum_mod$coefficients[1]
-           b <- sum_mod$coefficients[2]
-           R2 <- sum_mod$r.squared
-           K <- -1/delta_t * log(b)
-           Linf <- a/(1-b)
+               mod <- lm(y ~ x)
+               sum_mod <- summary(lm(y ~ x))
+               a <- sum_mod$coefficients[1]
+               b <- sum_mod$coefficients[2]
+               R2 <- sum_mod$r.squared
+               K <- -1/delta_t * log(b)
+               Linf <- a/(1-b)
 
-           plot(y ~ x, pch = 16, ylim = c(0,max(y,na.rm=TRUE)*1.1),
-                xlim = c(0,max(x,na.rm=TRUE)*1.1),
-                xlab = "L(t)",
-                ylab=expression(paste("L(t+",delta,"t)")),
-                main = "Ford Walford plot")
-           abline(a,b)
-           abline(1,1, lty=2)
-           segments(x0 = 0, y0 = Linf, x1 = Linf, y1 = Linf, lty=2)
-           segments(x0 = Linf, y0 = 0, x1 = Linf, y1 = Linf, lty=2)
+               plot(y ~ x, pch = 16, ylim = c(0,max(y,na.rm=TRUE)*1.1),
+                    xlim = c(0,max(x,na.rm=TRUE)*1.1),
+                    xlab = "L(t)",
+                    ylab=expression(paste("L(t+",delta,"t)")),
+                    main = "Ford Walford plot")
+               abline(a,b)
+               abline(1,1, lty=2)
+               segments(x0 = 0, y0 = Linf, x1 = Linf, y1 = Linf, lty=2)
+               segments(x0 = Linf, y0 = 0, x1 = Linf, y1 = Linf, lty=2)
 
-           tmp <- list(delta_t=delta_t,x=x,y=y,R2=R2)
-         },
-         "Chapman"={
-           # Can not deal with multiple observations (lengths) per age
-           if(length(unique(t)) == length(t)){
-             delta_t <- diff(t)
-           }else{
-             delta_t <- diff(unique(t))
-             Lt <- aggregate(Lt,list(t = t),mean,na.rm= TRUE)$x
-           }
+               tmp <- list(delta_t=delta_t,x=x,y=y,R2=R2)
+           },
+           "Chapman"={
+               ## Can not deal with multiple observations (lengths) per age
+               if(length(unique(t)) == length(t)){
+                   delta_t <- diff(t)
+               }else{
+                   delta_t <- diff(unique(t))
+                   Lt <- aggregate(Lt,list(t = t),mean,na.rm= TRUE)$x
+               }
 
-           if(!all(delta_t == 1)) stop("The Chapman method assumes constant time intervals!")
+               if(!all(delta_t == 1)) stop("The Chapman method assumes constant time intervals!")
 
-           delta_t <- delta_t[1]
+               delta_t <- delta_t[1]
 
-           Lt_short <- Lt[-length(Lt)]
-           y <- Lt[2:length(Lt)] - Lt_short
-           x <- Lt_short
-
-
-           mod <- lm(y ~ x)
-           sum_mod <- summary(lm(y ~ x))
-           a <- sum_mod$coefficients[1]
-           b <- sum_mod$coefficients[2]
-           R2 <- sum_mod$r.squared
-           c <- -b
-           K <- -(1/delta_t) * log(1+b)
-           Linf <- -a/b
-
-           plot(y ~ x, pch = 16, ylim = c(0,max(y,na.rm=TRUE)*1.1),
-                xlim = c(0,max(x,na.rm=TRUE)*1.1),
-                xlab = "L(t)",
-                ylab=expression(paste("L(t+",delta,"t)-L(t)")),
-                main = "Chapman")
-           abline(a,b)
-
-           tmp <- list(delta_t=delta_t,x=x,y=y,R2=R2)
-         },
-         "BertalanffyPlot"={
-
-           delta_t <- diff(t)
-
-           #Linf should be given: otherwise using optim?
-           if(is.na(Linf_est)) stop("For the Bertalanffy plot you have to provide an estimate for Linf_est!")
-           y <- -log(1 - Lt / Linf_est)
-           x <- t
-
-           mod <- lm(y ~ x)
-           sum_mod <- summary(lm(y ~ x))
-           a <- sum_mod$coefficients[1]
-           b <- sum_mod$coefficients[2]
-           R2 <- sum_mod$r.squared
-           K <- b
-           t0 <- a/-K
-           Linf <- Linf_est
-
-           plot(y ~ x, pch = 16, ylim = c(0,max(y,na.rm=TRUE)*1.1),
-                xlim = c(0,max(x,na.rm=TRUE)*1.1),
-                xlab = "t",
-                ylab=expression(paste("-ln(1-L(t)/Linf)")),
-                main = "Bertalanffy plot")
-           abline(a,b)
-
-           tmp <- list(x=x,y=y,R2=R2,t0=t0)
+               Lt_short <- Lt[-length(Lt)]
+               y <- Lt[2:length(Lt)] - Lt_short
+               x <- Lt_short
 
 
-           if(max(Lt, na.rm=TRUE) > Linf_est) writeLines("Some lengths were larger as the Linf value which was \nprovided. These lengths are omitted.")
-         },
-         "LSM"={
+               mod <- lm(y ~ x)
+               sum_mod <- summary(lm(y ~ x))
+               a <- sum_mod$coefficients[1]
+               b <- sum_mod$coefficients[2]
+               R2 <- sum_mod$r.squared
+               c <- -b
+               K <- -(1/delta_t) * log(1+b)
+               Linf <- -a/b
 
-           nls_mod <- nls(Lt ~ (Linf * (1 - exp(-K * (t - t0)))),
-                      start = list(Linf = Linf_init, K = K_init, t0 = t0_init))
+               plot(y ~ x, pch = 16, ylim = c(0,max(y,na.rm=TRUE)*1.1),
+                    xlim = c(0,max(x,na.rm=TRUE)*1.1),
+                    xlab = "L(t)",
+                    ylab=expression(paste("L(t+",delta,"t)-L(t)")),
+                    main = "Chapman")
+               abline(a,b)
 
-           if(!CI){
-             plot(Lt ~ t,
-                  ylab = "L(t)",
-                  xlab = "t(age)",
-                  main = "Non-linear least squares method")
-             lines(t, predict(nls_mod))
-           }
-           sum_mod <- summary(nls_mod)
-           Linf <- sum_mod$coefficients[1]
-           K <- sum_mod$coefficients[2]
-           t0 <- sum_mod$coefficients[3]
+               tmp <- list(delta_t=delta_t,x=x,y=y,R2=R2)
+           },
+           "BertalanffyPlot"={
 
-           mod <- nls_mod
-           tmp <- list(t0 = t0)
+               delta_t <- diff(t)
 
-           if(CI){
-             suppressMessages(cis <- confint(nls_mod, level = ci.level))
-             nls_res <- data.frame(Names=c("Linf","K","t0"),
-                                   Value=c(round(Linf,2),
-                                           round(K,2),
-                                           round(t0,2)),
-                                   Lower.CI = c(round(cis[1,1],2),
-                                                round(cis[2,1],2),
-                                                round(cis[3,1],2)),
-                                   Upper.CI = c(round(cis[1,2],2),
-                                                round(cis[2,2],2),
-                                                round(cis[3,2],2)))
-             tmp$nls_res = nls_res
+               ##Linf should be given: otherwise using optim?
+               if(is.na(Linf_est)) stop("For the Bertalanffy plot you have to provide an estimate for Linf_est!")
+               y <- -log(1 - Lt / Linf_est)
+               x <- t
 
-             # plot with confidence interval
-             if(is.null(age_plot)){
-               age_plot <- seq(min(floor(t)),max(ceiling(t)),0.1)
-             }else age_plot <- age_plot
-             # Taylor error propagation and Monte Carlo simulation for confidence interval
-             sink(tempfile())
-             pred_L <- suppressMessages(propagate::predictNLS(nls_mod,
-                                                              do.sim = do.sim,
-                                                              nsim = nsim,
-                                             newdata = data.frame(t = age_plot)))
-             sink()
-             # Taylor propagation
-             if(!do.sim){
-               predVals <- cbind(age_plot,as.data.frame(pred_L$summary[,c(1,5,6)]))
-             }
-             # Monte Carlo simulation
-             if(do.sim){
-               predVals <- cbind(age_plot,as.data.frame(pred_L$summary[,c(7,11,12)]))
-             }
-             names(predVals) <- c("age_plot","fit","lower","upper")
-             plot(Lt ~ t, type = "n", ylab = "L(t)", xlab = "t(age)", xlim=c(min(age_plot),max(age_plot)),
-                  main = "Non-linear least squares method")
-             polygon(c(age_plot,rev(age_plot)),
-                     c(predVals$lower,rev(predVals$upper)),
-                     border = FALSE, col = adjustcolor("dodgerblue", alpha.f = 0.4))
-             points(t, Lt)
-             lines(age_plot, predict(nls_mod,newdata = data.frame(t=age_plot)))
-           }
-         },
+               mod <- lm(y ~ x)
+               sum_mod <- summary(lm(y ~ x))
+               a <- sum_mod$coefficients[1]
+               b <- sum_mod$coefficients[2]
+               R2 <- sum_mod$r.squared
+               K <- b
+               t0 <- a/-K
+               Linf <- Linf_est
 
-         stop(paste("\n",method, "not recognised, possible options are \n",
-                    "\"GullandHolt\", \"FordWalford\", \"Chapman\" \n",
-                    "\"BertalanffyPlot\", and \"LSM\""))
-         )
+               plot(y ~ x, pch = 16, ylim = c(0,max(y,na.rm=TRUE)*1.1),
+                    xlim = c(0,max(x,na.rm=TRUE)*1.1),
+                    xlab = "t",
+                    ylab=expression(paste("-ln(1-L(t)/Linf)")),
+                    main = "Bertalanffy plot")
+               abline(a,b)
 
-  res2 <- res
-  if(exists("delta_t", where = tmp)) res2$delta_t <- delta_t
-  if(exists("x", where = tmp)) res2$x <- x
-  if(exists("y", where = tmp)) res2$y <- y
-  if(exists("R2", where = tmp)) res2$r2 <- R2
+               tmp <- list(x=x,y=y,R2=R2,t0=t0)
 
-  ret <- c(res2,list(mod = mod,
-                    Linf = Linf,
-                    K = K))
 
-  if(exists("t0", where = tmp)) ret$t0 <- t0
-  if(exists("nls_res", where = tmp)) ret$estimates <- nls_res
+               if(max(Lt, na.rm=TRUE) > Linf_est) writeLines("Some lengths were larger as the Linf value which was \nprovided. These lengths are omitted.")
+           },
+           "LSM"={
 
-  return(ret)
+               nls_mod <- nls(Lt ~ (Linf * (1 - exp(-K * (t - t0)))),
+                              start = list(Linf = Linf_init, K = K_init, t0 = t0_init))
+
+               if(!CI){
+                   plot(Lt ~ t,
+                        ylab = "L(t)",
+                        xlab = "t(age)",
+                        main = "Non-linear least squares method")
+                   lines(t, predict(nls_mod))
+               }
+               sum_mod <- summary(nls_mod)
+               Linf <- sum_mod$coefficients[1]
+               K <- sum_mod$coefficients[2]
+               t0 <- sum_mod$coefficients[3]
+
+               mod <- nls_mod
+               tmp <- list(t0 = t0)
+
+               if(CI){
+                   suppressMessages(cis <- confint(nls_mod, level = ci.level))
+                   nls_res <- data.frame(Names=c("Linf","K","t0"),
+                                         Value=c(round(Linf,2),
+                                                 round(K,2),
+                                                 round(t0,2)),
+                                         Lower.CI = c(round(cis[1,1],2),
+                                                      round(cis[2,1],2),
+                                                      round(cis[3,1],2)),
+                                         Upper.CI = c(round(cis[1,2],2),
+                                                      round(cis[2,2],2),
+                                                      round(cis[3,2],2)))
+                   tmp$nls_res = nls_res
+
+                   ## plot with confidence interval
+                   if(is.null(age_plot)){
+                       age_plot <- seq(min(floor(t)),max(ceiling(t)),0.1)
+                   }else age_plot <- age_plot
+                   ## Taylor error propagation and Monte Carlo simulation for confidence interval
+                   sink(tempfile())
+                   pred_L <- suppressMessages(propagate::predictNLS(nls_mod,
+                                                                    do.sim = do.sim,
+                                                                    nsim = nsim,
+                                                                    newdata = data.frame(t = age_plot)))
+                   sink()
+                   ## Taylor propagation
+                   if(!do.sim){
+                       predVals <- cbind(age_plot,as.data.frame(pred_L$summary[,c(1,5,6)]))
+                   }
+                   ## Monte Carlo simulation
+                   if(do.sim){
+                       predVals <- cbind(age_plot,as.data.frame(pred_L$summary[,c(7,11,12)]))
+                   }
+                   names(predVals) <- c("age_plot","fit","lower","upper")
+                   plot(Lt ~ t, type = "n", ylab = "L(t)", xlab = "t(age)", xlim=c(min(age_plot),max(age_plot)),
+                        main = "Non-linear least squares method")
+                   polygon(c(age_plot,rev(age_plot)),
+                           c(predVals$lower,rev(predVals$upper)),
+                           border = FALSE, col = adjustcolor("dodgerblue", alpha.f = 0.4))
+                   points(t, Lt)
+                   lines(age_plot, predict(nls_mod,newdata = data.frame(t=age_plot)))
+               }
+           },
+
+           stop(paste("\n",method, "not recognised, possible options are \n",
+                      "\"GullandHolt\", \"FordWalford\", \"Chapman\" \n",
+                      "\"BertalanffyPlot\", and \"LSM\""))
+           )
+
+    res2 <- res
+    if(exists("delta_t", where = tmp)) res2$delta_t <- delta_t
+    if(exists("x", where = tmp)) res2$x <- x
+    if(exists("y", where = tmp)) res2$y <- y
+    if(exists("R2", where = tmp)) res2$r2 <- R2
+
+    ret <- c(res2,list(mod = mod,
+                       Linf = Linf,
+                       K = K))
+
+    if(exists("t0", where = tmp)) ret$t0 <- t0
+    if(exists("nls_res", where = tmp)) ret$estimates <- nls_res
+
+    return(ret)
+}
+
+
+
+
+
+#' @title Jack-knife method for confidence intervals for growth parameters
+#
+#' @description The jackknife routine can be used to estimate confidence intervals for
+#'   the growth parameters estimated with ELEFAN.
+#'
+#' @param elefanFit lfq list fitted with growth parameters estimated with ELEFAN_SA or ELEFAN_GA
+#' 
+#' @keywords function jackknife CI
+#'
+#' @importFrom stats t.test
+#' @importFrom utils capture.output
+#'
+#' @export
+
+jackknife <- function(elefanFit){
+
+    res <- elefanFit
+
+    if(class(res) != "lfq" | !("par" %in% names(res)))
+        stop("Please provide an object fitted by one of the ELEFAN functions!")
+
+    if("control" %in% names(res)){
+        method <- "SA"
+    }else method <- "GA"
+
+    JK <- vector("list", length(res$dates))
+    rns <- vector("numeric", length(res$dates))    
+    for(i in 1:length(res$dates)){
+      loop_data <- list(dates = res$dates[-i],
+                      midLengths = res$midLengths,
+                      catch = res$catch[,-i])
+      if(method == "GA"){
+          invisible(utils::capture.output(tmp <- ELEFAN_GA(loop_data, MA = res$MA, addl.sqrt = res$addl.sqrt,
+                           seasonalised = res$seasonalised,
+                           popSize = res$popSize,
+                           maxiter = res$maxiter,
+                           run = res$run,
+                           pmutation = res$pmutation,
+                           pcrossover = res$pcrossover,
+                           elitism  = res$elitism,
+                           flagging.out = res$flagging.out,
+                           seed = res$seed,
+                           low_par = res$low_par,
+                           up_par = res$up_par,
+                           plot.score = FALSE)))
+      }
+      if(method =="SA"){
+          SA_time <- res$control$SA_time
+          maxit <- res$control$maxit
+          nb.stop.improvement <- res$control$nb.stop.improvement
+          SA_temp <- res$control$temperature
+          verbose <- FALSE
+          invisible(utils::capture.output(tmp <- ELEFAN_SA(loop_data,
+                           SA_time = SA_time, SA_temp = SA_temp,
+                           maxit = maxit,
+                           nb.stop.improvement = nb.stop.improvement,
+                           verbose = verbose,
+                           MA = res$MA, addl.sqrt = res$addl.sqrt,
+                           init_par = res$init_par,
+                           low_par = res$low_par,
+                           up_par = res$up_par,
+                           seasonalised = res$seasonalised,
+                           flagging.out = res$flagging.out,
+                           plot.score = FALSE)))
+      }
+        JK[[i]] <- unlist(tmp$par)
+        rns[i] <- tmp$Rn_max
+    }
+    
+    JKres <- do.call(cbind, JK)
+    ## mean
+    JKmeans <- apply(as.matrix(JKres), MARGIN = 1, FUN = mean)
+    ## confidence intervals
+    JKconf <- apply(as.matrix(JKres), MARGIN = 1, FUN = function(x) stats::t.test(x)$conf.int[c(1,2)])
+    JKconf <- t(JKconf)
+    colnames(JKconf) <- c("lo","up")
+
+    ret <- list(jkRaw = as.matrix(JKres),
+                jkScore = rns,
+                jkMean = JKmeans,
+                jkCI = t(JKconf))
+
+    return(ret)
 }
 

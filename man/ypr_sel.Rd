@@ -4,19 +4,27 @@
 \alias{ypr_sel}
 \title{Yield per recruit with selection ogive}
 \usage{
-ypr_sel(param, FM_change, Lt, P)
+ypr_sel(pars, FM_change, Lt, P)
 }
 \arguments{
-\item{param}{a list consisting of following parameters (not all are required):
-\itemize{
-  \item \strong{Linf}: infinite length in cm
-  \item \strong{Winf}: infinite weight
-  \item \strong{K}: growth coefficent for investigated species per year [1/year],
-  \item \strong{t0}: theoretical time zero, at which individuals of this species
-       hatch
-  \item \strong{M}: natural mortality
-  \item \strong{tr}: age of recruitment
-  \item \strong{tc}: age of first capture}}
+\item{pars}{a list consisting of following parameters (not all are required):
+ \itemize{
+   \item \strong{Linf}: infinite length for investigated species in cm [cm],
+   \item \strong{Winf}: infinite weight form a von Bertalanffy growth curve
+  in wet weight-grams.
+   \item \strong{K}: growth coefficent for investigated species per year [1/year],
+   \item \strong{ta}: time point anchoring growth curves in year-length
+ coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0),
+   \item \strong{t0}: theoretical time zero, at which individuals of this species hatch,
+   \item \strong{C}: amplitude of growth oscillation of soVBGF (range: 0 to 1, default: 0),
+   \item \strong{ts}: summer point of soVBGF (ts = WP - 0.5) (range: 0 to 1, default: 0);
+  \item \strong{M}: natural mortality [1/year] (numeric value or vector of identical
+    length than midLengths),
+ \item \strong{tr}: age of recruitment,
+ \item \strong{tc}: age of first capture,
+ \item \strong{a}: length-weight relationship coefficent (W = a * L^b; for kg/cm3),
+ \item \strong{b}: length-weight relationship coefficent (W = a * L^b),
+}}
 
 \item{FM_change}{vector with ascending fishing mortalities}
 

@@ -4,10 +4,10 @@
 \alias{VBGF}
 \title{Von Bertalanffy Growth function (VBGF)}
 \usage{
-VBGF(param, t = NA, L = NA)
+VBGF(pars, t = NA, L = NA)
 }
 \arguments{
-\item{param}{a list with following potential objects:
+\item{pars}{a list with following potential objects:
 \itemize{
   \item \code{Linf}: infinite length for investigated species in cm, or
   \item \code{Winf}: infinite weight for investigated species in gramm

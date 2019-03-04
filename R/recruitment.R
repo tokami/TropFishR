@@ -2,7 +2,7 @@
 #'
 #' @description  This function estimates recrutiment patterns from length-frequency data.
 #'
-#' @param param a list consisting of following parameters:
+#' @param lfq a list consisting of following parameters:
 #' \itemize{
 #'   \item \code{midLengths}: midpoints of the length classes (length-frequency
 #'   data),
@@ -29,24 +29,24 @@
 #' dat <- list(midLengths = seq(2,98,4),
 #'                catch = c(0.6,17.6,93,83.2,12.6,0.3,0,0,0,1,17.1,51.4,
 #'                26.1,2.2,0.2,4.5,21.6,17.6,3.7,8.7,10.6,6.3,5.6,2.9,0.8),
-#'                Linf = 100,
-#'                K = 0.5,
-#'                t0 = 0)
-#' recruitment(param = dat, tsample = 0.25)
+#'                par = list(Linf = 100,
+#'                           K = 0.5,
+#'                           t0 = 0))
+#' recruitment(lfq = dat, tsample = 0.25)
 #'
 #'
 #' # several samples
 #' data(synLFQ4)
 #'
 #' # add growth parameters
-#' synLFQ4$Linf <- 80
-#' synLFQ4$K <- 0.5
-#' synLFQ4$t0 <- 0.25
+#' synLFQ4$par$Linf <- 80
+#' synLFQ4$par$K <- 0.5
+#' synLFQ4$par$t0 <- 0.25
 #'
 #' # retrieve sampling times from catch matrix
 #' s_dates <- as.POSIXlt(synLFQ4$dates, format="%d.%m.%Y")
 #'
-#' recruitment(param = synLFQ4, tsample = s_dates$yday/365, plot = TRUE)
+#' recruitment(lfq = synLFQ4, tsample = s_dates$yday/365, plot = TRUE)
 #'
 #'
 #' plot(synLFQ4, Fname = "catch",
@@ -105,95 +105,102 @@
 #'
 #' @export
 
-recruitment <- function(param, tsample, catch_column = NA, plot = FALSE){
+recruitment <- function(lfq, tsample, catch_column = NA, plot = FALSE){
 
-  res <- param
-  Linf <- res$Linf
-  K <- res$K
-  t0 <- ifelse("t0" %in% names(res),res$t0, 0)
-  D <- ifelse("D" %in% names(res),res$D, 1)
-  C <- ifelse("C" %in% names(res),res$C, 0)
-  ts <- ifelse("ts" %in% names(res),res$ts, 0)
-  classes <- as.character(res$midLengths)
-  # create column without plus group (sign) if present
-  classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
-  classes.num <- as.numeric(classes.num[,1])
+    res <- lfq
+    if("par" %in% names(res)){
+        par <- res$par
+    }else par <- list()
+    if(!"par" %in% names(res)) stop(noquote("Please provide the required parameters in res$par!"))    
 
-  if(is.na(catch_column)) catch <- res$catch
-  if(!is.na(catch_column)) catch <- res$catch[,catch_column]
+    Linf <- res$par$Linf
+    K <- res$par$K
+    ta <- ifelse("ta" %in% names(res$par), res$par$ta, 0)            
+    t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
+    C <- ifelse("C" %in% names(res$par), res$par$C, 0)
+    ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
+    D <- ifelse("D" %in% names(res$par),res$par$D, 1)
 
-  if(class(catch) == "matrix" | class(catch) == "data.frame"){
-    len_catch <- dim(catch)[1]
-    catch_sets <- dim(catch)[2]
+    classes <- as.character(res$midLengths)
+    ## create column without plus group (sign) if present
+    classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
+    classes.num <- as.numeric(classes.num[,1])
+
+    if(is.na(catch_column)) catch <- res$catch
+    if(!is.na(catch_column)) catch <- res$catch[,catch_column]
+
+    if(class(catch) == "matrix" | class(catch) == "data.frame"){
+        len_catch <- dim(catch)[1]
+        catch_sets <- dim(catch)[2]
     }else{
-      len_catch <- length(catch)
-      catch_sets <- 1
+        len_catch <- length(catch)
+        catch_sets <- 1
     }
 
-  res_months <- data.frame(month = 1:12)
-  # number of recruits per month
-  N_months_loop <- matrix(NA, nrow = 12, ncol = catch_sets)
-  ti <- matrix(NA, nrow = len_catch, ncol = catch_sets)
-  tS_frac <- matrix(NA, nrow = len_catch, ncol = catch_sets)
-  correspond_month <- matrix(NA, nrow = len_catch, ncol = catch_sets)
-  for(i in 1:catch_sets){
-    if(catch_sets > 1){
-      catchi <- catch[,i]
-      tsampli <- tsample[i]
-    }else{
-      catchi <- catch
-      tsampli <- tsample
+    res_months <- data.frame(month = 1:12)
+    ## number of recruits per month
+    N_months_loop <- matrix(NA, nrow = 12, ncol = catch_sets)
+    ti <- matrix(NA, nrow = len_catch, ncol = catch_sets)
+    tS_frac <- matrix(NA, nrow = len_catch, ncol = catch_sets)
+    correspond_month <- matrix(NA, nrow = len_catch, ncol = catch_sets)
+    for(i in 1:catch_sets){
+        if(catch_sets > 1){
+            catchi <- catch[,i]
+            tsampli <- tsample[i]
+        }else{
+            catchi <- catch
+            tsampli <- tsample
+        }
+
+        ## ## special vBGF (D = 1)
+        ## ti[,i] <- log(1 - classes.num/Linf)/-K + t0 - tsampli
+        ## ## generalised vBGF
+        ## if(!is.na(D)) ti[,i] <- log(1 - (classes.num/Linf)^D)/(-K*D) + t0 - tsampli
+        ## ## seasonalized vBGF
+        ## if(!is.na(C) & !is.na(ts)) ti[,i] <- (log(1 - (classes.num/Linf)^D) +
+        ##                                     C * ((K*D)/2*pi)*sin(2*pi)*((t0-tsampli)-ts))/(-K*D) + t0 - tsampli
+
+        ti[,i] <- (log(1 - (classes.num/Linf)^D) +
+                   C * ((K*D)/2*pi)*sin(2*pi)*((t0-tsampli)-ts))/(-K*D) + t0 - tsampli
+
+        ## t at S = 0 as fraction of year
+        tS_frac[,i] <- ti[,i] - floor(ti[,i])
+        ## corresponding months
+        correspond_month[,i] <- floor(tS_frac[,i] * 12 + 1)
+
+        N_months_pre <- aggregate(list(numbers=catchi), by = list(month = correspond_month[,i]),
+                                  sum, na.rm =TRUE)
+        N_months_all <- merge(res_months, N_months_pre, by.x = "month", all.x=TRUE)
+        N_months_all$numbers[is.na(N_months_all$numbers)] <- 0
+        N_months_loop[,i] <- N_months_all$numbers
     }
 
-    # # special vBGF (D = 1)
-    # ti[,i] <- log(1 - classes.num/Linf)/-K + t0 - tsampli
-    # # generalised vBGF
-    # if(!is.na(D)) ti[,i] <- log(1 - (classes.num/Linf)^D)/(-K*D) + t0 - tsampli
-    # # seasonalized vBGF
-    # if(!is.na(C) & !is.na(ts)) ti[,i] <- (log(1 - (classes.num/Linf)^D) +
-    #                                     C * ((K*D)/2*pi)*sin(2*pi)*((t0-tsampli)-ts))/(-K*D) + t0 - tsampli
+    N_months_final <- apply(N_months_loop, 1, FUN = mean, na.rm = TRUE)
 
-    ti[,i] <- (log(1 - (classes.num/Linf)^D) +
-                 C * ((K*D)/2*pi)*sin(2*pi)*((t0-tsampli)-ts))/(-K*D) + t0 - tsampli
+    ## percentage of recruits per month
+    N_months_per <- (N_months_final/sum(N_months_final, na.rm = TRUE)) * 100
 
-    # t at S = 0 as fraction of year
-    tS_frac[,i] <- ti[,i] - floor(ti[,i])
-    # corresponding months
-    correspond_month[,i] <- floor(tS_frac[,i] * 12 + 1)
+    if("t0" %in% names(res)){
+        months_abb <- month.abb[res_months$month]
+    }
 
-    N_months_pre <- aggregate(list(numbers=catchi), by = list(month = correspond_month[,i]),
-                              sum, na.rm =TRUE)
-    N_months_all <- merge(res_months, N_months_pre, by.x = "month", all.x=TRUE)
-    N_months_all$numbers[is.na(N_months_all$numbers)] <- 0
-    N_months_loop[,i] <- N_months_all$numbers
-  }
+    if(catch_sets == 1){
+        ti <- ti[,1]
+        tS_frac <- tS_frac[,1]
+        correspond_month <- correspond_month[,1]
+        N_months_loop <- N_months_loop[,1]
+    }
 
-  N_months_final <- apply(N_months_loop, 1, FUN = mean, na.rm = TRUE)
+    res2 <- c(res,list(ti = ti,
+                       tS_frac = tS_frac,
+                       cor_months = correspond_month,
+                       months = res_months$month))
+    if("t0" %in% names(res)) res2$months_abb <- months_abb
+    ret <- c(res2,list(all_recruits = N_months_loop,
+                       mean_recruits = N_months_final,
+                       per_recruits = N_months_per))
 
-  # percentage of recruits per month
-  N_months_per <- (N_months_final/sum(N_months_final, na.rm = TRUE)) * 100
-
-  if("t0" %in% names(res)){
-    months_abb <- month.abb[res_months$month]
-  }
-
-  if(catch_sets == 1){
-    ti <- ti[,1]
-    tS_frac <- tS_frac[,1]
-    correspond_month <- correspond_month[,1]
-    N_months_loop <- N_months_loop[,1]
-  }
-
-  res2 <- c(res,list(ti = ti,
-                    tS_frac = tS_frac,
-                    cor_months = correspond_month,
-                    months = res_months$month))
-  if("t0" %in% names(res)) res2$months_abb <- months_abb
-  ret <- c(res2,list(all_recruits = N_months_loop,
-                    mean_recruits = N_months_final,
-                    per_recruits = N_months_per))
-
-  class(ret) <- "recruitment"
-  if(plot) plot(ret)
-  return(ret)
+    class(ret) <- "recruitment"
+    if(plot) plot(ret)
+    return(ret)
 }

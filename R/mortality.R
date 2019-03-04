@@ -1,24 +1,30 @@
 #' @title Empirical formulas for the estimation of natural mortality
-#
+#' 
 #' @description Functions to calculate the instantaneous natural mortality rate (M)
 #'      according to 12 different empirical formulas.
-#'
-#' @param Linf infinite total length (TL) from a von Bertalanffy
+#' @param lfq a list consisting of following parameters:
+#' \itemize{
+#'   \item \strong{midLengths}: midpoints of the length classes (length-frequency
+#'   data; in cm) for size dependent mortality estimates (method = "Gislason")
+#' \item \strong{par}: and following parameters (not all are required; dependent on method):
+#'  \itemize{
+#' \item \strong{Linf} infinite total length (TL) from a von Bertalanffy
 #'    growth curve in cm.
-#' @param Winf infinite weight form a von Bertalanffy growth curve
+#' \item \strong{Winf} infinite weight form a von Bertalanffy growth curve
 #'    in wet weight-grams.
-#' @param K_l is the growth coefficient (per year) from a von Bertalanffy growth
+#' \item \strong{K} is the growth coefficient (per year) from a von Bertalanffy growth
 #'    curve for length.
-#' @param K_w is the growth coefficient (per year) from a von Bertalanffy growth
+#' \item \strong{K_w} is the growth coefficient (per year) from a von Bertalanffy growth
 #'    curve for weight.
-#' @param temp average annual temperature at the surface in degrees centigrade.
-#' @param tmax the oldest age observed for the species.
-#' @param tm50 age when 50\% of the population is mature [year]
+#' \item \strong{temp} average annual temperature at the surface in degrees centigrade.
+#' \item \strong{tmax} the oldest age observed for the species.
+#' \item \strong{tm50} age when 50\% of the population is mature [year]
 #'      ("age of massive maturation").
-#' @param GSI gonadosomatic index (wet ovary weight over wet body weight).
-#' @param Wdry total dry weight in grams.
-#' @param Wwet total wet weight at mean length in grams.
-#' @param Bl vector with body lengths in cm for size dependent mortality estimates (method = "Gislason")
+#' \item \strong{GSI} gonadosomatic index (wet ovary weight over wet body weight).
+#' \item \strong{Wdry} total dry weight in grams.
+#' \item \strong{Wwet} total wet weight at mean length in grams.
+#'  }
+#' }
 #' @param schooling logical; if TRUE it is accounted for the schooling behaviour of
 #'      the species, only for Pauly's methods. Default is FALSE.
 #' @param method vector of method names. Any combination of following methods can
@@ -31,8 +37,12 @@
 #' @keywords function mortality M
 #'
 #' @examples
-#' M_empirical(Linf = 80, K_l = 0.5, temp = 25, tmax = 30,
-#'      method = c("Pauly_Linf","Hoenig"))
+#' ## with included data set
+#' res <- M_empirical(synLFQ3, method="Then_growth")
+#'
+#' ## with specific parameters
+#' pars <- list(par=list(Linf = 80, K = 0.5, temp = 25, tmax = 30))
+#' M_empirical(pars, method = c("Pauly_Linf","Hoenig"))
 #'
 #' @source https://cran.r-project.org/web/packages/fishmethods/index.html
 #'
@@ -102,130 +112,149 @@
 #'
 #' @export
 
-M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
-                        temp = NULL, tmax = NULL, tm50 = NULL, GSI = NULL,
-                        Wdry = NULL, Wwet = NULL, Bl = NULL,
-                        schooling = FALSE, method){
+M_empirical <- function(lfq, method, schooling = FALSE){
 
-  if (any(method == "AlversonCarney") & any(is.null(tmax), is.null(K_l)))
-    stop("AlversonCarney requires K_l and tmax")
-  if (any(method == "Gislason") & any(is.null(Linf), is.null(K_l), is.null(Bl)))
-    stop("Gislason requires Linf, K_l, and Bl")
-  if (any(method == "GundersonDygert") & is.null(GSI))
-    stop("GundersonDygert requires GSI")
-  if (any(method == "Hoenig") & is.null(tmax))
-    stop("Hoenig requires tmax")
-  if (any(method == "Lorenzen") & is.null(Wwet))
-    stop("Lorenzen requires Wwet")
-  if (any(method == "Pauly_Linf") & any(is.null(Linf), is.null(K_l), is.null(temp)))
-    stop("Pauly_Linf requires Linf, K_l, and temp")
-  if (any(method == "Pauly_Winf") & any(is.null(Winf), is.null(K_w), is.null(temp)))
-    stop("Pauly_Winf requires Winf, K_w, and temp")
-  if (any(method == "PetersonWroblewski") & is.null(Wdry))
-    stop("PetersonWroblewski requires Wdry")
-  if (any(method == "RikhterEfanov") & any(is.null(tm50)))
-    stop("RikhterEfanov requires K_l and tm50")
-  if (any(method == "Roff") & any(is.null(tm50), is.null(K_l)))
-    stop("Roff requires K_l and tm50")
-  if (any(method == "Then_tmax") & any(is.null(tmax)))
-    stop("Then_max requires tmax")
-  if (any(method == "Then_growth") & any(is.null(Linf), is.null(K_l)))
-    stop("Then_growth requires Linf and K_l")
+    res <- lfq
+    if(!"par" %in% names(lfq)) stop(noquote("Please provide the required parameters in res$par!"))    
+    par <- lfq$par
 
-  n <- length(method)
-  if (any(method == "Hoenig"))
-    n <- n + 1
-  M_mat <- matrix(NA, n, 1L)
-  dimnames(M_mat) <- list(rep(NA, n), c("M"))
-  ind <- 0
+    Linf <- ifelse("Linf" %in% names(par), par$Linf, NA)
+    K_l <- ifelse("K" %in% names(par), par$K, NA)            ## old K_l
+    K_w <- ifelse("K_w" %in% names(par), par$K_w, NA)    
+    Winf <- ifelse("Winf" %in% names(par), par$Winf, NA)
+    temp <- ifelse("temp" %in% names(par), par$temp, NA)
+    tmax <- ifelse("tmax" %in% names(par), par$tmax, NA)
+    tm50 <- ifelse("tm50" %in% names(par), par$tm50, NA)
+    GSI <- ifelse("GSI" %in% names(par), par$GSI, NA)
+    Wdry <- ifelse("Wdry" %in% names(par), par$Wdry, NA)
+    Wwet <- ifelse("Wwet" %in% names(par), par$Wwet, NA)
+    Bl <- ifelse("midLengths" %in% names(res), res$midLengths, NA)
 
-  if(any(method == "AlversonCarney")){
-    ind <- ind + 1
-    # Alverson and Carney (1975)
-    M_mat[ind, 1]  <- round((3 * K_l)/(exp(K_l * (0.38 * tmax)) - 1), 3)
-    dimnames(M_mat)[[1]][ind] <- list("Alverson and Carney (1975)")
-  }
-  #if(any(method == "Gislason")){
-  #  ind <- ind + 1
-  #  # Gislason et al. (2010)
-  #  M_mat[ind, 1]  <- round(exp(0.55 - 1.61 * log(Bl) + 1.44 * log(Linf) + log(K_l)), 3)
-  #  dimnames(M_mat)[[1]][ind] <- list("Gislason et al. (2010)")
-  #}
-  if(any(method == "GundersonDygert")){
-    ind <- ind + 1
-    # Gunderson and Dygert (1988)
-    M <- round(0.03 + 1.68 * GSI, 3)
-    dimnames(M_mat)[[1]][ind] <- list("Gunderson and Dygert (1988)")
-  }
-  if(any(method == "Hoenig")){
-    ind <- ind + 1
-    # Hoenig (1983) - Joint Equation
-    M_mat[ind, 1]  <- round(4.22/(tmax^0.982), 3)
-    dimnames(M_mat)[[1]][ind] <- list("Hoenig (1983) - Joint Equation")
 
-    ind <- ind + 1
-    # Hoenig (1983) - Fish Equation
-    M_mat[ind, 1]  <- round(exp(1.46 - 1.01 * log(tmax)), 3)
-    dimnames(M_mat)[[1]][ind] <- list("Hoenig (1983) - Fish Equation")
-  }
-  if(any(method == "Lorenzen")){
-    ind <- ind + 1
-    # Lorenzen (1996)
-    M_mat[ind, 1]  <- round(3 * (Wwet^-0.288), 3)
-    dimnames(M_mat)[[1]][ind] <- list("Lorenzen (1996)")
-  }
-  if(any(method == "Pauly_Linf")){
-    ind <- ind + 1
-    M_mat[ind, 1]  <- round(10^(-0.0066 - 0.279 * log10(Linf) + 0.6543 * log10(K_l) + 0.4634 * log10(temp)), 3)  #exp( -0.0152 - 0.279 * log(Linf) + 0.6543 * log(K) + 0.463 * log(temp))
-    dimnames(M_mat)[[1]][ind] <- list("Pauly (1980) - Length Equation")
-    if(schooling == TRUE){
-      M_mat[ind, 1] <- 0.8 * M_mat[ind, 1]
+    if (any(method == "AlversonCarney") & any(is.na(tmax), is.na(K_l)))
+        stop("AlversonCarney requires K and tmax in lfq$par")
+    if (any(method == "Gislason") & any(is.na(Linf), is.na(K_l), is.na(Bl)))
+        stop("Gislason requires Linf, K in lfq$par and midLengths in lfq")
+    if (any(method == "GundersonDygert") & is.na(GSI))
+        stop("GundersonDygert requires GSI in lfq$par")
+    if (any(method == "Hoenig") & is.na(tmax))
+        stop("Hoenig requires tmax in lfq$par")
+    if (any(method == "Lorenzen") & is.na(Wwet))
+        stop("Lorenzen requires Wwet in lfq$par")
+    if (any(method == "Pauly_Linf") & any(is.na(Linf), is.na(K_l), is.na(temp)))
+        stop("Pauly_Linf requires Linf, K, and temp in lfq$par")
+    if (any(method == "Pauly_Winf") & any(is.na(Winf), is.na(K_w), is.na(temp)))
+        stop("Pauly_Winf requires Winf, K_w, and temp in lfq$par")
+    if (any(method == "PetersonWroblewski") & is.na(Wdry))
+        stop("PetersonWroblewski requires Wdry in lfq$par")
+    if (any(method == "RikhterEfanov") & any(is.na(tm50)))
+        stop("RikhterEfanov requires K and tm50 in lfq$par")
+    if (any(method == "Roff") & any(is.na(tm50), is.na(K_l)))
+        stop("Roff requires K and tm50 in lfq$par")
+    if (any(method == "Then_tmax") & any(is.na(tmax)))
+        stop("Then_max requires tmax in lfq$par")
+    if (any(method == "Then_growth") & any(is.na(Linf), is.na(K_l)))
+        stop("Then_growth requires Linf and K in lfq$par")
+
+    n <- length(method)
+    if (any(method == "Hoenig"))
+        n <- n + 1
+    M_mat <- matrix(NA, n, 1L)
+    dimnames(M_mat) <- list(rep(NA, n), c("M"))
+    ind <- 0
+
+    if(any(method == "AlversonCarney")){
+        ind <- ind + 1
+        ## Alverson and Carney (1975)
+        M_mat[ind, 1]  <- round((3 * K_l)/(exp(K_l * (0.38 * tmax)) - 1), 3)
+        dimnames(M_mat)[[1]][ind] <- list("Alverson and Carney (1975)")
     }
-  }
-  if(any(method == "Pauly_Winf")){
-    ind <- ind + 1
-    M_mat[ind, 1]  <- round(10^(-0.2107 - 0.0824 * log10(Winf) + 0.6757 * log10(K_w) + 0.4627 * log10(temp)), 3)  #exp( -0.2107 - 0.0824 * log(Winf) + 0.6757 * log(K) + 0.4627 * log(temp))
-    dimnames(M_mat)[[1]][ind] <- list("Pauly (1980) - Weight Equation")
-    if(schooling == TRUE){
-      M_mat[ind, 1] <- 0.8 * M_mat[ind, 1]
+    ## if(any(method == "Gislason")){
+    ##  ind <- ind + 1
+    ##  ## Gislason et al. (2010)
+    ##  M_mat[ind, 1]  <- round(exp(0.55 - 1.61 * log(Bl) + 1.44 * log(Linf) + log(K_l)), 3)
+    ##  dimnames(M_mat)[[1]][ind] <- list("Gislason et al. (2010)")
+    ## }
+    if(any(method == "GundersonDygert")){
+        ind <- ind + 1
+        ## Gunderson and Dygert (1988)
+        M <- round(0.03 + 1.68 * GSI, 3)
+        dimnames(M_mat)[[1]][ind] <- list("Gunderson and Dygert (1988)")
     }
-  }
-  if(any(method == "PetersonWroblewski")){
-    ind <- ind + 1
-    # Peterson and Wroblewski (1984)
-    M_mat[ind, 1]  <- round(1.92 * (Wdry^-0.25), 3)
-    dimnames(M_mat)[[1]][ind] <- list("Peterson and Wroblewski (1984)")
-  }
-  if(any(method == "RikhterEfanov")){
-    ind <- ind + 1
-    M_mat[ind, 1]  <- round(1.521 / ( tm50 ^ 0.720) - 0.155, 3)
-    dimnames(M_mat)[[1]][ind] <- list("Rikhter and Efanov (1976)")
-  }
-  if(any(method == "Roff")){
-    ind <- ind + 1
-    # Roff (1984)
-    M_mat[ind, 1]  <- round((3 * K_l)/(exp(K_l * tm50) - 1), 3)
-    dimnames(M_mat)[[1]][ind] <- list("Roff (1984)")
-  }
-  if (any(method == "Then_tmax")) {
-    ind <- ind + 1
-    M_mat[ind, 1]  <- round(4.899 * tmax^-0.916, 3)
-    dimnames(M_mat)[[1]][ind] <- list("Then (2015) - tmax")
-  }
-  if (any(method == "Then_growth")) {
-    ind <- ind + 1
-    M_mat[ind, 1]  <- round(4.118 * (K_l^0.73) * (Linf^-0.33), 3)
-    dimnames(M_mat)[[1]][ind] <- list("Then (2015) - growth")
-  }
-  if (any(method == "Gislason")) {
-    Ml <- round(exp(0.55 - 1.61 * log(Bl) + 1.44 *
-                                 log(Linf) + log(K_l)), 3)
-    M_mat <- as.data.frame(matrix(c(Bl,Ml),byrow = FALSE,ncol=2))
-    colnames(M_mat) <- c("Bl","Ml")
-  }
+    if(any(method == "Hoenig")){
+        ind <- ind + 1
+        ## Hoenig (1983) - Joint Equation
+        M_mat[ind, 1]  <- round(4.22/(tmax^0.982), 3)
+        dimnames(M_mat)[[1]][ind] <- list("Hoenig (1983) - Joint Equation")
 
+        ind <- ind + 1
+        ## Hoenig (1983) - Fish Equation
+        M_mat[ind, 1]  <- round(exp(1.46 - 1.01 * log(tmax)), 3)
+        dimnames(M_mat)[[1]][ind] <- list("Hoenig (1983) - Fish Equation")
+    }
+    if(any(method == "Lorenzen")){
+        ind <- ind + 1
+        ## Lorenzen (1996)
+        M_mat[ind, 1]  <- round(3 * (Wwet^-0.288), 3)
+        dimnames(M_mat)[[1]][ind] <- list("Lorenzen (1996)")
+    }
+    if(any(method == "Pauly_Linf")){
+        ind <- ind + 1
+        M_mat[ind, 1]  <- round(10^(-0.0066 - 0.279 * log10(Linf) + 0.6543 * log10(K_l) + 0.4634 * log10(temp)), 3)  ## exp( -0.0152 - 0.279 * log(Linf) + 0.6543 * log(K) + 0.463 * log(temp))
+        dimnames(M_mat)[[1]][ind] <- list("Pauly (1980) - Length Equation")
+        if(schooling == TRUE){
+            M_mat[ind, 1] <- 0.8 * M_mat[ind, 1]
+        }
+    }
+    if(any(method == "Pauly_Winf")){
+        ind <- ind + 1
+        M_mat[ind, 1]  <- round(10^(-0.2107 - 0.0824 * log10(Winf) + 0.6757 * log10(K_w) + 0.4627 * log10(temp)), 3)  ## exp( -0.2107 - 0.0824 * log(Winf) + 0.6757 * log(K) + 0.4627 * log(temp))
+        dimnames(M_mat)[[1]][ind] <- list("Pauly (1980) - Weight Equation")
+        if(schooling == TRUE){
+            M_mat[ind, 1] <- 0.8 * M_mat[ind, 1]
+        }
+    }
+    if(any(method == "PetersonWroblewski")){
+        ind <- ind + 1
+        ## Peterson and Wroblewski (1984)
+        M_mat[ind, 1]  <- round(1.92 * (Wdry^-0.25), 3)
+        dimnames(M_mat)[[1]][ind] <- list("Peterson and Wroblewski (1984)")
+    }
+    if(any(method == "RikhterEfanov")){
+        ind <- ind + 1
+        M_mat[ind, 1]  <- round(1.521 / ( tm50 ^ 0.720) - 0.155, 3)
+        dimnames(M_mat)[[1]][ind] <- list("Rikhter and Efanov (1976)")
+    }
+    if(any(method == "Roff")){
+        ind <- ind + 1
+        ## Roff (1984)
+        M_mat[ind, 1]  <- round((3 * K_l)/(exp(K_l * tm50) - 1), 3)
+        dimnames(M_mat)[[1]][ind] <- list("Roff (1984)")
+    }
+    if (any(method == "Then_tmax")) {
+        ind <- ind + 1
+        M_mat[ind, 1]  <- round(4.899 * tmax^-0.916, 3)
+        dimnames(M_mat)[[1]][ind] <- list("Then (2015) - tmax")
+    }
+    if (any(method == "Then_growth")) {
+        ind <- ind + 1
+        M_mat[ind, 1]  <- round(4.118 * (K_l^0.73) * (Linf^-0.33), 3)
+        dimnames(M_mat)[[1]][ind] <- list("Then (2015) - growth")
+    }
+    if (any(method == "Gislason")) {
+        Ml <- round(exp(0.55 - 1.61 * log(Bl) + 1.44 *
+                        log(Linf) + log(K_l)), 3)
+        M_mat <- as.data.frame(matrix(c(Bl,Ml),byrow = FALSE,ncol=2))
+        colnames(M_mat) <- c("Bl","Ml")
+    }
 
-  return(M_mat)
+    print(M_mat)
+
+    ret <- res
+    par$M <- as.numeric(M_mat)
+    ret$par <- par
+
+    return(ret)
 }
 
 #' @title Catch curve
@@ -233,18 +262,27 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
 #' @description  This function applies the (length-converted) linearised catch
 #'    curve to age composition and length-frequency data,
 #'    respectively. It allows to estimate the instantaneous total mortality rate (Z).
-#'    Optionally, the gear selectivity can be estimated and the cumulative catch
+#'  p  Optionally, the gear selectivity can be estimated and the cumulative catch
 #'    curve cna be applied.
 #'
-#' @param param a list consisting of following parameters:
+#' @param lfq a list consisting of following parameters:
 #' \itemize{
-#'   \item \code{midLengths} or \code{age}: midpoints of the length classes (length-frequency
+#'   \item \strong{midLengths} or \strong{age}: midpoints of the length classes (length-frequency
 #'   data) or ages (age composition data),
-#'   \item \code{Linf}: infinite length for investigated species in cm [cm],
-#'   \item \code{K}: growth coefficent for investigated species per year [1/year],
-#'   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
-#'   \item \code{catch}: catches, vector or matrix with catches of subsequent years if
+#'   \item \strong{catch}: catches, vector or matrix with catches of subsequent years if
 #'   the catch curve with constat time intervals should be applied;
+#'  \item \strong{par}: a list with growth paramters:
+#'  \itemize{
+#'     \item \strong{Linf}: infinite length for investigated species in cm [cm],
+#'     \item \strong{K}: growth coefficent for investigated species per year [1/year],
+#'     \item \strong{ta}: time point anchoring growth curves in year-length
+#'   coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0),
+#'   \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 0),
+#'     \item \strong{t0}: theoretical time zero, at which individuals of this species hatch,
+#'     \item \strong{C}: amplitude of growth oscillation of soVBGF (range: 0 to 1, default: 0),
+#'     \item \strong{ts}: summer point of soVBGF (ts = WP - 0.5) (range: 0 to 1, default: 0);
+#'     
+#'  }
 #' }
 #' @param catch_columns numerical; indicating the column of the catch matrix which should be
 #'   used for the analysis.
@@ -268,38 +306,38 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
 #' @examples
 #' \donttest{
 #' #_______________________________________________
-#' # Variable paramter system (with catch vector)
-#' # based on length frequency data
+#' ## Variable paramter system (with catch vector)
+#' ## based on length frequency data
 #' data(goatfish)
 #' output <- catchCurve(goatfish)
 #' summary(output$linear_mod)
 #'
-#' # based on age composition data
+#' ## based on age composition data
 #' data(whiting)
 #' catchCurve(whiting, catch_columns = 1)
 #'
 #' #_______________________________________________
-#' # Constant parameter system based on age composition data (with catch matrix)
+#' ## Constant parameter system based on age composition data (with catch matrix)
 #' catchCurve(whiting)
 #'
 #' #_______________________________________________
-#' # Cumulative Catch Curve
-#' # based on length frequency data
+#' ## Cumulative Catch Curve
+#' ## based on length frequency data
 #' data(goatfish)
 #' catchCurve(goatfish, cumulative = TRUE)
 #'
-#' # based on age composition data
+#' ## based on age composition data
 #' data(synCAA2)
 #' catchCurve(synCAA2, cumulative = TRUE)
 #'
 #' #_______________________________________________
-#' # Catch Curve with estimation of selection ogive
+#' ## Catch Curve with estimation of selection ogive
 #' data(synLFQ3)
 #' output <- catchCurve(synLFQ3, calc_ogive = TRUE)
 #' summary(output$linear_mod_sel)
 #'  }
 #'
-#' # the same with predefined selection for regression line:
+#' ### the same with predefined selection for regression line:
 #' output <- catchCurve(synLFQ3, calc_ogive = TRUE, reg_int = c(9,21))
 #' plot(output, plot_selec = TRUE)
 #'
@@ -404,7 +442,7 @@ M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
 #'
 #' @export
 
-catchCurve <- function(param,
+catchCurve <- function(lfq,
                        catch_columns = NA,
                        cumulative = FALSE,
                        calc_ogive = FALSE,
@@ -414,240 +452,249 @@ catchCurve <- function(param,
                        plot = TRUE
                        ){
 
-  res <- param
+    res <- lfq
+    if("par" %in% names(res)){
+        par <- res$par
+    }else par <- list()     
 
-  if("midLengths" %in% names(res)) classes <- as.character(res$midLengths)
-  if("age" %in% names(res)) classes <- as.character(res$age)
-  # create column without plus group (sign) if present
-  classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
-  classes.num <- as.numeric(classes.num[,1])
+    if("midLengths" %in% names(res)) classes <- as.character(res$midLengths)
+    if("age" %in% names(res)) classes <- as.character(res$age)
+    ## create column without plus group (sign) if present
+    classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
+    classes.num <- as.numeric(classes.num[,1])
 
-  constant_dt <- FALSE
-  if(is.na(catch_columns[1]) & (class(res$catch) == 'matrix' |
-     class(res$catch) == 'data.frame')){
-    writeLines("Please be aware that you provided the catch as a matrix without specifiying any columns for \n the analysis. In this case the methods applies by default the catch curve with constant \n parameter system (refer to the help file for more information).")
-    flush.console()
-    constant_dt <- TRUE
-    catch <- res$catch
-  }
-
-  # non cumulative catch curve
-  if(cumulative == FALSE){
-    if(is.na(catch_columns[1]) & constant_dt == FALSE) catch <- res$catch
-    if(!is.na(catch_columns[1])){
-      catchmat <- res$catch[,(catch_columns)]
-      if(length(catch_columns) > 1){
-        catch <- rowSums(catchmat, na.rm = TRUE)
-      }else catch <- catchmat
-    }
-  }
-  #  cumulative catch curve
-  if(cumulative){
-    if(is.na(catch_columns[1])) catch <- rev(cumsum(rev(res$catch)))
-    if(!is.na(catch_columns[1])){
-      catchmat <- res$catch[,(catch_columns)]
-      if(length(catch_columns) > 1){
-        catchpre <- rowSums(catchmat, na.rm = TRUE)
-      }else catchpre <- catchmat
-      catch <- rev(cumsum(rev(catchpre)))
-      #catch <- rev(cumsum(rev(res$catch[,(catch_columns)])))
-    }
-  }
-
-  # Error message if catch and age do not have same length
-  #   Linearised catch curve with constant time intervals
-  if(constant_dt){
-    if("midLengths" %in% names(res) == TRUE) stop(noquote(
-      "The catch curve with constant time interval is not applicable to length-frequency data. Please provide a catch vector."))
-
-    #if(length(classes) != length(catch[,1])) stop(noquote(
-    #  "Age/length classes and catch matrix do not have the same length!"))
-
-    if(length(classes) != length(diag(as.matrix(catch)))) writeLines("Age/length classes and the real cohort in the catch matrix \ndo not have the same length. The missing age/length \nclasses will be omitted.")
-
-    # Aged based Catch curve
-    if("age" %in% names(res) == TRUE){
-      #find cohort to analyse
-      real.cohort <- diag(as.matrix(catch))
-      catch <- c(real.cohort, rep(NA,length(classes.num) - length(real.cohort)))
+    constant_dt <- FALSE
+    if(is.na(catch_columns[1]) & (class(res$catch) == 'matrix' |
+                                  class(res$catch) == 'data.frame')){
+        writeLines("Please be aware that you provided the catch as a matrix without specifiying any columns for \n the analysis. In this case the methods applies by default the catch curve with constant \n parameter system (refer to the help file for more information).")
+        flush.console()
+        constant_dt <- TRUE
+        catch <- res$catch
     }
 
-  }else if(class(catch) == 'numeric'){
-    if(length(classes) != length(catch)) stop(noquote(
-      "Age/length classes and catch vector do not have the same length!"))
-  }
+    ## non cumulative catch curve
+    if(cumulative == FALSE){
+        if(is.na(catch_columns[1]) & constant_dt == FALSE) catch <- res$catch
+        if(!is.na(catch_columns[1])){
+            catchmat <- res$catch[,(catch_columns)]
+            if(length(catch_columns) > 1){
+                catch <- rowSums(catchmat, na.rm = TRUE)
+            }else catch <- catchmat
+        }
+    }
+    ##  cumulative catch curve
+    if(cumulative){
+        if(is.na(catch_columns[1])) catch <- rev(cumsum(rev(res$catch)))
+        if(!is.na(catch_columns[1])){
+            catchmat <- res$catch[,(catch_columns)]
+            if(length(catch_columns) > 1){
+                catchpre <- rowSums(catchmat, na.rm = TRUE)
+            }else catchpre <- catchmat
+            catch <- rev(cumsum(rev(catchpre)))
+                                        #catch <- rev(cumsum(rev(res$catch[,(catch_columns)])))
+        }
+    }
 
-  # Length converted catch curve
+    ## Error message if catch and age do not have same length
+    ##   Linearised catch curve with constant time intervals
+    if(constant_dt){
+        if("midLengths" %in% names(res) == TRUE) stop(noquote(
+                                                     "The catch curve with constant time interval is not applicable to length-frequency data. Please provide a catch vector."))
+
+        ## if(length(classes) != length(catch[,1])) stop(noquote(
+        ##  "Age/length classes and catch matrix do not have the same length!"))
+
+        if(length(classes) != length(diag(as.matrix(catch)))) writeLines("Age/length classes and the real cohort in the catch matrix \ndo not have the same length. The missing age/length \nclasses will be omitted.")
+
+        ## Aged based Catch curve
+        if("age" %in% names(res) == TRUE){
+            ## find cohort to analyse
+            real.cohort <- diag(as.matrix(catch))
+            catch <- c(real.cohort, rep(NA,length(classes.num) - length(real.cohort)))
+        }
+
+    }else if(class(catch) == 'numeric'){
+        if(length(classes) != length(catch)) stop(noquote(
+                                                 "Age/length classes and catch vector do not have the same length!"))
+    }
+
+    ## Length converted catch curve
     if("midLengths" %in% names(res) == TRUE){
+
+        if(!"par" %in% names(lfq)) stop(noquote("Please provide the required parameters in res$par!"))
+        par <- res$par
+        
         if("par" %in% names(res)){
             Linf <- res$par$Linf
             K <- res$par$K
+            ta <- ifelse("ta" %in% names(res$par), res$par$ta, 0)            
             t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
             C <- ifelse("C" %in% names(res$par), res$par$C, 0)
             ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
         }else{
             Linf <- res$Linf
             K <- res$K
+            ta <- ifelse("ta" %in% names(res), res$ta, 0)            
             t0 <- ifelse("t0" %in% names(res), res$t0, 0)
             C <- ifelse("C" %in% names(res), res$C, 0)
             ts <- ifelse("ts" %in% names(res), res$ts, 0)
         }
         
-    if((is.null(Linf) | is.null(K))) stop(noquote(
-      "You need to assign values to Linf and K for the catch curve based on length-frequency data!"))
+        if((is.null(Linf) | is.null(K))) stop(noquote(
+                                             "You need to assign values to Linf and K in lfq$par for the catch curve based on length-frequency data!"))
 
-    #calculate size class interval
-    midLengths <- classes.num
-    interval <- midLengths[2] - midLengths[1]
+                                        #calculate size class interval
+        midLengths <- classes.num
+        interval <- midLengths[2] - midLengths[1]
 
-    # L and t of lower length classes
-    lowerLengths <- midLengths - (interval / 2)
-    if("C" %in% names(res) & "ts" %in% names(res)){
-        t_L1 <- VBGF(param = list(Linf = Linf, K = K, t0 = t0, C=C, ts=ts), L = lowerLengths)
-    }else{
-        t_L1 <- VBGF(param = list(Linf = Linf, K = K, t0 = t0), L = lowerLengths)
-    }
-    ## t0 - (1/K) * log(1 - (lowerLengths / Linf))
+        ## L and t of lower length classes
+        lowerLengths <- midLengths - (interval / 2)
+        if("C" %in% names(res) & "ts" %in% names(res)){
+            t_L1 <- VBGF(pars = list(Linf = Linf, K = K, t0 = t0, C=C, ts=ts), L = lowerLengths)
+        }else{
+            t_L1 <- VBGF(pars = list(Linf = Linf, K = K, t0 = t0), L = lowerLengths)
+        }
+### t0 - (1/K) * log(1 - (lowerLengths / Linf))
 
-    # delta t
-    dt <- rep(NA,length(midLengths))
-    for(x1 in 1:(length(dt)-1)){
-      dt[x1] <- t_L1[x1+1] - t_L1[x1]
-    }
+        ## delta t
+        dt <- rep(NA,length(midLengths))
+        for(x1 in 1:(length(dt)-1)){
+            dt[x1] <- t_L1[x1+1] - t_L1[x1]
+        }
 
-    # x varaible
-    #ln (Linf - L)
-    ln_Linf_L <- log(Linf - lowerLengths)
-    ## t of midlengths
-    if("C" %in% names(res) & "ts" %in% names(res)){
-        t_midL <- VBGF(param = list(Linf = Linf, K = K, t0 = t0, C=C, ts=ts), L = midLengths)
-    }else{
-        t_midL <- VBGF(param = list(Linf = Linf, K = K, t0 = t0), L = midLengths)
-    }
-    ## t0 - (1/K) * log(1 - (midLengths / Linf))
+        ## x varaible
+                                        #ln (Linf - L)
+        ln_Linf_L <- log(Linf - lowerLengths)
+### t of midlengths
+        if("C" %in% names(res) & "ts" %in% names(res)){
+            t_midL <- VBGF(pars = list(Linf = Linf, K = K, t0 = t0, C=C, ts=ts), L = midLengths)
+        }else{
+            t_midL <- VBGF(pars = list(Linf = Linf, K = K, t0 = t0), L = midLengths)
+        }
+### t0 - (1/K) * log(1 - (midLengths / Linf))
 
-    # y variable
-    #ln C(L1,Linf)
-    lnC <- log(catch)
-    # ln( Catch / delta t)
-    lnC_dt <- log(catch / dt)
-    lnC_dt[which(lnC_dt == -Inf)] <- NA   ### OR zero???
+        ## y variable
+                                        #ln C(L1,Linf)
+        lnC <- log(catch)
+        ## ln( Catch / delta t)
+        lnC_dt <- log(catch / dt)
+        lnC_dt[which(lnC_dt == -Inf)] <- NA   #### OR zero???
 
-    if(cumulative == FALSE){
-      xvar = t_midL
-      yvar = lnC_dt
-      xname = "t_midL"
-      yname = "lnC_dt"
-      xlabel = "Relative age [yrs]"
-      ylabel = "ln(C/dt)"
-    }
+        if(cumulative == FALSE){
+            xvar = t_midL
+            yvar = lnC_dt
+            xname = "t_midL"
+            yname = "lnC_dt"
+            xlabel = "Relative age [yrs]"
+            ylabel = "ln(C/dt)"
+        }
 
-    if(cumulative){
-      xvar = ln_Linf_L
-      yvar = lnC
-      xname = "ln_Linf_L"
-      yname = "lnC"
-      xlabel = "ln (Linf - L)"
-      ylabel = "ln C(L, Linf)"
-    }
-  }
-
-  # Aged based Catch curve
-  if("age" %in% names(res) == TRUE){
-    # delta t
-    if(constant_dt == FALSE){
-      dt <- rep(NA,length(classes.num))
-      for(x1 in 1:(length(dt)-1)){
-        dt[x1] <- classes.num[x1+1] - classes.num[x1]
-      }
-    }
-    if(constant_dt) dt <- rep(classes.num[2] - classes.num[1], length(classes.num))
-
-    # x variable
-    # (t + dt) / 2   ==   x
-    if(cumulative == FALSE) tplusdt_2 <- classes.num + (dt / 2)
-    if(cumulative) tplusdt_2 <- classes.num
-
-    # y variable
-    #ln C(L1,Linf)
-    lnC <- log(catch)
-    # ln( Catch / delta t)     ==    y
-    lnC_dt <- log(catch / dt)
-
-
-    if(constant_dt){
-      xvar = classes.num
-      xname = "classes.num"
-      xlabel = "Age [yrs]"
-      yvar = lnC
-      yname = "lnC"
-      ylabel = "ln C(t, inf)"
+        if(cumulative){
+            xvar = ln_Linf_L
+            yvar = lnC
+            xname = "ln_Linf_L"
+            yname = "lnC"
+            xlabel = "ln (Linf - L)"
+            ylabel = "ln C(L, Linf)"
+        }
     }
 
-    if(cumulative == FALSE & constant_dt == FALSE){
-      xvar = tplusdt_2
-      xname = "tplusdt_2"
-      xlabel = "Age [yrs]"
-      yvar = lnC_dt
-      yname = "lnC_dt"
-      ylabel = "ln(C/dt)"
+    ## Aged based Catch curve
+    if("age" %in% names(res) == TRUE){
+        ## delta t
+        if(constant_dt == FALSE){
+            dt <- rep(NA,length(classes.num))
+            for(x1 in 1:(length(dt)-1)){
+                dt[x1] <- classes.num[x1+1] - classes.num[x1]
+            }
+        }
+        if(constant_dt) dt <- rep(classes.num[2] - classes.num[1], length(classes.num))
+
+        ## x variable
+        ## (t + dt) / 2   ==   x
+        if(cumulative == FALSE) tplusdt_2 <- classes.num + (dt / 2)
+        if(cumulative) tplusdt_2 <- classes.num
+
+        ## y variable
+                                        #ln C(L1,Linf)
+        lnC <- log(catch)
+        ## ln( Catch / delta t)     ==    y
+        lnC_dt <- log(catch / dt)
+
+
+        if(constant_dt){
+            xvar = classes.num
+            xname = "classes.num"
+            xlabel = "Age [yrs]"
+            yvar = lnC
+            yname = "lnC"
+            ylabel = "ln C(t, inf)"
+        }
+
+        if(cumulative == FALSE & constant_dt == FALSE){
+            xvar = tplusdt_2
+            xname = "tplusdt_2"
+            xlabel = "Age [yrs]"
+            yvar = lnC_dt
+            yname = "lnC_dt"
+            ylabel = "ln(C/dt)"
+        }
+
+        if(cumulative){
+            xvar = tplusdt_2
+            xname = "tplusdt_2"
+            xlabel = "Age [yrs]"
+            yvar = lnC
+            yname = "lnC"
+            ylabel = "ln C(t, inf)"
+        }
     }
 
-    if(cumulative){
-      xvar = tplusdt_2
-      xname = "tplusdt_2"
-      xlabel = "Age [yrs]"
-      yvar = lnC
-      yname = "lnC"
-      ylabel = "ln C(t, inf)"
-    }
-  }
-
-  #for plot
-  #minY <- ifelse(min(yvar,na.rm=TRUE) < 0, min(yvar,na.rm=TRUE),0)
-  minY <- min(yvar,na.rm=TRUE)
-  maxY <- max(yvar,na.rm=TRUE) + 1
+                                        #for plot
+                                        #minY <- ifelse(min(yvar,na.rm=TRUE) < 0, min(yvar,na.rm=TRUE),0)
+    minY <- min(yvar,na.rm=TRUE)
+    maxY <- max(yvar,na.rm=TRUE) + 1
     xlims <- c(0, max(xvar,na.rm=TRUE))
 
     cutterList <- vector("list", reg_num)
-  #identify plot
-  if(is.null(reg_int) & !auto){
-    writeLines("Please choose the minimum and maximum point in the graph \nto include for the regression line!")
-    flush.console()
-    for(I in 1:reg_num){
+                                        #identify plot
+    if(is.null(reg_int) & !auto){
+        writeLines("Please choose the minimum and maximum point in the graph \nto include for the regression line!")
+        flush.console()
+        for(I in 1:reg_num){
 
-        dev.new()#noRStudioGD = TRUE)
-        op <- par(mfrow = c(1,1),
-                  c(5, 4, 4, 2) + 0.1,
-                  oma = c(2, 1, 0, 1) + 0.1)
-        plot(x = xvar,y = yvar, ylim = c(minY,maxY), xlim = xlims,
-             xlab = xlabel, ylab = ylabel, type = "n")
-        
-        ## plot previous regression lines when using multiple regression lines
-        if(I > 1){
-            for(II in 1:(I-1)){
-                points(xvar[cutterList[[II]]],yvar[cutterList[[II]]], col="darkgreen", pch=16)
-                lines(xvar[cutterList[[II]]],yvar[cutterList[[II]]], col="darkgreen", lwd=2)
+            dev.new()#noRStudioGD = TRUE)
+            op <- par(mfrow = c(1,1),
+                      c(5, 4, 4, 2) + 0.1,
+                      oma = c(2, 1, 0, 1) + 0.1)
+            plot(x = xvar,y = yvar, ylim = c(minY,maxY), xlim = xlims,
+                 xlab = xlabel, ylab = ylabel, type = "n")
+            
+### plot previous regression lines when using multiple regression lines
+            if(I > 1){
+                for(II in 1:(I-1)){
+                    points(xvar[cutterList[[II]]],yvar[cutterList[[II]]], col="darkgreen", pch=16)
+                    lines(xvar[cutterList[[II]]],yvar[cutterList[[II]]], col="darkgreen", lwd=2)
+                }
             }
+            mtext(side = 3, "Click on two numbers. Escape to Quit.",
+                  xpd = NA, cex = 1.25)
+            text(xvar, yvar, labels=as.character(order(xvar)), cex= 0.7)
+            cutter <- identify(x = xvar, y = yvar,
+                               labels = order(xvar), n=2, col = "red")
+            par(op)
+
+            if(is.na(cutter[1]) | is.nan(cutter[1]) |
+               is.na(cutter[2]) | is.nan(cutter[2]) ) stop(noquote("You did not choose any points in the graph. Please re-run the function and choose points in the graph!"))
+
+            dev.off()
+
+### save results to list
+            cutterList[[I]] <- cutter
         }
-        mtext(side = 3, "Click on two numbers. Escape to Quit.",
-              xpd = NA, cex = 1.25)
-        text(xvar, yvar, labels=as.character(order(xvar)), cex= 0.7)
-        cutter <- identify(x = xvar, y = yvar,
-                           labels = order(xvar), n=2, col = "red")
-        par(op)
+        
 
-        if(is.na(cutter[1]) | is.nan(cutter[1]) |
-           is.na(cutter[2]) | is.nan(cutter[2]) ) stop(noquote("You did not choose any points in the graph. Please re-run the function and choose points in the graph!"))
-
-        dev.off()
-
-        ## save results to list
-        cutterList[[I]] <- cutter
     }
-    
-
-  }
     
 
     if(!is.null(reg_int)){
@@ -664,7 +711,7 @@ catchCurve <- function(param,
         cutterList[[1]] <- cutter
     }
 
-    ## define result lists
+### define result lists
     lm1List <- vector("list",reg_num)
     Z_lm1List <- vector("list",reg_num)
     SE_Z_lm1List <- vector("list",reg_num)
@@ -680,7 +727,7 @@ catchCurve <- function(param,
             cutter <- cutterList
         }
 
-        ## calculations + model
+### calculations + model
         df.CC <- as.data.frame(cbind(xvar,yvar))
         df.CC.cut <- df.CC[cutter[1]:cutter[2],]
         lm1 <- lm(yvar ~ xvar, data = df.CC.cut)
@@ -690,20 +737,20 @@ catchCurve <- function(param,
         slope_lm1 <- sum_lm1$coefficients[2]
         se_slope_lm1 <- sum_lm1$coefficients[4]
 
-        ## fit of regression line
+### fit of regression line
         lm1.fit <- sum_lm1$r.squared
         Z_lm1 <- abs(slope_lm1)
         SE_Z_lm1 <- abs(se_slope_lm1)
         confi <-  abs(se_slope_lm1) * qt(0.975,sum_lm1$df[2])
         conf_Z_lm1 <- Z_lm1 + c(-confi,confi)
 
-        ## special case when cumulative and length-frequency data
+### special case when cumulative and length-frequency data
         if(cumulative & "midLengths" %in% names(res) == TRUE){
-          Z_lm1 <- Z_lm1 * K
-          SE_Z_lm1 <- SE_Z_lm1 * K
+            Z_lm1 <- Z_lm1 * K
+            SE_Z_lm1 <- SE_Z_lm1 * K
         }
 
-        ## save results to lists
+### save results to lists
         lm1List[[I]] <- lm1
         Z_lm1List[[I]] <- Z_lm1
         SE_Z_lm1List[[I]] <- SE_Z_lm1
@@ -718,115 +765,127 @@ catchCurve <- function(param,
                          yvar = yvar,
                          reg_int = cutterList,
                          linear_mod = lm1List,
-                         Z =  Z_lm1List,
-                         se = SE_Z_lm1List,
-                         confidenceInt = conf_Z_lm1List))        
+                         Z_se = SE_Z_lm1List,
+                         confidenceInt = conf_Z_lm1List))
+        par$Z <- Z_lm1List
     }else{
         ret <- c(res,list(
                          xvar = xvar,
                          yvar = yvar,
                          reg_int = unlist(cutterList),
                          linear_mod = lm1List[[1]],
-                         Z = unlist(Z_lm1List),
-                         se = unlist(SE_Z_lm1List),
+                         Z_se = unlist(SE_Z_lm1List),
                          confidenceInt = unlist(conf_Z_lm1List)))
+        par$Z <- unlist(Z_lm1List)
     }
     
-    if("M" %in% names(ret) && length(ret$M)==1){
-        ret$FM <- lapply(ret$Z, function(x) x - ret$M)
+    if("M" %in% names(par) && length(par$M)==1){
+        par$FM <- lapply(par$Z, function(x) x - par$M)
+        par$E <- lapply(par$FM, function(x) x/par$Z)
     }
     names(ret)[names(ret) == "xvar"] <- xname
     names(ret)[names(ret) == "yvar"] <- yname
     class(ret) <- "catchCurve"
 
-  # Calculate selection ogive from catch curve and add to ret
-  if(calc_ogive & cumulative) stop(noquote("It is not possible to estimate the selection ogive for the cumulative catch curve."))
+    ## Calculate selection ogive from catch curve and add to ret
+    if(calc_ogive & cumulative) stop(noquote("It is not possible to estimate the selection ogive for the cumulative catch curve."))
     if(calc_ogive){
 
-        ## Assumption that Z of smallest selected individuals is most appropriate
+### Assumption that Z of smallest selected individuals is most appropriate
         mini <- min(unlist(cutterList))
         temp <- lapply(cutterList, function(x) grep(mini,x))
         ind <- sapply(temp, function(x) length(x) > 0)
         cutter <- unlist(cutterList[ind])
 
 
-        ## only use part of catch and t which is not fully exploited by the gear
+### only use part of catch and t which is not fully exploited by the gear
         t_ogive <- xvar[1:(cutter[1]-1)]
         dt_ogive <- dt[1:(cutter[1]-1)]
         if("age" %in% names(res) == TRUE &
            class(catch) == 'matrix' | class(catch) == 'data.frame'){
-          catch_ogive <- catch[1:(cutter[1]-1)] ## catch.cohort
+            catch_ogive <- catch[1:(cutter[1]-1)] ### catch.cohort
         }else catch_ogive <- catch[1:(cutter[1]-1)]
 
 
-        # calculate observed selection ogive
+        ## calculate observed selection ogive
         Sobs <- catch_ogive/(dt_ogive * exp(unlist(intercept_lm1List[ind]) - unlist(Z_lm1List[ind]) * t_ogive))
 
-        # dependent vairable in following regression analysis
+        ## dependent vairable in following regression analysis
         ln_1_S_1 <- log((1/Sobs) - 1)
 
-        # get rid of Inf
+        ## get rid of Inf
         ln_1_S_1[which(ln_1_S_1 == Inf)] <- NA
         t_ogive[which(t_ogive == Inf)] <- NA
 
-        #regression analysis to caluclate T1 and T2
+                                        #regression analysis to caluclate T1 and T2
         mod_ogive <- lm(ln_1_S_1 ~ t_ogive, na.action = na.omit)
         sum_lm_ogive <- summary(mod_ogive)
         T1 <- sum_lm_ogive$coefficients[1]
         T2 <- abs(sum_lm_ogive$coefficients[2])
 
-        # calculate estimated selection ogive
+        ## calculate estimated selection ogive
         Sest <- 1/(1+exp(T1 - T2*xvar))
 
-        # selection parameters
+        ## selection parameters
         t50 <- T1/T2
         t75 <- (T1 + log(3))/T2
         t95 <-  (T1 - log((1 / 0.95) - 1)) / T2
         if(!is.null(res$Linf) & !is.null(res$K)){
-          if(is.null(res$t0)) t0 = 0
-          L50 <- Linf*(1-exp(-K*(t50-t0)))
-          L75 <- Linf*(1-exp(-K*(t75-t0)))
-          L95 <- Linf*(1-exp(-K*(t95-t0)))
+            if(is.null(res$t0)) t0 = 0
+            L50 <- Linf*(1-exp(-K*(t50-t0)))
+            L75 <- Linf*(1-exp(-K*(t75-t0)))
+            L95 <- Linf*(1-exp(-K*(t95-t0)))
         }
 
         ret2 <- c(ret,list(
-          intercept = intercept_lm1,
-          linear_mod_sel = mod_ogive,
-          Sobs = Sobs,
-          ln_1_S_1 = ln_1_S_1,
-          Sest = Sest,
-          t50 = t50,
-          t75 = t75,
-          t95 = t95))
+                          intercept = intercept_lm1,
+                          linear_mod_sel = mod_ogive,
+                          Sobs = Sobs,
+                          ln_1_S_1 = ln_1_S_1,
+                          Sest = Sest,
+                          t50 = t50,
+                          t75 = t75,
+                          t95 = t95))
         if(exists("L50")) ret2$L50 = L50
         if(exists("L75")) ret2$L75 = L75
         if(exists("L95")) ret2$L95 = L95
         if(exists("L50")) names(ret2)[which(ret2 %in% L50)] <- "L50"
         if(exists("L75")) names(ret2)[which(ret2 %in% L75)] <- "L75"
         if(exists("L95")) names(ret2)[which(ret2 %in% L95)] <- "L95"
+        ret2$par <- par
 
         class(ret2) <- "catchCurve"
         if(plot) plot(ret2, plot_selec=TRUE)
         return(ret2)
-      }else {
+    }else {
         if(plot) plot(ret)
         return(ret)
-      }
+    }
 }
 
 #' @title Beverton & Holt's Z-Equations
-#
+                                        #
 #' @description A method to estimate the instantaneous total mortality rate (Z) based
 #'    on a method derived by Beverton and Holt (1956).
 #'
-#' @param param a list consisting of following parameters:
+#' @param lfq a list consisting of following parameters:
 #' \itemize{
-#'   \item  \code{midLengths} or \code{age}: midpoints of length groups
-#'   (length-frequency data) or ages (age composition data),
-#'   \item \code{Linf}: infinite length for investigated species in cm [cm],
-#'   \item \code{K}: growth coefficent for investigated species per year [1/year],
-#'   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
-#'   \item \code{catch}: catch as vector, or a matrix with catches of subsequent years;
+#'   \item \strong{midLengths} or \strong{age}: midpoints of the length classes (length-frequency
+#'   data) or ages (age composition data),
+#'   \item \strong{catch}: catches, vector or matrix with catches of subsequent years if
+#'   the catch curve with constat time intervals should be applied;
+#'  \item \strong{par}: a list with growth paramters:
+#'  \itemize{
+#'     \item \strong{Linf}: infinite length for investigated species in cm [cm],
+#'     \item \strong{K}: growth coefficent for investigated species per year [1/year],
+#'     \item \strong{ta}: time point anchoring growth curves in year-length
+#'   coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0),
+#'   \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 0),
+#'     \item \strong{t0}: theoretical time zero, at which individuals of this species hatch,
+#'     \item \strong{C}: amplitude of growth oscillation of soVBGF (range: 0 to 1, default: 0),
+#'     \item \strong{ts}: summer point of soVBGF (ts = WP - 0.5) (range: 0 to 1, default: 0);
+#'     
+#'  }
 #' }
 #' @param catch_columns optional; in case catch is a matrix or data.frame, a number or vector
 #'    indicating which column(s) of the matrix should be analysed (Default: \code{NA}).
@@ -836,11 +895,11 @@ catchCurve <- function(param,
 #' @keywords function mortality Z
 #'
 #' @examples
-#' # based on length-frequency data
+#' ## based on length-frequency data
 #' data(synLFQ2)
 #' Z_BevertonHolt(synLFQ2, catch_columns = 2, Lprime_tprime = 47.5)
 #'
-#' # based on age composition data
+#' ## based on age composition data
 #' data(synCAA1)
 #' Z_BevertonHolt(synCAA1, catch_columns = 3, Lprime_tprime = 2.5)
 #'
@@ -865,95 +924,117 @@ catchCurve <- function(param,
 #'
 #' @export
 
-Z_BevertonHolt <- function(param, catch_columns = NA, Lprime_tprime){
-  res <- param
-  catch <- res$catch
+Z_BevertonHolt <- function(lfq,
+                           catch_columns = NA,
+                           Lprime_tprime){
 
-  if(class(catch) == "data.frame" | class(catch) == "matrix"){
-    if(is.na(catch_columns[1])) stop("Please provide numbers indicating which column of the catch matrix should be analysed!")
-    catchmat <- res$catch[,(catch_columns)]
-    if(length(catch_columns) > 1){
-      catch <- rowSums(catchmat, na.rm = TRUE)
-    }else catch <- catchmat
-  }
+    res <- lfq
+    if("par" %in% names(res)){
+        par <- res$par
+    }else par <- list()
+    catch <- res$catch
 
-  #   Length based equation
-  if("midLengths" %in% names(res)){
-
-    classes <- as.character(res$midLengths)
-    # create column without plus group (sign) if present
-    classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
-    classes.num <- as.numeric(classes.num[,1])
-    Lprime_tprime_ind <- which.min(abs(classes.num - Lprime_tprime))
-
-    Linf <- res$Linf
-    K <- res$K
-
-    # Error message if catch and age do not have same length
-    if(class(catch) == 'numeric'){
-      if(length(classes) != length(catch)) stop("Ages and catch do not have the same length!")
+    if(class(catch) == "data.frame" | class(catch) == "matrix"){
+        if(is.na(catch_columns[1])) stop("Please provide numbers indicating which column of the catch matrix should be analysed!")
+        catchmat <- res$catch[,(catch_columns)]
+        if(length(catch_columns) > 1){
+            catch <- rowSums(catchmat, na.rm = TRUE)
+        }else catch <- catchmat
     }
 
-    # calculate L prime
-    #Lprime <- classes.num[1] -
-    #  ((classes.num[2] - classes.num[1]) / 2)
-    interval <- (classes.num[2] - classes.num[1]) / 2
-    Lprime_tprime <- Lprime_tprime - interval
+    ##   Length based equation
+    if("midLengths" %in% names(res)){
+
+        if(!"par" %in% names(res)) stop(noquote("Please provide the required parameters in res$par!"))
+
+        classes <- as.character(res$midLengths)
+        ## create column without plus group (sign) if present
+        classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
+        classes.num <- as.numeric(classes.num[,1])
+        Lprime_tprime_ind <- which.min(abs(classes.num - Lprime_tprime))
+
+        Linf <- res$par$Linf
+        K <- res$par$K
+        ta <- ifelse("ta" %in% names(res$par), res$par$ta, 0)            
+        t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
+        C <- ifelse("C" %in% names(res$par), res$par$C, 0)
+        ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
+        
+        if((is.null(Linf) | is.null(K))) stop(noquote("You need to assign values to Linf and K to lfq$par for Z_BevertonHolt!"))
+        
+
+        ## Error message if catch and age do not have same length
+        if(class(catch) == 'numeric'){
+            if(length(classes) != length(catch)) stop("Ages and catch do not have the same length!")
+        }
+
+        ## calculate L prime
+        ##Lprime <- classes.num[1] -
+        ##  ((classes.num[2] - classes.num[1]) / 2)
+        interval <- (classes.num[2] - classes.num[1]) / 2
+        Lprime_tprime <- Lprime_tprime - interval
 
 
-    # calculate  C * (L1 + L2) / 2
-    c_midlength <- catch * classes.num
+        ## calculate  C * (L1 + L2) / 2
+        c_midlength <- catch * classes.num
 
-    # calculate L mean
-    c_midlength_for_Lmean <- c_midlength[Lprime_tprime_ind:length(c_midlength)]
-    catch_for_Lmean <- catch[Lprime_tprime_ind:length(catch)]
-    Lmean <- sum(c_midlength_for_Lmean, na.rm = TRUE) / sum(catch_for_Lmean, na.rm = TRUE)
+        ## calculate L mean
+        c_midlength_for_Lmean <- c_midlength[Lprime_tprime_ind:length(c_midlength)]
+        catch_for_Lmean <- catch[Lprime_tprime_ind:length(catch)]
+        Lmean <- sum(c_midlength_for_Lmean, na.rm = TRUE) / sum(catch_for_Lmean, na.rm = TRUE)
 
-    Z <- K * (Linf - Lmean) / (Lmean - Lprime_tprime)
+        Z <- K * (Linf - Lmean) / (Lmean - Lprime_tprime)
 
-    #save all in list
-    ret <- c(res,list(
-      Lmean = Lmean,
-      Lprime = Lprime_tprime,
-      Z = Z
-    ))
-    return(ret)
-  }
-
-  #     Aged based equation
-  if("midAge" %in% names(res) | "age" %in% names(res)){
-
-    if("midAge" %in% names(res)) classes <- as.character(res$midAge)
-    if("age" %in% names(res)) classes <- as.character(res$age)
-    # create column without plus group (sign) if present
-    classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
-    classes.num <- as.numeric(classes.num[,1])
-    Lprime_tprime_ind <- which.min(abs(classes.num - Lprime_tprime))
-
-    # Error message if catch and age do not have same length
-    if(class(catch) == 'numeric'){
-      if(length(classes) != length(catch)) stop("Ages and catch do not have the same length!")
+        ##save all in list
+        ret <- c(res,list(Lmean = Lmean,Lprime = Lprime_tprime))
+        par$Z <- Z
+        if("M" %in% names(par) && length(par$M)==1){
+            par$FM <- lapply(par$Z, function(x) x - par$M)
+            par$E <- lapply(par$FM, function(x) x/par$Z)            
+        }      
+        ret$par <- par
+        return(ret)
     }
 
-    interval <- (classes.num[2] - classes.num[1]) / 2
-    Lprime_tprime <- Lprime_tprime - interval
-    #tprime <- classes.num[1] - interval
-    catch_for_tprime <- catch[Lprime_tprime_ind:length(catch)]
-    classes.num_for_tprime <- classes.num[Lprime_tprime_ind:length(classes.num)]
-    sample.size <- sum(catch_for_tprime,na.rm=TRUE)
-    sum.age.number <- sum((catch_for_tprime * classes.num_for_tprime), na.rm=TRUE)
-    tmean <- sum.age.number/sample.size
+    ##     Aged based equation
+    if("midAge" %in% names(res) | "age" %in% names(res)){
 
-    Z.BH <- 1 / (tmean - Lprime_tprime)
+        if("midAge" %in% names(res)) classes <- as.character(res$midAge)
+        if("age" %in% names(res)) classes <- as.character(res$age)
+        ## create column without plus group (sign) if present
+        classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
+        classes.num <- as.numeric(classes.num[,1])
+        Lprime_tprime_ind <- which.min(abs(classes.num - Lprime_tprime))
 
-    #save all in list
-    ret <- c(res,list(
-      tmean = tmean,
-      tprime = Lprime_tprime,
-      Z = Z.BH
-    ))
-    return(ret)
-  }
+        ## Error message if catch and age do not have same length
+        if(class(catch) == 'numeric'){
+            if(length(classes) != length(catch)) stop("Ages and catch do not have the same length!")
+        }
+
+        interval <- (classes.num[2] - classes.num[1]) / 2
+        Lprime_tprime <- Lprime_tprime - interval
+                                        #tprime <- classes.num[1] - interval
+        catch_for_tprime <- catch[Lprime_tprime_ind:length(catch)]
+        classes.num_for_tprime <- classes.num[Lprime_tprime_ind:length(classes.num)]
+        sample.size <- sum(catch_for_tprime,na.rm=TRUE)
+        sum.age.number <- sum((catch_for_tprime * classes.num_for_tprime), na.rm=TRUE)
+        tmean <- sum.age.number/sample.size
+
+        Z.BH <- 1 / (tmean - Lprime_tprime)
+
+                                        #save all in list
+        ret <- c(res,list(
+                         tmean = tmean,
+                         tprime = Lprime_tprime
+                     ))
+        par$Z <- Z.BH
+        if("M" %in% names(par) && length(par$M)==1){
+            par$FM <- lapply(par$Z, function(x) x - par$M)
+            par$E <- lapply(par$FM, function(x) x/par$Z)            
+        }      
+        ret$par <- par      
+        return(ret)
+    }
 
 }
 
@@ -963,7 +1044,7 @@ Z_BevertonHolt <- function(param, catch_columns = NA, Lprime_tprime){
 #'    catch per unit of effort (CPUE) data according to standard, Heincke's, or
 #'    Robson & Chapman's method.
 #'
-#' @param param a list consisting of following parameters:
+#' @param cpue a list consisting of following parameters:
 #' \itemize{
 #'   \item \code{cohort}: a vector with with a cohort label,
 #'   \item \code{age}: a vector with ages,
@@ -977,16 +1058,16 @@ Z_BevertonHolt <- function(param, catch_columns = NA, Lprime_tprime){
 #' @keywords function mortality Z CPUE
 #'
 #' @examples
-#' # load data
+#' ## load data
 #' data(synCPUE)
 #'
-#' # run model with standard method
+#' ## run model with standard method
 #' Z_CPUE(synCPUE, method = "standard")
 #'
-#' # run model with Heincke's method
+#' ## run model with Heincke's method
 #' Z_CPUE(synCPUE, method = "Heincke")
 #'
-#' # run model with Robson and Chapman's method
+#' ## run model with Robson and Chapman's method
 #' Z_CPUE(synCPUE, method = "RobsonChapman", omit_age1 = TRUE)
 #'
 #' @details In Heincke's and RobsonChapman's method age groups older than 4 are lumped,
@@ -1008,64 +1089,71 @@ Z_BevertonHolt <- function(param, catch_columns = NA, Lprime_tprime){
 #'
 #' @export
 
-Z_CPUE <- function(param, method = "standard", omit_age1 = FALSE){
+Z_CPUE <- function(cpue, method = "standard", omit_age1 = FALSE){
 
-  res <- param
-  cohort <- res$cohort
-  classes <- as.character(res$age)
-  CPUE <- res$CPUE
+    res <- cpue
+    if("par" %in% names(res)){
+        par <- res$par
+    }else par <- list()    
+    cohort <- res$cohort
+    classes <- as.character(res$age)
+    CPUE <- res$CPUE
 
-  # create column without plus group (sign) if present
-  classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
-  classes.num <- as.numeric(classes.num[,1])
+    ## create column without plus group (sign) if present
+    classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
+    classes.num <- as.numeric(classes.num[,1])
 
-  switch(method,
+    switch(method,
 
-         "standard" ={
-           df.HZ <- data.frame(cohort = cohort[1:(length(cohort)-1)])
-           result_Z <- list()
-           for(i in 2:length(classes.num)){
-             Zi <- rep(NA,(length(classes.num)-1))
-             for(k in 1:(i-1)){
-               Zi[k] <- round((1 / (classes.num[i] - classes.num[k])) *
-                                (log(CPUE[k] /CPUE[i])),digits = 2)
-             }
-             result_Z[[i-1]] <- Zi
-           }
-           for(i in 1:length(result_Z)){
-             df.HZ[[paste(cohort[i+1])]] <- result_Z[[i]]
-           }
-           ret <- c(res,list(
-             Z_mat = df.HZ
-           ))
-           return(ret)
-         },
+           "standard" ={
+               df.HZ <- data.frame(cohort = cohort[1:(length(cohort)-1)])
+               result_Z <- list()
+               for(i in 2:length(classes.num)){
+                   Zi <- rep(NA,(length(classes.num)-1))
+                   for(k in 1:(i-1)){
+                       Zi[k] <- round((1 / (classes.num[i] - classes.num[k])) *
+                                      (log(CPUE[k] /CPUE[i])),digits = 2)
+                   }
+                   result_Z[[i-1]] <- Zi
+               }
+               for(i in 1:length(result_Z)){
+                   df.HZ[[paste(cohort[i+1])]] <- result_Z[[i]]
+               }
+               ret <- c(res,list(
+                                Z_mat = df.HZ
+                            ))
+               return(ret)
+           },
 
-         "Heincke" ={
-           CPUE[4] <- sum(CPUE[4:length(CPUE)])
-           if(omit_age1) CPUE <- CPUE[-1]
-           CPUE.H.n <- CPUE[2:length(CPUE)]
-           CPUE.H.d <- CPUE[1:length(CPUE)]
-           Z.H = - log( (sum(CPUE.H.n)) /
-                          (sum(CPUE.H.d)))
-           ret <- c(res,list(
-             Z = Z.H
-           ))
-           return(ret)
-         },
-         "RobsonChapman" ={
-           CPUE[4] <- sum(CPUE[4:length(CPUE)])
-           if(omit_age1) CPUE <- CPUE[-1]
-           sum_CPUE.H.n <- sum(CPUE[2:length(CPUE)])
-           sum_CPUE.H.d <- sum(CPUE[1:length(CPUE)])
+           "Heincke" ={
+               CPUE[4] <- sum(CPUE[4:length(CPUE)])
+               if(omit_age1) CPUE <- CPUE[-1]
+               CPUE.H.n <- CPUE[2:length(CPUE)]
+               CPUE.H.d <- CPUE[1:length(CPUE)]
+               Z.H = - log( (sum(CPUE.H.n)) /
+                            (sum(CPUE.H.d)))
+               ret <- c(res,list(
+                                Z = Z.H
+                            ))
+               return(ret)
+           },
+           "RobsonChapman" ={
+               CPUE[4] <- sum(CPUE[4:length(CPUE)])
+               if(omit_age1) CPUE <- CPUE[-1]
+               sum_CPUE.H.n <- sum(CPUE[2:length(CPUE)])
+               sum_CPUE.H.d <- sum(CPUE[1:length(CPUE)])
 
-           Z.H = - log((sum_CPUE.H.n) /
-                          (sum_CPUE.H.d + sum_CPUE.H.n - 1))
+               Z.H = - log((sum_CPUE.H.n) /
+                           (sum_CPUE.H.d + sum_CPUE.H.n - 1))
 
-           ret <- c(res,list(
-             Z = Z.H
-           ))
-           return(ret)
-         })
+               ret <- res
+               par$Z <- Z.H
+               if("M" %in% names(par) && length(par$M)==1){
+                   par$FM <- lapply(par$Z, function(x) x - par$M)
+                   par$E <- par$FM/par$Z
+               }      
+               ret$par <- par                 
+               return(ret)
+           })
 }
 

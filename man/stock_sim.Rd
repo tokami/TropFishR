@@ -4,17 +4,22 @@
 \alias{stock_sim}
 \title{Stock simulation}
 \usage{
-stock_sim(param, age_unit = "year", stock_size_1 = NA, plus_group = NA)
+stock_sim(lfq, age_unit = "year", stock_size_1 = NA, plus_group = NA)
 }
 \arguments{
-\item{param}{a list consisting of following parameters:
+\item{lfq}{a list consisting of following parameters:
 \itemize{
-  \item \code{age} or \code{midLengths}: midpoints of length classes (length-frequency
+  \item \strong{midLengths} or \strong{age}: midpoints of the length classes (length-frequency
   data) or ages (age composition data),
-  \item \code{meanWeight}: mean weight in kg per age class or length group,
-  \item \code{meanValue}: mean value per kg fish per age class or length group,
-  \item \code{FM}: fishing mortality rates per age class or length group,
-  \item \code{M} or \code{Z}: natural or total instantaneous mortality rate.
+  \item \strong{meanWeight}: mean weight in kg per age class or length group,
+  \item \strong{meanValue}: mean value per kg fish per age class or length group,
+ \item \strong{par}: a list with growth paramters:
+ \itemize{
+   \item \strong{M} or \strong{Z}: natural or total mortality
+    [1/year],
+   \item \strong{FM}: fishing mortality [1/year] per length class
+    (numeric value or vector of identical length than midLengths);
+    }
 }}
 
 \item{age_unit}{indicates if the age groups are per month (\code{"month"}) or
@@ -63,12 +68,12 @@ data(shrimps)
 stock_sim(shrimps, age_unit = "month")
 
 # option 2: with plus group
-stock_sim(param = shrimps, age_unit = "month", plus_group = 11)
+stock_sim(lfq = shrimps, age_unit = "month", plus_group = 11)
 
 # length-based stock simulation
 data(hake)
 
-stock_sim(param = hake, stock_size_1 = 98919.3)
+stock_sim(lfq = hake, stock_size_1 = 98919.3)
 
 }
 \references{

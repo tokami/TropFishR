@@ -4,17 +4,27 @@
 \alias{Z_BevertonHolt}
 \title{Beverton & Holt's Z-Equations}
 \usage{
-Z_BevertonHolt(param, catch_columns = NA, Lprime_tprime)
+Z_BevertonHolt(lfq, catch_columns = NA, Lprime_tprime)
 }
 \arguments{
-\item{param}{a list consisting of following parameters:
+\item{lfq}{a list consisting of following parameters:
 \itemize{
-  \item  \code{midLengths} or \code{age}: midpoints of length groups
-  (length-frequency data) or ages (age composition data),
-  \item \code{Linf}: infinite length for investigated species in cm [cm],
-  \item \code{K}: growth coefficent for investigated species per year [1/year],
-  \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
-  \item \code{catch}: catch as vector, or a matrix with catches of subsequent years;
+  \item \strong{midLengths} or \strong{age}: midpoints of the length classes (length-frequency
+  data) or ages (age composition data),
+  \item \strong{catch}: catches, vector or matrix with catches of subsequent years if
+  the catch curve with constat time intervals should be applied;
+ \item \strong{par}: a list with growth paramters:
+ \itemize{
+    \item \strong{Linf}: infinite length for investigated species in cm [cm],
+    \item \strong{K}: growth coefficent for investigated species per year [1/year],
+    \item \strong{ta}: time point anchoring growth curves in year-length
+  coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0),
+  \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 0),
+    \item \strong{t0}: theoretical time zero, at which individuals of this species hatch,
+    \item \strong{C}: amplitude of growth oscillation of soVBGF (range: 0 to 1, default: 0),
+    \item \strong{ts}: summer point of soVBGF (ts = WP - 0.5) (range: 0 to 1, default: 0);
+    
+ }
 }}
 
 \item{catch_columns}{optional; in case catch is a matrix or data.frame, a number or vector
@@ -41,11 +51,11 @@ The first length group or age class within the list object \code{midLengths} or
    \code{age} will be used as the Lprim or tprime (length of recruitment to fishery).
 }
 \examples{
-# based on length-frequency data
+## based on length-frequency data
 data(synLFQ2)
 Z_BevertonHolt(synLFQ2, catch_columns = 2, Lprime_tprime = 47.5)
 
-# based on age composition data
+## based on age composition data
 data(synCAA1)
 Z_BevertonHolt(synCAA1, catch_columns = 3, Lprime_tprime = 2.5)
 

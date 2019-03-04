@@ -11,6 +11,14 @@ ELEFAN_SA(lfq, seasonalised = FALSE, init_par = list(Linf = 50, K = 0.5, ta
   flagging.out = TRUE, plot = FALSE, plot.score = TRUE)
 }
 \arguments{
+\item{lfq}{a list consisting of following parameters:
+\itemize{
+  \item \strong{midLengths} midpoints of the length classes,
+  \item \strong{dates} dates of sampling times (class Date),
+  \item \strong{catch} matrix with catches/counts per length class (row)
+     and sampling date (column);
+}}
+
 \item{seasonalised}{logical; indicating if the seasonalised von Bertalanffy
 growth function should be applied (default: FALSE).}
 
@@ -81,14 +89,6 @@ square-root transformation of positive values according to Brey et al. (1988).
 
 \item{plot.score}{logical; Plot simulated annealing score progression.
 (Default: plot.score=TRUE)}
-
-\item{x}{a list consisting of following parameters:
-\itemize{
-  \item \strong{midLengths} midpoints of the length classes,
-  \item \strong{dates} dates of sampling times (class Date),
-  \item \strong{catch} matrix with catches/counts per length class (row)
-     and sampling date (column);
-}}
 }
 \value{
 A list with the input parameters and following list objects:

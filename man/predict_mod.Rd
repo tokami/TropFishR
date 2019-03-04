@@ -4,32 +4,40 @@
 \alias{predict_mod}
 \title{Prediction models}
 \usage{
-predict_mod(param, type, FM_change = NA, E_change = NA,
-  FM_relative = FALSE, Lc_change = NULL, tc_change = NULL, s_list = NA,
-  stock_size_1 = NA, age_unit = "year", curr.E = NA, curr.Lc = NA,
-  plus_group = NA, Lmin = NA, Lincr = NA, plot = FALSE, mark = TRUE,
+predict_mod(lfq, type, FM_change = NA, E_change = NA, FM_relative = FALSE,
+  Lc_change = NULL, tc_change = NULL, s_list = NA, stock_size_1 = NA,
+  age_unit = "year", curr.E = NA, curr.Lc = NA, plus_group = NA,
+  Lmin = NA, Lincr = NA, plot = FALSE, mark = TRUE,
   hide.progressbar = FALSE)
 }
 \arguments{
-\item{param}{a list consisting of following parameters (not all are required):
+\item{lfq}{a list consisting of following parameters:
 \itemize{
-  \item \strong{Linf} or \strong{Winf}: infinite length or weight, respectively,
+  \item \strong{midLengths} or \strong{age}: midpoints of the length classes (length-frequency
+  data) or ages (age composition data; for the Thompson and Bell model),
+\item \strong{meanWeight}: vector with mean weight per length group or age class (for the Thompson and Bell model),
+\item \strong{meanValue}: vector with mean value per length group or age class (for the Thompson and Bell model),
+ \item \strong{par}: a list with growth paramters:
+ \itemize{
+ \item \strong{Linf} or \strong{Winf}: infinite length or weight, respectively,
      for investigated species in cm [cm],
   \item \strong{K}: growth coefficent for investigated species per year [1/year],
   \item \strong{t0}: theoretical time zero, at which individuals of this species
        hatch,
-  \item \strong{M}: natural mortality or
+  \item \strong{ta}: time point anchoring growth curves in year-length
+  coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0),
+ \item \strong{t0}: theoretical time zero, at which individuals of this species hatch,
+    \item \strong{C}: amplitude of growth oscillation of soVBGF (range: 0 to 1, default: 0),
+    \item \strong{ts}: summer point of soVBGF (ts = WP - 0.5) (range: 0 to 1, default: 0);
+    \item \strong{M}: natural mortality [1/year] (numeric value or vector of identical
+     length than midLengths),
   \item \strong{Z}: total mortality,
   \item \strong{FM}: fishing mortality,
-  \item \strong{a}: length-weight relationship coefficent (W = a * L^b),
+  \item \strong{a}: length-weight relationship coefficent (W = a * L^b; for kg/cm3),
   \item \strong{b}: length-weight relationship coefficent (W = a * L^b),
-  \item \strong{Lr} or \strong{tr}: length or age of recruitment;}
-additional list objects for the Thompson and Bell model:
- \itemize{
-  \item \strong{midLengths} or \strong{age}: midpoints of the length classes
-     (length-frequency data) or ages (age composition data),
-  \item \strong{meanWeight}: vector with mean weight per length group or age class,
-  \item \strong{meanValue}: vector with mean value per length group or age class,
+  \item \strong{Lr} or \strong{tr}: length or age of recruitment,
+  \item \strong{Lc} or \strong{tc}: length or age at 50% selection;
+ }
 }}
 
 \item{type}{indicating which model should be applied: \code{"ypr"} for Beverton
@@ -173,38 +181,38 @@ The Thompson and Bell model incorporates an iteration step simulating the
 #______________________________________
 # age structured data
 # Nemipterus marginatus
-threadfin <- list(Winf = 286, K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4)
+threadfin <- list(par = list(Winf = 286, K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4))
 
 predict_mod(threadfin, FM_change = seq(0,6,0.1),
    tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
 
 # Leiognathus spendens (Pauly, 1980)
-ponyfish <- list(Winf = 64, K = 1, t0 = -0.2, M = 1.8, tr = 0.2)
+ponyfish <- list(par = list(Winf = 64, K = 1, t0 = -0.2, M = 1.8, tr = 0.2))
 
 predict_mod(ponyfish, tc_change = c(0.2,0.3,1.0), type = 'ypr', plot=TRUE)
 
 #______________________________________
 # length structured data
 # Xiphias gladius (Berkeley and Houde, 1980)
-swordfish <- list(Linf = 309, K = 0.0949, M = 0.18,
-                  a = 0.0003, b = 3, Lr = 90)
+swordfish <- list(par = list(Linf = 309, K = 0.0949, M = 0.18,
+                  a = 0.0003, b = 3, Lr = 90))
 
 select.list <- list(selecType = 'trawl_ogive', L50 = 120, L75 = 132)
 #swordfish$midLengths <- seq(60,300,5)
 
-output <- predict_mod(param = swordfish, Lc_change = c(100,118,150,180),
+output <- predict_mod(lfq = swordfish, Lc_change = c(100,118,150,180),
             s_list = select.list, type = 'ypr', Lmin = 90, Lincr = 8)
 plot(output)
 
 data(hake)
-hake$Lr <- 35
+hake$par$Lr <- 35
 select.list <- list(selecType = 'trawl_ogive', L50 = 50, L75 = 54)
-output <- predict_mod(param = hake, FM_change = seq(0,3,0.05),
+output <- predict_mod(lfq = hake, FM_change = seq(0,3,0.05),
                       Lc_change = seq(30,70,1), s_list = select.list,
                       type = 'ypr', plot = FALSE, curr.Lc = 50, curr.E = 0.73)
 plot(output, type = "Isopleth", xaxis1 = "FM", yaxis1 = "Y_R.rel", mark = TRUE)
 
-output <- predict_mod(param = hake, E_change = seq(0,1,0.1),
+output <- predict_mod(lfq = hake, E_change = seq(0,1,0.1),
                       Lc_change = seq(2,120,2), #s_list = select.list,
                       type = 'ypr', plot = FALSE)
 plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "B_R")
@@ -215,20 +223,20 @@ plot(output, type = "Isopleth", xaxis1 = "E", yaxis1 = "B_R")
 # with age structured data
 data(shrimps)
 
-output <- predict_mod(param = shrimps, FM_change = seq(0.1,20,0.1),
+output <- predict_mod(lfq = shrimps, FM_change = seq(0.1,20,0.1),
      type = "ThompBell", age_unit = "month", plot = TRUE)
 
 #______________________________________
 # with length structured data
 data(hake)
 par(mar = c(5, 4, 4, 7))
-predict_mod(param = hake,FM_change = seq(0.1,3,0.05),
+predict_mod(lfq = hake,FM_change = seq(0.1,3,0.05),
      type = 'ThompBell', plot = TRUE)
 
 # create list with selectivity information
 select.list <- list(selecType = 'trawl_ogive', L50 = 50, L75 = 55)
 
-output <- predict_mod(param = hake, FM_change = seq(0,2,0.1),
+output <- predict_mod(lfq = hake, FM_change = seq(0,2,0.1),
      Lc_change = seq(20,70,1),
      curr.E = 0.4, curr.Lc = 50,
      type = 'ThompBell', s_list = select.list)

@@ -4,17 +4,25 @@
 \alias{powell_wetherall}
 \title{Powell-Wetherall method}
 \usage{
-powell_wetherall(param, catch_columns = NA, savePlots = FALSE,
+powell_wetherall(lfq, catch_columns = NA, savePlots = FALSE,
   reg_int = NULL, main = "Powell-Wetherall plot")
 }
 \arguments{
-\item{param}{a list consisting of following parameters:
+\item{lfq}{a list consisting of following parameters:
 \itemize{
-  \item  \code{midLengths}: midpoints of the length groups,
-  \item \code{Linf}: infinite length for investigated species [cm],
-  \item \code{K}: growth coefficent for investigated species [1/year],
-  \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
-  \item \code{catch}: catch as vector, or a matrix with catches of subsequent years;
+  \item \strong{midLengths} or \strong{age}: midpoints of the length classes (length-frequency
+  data) or ages (age composition data),
+\item \strong{catch}: catch
+ \item \strong{par}: a list with growth paramters:
+ \itemize{
+    \item \strong{Linf}: infinite length for investigated species in cm [cm],
+    \item \strong{K}: growth coefficent for investigated species per year [1/year],
+    \item \strong{ta}: time point anchoring growth curves in year-length
+  coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0),
+    \item \strong{t0}: theoretical time zero, at which individuals of this species hatch,
+    \item \strong{C}: amplitude of growth oscillation of soVBGF (range: 0 to 1, default: 0),
+    \item \strong{ts}: summer point of soVBGF (ts = WP - 0.5) (range: 0 to 1, default: 0);
+ }
 }}
 
 \item{catch_columns}{optional; in case catch is a matrix or data.frame, a number
