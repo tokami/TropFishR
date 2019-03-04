@@ -128,7 +128,6 @@
 #'      growth curves,
 #'   \item \strong{score_mat}: matrix with scores for each Linf (only Linf_fix)
 #'    and K combination,
-#'   \item \strong{t_anchor_mat}: maximum age of species,
 #'   \item \strong{ncohort}: number of cohorts used for estimation,
 #'   \item \strong{agemax}: maximum age of species,
 #'   \item \strong{par}: a list with the parameters of the von Bertalanffy growth
@@ -194,227 +193,226 @@
 #'
 #' @export
 
-ELEFAN <- function(
-  x, Linf_fix = NA, Linf_range = NA,
-  K_range = exp(seq(log(0.1), log(10), length.out=100)),
-  C = 0, ts = 0,
-  MA = 5, addl.sqrt = FALSE,
-  agemax = NULL, flagging.out = TRUE, method = "optimise",
-  cross.date = NULL, cross.midLength = NULL, cross.max = FALSE,
-  hide.progressbar = FALSE,
-  plot = FALSE, contour = FALSE,
-  add.values = TRUE, rsa.colors = terrain.colors(20),
-  plot_title = TRUE)
-{
+ELEFAN <- function(x, Linf_fix = NA, Linf_range = NA,
+                   K_range = exp(seq(log(0.1), log(10), length.out=100)),
+                   C = 0, ts = 0,
+                   MA = 5, addl.sqrt = FALSE,
+                   agemax = NULL, flagging.out = TRUE, method = "optimise",
+                   cross.date = NULL, cross.midLength = NULL, cross.max = FALSE,
+                   hide.progressbar = FALSE,
+                   plot = FALSE, contour = FALSE,
+                   add.values = TRUE, rsa.colors = terrain.colors(20),
+                   plot_title = TRUE){
 
-  res <- x
-  classes <- res$midLengths
-  catch <- res$catch
-  dates <- res$dates
-  interval <- (classes[2]-classes[1])/2
+    res <- x
+    classes <- res$midLengths
+    catch <- res$catch
+    dates <- res$dates
+    interval <- (classes[2]-classes[1])/2
 
-  n_samples <- dim(catch)[2]
-  n_classes <- length(classes)
+    n_samples <- dim(catch)[2]
+    n_classes <- length(classes)
 
-  #ts <- WP - 0.5
-  if(is.na(Linf_fix) & is.na(Linf_range[1])) Linf_range <- seq(classes[n_classes]-5,classes[n_classes]+5,1) ### OLD: c(classes[n_classes]-5,classes[n_classes]+5)
+    ## ts <- WP - 0.5
+    if(is.na(Linf_fix) & is.na(Linf_range[1])) Linf_range <- seq(classes[n_classes]-5,classes[n_classes]+5,1) ### OLD: c(classes[n_classes]-5,classes[n_classes]+5)
 
-  # ELEFAN 0
-  res <- lfqRestructure(res, MA = MA, addl.sqrt = addl.sqrt)
-  catch_aAF_F <- res$rcounts
-  peaks_mat <- res$peaks_mat
-  ASP <- res$ASP
+    ## ELEFAN 0
+    res <- lfqRestructure(res, MA = MA, addl.sqrt = addl.sqrt)
+    catch_aAF_F <- res$rcounts
+    peaks_mat <- res$peaks_mat
+    ASP <- res$ASP
 
-  if(!is.na(Linf_fix)){
-    Linfs <- Linf_fix
-  }else Linfs <-  Linf_range
-  Ks <- K_range
+    if(!is.na(Linf_fix)){
+        Linfs <- Linf_fix
+    }else Linfs <-  Linf_range
+    Ks <- K_range
 
 
 
 
-  # optimisation function
-  sofun <- function(tanch, lfq, par, agemax, flagging.out){
-    Lt <- lfqFitCurves(lfq,
-                       par=list(Linf=par[1], K=par[2], t_anchor=tanch,
-                                C=par[4], ts=par[5]),
-                       flagging.out = flagging.out, agemax = agemax)
-    return(Lt$ESP)
-  }
-
-  ESP_tanch_L <- matrix(NA,nrow=length(Ks),ncol=length(Linfs))
-  ESP_list_L <- matrix(NA,nrow=length(Ks),ncol=length(Linfs))
-  writeLines(paste("Optimisation procuedure of ELEFAN is running. \nThis will take some time. \nThe process bar will inform you about the process of the calculations.",sep=" "))
-  flush.console()
-
-
-  # check that both cross.date and cross.midLength are identified
-  if(method == "cross"){
-    if(cross.max){ # overrides 'cross.date' and 'cross.midLength'
-      max.rcount <- which.max(res$rcounts)
-      COMB <- expand.grid(midLengths = rev(rev(res$midLengths)), dates = res$dates)
-      cross.date <- COMB$dates[max.rcount]
-      cross.midLength <- COMB$midLengths[max.rcount]
-    } else {
-      if(is.null(cross.date) | is.null(cross.midLength)){
-        stop("Must define both 'cross.date' and 'cross.midLength' when 'cross.max' equals FALSE")
-      }
+    ## optimisation function
+    sofun <- function(tanch, lfq, par, agemax, flagging.out){
+        Lt <- lfqFitCurves(lfq,
+                           par=list(Linf=par[1], K=par[2], t_anchor=tanch,
+                                    C=par[4], ts=par[5]),
+                           flagging.out = flagging.out, agemax = agemax)
+        return(Lt$ESP)
     }
-  }
+
+    ESP_tanch_L <- matrix(NA,nrow=length(Ks),ncol=length(Linfs))
+    ESP_list_L <- matrix(NA,nrow=length(Ks),ncol=length(Linfs))
+    writeLines(paste("Optimisation procuedure of ELEFAN is running. \nThis will take some time. \nThe process bar will inform you about the process of the calculations.",sep=" "))
+    flush.console()
 
 
-  if(!hide.progressbar){
-    nlk <- prod(dim(ESP_list_L))
-    pb <- txtProgressBar(min=1, max=nlk, style=3)
-    counter <- 1
-  }
-  for(li in 1:length(Linfs)){
-
-    ESP_tanch_K <- rep(NA,length(Ks))
-    ESP_list_K <- rep(NA,length(Ks))
-    for(ki in 1:length(Ks)){
-
-      # determine agemax for Linf and K combination if not already defined
-      if(is.null(agemax)){
-        agemax.i <- ceiling((1/-Ks[ki])*log(1-((Linfs[li]*0.95)/Linfs[li])))
-      } else {
-        agemax.i <- agemax
-      }
-
-
-      if(method == "cross"){ # Method for crossing center of a prescribed bin
-
-        t0s <- seq(floor(min(date2yeardec(res$dates)) - agemax.i), ceiling(max(date2yeardec(res$dates))), by = 0.01)
-
-        Ltlut <- Linfs[li] * (1-exp(-(
-          Ks[ki]*(date2yeardec(cross.date)-t0s)
-          + (((C*Ks[ki])/(2*pi))*sin(2*pi*(date2yeardec(cross.date)-ts)))
-          - (((C*Ks[ki])/(2*pi))*sin(2*pi*(t0s-ts)))
-        )))
-
-        t_anchor <- t0s[which.min((Ltlut - cross.midLength)^2)] %% 1
-
-        resis <- sofun(tanch = t_anchor, lfq = res, par = c(Linfs[li], Ks[ki], NA, C, ts), agemax = agemax.i, flagging.out = flagging.out)
-        ESP_list_K[ki] <- resis
-        ESP_tanch_K[ki] <- t_anchor
-
-      }
-
-      # Optimised method for searching best scoring t_anchor
-      if(method == "optimise"){
-        resis <- optimise(
-          f = sofun,
-          lower = 0,
-          upper = 1,
-          lfq = res,
-          par = c(Linfs[li], Ks[ki], NA, C, ts),
-          agemax = agemax.i,
-          flagging.out = flagging.out,
-          tol = 0.001,
-          maximum = TRUE
-        )
-        ESP_list_K[ki] <- resis$objective
-        ESP_tanch_K[ki] <- resis$maximum
-      }
-
-      # update counter and progress bar
-      if(!hide.progressbar){
-        setTxtProgressBar(pb, counter)
-        counter <- counter + 1
-      }
-    }
-    ESP_list_L[,li] <- ESP_list_K
-    ESP_tanch_L[,li] <- ESP_tanch_K
-  }
-
-  dimnames(ESP_list_L) <- list(Ks,Linfs)
-  score_mat <- round((10^(ESP_list_L/ASP)) /10,digits = 3)
-  rownames(score_mat) <- round(as.numeric(rownames(score_mat)), digits = 2)
-  dimnames(ESP_tanch_L) <- list(Ks,Linfs)
-
-
-  # Graphs
-  if(is.na(Linf_fix)){
-    plot_dat <- reshape2::melt(score_mat)
-
-    image(
-      x = Linfs,
-      y = Ks,
-      z = t(score_mat), col=rsa.colors,
-      ylab = 'K', xlab='Linf'
-    )
-
-    if(plot_title)  title('Response surface analysis', line = 1)
-
-    if(contour){
-      contour(x = Linfs, y = Ks, z = t(score_mat), add = TRUE)
-    } else {
-      if(is.numeric(contour)){
-        contour(x = Linfs, y = Ks, z = t(score_mat), add = TRUE, nlevels = contour)
-      } else {
-        if(add.values){
-          text(x=plot_dat$Var2,y=plot_dat$Var1,round(as.numeric(plot_dat$value),digits = 2),cex = 0.6)
+    ## check that both cross.date and cross.midLength are identified
+    if(method == "cross"){
+        if(cross.max){ ## overrides 'cross.date' and 'cross.midLength'
+            max.rcount <- which.max(res$rcounts)
+            COMB <- expand.grid(midLengths = rev(rev(res$midLengths)), dates = res$dates)
+            cross.date <- COMB$dates[max.rcount]
+            cross.midLength <- COMB$midLengths[max.rcount]
+        } else {
+            if(is.null(cross.date) | is.null(cross.midLength)){
+                stop("Must define both 'cross.date' and 'cross.midLength' when 'cross.max' equals FALSE")
+            }
         }
-      }
     }
-  } else {
-    if(all(Ks %in% exp(seq(log(0.1),log(10),length.out=100)))){
-      K_labels <- c(seq(0.1,1,0.1),2:10)
-      K_plot <- log10(Ks)
-      K_ats <- log10(K_labels)
+
+
+    if(!hide.progressbar){
+        nlk <- prod(dim(ESP_list_L))
+        pb <- txtProgressBar(min=1, max=nlk, style=3)
+        counter <- 1
+    }
+    for(li in 1:length(Linfs)){
+
+        ESP_tanch_K <- rep(NA,length(Ks))
+        ESP_list_K <- rep(NA,length(Ks))
+        for(ki in 1:length(Ks)){
+
+            ## determine agemax for Linf and K combination if not already defined
+            if(is.null(agemax)){
+                agemax.i <- ceiling((1/-Ks[ki])*log(1-((Linfs[li]*0.95)/Linfs[li])))
+            } else {
+                agemax.i <- agemax
+            }
+
+
+            if(method == "cross"){ ## Method for crossing center of a prescribed bin
+
+                t0s <- seq(floor(min(date2yeardec(res$dates)) - agemax.i), ceiling(max(date2yeardec(res$dates))), by = 0.01)
+
+                Ltlut <- Linfs[li] * (1-exp(-(
+                    Ks[ki]*(date2yeardec(cross.date)-t0s)
+                    + (((C*Ks[ki])/(2*pi))*sin(2*pi*(date2yeardec(cross.date)-ts)))
+                    - (((C*Ks[ki])/(2*pi))*sin(2*pi*(t0s-ts)))
+                )))
+
+                t_anchor <- t0s[which.min((Ltlut - cross.midLength)^2)] %% 1
+
+                resis <- sofun(tanch = t_anchor, lfq = res, par = c(Linfs[li], Ks[ki], NA, C, ts), agemax = agemax.i, flagging.out = flagging.out)
+                ESP_list_K[ki] <- resis
+                ESP_tanch_K[ki] <- t_anchor
+
+            }
+
+            ## Optimised method for searching best scoring t_anchor
+            if(method == "optimise"){
+                resis <- optimise(
+                    f = sofun,
+                    lower = 0,
+                    upper = 1,
+                    lfq = res,
+                    par = c(Linfs[li], Ks[ki], NA, C, ts),
+                    agemax = agemax.i,
+                    flagging.out = flagging.out,
+                    tol = 0.001,
+                    maximum = TRUE
+                )
+                ESP_list_K[ki] <- resis$objective
+                ESP_tanch_K[ki] <- resis$maximum
+            }
+
+            ## update counter and progress bar
+            if(!hide.progressbar){
+                setTxtProgressBar(pb, counter)
+                counter <- counter + 1
+            }
+        }
+        ESP_list_L[,li] <- ESP_list_K
+        ESP_tanch_L[,li] <- ESP_tanch_K
+    }
+
+    dimnames(ESP_list_L) <- list(Ks,Linfs)
+    score_mat <- round((10^(ESP_list_L/ASP)) /10,digits = 3)
+    rownames(score_mat) <- round(as.numeric(rownames(score_mat)), digits = 2)
+    dimnames(ESP_tanch_L) <- list(Ks,Linfs)
+
+
+    ## Graphs
+    if(is.na(Linf_fix)){
+        plot_dat <- reshape2::melt(score_mat)
+
+        image(
+            x = Linfs,
+            y = Ks,
+            z = t(score_mat), col=rsa.colors,
+            ylab = 'K', xlab='Linf'
+        )
+
+        if(plot_title)  title('Response surface analysis', line = 1)
+
+        if(contour){
+            contour(x = Linfs, y = Ks, z = t(score_mat), add = TRUE)
+        } else {
+            if(is.numeric(contour)){
+                contour(x = Linfs, y = Ks, z = t(score_mat), add = TRUE, nlevels = contour)
+            } else {
+                if(add.values){
+                    text(x=plot_dat$Var2,y=plot_dat$Var1,round(as.numeric(plot_dat$value),digits = 2),cex = 0.6)
+                }
+            }
+        }
     } else {
-      K_labels <- Ks
-      K_plot <- Ks
-      K_ats <- Ks
+        if(all(Ks %in% exp(seq(log(0.1),log(10),length.out=100)))){
+            K_labels <- c(seq(0.1,1,0.1),2:10)
+            K_plot <- log10(Ks)
+            K_ats <- log10(K_labels)
+        } else {
+            K_labels <- Ks
+            K_plot <- Ks
+            K_ats <- Ks
+        }
+        phis <- round(log10(K_labels) + 2 * log10(Linfs), digits = 2)
+
+        op <- par(mar = c(12,5,4,2))
+        plot(K_plot,score_mat,type = 'l', ylim=c(0,max(score_mat, na.rm = TRUE)*1.4),
+             ylab = "Score function", xlab = "Growth constant K (/year)", col = "red", lwd=2,xaxt='n')
+        axis(1,at = K_ats,labels = K_labels)
+        axis(1,at = K_ats,labels = phis,
+             line = 5.5)
+        mtext(text = expression(paste("Growth performance index (",phi,"')")),side = 1,line = 8.5)
+        grid(nx = 0, NULL, lty = 6, col = "gray40")
+        abline(v = K_ats, lty = 6, col = "gray40")
+        if(plot_title) title("K-Scan", line = 1)
+        par(op)
     }
-    phis <- round(log10(K_labels) + 2 * log10(Linfs), digits = 2)
 
-    op <- par(mar = c(12,5,4,2))
-    plot(K_plot,score_mat,type = 'l', ylim=c(0,max(score_mat, na.rm = TRUE)*1.4),
-         ylab = "Score function", xlab = "Growth constant K (/year)", col = "red", lwd=2,xaxt='n')
-    axis(1,at = K_ats,labels = K_labels)
-    axis(1,at = K_ats,labels = phis,
-         line = 5.5)
-    mtext(text = expression(paste("Growth performance index (",phi,"')")),side = 1,line = 8.5)
-    grid(nx = 0, NULL, lty = 6, col = "gray40")
-    abline(v = K_ats, lty = 6, col = "gray40")
-    if(plot_title) title("K-Scan", line = 1)
-    par(op)
-  }
+    Rn_max <- max(score_mat, na.rm = TRUE)[1]
+    idxs <- which(score_mat == Rn_max, arr.ind = TRUE)[1,]
+    Linfest <- as.numeric(as.character(colnames(score_mat)[idxs[2]]))
+    Kest <- as.numeric(as.character(rownames(score_mat)[idxs[1]]))
+    tanchest <- as.numeric(as.character(ESP_tanch_L[idxs[1],idxs[2]]))
 
-  Rn_max <- max(score_mat, na.rm = TRUE)[1]
-  idxs <- which(score_mat == Rn_max, arr.ind = TRUE)[1,]
-  Linfest <- as.numeric(as.character(colnames(score_mat)[idxs[2]]))
-  Kest <- as.numeric(as.character(rownames(score_mat)[idxs[1]]))
-  tanchest <- as.numeric(as.character(ESP_tanch_L[idxs[1],idxs[2]]))
+    ## growth performance index
+    phiL <- log10(Kest) + 2 * log10(Linfest)
 
-  # growth performance index
-  phiL <- log10(Kest) + 2 * log10(Linfest)
+    pars <- list(Linf = Linfest,
+                 K = Kest,
+                 t_anchor = tanchest,
+                 C = C,
+                 ts = ts,
+                 phiL = phiL)
 
-  pars <- list(Linf = Linfest,
-               K = Kest,
-               t_anchor = tanchest,
-               C = C,
-               ts = ts,
-               phiL = phiL)
+    final_res <- lfqFitCurves(lfq = res, par=pars,
+                              flagging.out = flagging.out,
+                              agemax = agemax)
 
-  final_res <- lfqFitCurves(lfq = res, par=pars,
-                            flagging.out = flagging.out,
-                            agemax = agemax)
-
-  # Results
-  res$ncohort = final_res$ncohort
-  res$agemax = final_res$agemax
-  res$par <- pars
-  res$fESP <- Rn_max
-  res$Rn_max <- Rn_max
+    ## Results
+    res$score_mat <- score_mat
+    res$ncohort <- final_res$ncohort
+    res$agemax <- final_res$agemax
+    res$par <- pars
+    res$fESP <- Rn_max
+    res$Rn_max <- Rn_max
 
 
-  class(res) <- "lfq"
-  if(plot){
-    plot(res, Fname = "rcounts")
-    Lt <- lfqFitCurves(res, par = pars, draw=TRUE)
-  }
-  return(res)
+    class(res) <- "lfq"
+    if(plot){
+        plot(res, Fname = "rcounts")
+        Lt <- lfqFitCurves(res, par = pars, draw=TRUE)
+    }
+    return(res)
 }
 
