@@ -2,7 +2,7 @@
 % Please edit documentation in R/utility.R
 \name{startingPoint2tanchor}
 \alias{startingPoint2tanchor}
-\title{Convert FiSAT's starting point to t_anchor value}
+\title{Convert FiSAT's starting point to ta value}
 \usage{
 startingPoint2tanchor(param, par, startingLength, startingSample)
 }
@@ -18,22 +18,22 @@ the starting sample cut by a growth curve}
 cut by a growth curve}
 }
 \value{
-list with input elements and estimated t_anchor value
+list with input elements and estimated ta value
 }
 \description{
 Starting points returned or chosen within FiSAT are not supported
-   in TropFishR. Instead \code{t_anchor} takes on the job of anchoring VBGF growth curves on
-   a temporal axis. This function allows to convert FiSAT's starting points to \code{t_anchor} values
+   in TropFishR. Instead \code{ta} takes on the job of anchoring VBGF growth curves on
+   a temporal axis. This function allows to convert FiSAT's starting points to \code{ta} values
 }
 \examples{
 data(synLFQ5)
 lfqNEW <- startingPoint2tanchor(synLFQ5, par = list(Linf = 92, K = 0.37),
    startingLength = 31, startingSample = 4)
 lfqRest <- lfqRestructure(lfqNEW, MA = 11)
-plot(lfqRest,par=list(Linf=lfqRest$Linf,K=lfqRest$K,t_anchor=lfqRest$t_anchor))
+plot(lfqRest,par=list(Linf=lfqRest$Linf,K=lfqRest$K,ta=lfqRest$ta))
 
 }
 \keyword{function}
 \keyword{lfq}
 \keyword{startingPoints}
-\keyword{t_anchor}
+\keyword{ta}

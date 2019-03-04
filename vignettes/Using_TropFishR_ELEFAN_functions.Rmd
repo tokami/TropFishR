@@ -130,11 +130,11 @@ alba <- lfqRestructure(alba, MA=7)
 plot(alba, hist.col = c("white", "black"), 
   image.col = c(rep(rgb(1,0.8,0.8),1000), "white", rep(rgb(0.8,0.8,1),1000)),
   ylim = c(0,max(alba$midLengths+0.5)))
-tmp <- lfqFitCurves(alba, par = list(Linf=11, K=2.5, t_anchor=0.5), 
+tmp <- lfqFitCurves(alba, par = list(Linf=11, K=2.5, ta=0.5), 
   draw = TRUE, col=4, lty=2)
 ```
 
-In ELEFAN, *time* is used rather than *age*, and the point where the growth curve crosses length zero is referred to as the "anchor time" (`t_anchor`). This is then interpreted as the time when length equals zero. In the above plot,`t_anchor = 0.5`, which corresponds to halfway through the year (i.e. July 1st). Likewise, the meaning of `ts` is slightly different; it is the time of the year when growth turns positive. In some ways, the shift towards a time perspective can help provide important biological information (i.e. identify season when growth strongest). Furthermore, back-calculation of length zero across bins allows for the reconstruction of a relative recruitment index (see `?recruitment`).
+In ELEFAN, *time* is used rather than *age*, and the point where the growth curve crosses length zero is referred to as the "anchor time" (`ta`). This is then interpreted as the time when length equals zero. In the above plot,`ta = 0.5`, which corresponds to halfway through the year (i.e. July 1st). Likewise, the meaning of `ts` is slightly different; it is the time of the year when growth turns positive. In some ways, the shift towards a time perspective can help provide important biological information (i.e. identify season when growth strongest). Furthermore, back-calculation of length zero across bins allows for the reconstruction of a relative recruitment index (see `?recruitment`).
 
 
 # Restricting the VBGF parameter search range
@@ -165,7 +165,7 @@ Following limiting the range for Linf, K is likely to be restricted automaticall
 ## Response surface analysis (RSA)
 As with FiSAT II, TropFishR allows one to visualize fitting scores across a range of Linf and K combinations in a so-called *Response surface analysis* (RSA). This provides a nice visualization of Rn scores across discrete combinations of both variables, and may also aid in narrowing possible variable ranges in subsequent, more refined searches.
 
-In TropFishR, RSA is conducted using the `ELEFAN` function. Specifically, a sequence of `Linf` and `K` values are provided to the arguments `Linf_range` and `K_range`. All combinations of those parameters are used, and the best scoring `t_anchor` is solved for. If a prominent cohort can be identified, one can force the VBGF to cross through a defined bin, using the argument setting `method = "cross"`, which will substantially reduce the computation time.
+In TropFishR, RSA is conducted using the `ELEFAN` function. Specifically, a sequence of `Linf` and `K` values are provided to the arguments `Linf_range` and `K_range`. All combinations of those parameters are used, and the best scoring `ta` is solved for. If a prominent cohort can be identified, one can force the VBGF to cross through a defined bin, using the argument setting `method = "cross"`, which will substantially reduce the computation time.
 ```{r}
 alba2 <- ELEFAN(
   lfq = alba,  MA = 7,
@@ -206,8 +206,8 @@ alba3 <- ELEFAN_SA(
   lfq = alba, 
   seasonalised = FALSE, 
   init_par = alba2$par[1:5], 
-  low_par = list(Linf=PW$confidenceInt_Linf[1], K=1, t_anchor=0, ts=0, C=0),
-  up_par = list(Linf=PW$confidenceInt_Linf[2], K=4, t_anchor=1, ts=1, C=1), 
+  low_par = list(Linf=PW$confidenceInt_Linf[1], K=1, ta=0, ts=0, C=0),
+  up_par = list(Linf=PW$confidenceInt_Linf[2], K=4, ta=1, ts=1, C=1), 
   SA_temp = 2e5,
   SA_time = 60,
   maxit = 400,
@@ -240,8 +240,8 @@ set.seed(1)
 alba4 <- ELEFAN_GA(
   lfq = alba, 
   seasonalised = FALSE, 
-  low_par = list(Linf=PW$confidenceInt_Linf[1], K=1, t_anchor=0, ts=0, C=0),
-  up_par = list(Linf=PW$confidenceInt_Linf[2], K=4, t_anchor=1, ts=1, C=1), 
+  low_par = list(Linf=PW$confidenceInt_Linf[1], K=1, ta=0, ts=0, C=0),
+  up_par = list(Linf=PW$confidenceInt_Linf[2], K=4, ta=1, ts=1, C=1), 
   popSize = 60,
   pmutation = 0.2,
   maxiter = 100,
@@ -267,7 +267,7 @@ plot(alba4)
 
 ## Seasonally-oscillating growth
 
-The traditional ELEFAN functions also offer searching based on the soVBGF, although these values must be fixed (e.g. in RSA), and thus their estimation must be derived from other methods. Including all 5 possible parameter combinations of the soVBGF (`Linf`, `K`, `t_anchor`, `C`, and `ts`) would require an exponentially higher number of calculations, making the approach impractical. To the contrary, both `ELEFAN_SA` and `ELEFAN_GA` allow for easy incorporation of these parameters in a more optimized search. Again, algorithms search for all parameters along a continuous scale.
+The traditional ELEFAN functions also offer searching based on the soVBGF, although these values must be fixed (e.g. in RSA), and thus their estimation must be derived from other methods. Including all 5 possible parameter combinations of the soVBGF (`Linf`, `K`, `ta`, `C`, and `ts`) would require an exponentially higher number of calculations, making the approach impractical. To the contrary, both `ELEFAN_SA` and `ELEFAN_GA` allow for easy incorporation of these parameters in a more optimized search. Again, algorithms search for all parameters along a continuous scale.
 
 The following examples demonstrate fitting of soVBGF to both `alba` and a synthetically-generated lfq dataset (`synLFQ4`) using `ELEFAN_GA`. The main additions to the functions arguments are to set `seasonalized = TRUE` and to include lower and upper bounds for `ts` and `C` in `low_par` and `up_par`, respectively. Unless there is evidence to restrict these parameters, bounds spanning the full range of the parameters (i.e. between 0 and 1) are recommended.
 
@@ -278,8 +278,8 @@ set.seed(1)
 alba5 <- ELEFAN_GA(
   lfq = alba, 
   seasonalised = TRUE, 
-  low_par = list(Linf=PW$confidenceInt_Linf[1], K=0.1, t_anchor=0, ts=0, C=0),
-  up_par = list(Linf=PW$confidenceInt_Linf[2], K=4, t_anchor=1, ts=1, C=1), 
+  low_par = list(Linf=PW$confidenceInt_Linf[1], K=0.1, ta=0, ts=0, C=0),
+  up_par = list(Linf=PW$confidenceInt_Linf[2], K=4, ta=1, ts=1, C=1), 
   popSize = 60,
   pmutation = 0.2,
   maxiter = 100,
@@ -300,7 +300,7 @@ In the case of the `alba` dataset, no real improvement in Rn is observed for the
 ### A synthetic example
 For the synthetic lfq dataset `synLFQ4`, the soVBGF parameters used in its generation are known: 
 ```{r}
-true_par <- list(Linf = 80, K = 0.5, t_anchor = 0.25,C = 0.75,  ts = 0.5, phiL = 3.51)
+true_par <- list(Linf = 80, K = 0.5, ta = 0.25,C = 0.75,  ts = 0.5, phiL = 3.51)
 ```
 
 The dataset is significantly more detailed (72 length bins, 25 time samples) than `alba` (14 length bins, 7 time samples), and thus will take longer to solve. For such large lfq data sets, solution time may be reduced through use of parallel computing (i.e. `parallel = TRUE`).  From the previous work presented by @taylor_extending_2017, we know that a moving average setting of `MA = 11` is appropriate for this lfq data. 
@@ -311,8 +311,8 @@ set.seed(1)
 synLFQ4 <- ELEFAN_GA(
   lfq = synLFQ4, 
   seasonalised = TRUE, 
-  low_par = list(Linf=70, K=0.1, t_anchor=0, ts=0, C=0),
-  up_par = list(Linf=110, K=1, t_anchor=1, ts=1, C=1), 
+  low_par = list(Linf=70, K=0.1, ta=0, ts=0, C=0),
+  up_par = list(Linf=110, K=1, ta=1, ts=1, C=1), 
   popSize = 60,
   pmutation = 0.2,
   maxiter = 100,
@@ -353,8 +353,8 @@ The following example uses `ELEFAN_GA` with a variable mutation rate, which star
 synLFQ4 <- ELEFAN_GA(
   lfq = synLFQ4, 
   seasonalised = TRUE, 
-  low_par = list(Linf=70, K=0.1, t_anchor=0, ts=0, C=0),
-  up_par = list(Linf=110, K=1, t_anchor=1, ts=1, C=1), 
+  low_par = list(Linf=70, K=0.1, ta=0, ts=0, C=0),
+  up_par = list(Linf=110, K=1, ta=1, ts=1, C=1), 
   popSize = 60,
   pmutation = function(...) GA::ga_pmutation(..., p0=0.5, p=0.1),
   maxiter = 100,

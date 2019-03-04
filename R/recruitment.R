@@ -50,7 +50,7 @@
 #'
 #'
 #' plot(synLFQ4, Fname = "catch",
-#'    par = list(Linf = 80, K = 0.5, t_anchor = 0.25, C = 0.75, ts = 0),
+#'    par = list(Linf = 80, K = 0.5, ta = 0.25, C = 0.75, ts = 0),
 #'    ylim = c(0,80))
 #'
 #' @details

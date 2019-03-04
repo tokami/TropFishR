@@ -761,7 +761,7 @@ VBGF <- function(param, t = NA, L = NA){
   L0 <- ifelse("L0" %in% names(res),res$L0, NA)
   ts <- ifelse("ts" %in% names(res),res$ts, 0)
   C <- ifelse("C" %in% names(res),res$C, 0)
-  if("t_anchor" %in% names(res)) t0 <- res$t_anchor
+  if("ta" %in% names(res)) t0 <- res$ta
 
 
   if(is.na(Linf) & is.na(Winf)) stop("You have to provide either Linf or Winf.")
@@ -838,7 +838,7 @@ VBGF <- function(param, t = NA, L = NA){
 #'  \itemize{
 #'   \item \strong{Linf} length infinity in cm (default: 100),
 #'   \item \strong{K} curving coefficient (default: 0.1),
-#'   \item \strong{t_anchor} time point anchoring growth curves in year-length
+#'   \item \strong{ta} time point anchoring growth curves in year-length
 #'   coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0.25),
 #'   \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 0),
 #'   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 0);
@@ -864,9 +864,9 @@ VBGF <- function(param, t = NA, L = NA){
 #' data(synLFQ5)
 #' res <- lfqRestructure(synLFQ5, MA=11)
 #' plot(res)
-#' tmp <- lfqFitCurves(res, par=list(Linf=80,K=0.5,t_anchor=0.25), draw=TRUE)
+#' tmp <- lfqFitCurves(res, par=list(Linf=80,K=0.5,ta=0.25), draw=TRUE)
 #'
-#' @details \code{t_anchor} subsitutes the starting point from known from Fisat 2.
+#' @details \code{ta} subsitutes the starting point from known from Fisat 2.
 #'    This parameter is necessary for anchoring the growth curves on the time axis.
 #'    It does not subsitute \code{t0}. However, it corresponds to the peak spawning
 #'    of the species (x intercept of growth curve) and has values between 0 and 1,
@@ -930,13 +930,13 @@ VBGF <- function(param, t = NA, L = NA){
 #' @export
 
 lfqFitCurves <- function(lfq,
-  par = list(Linf = 100, K = 0.1, t_anchor = 0.25, C = 0, ts = 0),
+  par = list(Linf = 100, K = 0.1, ta = 0.25, C = 0, ts = 0),
   agemax = NULL, flagging.out = TRUE,
   lty = 2, lwd = 1, col = 1,
   draw = FALSE, tincr = 0.05
 ){
 
-  if(is.null(par$Linf) | is.null(par$K) | is.null(par$t_anchor)) stop("Linf, K and t_anchor have to provided in par.")
+  if(is.null(par$Linf) | is.null(par$K) | is.null(par$ta)) stop("Linf, K and ta have to provided in par.")
 
   # ISSUE: if seasonalised max age can be different and 0.95 very coarse
   if(is.null(agemax)){
@@ -948,7 +948,7 @@ lfqFitCurves <- function(lfq,
   tmax <- max(yeardec, na.rm = TRUE) # maximum sample date
   tmin <- min(yeardec, na.rm = TRUE) # minimum sample date
   ncohort <- agemax + ceiling(diff(range(yeardec))) # number of cohorts
-  tA.use <- par$t_anchor # VBGF anchor time in year
+  tA.use <- par$ta # VBGF anchor time in year
   tAs <- seq(floor(tmax-ncohort), floor(tmax), by=1) + (tA.use+1e6)%%1   # anchor times
   tAs <- tAs[which(tAs < tmax)]
   ncohort <- length(tAs)
@@ -958,7 +958,7 @@ lfqFitCurves <- function(lfq,
   t <- c(yeardec,max(yeardec)+0.2)  # for plotting, otherwise growth curves are cut at last sampling time
   Lt <- vector(mode="list", ncohort)
   for(ct in seq(ncohort)){
-    par2$t_anchor <- tAs[ct]
+    par2$ta <- tAs[ct]
     rel.age <- t-tAs[ct] # relative age to anchor time
     t.use <- which(rel.age <= agemax & rel.age > 0)
     t.ct <- t[t.use]
@@ -1062,7 +1062,7 @@ lfqFitCurves <- function(lfq,
 #' @param flagging.out logical; should positive peaks be flagged out? (Default : TRUE)
 #' @param method Choose between the old FiSAT option to force VBGF crossing of a pre-defined
 #'    bin (method = "cross"), or the more sophisticated (but computationally expensive) option
-#'    to solve for t_anchor via a maximisation of reconstructed score
+#'    to solve for ta via a maximisation of reconstructed score
 #'    (default: method = "optimise").
 #' @param cross.date Date. For use with \code{method = "cross"}. In combination
 #'    with \code{cross.midLength}, defines the date of the crossed bin.
@@ -1146,9 +1146,9 @@ lfqFitCurves <- function(lfq,
 #'    parameter with the best fit while keeping the Linf fixed. In contrast,
 #'    with response surface analysis
 #'    both parameters are estimated and the fits are displayed in a heatmap.
-#'    Both methods use \code{\link[stats]{optimise}} to find the best \code{t_anchor} value
+#'    Both methods use \code{\link[stats]{optimise}} to find the best \code{ta} value
 #'    for each combination of \code{K} and \code{Linf}. To find out more about
-#'    \code{t_anchor}, please refer to the Details description of
+#'    \code{ta}, please refer to the Details description of
 #'    \code{\link{lfqFitCurves}}. The score value \code{Rn_max} is comparable with
 #'    the score values of the other ELEFAN functions (\code{\link{ELEFAN_SA}} or
 #'    \code{\link{ELEFAN_GA}}) when other settings are consistent
@@ -1170,7 +1170,7 @@ lfqFitCurves <- function(lfq,
 #'      \itemize{
 #'        \item \strong{Linf}: length infinity in cm,
 #'        \item \strong{K}: curving coefficient;
-#'        \item \strong{t_anchor}: time point anchoring growth curves in year-length
+#'        \item \strong{ta}: time point anchoring growth curves in year-length
 #'          coordinate system, corrsponds to peak spawning month,
 #'        \item \strong{C}: amplitude of growth oscillation
 #'          (if \code{seasonalised} = TRUE),
@@ -1268,7 +1268,7 @@ ELEFAN <- function(lfq, Linf_fix = NA, Linf_range = NA,
     ## optimisation function
     sofun <- function(tanch, lfq, par, agemax, flagging.out){
         Lt <- lfqFitCurves(lfq,
-                           par=list(Linf=par[1], K=par[2], t_anchor=tanch,
+                           par=list(Linf=par[1], K=par[2], ta=tanch,
                                     C=par[4], ts=par[5]),
                            flagging.out = flagging.out, agemax = agemax)
         return(Lt$ESP)
@@ -1324,15 +1324,15 @@ ELEFAN <- function(lfq, Linf_fix = NA, Linf_range = NA,
                     - (((C*Ks[ki])/(2*pi))*sin(2*pi*(t0s-ts)))
                 )))
 
-                t_anchor <- t0s[which.min((Ltlut - cross.midLength)^2)] %% 1
+                ta <- t0s[which.min((Ltlut - cross.midLength)^2)] %% 1
 
-                resis <- sofun(tanch = t_anchor, lfq = res, par = c(Linfs[li], Ks[ki], NA, C, ts), agemax = agemax.i, flagging.out = flagging.out)
+                resis <- sofun(tanch = ta, lfq = res, par = c(Linfs[li], Ks[ki], NA, C, ts), agemax = agemax.i, flagging.out = flagging.out)
                 ESP_list_K[ki] <- resis
-                ESP_tanch_K[ki] <- t_anchor
+                ESP_tanch_K[ki] <- ta
 
             }
 
-            ## Optimised method for searching best scoring t_anchor
+            ## Optimised method for searching best scoring ta
             if(method == "optimise"){
                 resis <- optimise(
                     f = sofun,
@@ -1425,7 +1425,7 @@ ELEFAN <- function(lfq, Linf_fix = NA, Linf_range = NA,
 
     pars <- list(Linf = Linfest,
                  K = Kest,
-                 t_anchor = tanchest,
+                 ta = tanchest,
                  C = C,
                  ts = ts,
                  phiL = phiL)
@@ -1471,7 +1471,7 @@ ELEFAN <- function(lfq, Linf_fix = NA, Linf_range = NA,
 #'   \item \strong{Linf} length infinity in cm (default is the maximum
 #'   length class in the data),
 #'   \item \strong{K} curving coefficient (default: 0.5),
-#'   \item \strong{t_anchor} time point anchoring growth curves in year-length
+#'   \item \strong{ta} time point anchoring growth curves in year-length
 #'   coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0.5),
 #'   \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 0),
 #'   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 0);
@@ -1482,7 +1482,7 @@ ELEFAN <- function(lfq, Linf_fix = NA, Linf_range = NA,
 #'   \item \strong{Linf} length infinity in cm (default is calculated from maximum
 #'   length class in the data),
 #'   \item \strong{K} curving coefficient (default: 0.01),
-#'   \item \strong{t_anchor} time point anchoring growth curves in year-length
+#'   \item \strong{ta} time point anchoring growth curves in year-length
 #'   coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0),
 #'   \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 0),
 #'   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 0);
@@ -1493,7 +1493,7 @@ ELEFAN <- function(lfq, Linf_fix = NA, Linf_range = NA,
 #'   \item \strong{Linf} length infinity in cm (default is calculated from maximum
 #'   length class in the data),
 #'   \item \strong{K} curving coefficient (default: 0.01),
-#'   \item \strong{t_anchor} time point anchoring growth curves in year-length
+#'   \item \strong{ta} time point anchoring growth curves in year-length
 #'   coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0),
 #'   \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 0),
 #'   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 0);
@@ -1528,9 +1528,9 @@ ELEFAN <- function(lfq, Linf_fix = NA, Linf_range = NA,
 #'
 #' # ELEFAN_SA (takes approximately 2 minutes)
 #' output <- ELEFAN_SA(synLFQ4, SA_time = 60*2, seasonalised = TRUE, MA = 11,
-#'   init_par = list(Linf = 75, K = 0.5, t_anchor = 0.5, C = 0.5, ts = 0.5),
-#'   low_par = list(Linf = 70, K = 0.3, t_anchor = 0, C = 0, ts = 0),
-#'   up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1))
+#'   init_par = list(Linf = 75, K = 0.5, ta = 0.5, C = 0.5, ts = 0.5),
+#'   low_par = list(Linf = 70, K = 0.3, ta = 0, C = 0, ts = 0),
+#'   up_par = list(Linf = 90, K = 0.7, ta = 1, C = 1, ts = 1))
 #' output$par
 #' output$Rn_max
 #'
@@ -1543,7 +1543,7 @@ ELEFAN <- function(lfq, Linf_fix = NA, Linf_range = NA,
 #'
 #' # compare to original parameters
 #' tmp <- lfqFitCurves(output, col=4, lty=1,
-#'    par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0.5), draw=TRUE)
+#'    par=list(Linf=80, K=0.5, ta=0.25, C=0.75, ts=0.5), draw=TRUE)
 #' tmp$fESP
 #' output$Rn_max
 #' }
@@ -1567,7 +1567,7 @@ ELEFAN <- function(lfq, Linf_fix = NA, Linf_range = NA,
 #'      \itemize{
 #'        \item \strong{Linf}: length infinity in cm,
 #'        \item \strong{K}: curving coefficient;
-#'        \item \strong{t_anchor}: time point anchoring growth curves in year-length
+#'        \item \strong{ta}: time point anchoring growth curves in year-length
 #'          coordinate system, corrsponds to peak spawning month,
 #'        \item \strong{C}: amplitude of growth oscillation
 #'          (if \code{seasonalised} = TRUE),
@@ -1600,7 +1600,7 @@ ELEFAN <- function(lfq, Linf_fix = NA, Linf_range = NA,
 
 ELEFAN_SA <- function(lfq,
                       seasonalised = FALSE,
-                      init_par = list(Linf = 50, K = 0.5, t_anchor = 0.5, C = 0, ts = 0),
+                      init_par = list(Linf = 50, K = 0.5, ta = 0.5, C = 0, ts = 0),
                       low_par = NULL,
                       up_par = NULL,
                       SA_time = 60 * 1,
@@ -1623,16 +1623,16 @@ ELEFAN_SA <- function(lfq,
 
                                         # initial parameters
     init_par_ALL <- list(Linf = Linf_est,
-                         K = 0.5, t_anchor = 0.5, C = 0, ts = 0)
+                         K = 0.5, ta = 0.5, C = 0, ts = 0)
     init_Linf <- ifelse("Linf" %in% names(init_par),
                         get("Linf", init_par),
                         get("Linf", init_par_ALL))
     init_K <- ifelse("K" %in% names(init_par),
                      get("K", init_par),
                      get("K", init_par_ALL))
-    init_tanc <- ifelse("t_anchor" %in% names(init_par),
-                        get("t_anchor", init_par),
-                        get("t_anchor", init_par_ALL))
+    init_tanc <- ifelse("ta" %in% names(init_par),
+                        get("ta", init_par),
+                        get("ta", init_par_ALL))
     init_C <- ifelse("C" %in% names(init_par),
                      get("C", init_par),
                      get("C", init_par_ALL))
@@ -1643,7 +1643,7 @@ ELEFAN_SA <- function(lfq,
                                         # lower parameter bounds
     low_par_ALL <- list(Linf = Linf_est * 0.5,
                         K = 0.01,
-                        t_anchor = 0,
+                        ta = 0,
                         C = 0,
                         ts = 0)
     low_Linf <- ifelse("Linf" %in% names(low_par),
@@ -1652,9 +1652,9 @@ ELEFAN_SA <- function(lfq,
     low_K <- ifelse("K" %in% names(low_par),
                     get("K", low_par),
                     get("K", low_par_ALL))
-    low_tanc <- ifelse("t_anchor" %in% names(low_par),
-                       get("t_anchor", low_par),
-                       get("t_anchor", low_par_ALL))
+    low_tanc <- ifelse("ta" %in% names(low_par),
+                       get("ta", low_par),
+                       get("ta", low_par_ALL))
     low_C <- ifelse("C" %in% names(low_par),
                     get("C", low_par),
                     get("C", low_par_ALL))
@@ -1665,7 +1665,7 @@ ELEFAN_SA <- function(lfq,
                                         # upper parameter bounds
     up_par_ALL <- list(Linf = Linf_est * 1.5,
                        K = 1,
-                       t_anchor = 1,
+                       ta = 1,
                        C = 1,
                        ts = 1)
     up_Linf <- ifelse("Linf" %in% names(up_par),
@@ -1674,9 +1674,9 @@ ELEFAN_SA <- function(lfq,
     up_K <- ifelse("K" %in% names(up_par),
                    get("K", up_par),
                    get("K", up_par_ALL))
-    up_tanc <- ifelse("t_anchor" %in% names(up_par),
-                      get("t_anchor", up_par),
-                      get("t_anchor", up_par_ALL))
+    up_tanc <- ifelse("ta" %in% names(up_par),
+                      get("ta", up_par),
+                      get("ta", up_par_ALL))
     up_C <- ifelse("C" %in% names(up_par),
                    get("C", up_par),
                    get("C", up_par_ALL))
@@ -1695,7 +1695,7 @@ ELEFAN_SA <- function(lfq,
     soSAfun <- function(lfq, par=c(init_Linf, init_K, init_tanc, init_C, init_ts),
                         agemax, flagging.out){
         Lt <- lfqFitCurves(lfq,
-                           par=list(Linf=par[1], K=par[2], t_anchor=par[3], C=par[4], ts=par[5]),
+                           par=list(Linf=par[1], K=par[2], ta=par[3], C=par[4], ts=par[5]),
                            flagging.out = flagging.out, agemax = agemax)
         return(-Lt$fESP)
     }
@@ -1703,7 +1703,7 @@ ELEFAN_SA <- function(lfq,
     SAfun <- function(lfq, par=c(init_Linf, init_K, init_tanc),
                       agemax, flagging.out){
         Lt <- lfqFitCurves(lfq,
-                           par=list(Linf=par[1], K=par[2], t_anchor=par[3], C = 0, ts = 0),
+                           par=list(Linf=par[1], K=par[2], ta=par[3], C = 0, ts = 0),
                            flagging.out = flagging.out, agemax = agemax)
         return(-Lt$fESP)
     }
@@ -1738,7 +1738,7 @@ ELEFAN_SA <- function(lfq,
                         )
 
         pars <- as.list(SAfit$par)
-        names(pars) <- c("Linf","K","t_anchor", "C", "ts")
+        names(pars) <- c("Linf","K","ta", "C", "ts")
     }else{
                                         # Simulated annealing
         writeLines(paste(
@@ -1759,7 +1759,7 @@ ELEFAN_SA <- function(lfq,
                               )
 
         pars <- as.list(SAfit$par)
-        names(pars) <- c("Linf","K","t_anchor")
+        names(pars) <- c("Linf","K","ta")
     }
 
                                         # Score graph in GA style
@@ -1833,7 +1833,7 @@ ELEFAN_SA <- function(lfq,
 #'   \item \strong{Linf} length infinity in cm (default is calculated from maximum
 #'   length class in the data),
 #'   \item \strong{K} curving coefficient (default: 0.01),
-#'   \item \strong{t_anchor} time point anchoring growth curves in year-length
+#'   \item \strong{ta} time point anchoring growth curves in year-length
 #'   coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0),
 #'   \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 0),
 #'   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 0);
@@ -1845,7 +1845,7 @@ ELEFAN_SA <- function(lfq,
 #'   \item \strong{Linf} length infinity in cm (default is calculated from maximum
 #'   length class in the data),
 #'   \item \strong{K} curving coefficient (default: 1),
-#'   \item \strong{t_anchor} time point anchoring growth curves in year-length
+#'   \item \strong{ta} time point anchoring growth curves in year-length
 #'   coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 1),
 #'   \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 1),
 #'   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 1);
@@ -1918,7 +1918,7 @@ ELEFAN_SA <- function(lfq,
 #'      \itemize{
 #'        \item \strong{Linf}: length infinity in cm,
 #'        \item \strong{K}: curving coefficient;
-#'        \item \strong{t_anchor}: time point anchoring growth curves in year-length
+#'        \item \strong{ta}: time point anchoring growth curves in year-length
 #'          coordinate system, corrsponds to peak spawning month,
 #'        \item \strong{C}: amplitude of growth oscillation
 #'          (if \code{seasonalised} = TRUE),
@@ -1941,8 +1941,8 @@ ELEFAN_SA <- function(lfq,
 #' #   consider adding the argument 'parallel=TRUE'
 #' #   to reduce computation time)
 #' output <- ELEFAN_GA(synLFQ4, seasonalised = TRUE,
-#'    low_par = list(Linf = 70, K = 0.25, t_anchor = 0, C = 0, ts= 0),
-#'    up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1),
+#'    low_par = list(Linf = 70, K = 0.25, ta = 0, C = 0, ts= 0),
+#'    up_par = list(Linf = 90, K = 0.7, ta = 1, C = 1, ts = 1),
 #'    popSize = 40, maxiter = 50, run = 20,
 #'    MA = 11, plot = TRUE, seed = 1111)
 #' output$par
@@ -1952,7 +1952,7 @@ ELEFAN_SA <- function(lfq,
 #' # compare fitness score (fESP) to
 #' # that calculated with "true" growth parameter values
 #' plot(output, draw = FALSE)
-#' lfqFitCurves(output, par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0.5),
+#' lfqFitCurves(output, par=list(Linf=80, K=0.5, ta=0.25, C=0.75, ts=0.5),
 #'        draw = TRUE, col=1, flagging.out = FALSE)$fESP
 #' lfqFitCurves(output, par=output$par, draw = TRUE, col=2, flagging.out = FALSE)$fESP
 #' legend("top", legend=c("orig.", "GA"), lty=2, col=1:2, ncol=2)
@@ -2005,7 +2005,7 @@ ELEFAN_GA <- function(lfq,
     ## lower parameter bounds
     low_par_ALL <- list(Linf = Linf_est * 0.5,
                         K = 0.01,
-                        t_anchor = 0,
+                        ta = 0,
                         C = 0,
                         ts = 0)
     low_Linf <- ifelse("Linf" %in% names(low_par),
@@ -2014,9 +2014,9 @@ ELEFAN_GA <- function(lfq,
     low_K <- ifelse("K" %in% names(low_par),
                     get("K", low_par),
                     get("K", low_par_ALL))
-    low_tanc <- ifelse("t_anchor" %in% names(low_par),
-                       get("t_anchor", low_par),
-                       get("t_anchor", low_par_ALL))
+    low_tanc <- ifelse("ta" %in% names(low_par),
+                       get("ta", low_par),
+                       get("ta", low_par_ALL))
     low_C <- ifelse("C" %in% names(low_par),
                     get("C", low_par),
                     get("C", low_par_ALL))
@@ -2027,7 +2027,7 @@ ELEFAN_GA <- function(lfq,
     ## upper parameter bounds
     up_par_ALL <- list(Linf = Linf_est * 1.5,
                        K = 1,
-                       t_anchor = 1,
+                       ta = 1,
                        C = 1,
                        ts = 1)
     up_Linf <- ifelse("Linf" %in% names(up_par),
@@ -2036,9 +2036,9 @@ ELEFAN_GA <- function(lfq,
     up_K <- ifelse("K" %in% names(up_par),
                    get("K", up_par),
                    get("K", up_par_ALL))
-    up_tanc <- ifelse("t_anchor" %in% names(up_par),
-                      get("t_anchor", up_par),
-                      get("t_anchor", up_par_ALL))
+    up_tanc <- ifelse("ta" %in% names(up_par),
+                      get("ta", up_par),
+                      get("ta", up_par_ALL))
     up_C <- ifelse("C" %in% names(up_par),
                    get("C", up_par),
                    get("C", up_par_ALL))
@@ -2052,14 +2052,14 @@ ELEFAN_GA <- function(lfq,
     ## seasonalised fitness function
     sofun <- function(lfq, par, agemax, flagging.out){
         Lt <- lfqFitCurves(lfq,
-                           par=list(Linf=par[1], K=par[2], t_anchor=par[3], C=par[4], ts=par[5]),
+                           par=list(Linf=par[1], K=par[2], ta=par[3], C=par[4], ts=par[5]),
                            agemax = agemax, flagging.out = flagging.out)
         return(Lt$fESP)
     }
     ## non-seasonalised fitness function
     fun <- function(lfq, par, agemax, flagging.out){
         Lt <- lfqFitCurves(lfq,
-                           par=list(Linf=par[1], K=par[2], t_anchor=par[3], C = 0, ts = 0),
+                           par=list(Linf=par[1], K=par[2], ta=par[3], C = 0, ts = 0),
                            agemax = agemax, flagging.out = flagging.out)
         return(Lt$fESP)
     }
@@ -2084,7 +2084,7 @@ ELEFAN_GA <- function(lfq,
                        ...
                    )
         pars <- as.list(fit@solution[1,])
-        names(pars) <- c("Linf", "K", "t_anchor", "C", "ts")
+        names(pars) <- c("Linf", "K", "ta", "C", "ts")
     }else{
         min = c(low_Linf, low_K, low_tanc)
         max = c(up_Linf, up_K, up_tanc)
@@ -2105,7 +2105,7 @@ ELEFAN_GA <- function(lfq,
                        ...
                    )
         pars <- as.list(fit@solution[1,])
-        names(pars) <- c("Linf", "K", "t_anchor")
+        names(pars) <- c("Linf", "K", "ta")
     }
 
     ## Fitness graph

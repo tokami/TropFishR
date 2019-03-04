@@ -151,14 +151,14 @@ Note that RSA does not allow to optimise over the parameters C and $t_s$ of the 
 # run ELEFAN with simulated annealing
 res_SA <- ELEFAN_SA(synLFQ7a, SA_time = 60*0.5, SA_temp = 6e5,
                     MA = 5, seasonalised = TRUE, addl.sqrt = FALSE,
-                    init_par = list(Linf = 129, K = 0.5, t_anchor = 0.5, C=0.5, ts = 0.5),
-                    low_par = list(Linf = 119, K = 0.01, t_anchor = 0, C = 0, ts = 0),
-                    up_par = list(Linf = 139, K = 1, t_anchor = 1, C = 1, ts = 1))
+                    init_par = list(Linf = 129, K = 0.5, ta = 0.5, C=0.5, ts = 0.5),
+                    low_par = list(Linf = 119, K = 0.01, ta = 0, C = 0, ts = 0),
+                    up_par = list(Linf = 139, K = 1, ta = 1, C = 1, ts = 1))
 # show results
 res_SA$par; res_SA$Rn_max
 ```
 
-Note that the computing time can be controlled with the argument "SA_time" and the results might change when increasing the time, in case the stable optimum of the objective function was not yet reached^[Stable optimum is indicated by overlapping blue and green dots in the score graph.]. Due to the limitations of the vignette format the computation time was set to 0.5 minutes, which results already in acceptable results of $L_{inf}$ = `r {round(res_SA$par$Linf,2)}`, K = `r {round(res_SA$par$K,2)}`, $t_{anchor}$ = `r {round(res_SA$par$t_anchor,2)}`, C = `r {round(res_SA$par$C,2)}`, and $t_s$ = `r {round(res_SA$par$ts,2)}` with a score value ($Rn_{max}$) of `r {round(res_SA$Rn_max,2)}`. I recommend to increase 'SA_time' to 3 - 5 minutes to increase chances of finding the stable optimum. The jack knife technique allows to estimate a confidence interval around the parameters of the soVBGF [@Quenouille1956; @Tukey1958; @Tukey1986]. This can be automated in R with following code: 
+Note that the computing time can be controlled with the argument "SA_time" and the results might change when increasing the time, in case the stable optimum of the objective function was not yet reached^[Stable optimum is indicated by overlapping blue and green dots in the score graph.]. Due to the limitations of the vignette format the computation time was set to 0.5 minutes, which results already in acceptable results of $L_{inf}$ = `r {round(res_SA$par$Linf,2)}`, K = `r {round(res_SA$par$K,2)}`, $t_{anchor}$ = `r {round(res_SA$par$ta,2)}`, C = `r {round(res_SA$par$C,2)}`, and $t_s$ = `r {round(res_SA$par$ts,2)}` with a score value ($Rn_{max}$) of `r {round(res_SA$Rn_max,2)}`. I recommend to increase 'SA_time' to 3 - 5 minutes to increase chances of finding the stable optimum. The jack knife technique allows to estimate a confidence interval around the parameters of the soVBGF [@Quenouille1956; @Tukey1958; @Tukey1986]. This can be automated in R with following code: 
 
 ```{r, eval = FALSE, echo = TRUE}
 JK <- vector("list", length(synLFQ7a$dates))
@@ -168,9 +168,9 @@ for(i in 1:length(synLFQ7a$dates)){
                   catch = synLFQ7a$catch[,-i])
   tmp <- ELEFAN_SA(loop_data, SA_time = 60*0.5, SA_temp = 6e5,
                    MA = 5, addl.sqrt = TRUE,
-                   init_par = list(Linf = 129, K = 0.5, t_anchor = 0.5, C=0.5, ts = 0.5),
-                   low_par = list(Linf = 119, K = 0.01, t_anchor = 0, C = 0, ts = 0),
-                   up_par = list(Linf = 139, K = 1, t_anchor = 1, C = 1, ts = 1),
+                   init_par = list(Linf = 129, K = 0.5, ta = 0.5, C=0.5, ts = 0.5),
+                   low_par = list(Linf = 119, K = 0.01, ta = 0, C = 0, ts = 0),
+                   up_par = list(Linf = 139, K = 1, ta = 1, C = 1, ts = 1),
                    plot = FALSE)
   JK[[i]] <- unlist(c(tmp$par,list(Rn_max=tmp$Rn_max)))
 }
@@ -191,22 +191,22 @@ Depending on the number of sampling times (columns in the catch matrix) and the 
 ```{r Figure 5, fig.height=5, fig.width=5, eval=TRUE, results="hide", fig.cap="Score graph of the ELEFAN method with genetic algorithms. Green dots indicate the runnning maximum value of the fitness function, while blue dots indicate the mean score of each iteration."}
 # run ELEFAN with genetic algorithm
 res_GA <- ELEFAN_GA(synLFQ7a, MA = 5, seasonalised = TRUE, maxiter = 50, addl.sqrt = FALSE,
-                    low_par = list(Linf = 119, K = 0.01, t_anchor = 0, C = 0, ts = 0),
-                    up_par = list(Linf = 139, K = 1, t_anchor = 1, C = 1, ts = 1),
+                    low_par = list(Linf = 119, K = 0.01, ta = 0, C = 0, ts = 0),
+                    up_par = list(Linf = 139, K = 1, ta = 1, C = 1, ts = 1),
                     monitor = FALSE)
 # show results
 res_GA$par; res_GA$Rn_max
 ```
 
-The generation number of the ELEFAN_GA was set to only 50 generations (argument 'maxiter'), which returns following results: $L_{inf}$ = `r {round(res_GA$par$Linf,2)}`, K = `r {round(res_GA$par$K,2)}`, $t_{anchor}$ = `r {round(res_GA$par$t_anchor,2)}`, C = `r {round(res_GA$par$C,2)}`, and $t_s$ = `r {round(res_GA$par$ts,2)}` with a score value ($Rn_{max}$) of `r {round(res_GA$Rn_max,2)}`. As with ELEFAN_SA the generation number was hold down due to the vignette format and should be increased in order to find more stable results.
-According to [@Pauly1980] it is not possible to estimate $t_{0}$ (theoretical age at length zero) from LFQ data alone. However, this parameter does not influence results of the methods of the traditional stock assessment workflow (catch curve, VPA/CA, and yield per recruit model) and can be set to zero (Mildenberger, unpublished). The ELEFAN methods in this package do not return starting points as FiSAT II users might be used to. Instead, they return the parameter "t_anchor", which describes the fraction of the year where yearly repeating growth curves cross length equal to zero; for example a value of 0.25 refers to April 1st of any year. The maximum age is estimated within the ELEFAN function: it is the age when length is 0.95 $L_{inf}$. However, this value can also be fixed with the argument "agemax", when alternative information about the maximum age of the fish species is available.
+The generation number of the ELEFAN_GA was set to only 50 generations (argument 'maxiter'), which returns following results: $L_{inf}$ = `r {round(res_GA$par$Linf,2)}`, K = `r {round(res_GA$par$K,2)}`, $t_{anchor}$ = `r {round(res_GA$par$ta,2)}`, C = `r {round(res_GA$par$C,2)}`, and $t_s$ = `r {round(res_GA$par$ts,2)}` with a score value ($Rn_{max}$) of `r {round(res_GA$Rn_max,2)}`. As with ELEFAN_SA the generation number was hold down due to the vignette format and should be increased in order to find more stable results.
+According to [@Pauly1980] it is not possible to estimate $t_{0}$ (theoretical age at length zero) from LFQ data alone. However, this parameter does not influence results of the methods of the traditional stock assessment workflow (catch curve, VPA/CA, and yield per recruit model) and can be set to zero (Mildenberger, unpublished). The ELEFAN methods in this package do not return starting points as FiSAT II users might be used to. Instead, they return the parameter "ta", which describes the fraction of the year where yearly repeating growth curves cross length equal to zero; for example a value of 0.25 refers to April 1st of any year. The maximum age is estimated within the ELEFAN function: it is the age when length is 0.95 $L_{inf}$. However, this value can also be fixed with the argument "agemax", when alternative information about the maximum age of the fish species is available.
 
 The fit of estimated growth parameters can also be explored visually and indicates high similarity with true growth curves and a good fit through the peaks of the LFQ data.
 
 ```{r Figure 6, echo = TRUE, fig.cap="Graphical fit of estimated and true growth curves plotted through the length frequency data. The growth curves with the true values are displayed in grey, while the blue and green curves represent the curves of ELEFAN_SA and ELEFAN_GA, respectively."}
 # plot LFQ and growth curves
 plot(lfqbin, Fname = "rcounts",date.axis = "modern", ylim=c(0,130))
-lt <- lfqFitCurves(synLFQ7a, par = list(Linf=123, K=0.2, t_anchor=0.25, C=0.3, ts=0),
+lt <- lfqFitCurves(synLFQ7a, par = list(Linf=123, K=0.2, ta=0.25, C=0.3, ts=0),
                    draw = TRUE, col = "grey", lty = 1, lwd=1.5)
 # lt <- lfqFitCurves(synLFQ7, par = res_RSA$par,
 #                    draw = TRUE, col = "goldenrod1", lty = 1, lwd=1.5)

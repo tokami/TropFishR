@@ -114,7 +114,7 @@ NULL
 #'   \item Linf = 80
 #'   \item C = 0.75
 #'   \item ts = 0.5
-#'   \item t_anchor = 0.25 (Time when yearly recruitment pulse occurs;
+#'   \item ta = 0.25 (Time when yearly recruitment pulse occurs;
 #'   e.g. 0 = Jan 1, 0.25 = Apr 1, 0.5 = Jul 1st, 0.75 = Oct 1)
 #' }
 #'
@@ -172,7 +172,7 @@ NULL
 #'   \item Linf = 80
 #'   \item C = 0
 #'   \item ts = 0
-#'   \item t_anchor = 0.25 (Time when yearly recruitment pulse occurs;
+#'   \item ta = 0.25 (Time when yearly recruitment pulse occurs;
 #'   e.g. 0 = Jan 1, 0.25 = Apr 1, 0.5 = Jul 1st, 0.75 = Oct 1)
 #' }
 #'
@@ -230,7 +230,7 @@ NULL
 #'   \item Linf = 33.7 +/- 0.05 (CV)
 #'   \item C = 0
 #'   \item ts = 0
-#'   \item t_anchor = 0.25 (Time when yearly recruitment pulse occurs;
+#'   \item ta = 0.25 (Time when yearly recruitment pulse occurs;
 #'   e.g. 0 = Jan 1, 0.25 = Apr 1, 0.5 = Jul 1st, 0.75 = Oct 1)
 #' }
 #'
@@ -288,7 +288,7 @@ NULL
 #'   \item Linf = 123 +/- 0.05 (CV)
 #'   \item C = 0.3
 #'   \item ts = 0
-#'   \item t_anchor between 0.16 and 0.34 (Time when yearly recruitment pulse occurs;
+#'   \item ta between 0.16 and 0.34 (Time when yearly recruitment pulse occurs;
 #'   e.g. 0 = Jan 1, 0.25 = Apr 1, 0.5 = Jul 1, 0.75 = Oct 1;
 #'   repro_wt = c(0, 0, 0.2, 1, 0.6, 0, 0, 0, 0, 0, 0, 0))
 #' }
@@ -346,7 +346,7 @@ NULL
 #'     \code{\link[TropFishR]{ELEFAN_GA}}.  The data is generated with
 #'     the following von Bertalanffy growth parameters: \itemize{
 #'     \item K = 0.5 +/- 0.05 (CV) \item Linf = 80 +/- 0.05 (CV) \item
-#'     C = 0.0 \item ts = 0.0 \item t_anchor 0.25 (Time when
+#'     C = 0.0 \item ts = 0.0 \item ta 0.25 (Time when
 #'     yearly recruitment pulse occurs; e.g. 0 = Jan 1, 0.25 = Apr 1,
 #'     0.5 = Jul 1, 0.75 = Oct 1; repro_wt = c(0, 0, 0, 1, 0, 0, 0, 0,
 #'     0, 0, 0, 0)) }
@@ -785,9 +785,9 @@ NULL
 #' set.seed(1)
 #' fitSA <- ELEFAN_SA(
 #'   alba, seasonalised = TRUE,
-#'   init_par = list(Linf=14.5, K=1.1, t_anchor=0.4, ts=0, C=0.2),
-#'   low_par = list(Linf=13, K=0.7, t_anchor=0, ts=0, C=0),
-#'   up_par = list(Linf=15.5, K=1.5, t_anchor=1, ts=1, C=1),
+#'   init_par = list(Linf=14.5, K=1.1, ta=0.4, ts=0, C=0.2),
+#'   low_par = list(Linf=13, K=0.7, ta=0, ts=0, C=0),
+#'   up_par = list(Linf=15.5, K=1.5, ta=1, ts=1, C=1),
 #'   SA_time = 60
 #' )
 #' unlist(fitSA$par)

@@ -27,7 +27,7 @@ The data is generated with the following von Bertalanffy growth parameters:
   \item Linf = 80
   \item C = 0.75
   \item ts = 0.5
-  \item t_anchor = 0.25 (Time when yearly recruitment pulse occurs;
+  \item ta = 0.25 (Time when yearly recruitment pulse occurs;
   e.g. 0 = Jan 1, 0.25 = Apr 1, 0.5 = Jul 1st, 0.75 = Oct 1)
 }
 

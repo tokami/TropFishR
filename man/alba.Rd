@@ -42,9 +42,9 @@ plot(alba, Fname = "rcounts")
 set.seed(1)
 fitSA <- ELEFAN_SA(
   alba, seasonalised = TRUE,
-  init_par = list(Linf=14.5, K=1.1, t_anchor=0.4, ts=0, C=0.2),
-  low_par = list(Linf=13, K=0.7, t_anchor=0, ts=0, C=0),
-  up_par = list(Linf=15.5, K=1.5, t_anchor=1, ts=1, C=1),
+  init_par = list(Linf=14.5, K=1.1, ta=0.4, ts=0, C=0.2),
+  low_par = list(Linf=13, K=0.7, ta=0, ts=0, C=0),
+  up_par = list(Linf=15.5, K=1.5, ta=1, ts=1, C=1),
   SA_time = 60
 )
 unlist(fitSA$par)

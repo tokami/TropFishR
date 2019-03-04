@@ -39,7 +39,7 @@ more information see \link{lfqRestructure}).}
 
 \item{method}{Choose between the old FiSAT option to force VBGF crossing of a pre-defined
 bin (method = "cross"), or the more sophisticated (but computationally expensive) option
-to solve for t_anchor via a maximisation of reconstructed score
+to solve for ta via a maximisation of reconstructed score
 (default: method = "optimise").}
 
 \item{cross.date}{Date. For use with \code{method = "cross"}. In combination
@@ -94,7 +94,7 @@ A list with the input parameters and following list objects:
      \itemize{
        \item \strong{Linf}: length infinity in cm,
        \item \strong{K}: curving coefficient;
-       \item \strong{t_anchor}: time point anchoring growth curves in year-length
+       \item \strong{ta}: time point anchoring growth curves in year-length
          coordinate system, corrsponds to peak spawning month,
        \item \strong{C}: amplitude of growth oscillation
          (if \code{seasonalised} = TRUE),
@@ -119,9 +119,9 @@ This functions allows to perform the K-Scan and Response surface
    parameter with the best fit while keeping the Linf fixed. In contrast,
    with response surface analysis
    both parameters are estimated and the fits are displayed in a heatmap.
-   Both methods use \code{\link[stats]{optimise}} to find the best \code{t_anchor} value
+   Both methods use \code{\link[stats]{optimise}} to find the best \code{ta} value
    for each combination of \code{K} and \code{Linf}. To find out more about
-   \code{t_anchor}, please refer to the Details description of
+   \code{ta}, please refer to the Details description of
    \code{\link{lfqFitCurves}}. The score value \code{Rn_max} is comparable with
    the score values of the other ELEFAN functions (\code{\link{ELEFAN_SA}} or
    \code{\link{ELEFAN_GA}}) when other settings are consistent

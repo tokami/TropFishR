@@ -24,11 +24,11 @@ date2yeardec <- function(date){
   return(res)
 }
 
-#' @title Convert FiSAT's starting point to t_anchor value
+#' @title Convert FiSAT's starting point to ta value
 #'
 #' @description Starting points returned or chosen within FiSAT are not supported
-#'    in TropFishR. Instead \code{t_anchor} takes on the job of anchoring VBGF growth curves on
-#'    a temporal axis. This function allows to convert FiSAT's starting points to \code{t_anchor} values
+#'    in TropFishR. Instead \code{ta} takes on the job of anchoring VBGF growth curves on
+#'    a temporal axis. This function allows to convert FiSAT's starting points to \code{ta} values
 #'
 #' @param param list with dates, midLengths, and catch
 #' @param par list with growth parameters 'Linf' and 'K' of VBGF
@@ -37,16 +37,16 @@ date2yeardec <- function(date){
 #' @param startingSample starting sample as returned by FiSAT, indicating the sample which is
 #'    cut by a growth curve
 #'
-#' @keywords function lfq startingPoints t_anchor
+#' @keywords function lfq startingPoints ta
 #'
 #' @examples
 #' data(synLFQ5)
 #' lfqNEW <- startingPoint2tanchor(synLFQ5, par = list(Linf = 92, K = 0.37),
 #'    startingLength = 31, startingSample = 4)
 #' lfqRest <- lfqRestructure(lfqNEW, MA = 11)
-#' plot(lfqRest,par=list(Linf=lfqRest$Linf,K=lfqRest$K,t_anchor=lfqRest$t_anchor))
+#' plot(lfqRest,par=list(Linf=lfqRest$Linf,K=lfqRest$K,ta=lfqRest$ta))
 #'
-#' @return list with input elements and estimated t_anchor value
+#' @return list with input elements and estimated ta value
 #'
 #' @export
 
@@ -65,9 +65,9 @@ startingPoint2tanchor <- function(param, par, startingLength, startingSample){
   tx <- res$dates[startingSample]
   tx <- date2yeardec(tx)
   agex <- VBGF(L = startingLength, param = list(Linf = par$Linf, K = par$K, t0 = 0))
-  t_anchor <- (tx-agex) %% floor(tx-agex)
+  ta <- (tx-agex) %% floor(tx-agex)
 
-  ret <- c(res, list(Linf = par$Linf, K = par$K, t_anchor = t_anchor))
+  ret <- c(res, list(Linf = par$Linf, K = par$K, ta = ta))
   return(ret)
 }
 
@@ -781,7 +781,7 @@ lfqModify <- function(lfq, par = NULL,
 #' # plot of restructured scores and fit of soVBGF growth curves
 #' plot(synLFQ4)
 #' lfqFitCurves(synLFQ4,
-#'  par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0),
+#'  par=list(Linf=80, K=0.5, ta=0.25, C=0.75, ts=0),
 #'  draw=TRUE
 #' )$fASP
 #'

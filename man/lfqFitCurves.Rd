@@ -4,8 +4,8 @@
 \alias{lfqFitCurves}
 \title{Fitting VBGF growth curves through lfq data}
 \usage{
-lfqFitCurves(lfq, par = list(Linf = 100, K = 0.1, t_anchor = 0.25, C = 0, ts =
-  0), agemax = NULL, flagging.out = TRUE, lty = 2, lwd = 1, col = 1,
+lfqFitCurves(lfq, par = list(Linf = 100, K = 0.1, ta = 0.25, C = 0, ts = 0),
+  agemax = NULL, flagging.out = TRUE, lty = 2, lwd = 1, col = 1,
   draw = FALSE, tincr = 0.05)
 }
 \arguments{
@@ -25,7 +25,7 @@ lfqFitCurves(lfq, par = list(Linf = 100, K = 0.1, t_anchor = 0.25, C = 0, ts =
  \itemize{
   \item \strong{Linf} length infinity in cm (default: 100),
   \item \strong{K} curving coefficient (default: 0.1),
-  \item \strong{t_anchor} time point anchoring growth curves in year-length
+  \item \strong{ta} time point anchoring growth curves in year-length
   coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0.25),
   \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 0),
   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 0);
@@ -73,7 +73,7 @@ Thsi function estimates von Bertalanffy growth function (VBGF)
    curves for a set of growth parameters.
 }
 \details{
-\code{t_anchor} subsitutes the starting point from known from Fisat 2.
+\code{ta} subsitutes the starting point from known from Fisat 2.
    This parameter is necessary for anchoring the growth curves on the time axis.
    It does not subsitute \code{t0}. However, it corresponds to the peak spawning
    of the species (x intercept of growth curve) and has values between 0 and 1,
@@ -85,7 +85,7 @@ Thsi function estimates von Bertalanffy growth function (VBGF)
 data(synLFQ5)
 res <- lfqRestructure(synLFQ5, MA=11)
 plot(res)
-tmp <- lfqFitCurves(res, par=list(Linf=80,K=0.5,t_anchor=0.25), draw=TRUE)
+tmp <- lfqFitCurves(res, par=list(Linf=80,K=0.5,ta=0.25), draw=TRUE)
 
 }
 \references{

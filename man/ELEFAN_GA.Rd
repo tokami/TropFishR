@@ -22,7 +22,7 @@ following default values are used:
   \item \strong{Linf} length infinity in cm (default is calculated from maximum
   length class in the data),
   \item \strong{K} curving coefficient (default: 0.01),
-  \item \strong{t_anchor} time point anchoring growth curves in year-length
+  \item \strong{ta} time point anchoring growth curves in year-length
   coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 0),
   \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 0),
   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 0);
@@ -35,7 +35,7 @@ following default values are used:
   \item \strong{Linf} length infinity in cm (default is calculated from maximum
   length class in the data),
   \item \strong{K} curving coefficient (default: 1),
-  \item \strong{t_anchor} time point anchoring growth curves in year-length
+  \item \strong{ta} time point anchoring growth curves in year-length
   coordinate system, corrsponds to peak spawning month (range: 0 to 1, default: 1),
   \item \strong{C} amplitude of growth oscillation (range: 0 to 1, default: 1),
   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 1);
@@ -127,7 +127,7 @@ A list with the input parameters and following list objects:
      \itemize{
        \item \strong{Linf}: length infinity in cm,
        \item \strong{K}: curving coefficient;
-       \item \strong{t_anchor}: time point anchoring growth curves in year-length
+       \item \strong{ta}: time point anchoring growth curves in year-length
          coordinate system, corrsponds to peak spawning month,
        \item \strong{C}: amplitude of growth oscillation
          (if \code{seasonalised} = TRUE),
@@ -160,8 +160,8 @@ plot(synLFQ4, Fname="catch")
 #   consider adding the argument 'parallel=TRUE'
 #   to reduce computation time)
 output <- ELEFAN_GA(synLFQ4, seasonalised = TRUE,
-   low_par = list(Linf = 70, K = 0.25, t_anchor = 0, C = 0, ts= 0),
-   up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1),
+   low_par = list(Linf = 70, K = 0.25, ta = 0, C = 0, ts= 0),
+   up_par = list(Linf = 90, K = 0.7, ta = 1, C = 1, ts = 1),
    popSize = 40, maxiter = 50, run = 20,
    MA = 11, plot = TRUE, seed = 1111)
 output$par
@@ -171,7 +171,7 @@ output$Rn_max
 # compare fitness score (fESP) to
 # that calculated with "true" growth parameter values
 plot(output, draw = FALSE)
-lfqFitCurves(output, par=list(Linf=80, K=0.5, t_anchor=0.25, C=0.75, ts=0.5),
+lfqFitCurves(output, par=list(Linf=80, K=0.5, ta=0.25, C=0.75, ts=0.5),
        draw = TRUE, col=1, flagging.out = FALSE)$fESP
 lfqFitCurves(output, par=output$par, draw = TRUE, col=2, flagging.out = FALSE)$fESP
 legend("top", legend=c("orig.", "GA"), lty=2, col=1:2, ncol=2)

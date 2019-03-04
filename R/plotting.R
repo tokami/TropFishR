@@ -439,7 +439,7 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
 #'  \itemize{
 #'   \item \strong{Linf} asymptotic length,
 #'   \item \strong{K} growth coefficient,
-#'   \item \strong{t_anchor} time at length zero,
+#'   \item \strong{ta} time at length zero,
 #'   \item \strong{C} amplitude of growth oscillation (optional),
 #'   \item \strong{ts} summer point (optional);
 #' }
@@ -488,11 +488,11 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
 #' plot(x = res, Fname = "rcounts")
 #'
 #' # add VBGF curves
-#' plot(res, Fname = "rcounts", par = list(Linf = 14, K = 1.1, t_anchor = 0.3))
+#' plot(res, Fname = "rcounts", par = list(Linf = 14, K = 1.1, ta = 0.3))
 #'
 #' # add soVBGF curves, adjust hist.sc and xlim
 #' plot(res, Fname = "catch", curve.col=4,
-#'   par = list(Linf = 14, K = 1.1, t_anchor = 0.3, C = 0.2, ts = 0.75),
+#'   par = list(Linf = 14, K = 1.1, ta = 0.3, C = 0.2, ts = 0.75),
 #'   hist.sc = 0.9,
 #'   xlim=range(res$dates)+c(-30, 0)
 #' )
