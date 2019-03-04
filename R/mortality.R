@@ -1,3 +1,233 @@
+#' @title Empirical formulas for the estimation of natural mortality
+#
+#' @description Functions to calculate the instantaneous natural mortality rate (M)
+#'      according to 12 different empirical formulas.
+#'
+#' @param Linf infinite total length (TL) from a von Bertalanffy
+#'    growth curve in cm.
+#' @param Winf infinite weight form a von Bertalanffy growth curve
+#'    in wet weight-grams.
+#' @param K_l is the growth coefficient (per year) from a von Bertalanffy growth
+#'    curve for length.
+#' @param K_w is the growth coefficient (per year) from a von Bertalanffy growth
+#'    curve for weight.
+#' @param temp average annual temperature at the surface in degrees centigrade.
+#' @param tmax the oldest age observed for the species.
+#' @param tm50 age when 50\% of the population is mature [year]
+#'      ("age of massive maturation").
+#' @param GSI gonadosomatic index (wet ovary weight over wet body weight).
+#' @param Wdry total dry weight in grams.
+#' @param Wwet total wet weight at mean length in grams.
+#' @param Bl vector with body lengths in cm for size dependent mortality estimates (method = "Gislason")
+#' @param schooling logical; if TRUE it is accounted for the schooling behaviour of
+#'      the species, only for Pauly's methods. Default is FALSE.
+#' @param method vector of method names. Any combination of following methods can
+#'    be employed: "AlversonCarney", "Gislason" (size dependent mortality estimates), "GundersonDygert", "Hoenig",
+#'    "Lorenzen", "Pauly_Linf", "Pauly_Winf", "PetersonWroblewski",
+#'    "RikhterEfanov", "Roff", "Then_growth", or "Then_tmax".
+#'    Please refer to Details to see which input parameters
+#'    are required by each method.
+#'
+#' @keywords function mortality M
+#'
+#' @examples
+#' M_empirical(Linf = 80, K_l = 0.5, temp = 25, tmax = 30,
+#'      method = c("Pauly_Linf","Hoenig"))
+#'
+#' @source https://cran.r-project.org/web/packages/fishmethods/index.html
+#'
+#' @details Function adapted from the mortality function of the fishmethods package
+#'     by Gary A. Nelson
+#'     (https://cran.r-project.org/web/packages/fishmethods/index.html).
+#'
+#' Depending on the method different input parameters are required:
+#' \itemize{
+#'    \item \code{"AlversonCarney"} requires \code{K_l} and \code{tmax},
+#'    \item \code{"Gislason"} requires \code{Linf}, \code{K_l} and \code{Bl},
+#'    \item \code{"GundersonDygert"} requires \code{GSI},
+#'    \item \code{"Hoenig"} requires \code{tmax},
+#'    \item \code{"Lorenzen"} requires \code{Wwet},
+#'    \item \code{"Pauly_Linf"} requires \code{Linf}, \code{K_l} and \code{temp},
+#'    \item \code{"Pauly_Winf"} requires \code{Winf}, \code{K_w} and \code{temp},
+#'    \item \code{"PetersonWroblewski"} requires \code{Wdry},
+#'    \item \code{"RikhterEfanov"} requires \code{tm50},
+#'    \item \code{"Roff"} requires \code{K_l} and \code{tm50},
+#'    \item \code{"Then_tmax"} requires \code{tmax},
+#'    \item \code{"Then_growth"} requires \code{Linf} and \code{K_l}.
+#' }
+#' If accounting for schooling behaviour M is multiplied by 0.8 according to
+#'    Pauly (1983).
+#'
+#' @return A matrix of M estimates.
+#'
+#' @references
+#' Alverson, D. L. and M. J. Carney. 1975. A graphic review of the growth and decay
+#' of population cohorts. J. Cons. Int. Explor. Mer 36: 133-143.
+#'
+#' Gislason, H., N. Daan, J. C. Rice, and J. G. Pope. 2010. Size, growth,
+#' temperature and the natural mortality of marine fish. Fish and Fisheries 11: 149-158.
+#'
+#' Gunderson, D. R. and P. H. Dygert. 1988. Reproductive effort as a predictor
+#' of natural mortality rate. J. Cons. Int. Explor. Mer 44: 200-209.
+#'
+#' Hoenig, J. M. 1983. Empirical use of longevity data to estimate mortality rates.
+#' Fish. Bull. 82: 898-903.
+#'
+#' Lorenzen, K. 1996. The relationship between body weight and natural mortality in
+#' juvenile and adult fish: a comparison of natural ecosystems and aquaculture.
+#' J. Fish. Biol. 49: 627-647.
+#'
+#' Pauly, D. 1980. On the interrelationships between natural mortality,
+#' growth parameters, and mean environmental temperature in 175 fish stocks.
+#' J. Cons. Int. Explor. Mer: 175-192.
+#'
+#' Pauly, D., 1983. Some simple methods for the assessment of tropical fish stocks.
+#' \emph{FAO Fish.Tech.Pap.}, (234): 52p. Issued also in French and Spanish
+#'
+#' Peterson, I. and J. S. Wroblewski. 1984. Mortality rate of fishes in the
+#' pelagic ecosystem. Can. J. Fish. Aquat. Sci. 41: 1117-1120.
+#'
+#' Rikhter, V.A., and V.N. Efanov, 1976. On one of the approaches to estimation of natural
+#' mortality of fish populations. \emph{ICNAF Res.Doc.}, 76/VI/8: 12p.
+#'
+#' Roff, D. A. 1984. The evolution of life history parameters in teleosts.
+#' Can. J. Fish. Aquat. Sci. 41: 989-1000.
+#'
+#' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+#' Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.
+#'
+#' Then, A. Y., J. M. Hoenig, N. G. Hall, D. A. Hewitt. 2015. Evaluating the predictive
+#' performance of empirical estimators of natural mortality rate using information on over
+#' 200 fish species. ICES J. Mar. Sci. 72: 82-92.
+#'
+#' @export
+
+M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
+                        temp = NULL, tmax = NULL, tm50 = NULL, GSI = NULL,
+                        Wdry = NULL, Wwet = NULL, Bl = NULL,
+                        schooling = FALSE, method){
+
+  if (any(method == "AlversonCarney") & any(is.null(tmax), is.null(K_l)))
+    stop("AlversonCarney requires K_l and tmax")
+  if (any(method == "Gislason") & any(is.null(Linf), is.null(K_l), is.null(Bl)))
+    stop("Gislason requires Linf, K_l, and Bl")
+  if (any(method == "GundersonDygert") & is.null(GSI))
+    stop("GundersonDygert requires GSI")
+  if (any(method == "Hoenig") & is.null(tmax))
+    stop("Hoenig requires tmax")
+  if (any(method == "Lorenzen") & is.null(Wwet))
+    stop("Lorenzen requires Wwet")
+  if (any(method == "Pauly_Linf") & any(is.null(Linf), is.null(K_l), is.null(temp)))
+    stop("Pauly_Linf requires Linf, K_l, and temp")
+  if (any(method == "Pauly_Winf") & any(is.null(Winf), is.null(K_w), is.null(temp)))
+    stop("Pauly_Winf requires Winf, K_w, and temp")
+  if (any(method == "PetersonWroblewski") & is.null(Wdry))
+    stop("PetersonWroblewski requires Wdry")
+  if (any(method == "RikhterEfanov") & any(is.null(tm50)))
+    stop("RikhterEfanov requires K_l and tm50")
+  if (any(method == "Roff") & any(is.null(tm50), is.null(K_l)))
+    stop("Roff requires K_l and tm50")
+  if (any(method == "Then_tmax") & any(is.null(tmax)))
+    stop("Then_max requires tmax")
+  if (any(method == "Then_growth") & any(is.null(Linf), is.null(K_l)))
+    stop("Then_growth requires Linf and K_l")
+
+  n <- length(method)
+  if (any(method == "Hoenig"))
+    n <- n + 1
+  M_mat <- matrix(NA, n, 1L)
+  dimnames(M_mat) <- list(rep(NA, n), c("M"))
+  ind <- 0
+
+  if(any(method == "AlversonCarney")){
+    ind <- ind + 1
+    # Alverson and Carney (1975)
+    M_mat[ind, 1]  <- round((3 * K_l)/(exp(K_l * (0.38 * tmax)) - 1), 3)
+    dimnames(M_mat)[[1]][ind] <- list("Alverson and Carney (1975)")
+  }
+  #if(any(method == "Gislason")){
+  #  ind <- ind + 1
+  #  # Gislason et al. (2010)
+  #  M_mat[ind, 1]  <- round(exp(0.55 - 1.61 * log(Bl) + 1.44 * log(Linf) + log(K_l)), 3)
+  #  dimnames(M_mat)[[1]][ind] <- list("Gislason et al. (2010)")
+  #}
+  if(any(method == "GundersonDygert")){
+    ind <- ind + 1
+    # Gunderson and Dygert (1988)
+    M <- round(0.03 + 1.68 * GSI, 3)
+    dimnames(M_mat)[[1]][ind] <- list("Gunderson and Dygert (1988)")
+  }
+  if(any(method == "Hoenig")){
+    ind <- ind + 1
+    # Hoenig (1983) - Joint Equation
+    M_mat[ind, 1]  <- round(4.22/(tmax^0.982), 3)
+    dimnames(M_mat)[[1]][ind] <- list("Hoenig (1983) - Joint Equation")
+
+    ind <- ind + 1
+    # Hoenig (1983) - Fish Equation
+    M_mat[ind, 1]  <- round(exp(1.46 - 1.01 * log(tmax)), 3)
+    dimnames(M_mat)[[1]][ind] <- list("Hoenig (1983) - Fish Equation")
+  }
+  if(any(method == "Lorenzen")){
+    ind <- ind + 1
+    # Lorenzen (1996)
+    M_mat[ind, 1]  <- round(3 * (Wwet^-0.288), 3)
+    dimnames(M_mat)[[1]][ind] <- list("Lorenzen (1996)")
+  }
+  if(any(method == "Pauly_Linf")){
+    ind <- ind + 1
+    M_mat[ind, 1]  <- round(10^(-0.0066 - 0.279 * log10(Linf) + 0.6543 * log10(K_l) + 0.4634 * log10(temp)), 3)  #exp( -0.0152 - 0.279 * log(Linf) + 0.6543 * log(K) + 0.463 * log(temp))
+    dimnames(M_mat)[[1]][ind] <- list("Pauly (1980) - Length Equation")
+    if(schooling == TRUE){
+      M_mat[ind, 1] <- 0.8 * M_mat[ind, 1]
+    }
+  }
+  if(any(method == "Pauly_Winf")){
+    ind <- ind + 1
+    M_mat[ind, 1]  <- round(10^(-0.2107 - 0.0824 * log10(Winf) + 0.6757 * log10(K_w) + 0.4627 * log10(temp)), 3)  #exp( -0.2107 - 0.0824 * log(Winf) + 0.6757 * log(K) + 0.4627 * log(temp))
+    dimnames(M_mat)[[1]][ind] <- list("Pauly (1980) - Weight Equation")
+    if(schooling == TRUE){
+      M_mat[ind, 1] <- 0.8 * M_mat[ind, 1]
+    }
+  }
+  if(any(method == "PetersonWroblewski")){
+    ind <- ind + 1
+    # Peterson and Wroblewski (1984)
+    M_mat[ind, 1]  <- round(1.92 * (Wdry^-0.25), 3)
+    dimnames(M_mat)[[1]][ind] <- list("Peterson and Wroblewski (1984)")
+  }
+  if(any(method == "RikhterEfanov")){
+    ind <- ind + 1
+    M_mat[ind, 1]  <- round(1.521 / ( tm50 ^ 0.720) - 0.155, 3)
+    dimnames(M_mat)[[1]][ind] <- list("Rikhter and Efanov (1976)")
+  }
+  if(any(method == "Roff")){
+    ind <- ind + 1
+    # Roff (1984)
+    M_mat[ind, 1]  <- round((3 * K_l)/(exp(K_l * tm50) - 1), 3)
+    dimnames(M_mat)[[1]][ind] <- list("Roff (1984)")
+  }
+  if (any(method == "Then_tmax")) {
+    ind <- ind + 1
+    M_mat[ind, 1]  <- round(4.899 * tmax^-0.916, 3)
+    dimnames(M_mat)[[1]][ind] <- list("Then (2015) - tmax")
+  }
+  if (any(method == "Then_growth")) {
+    ind <- ind + 1
+    M_mat[ind, 1]  <- round(4.118 * (K_l^0.73) * (Linf^-0.33), 3)
+    dimnames(M_mat)[[1]][ind] <- list("Then (2015) - growth")
+  }
+  if (any(method == "Gislason")) {
+    Ml <- round(exp(0.55 - 1.61 * log(Bl) + 1.44 *
+                                 log(Linf) + log(K_l)), 3)
+    M_mat <- as.data.frame(matrix(c(Bl,Ml),byrow = FALSE,ncol=2))
+    colnames(M_mat) <- c("Bl","Ml")
+  }
+
+
+  return(M_mat)
+}
+
 #' @title Catch curve
 #'
 #' @description  This function applies the (length-converted) linearised catch
@@ -583,3 +813,259 @@ catchCurve <- function(param,
         return(ret)
       }
 }
+
+#' @title Beverton & Holt's Z-Equations
+#
+#' @description A method to estimate the instantaneous total mortality rate (Z) based
+#'    on a method derived by Beverton and Holt (1956).
+#'
+#' @param param a list consisting of following parameters:
+#' \itemize{
+#'   \item  \code{midLengths} or \code{age}: midpoints of length groups
+#'   (length-frequency data) or ages (age composition data),
+#'   \item \code{Linf}: infinite length for investigated species in cm [cm],
+#'   \item \code{K}: growth coefficent for investigated species per year [1/year],
+#'   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
+#'   \item \code{catch}: catch as vector, or a matrix with catches of subsequent years;
+#' }
+#' @param catch_columns optional; in case catch is a matrix or data.frame, a number or vector
+#'    indicating which column(s) of the matrix should be analysed (Default: \code{NA}).
+#' @param Lprime_tprime length or age prime, above which all fish are under full exploitation as
+#'    mid length or age class.
+#'
+#' @keywords function mortality Z
+#'
+#' @examples
+#' # based on length-frequency data
+#' data(synLFQ2)
+#' Z_BevertonHolt(synLFQ2, catch_columns = 2, Lprime_tprime = 47.5)
+#'
+#' # based on age composition data
+#' data(synCAA1)
+#' Z_BevertonHolt(synCAA1, catch_columns = 3, Lprime_tprime = 2.5)
+#'
+#' @details  The first length group or age class within the list object \code{midLengths} or
+#'    \code{age} will be used as the Lprim or tprime (length of recruitment to fishery).
+#'
+#' @return A list with the input parameters and following objects:
+#' \itemize{
+#'   \item \strong{tmean} or \strong{Lmean}: mean age or length of fish,
+#'   \item \strong{tprime} or \strong{Lprime}: some age or length for which all fish of
+#'      that length and longer are under full exploitation,
+#'   \item \strong{Z}: total mortality.
+#' }
+#'
+#' @references
+#' Beverton R.J.H and S.J. Holt, 1956. A review of methods of estimating mortality rates
+#' in exploited fish populations, with special reference to sources of bias in catch
+#' sampling. \emph{Rapp.P.-v.Reun.CIEM}, 140:67-83
+#'
+#' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+#' Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.
+#'
+#' @export
+
+Z_BevertonHolt <- function(param, catch_columns = NA, Lprime_tprime){
+  res <- param
+  catch <- res$catch
+
+  if(class(catch) == "data.frame" | class(catch) == "matrix"){
+    if(is.na(catch_columns[1])) stop("Please provide numbers indicating which column of the catch matrix should be analysed!")
+    catchmat <- res$catch[,(catch_columns)]
+    if(length(catch_columns) > 1){
+      catch <- rowSums(catchmat, na.rm = TRUE)
+    }else catch <- catchmat
+  }
+
+  #   Length based equation
+  if("midLengths" %in% names(res)){
+
+    classes <- as.character(res$midLengths)
+    # create column without plus group (sign) if present
+    classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
+    classes.num <- as.numeric(classes.num[,1])
+    Lprime_tprime_ind <- which.min(abs(classes.num - Lprime_tprime))
+
+    Linf <- res$Linf
+    K <- res$K
+
+    # Error message if catch and age do not have same length
+    if(class(catch) == 'numeric'){
+      if(length(classes) != length(catch)) stop("Ages and catch do not have the same length!")
+    }
+
+    # calculate L prime
+    #Lprime <- classes.num[1] -
+    #  ((classes.num[2] - classes.num[1]) / 2)
+    interval <- (classes.num[2] - classes.num[1]) / 2
+    Lprime_tprime <- Lprime_tprime - interval
+
+
+    # calculate  C * (L1 + L2) / 2
+    c_midlength <- catch * classes.num
+
+    # calculate L mean
+    c_midlength_for_Lmean <- c_midlength[Lprime_tprime_ind:length(c_midlength)]
+    catch_for_Lmean <- catch[Lprime_tprime_ind:length(catch)]
+    Lmean <- sum(c_midlength_for_Lmean, na.rm = TRUE) / sum(catch_for_Lmean, na.rm = TRUE)
+
+    Z <- K * (Linf - Lmean) / (Lmean - Lprime_tprime)
+
+    #save all in list
+    ret <- c(res,list(
+      Lmean = Lmean,
+      Lprime = Lprime_tprime,
+      Z = Z
+    ))
+    return(ret)
+  }
+
+  #     Aged based equation
+  if("midAge" %in% names(res) | "age" %in% names(res)){
+
+    if("midAge" %in% names(res)) classes <- as.character(res$midAge)
+    if("age" %in% names(res)) classes <- as.character(res$age)
+    # create column without plus group (sign) if present
+    classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
+    classes.num <- as.numeric(classes.num[,1])
+    Lprime_tprime_ind <- which.min(abs(classes.num - Lprime_tprime))
+
+    # Error message if catch and age do not have same length
+    if(class(catch) == 'numeric'){
+      if(length(classes) != length(catch)) stop("Ages and catch do not have the same length!")
+    }
+
+    interval <- (classes.num[2] - classes.num[1]) / 2
+    Lprime_tprime <- Lprime_tprime - interval
+    #tprime <- classes.num[1] - interval
+    catch_for_tprime <- catch[Lprime_tprime_ind:length(catch)]
+    classes.num_for_tprime <- classes.num[Lprime_tprime_ind:length(classes.num)]
+    sample.size <- sum(catch_for_tprime,na.rm=TRUE)
+    sum.age.number <- sum((catch_for_tprime * classes.num_for_tprime), na.rm=TRUE)
+    tmean <- sum.age.number/sample.size
+
+    Z.BH <- 1 / (tmean - Lprime_tprime)
+
+    #save all in list
+    ret <- c(res,list(
+      tmean = tmean,
+      tprime = Lprime_tprime,
+      Z = Z.BH
+    ))
+    return(ret)
+  }
+
+}
+
+#' @title Estimate Z from CPUE data
+#'
+#' @description Method to estimate the instantaneous total mortality rate (Z) from
+#'    catch per unit of effort (CPUE) data according to standard, Heincke's, or
+#'    Robson & Chapman's method.
+#'
+#' @param param a list consisting of following parameters:
+#' \itemize{
+#'   \item \code{cohort}: a vector with with a cohort label,
+#'   \item \code{age}: a vector with ages,
+#'   \item \code{CPUE}: a vector with CPUE values;
+#' }
+#' @param method a character string indicating which assessment method should be used:
+#'    \code{"standard"}, \code{"Heincke"}, or \code{"RobsonChapman"}.
+#' @param omit_age1 logical; if \code{TRUE} the first age group is
+#'    omitted (Default \code{FALSE}).
+#'
+#' @keywords function mortality Z CPUE
+#'
+#' @examples
+#' # load data
+#' data(synCPUE)
+#'
+#' # run model with standard method
+#' Z_CPUE(synCPUE, method = "standard")
+#'
+#' # run model with Heincke's method
+#' Z_CPUE(synCPUE, method = "Heincke")
+#'
+#' # run model with Robson and Chapman's method
+#' Z_CPUE(synCPUE, method = "RobsonChapman", omit_age1 = TRUE)
+#'
+#' @details In Heincke's and RobsonChapman's method age groups older than 4 are lumped,
+#'   because age groups older than 3 or 4 are said to be hard to seperate (Ricker, 1975).
+#'   Sparre and Venema (1998) recommend to omit the first age group in case it is
+#'   not fully exploited by the fishery.
+#'
+#' @return A list with input parameters and a Z value or matrix depending on the method.
+#'
+#' @references
+#' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+#' Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.
+#'
+#' Sparre, P., Venema, S.C., 1999. Introduction to tropical fish stock assessment.
+#' Part 2. Excercises. \emph{FAO Fisheries Technical Paper}, (306.2, Rev. 2). 94 p.
+#'
+#' Ricker, W.E., 1975. Computation and interpretation of biological statistics of fish
+#' populations. \emph{Bull.Fish.Res.Board Can.}, (191):382 p.
+#'
+#' @export
+
+Z_CPUE <- function(param, method = "standard", omit_age1 = FALSE){
+
+  res <- param
+  cohort <- res$cohort
+  classes <- as.character(res$age)
+  CPUE <- res$CPUE
+
+  # create column without plus group (sign) if present
+  classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
+  classes.num <- as.numeric(classes.num[,1])
+
+  switch(method,
+
+         "standard" ={
+           df.HZ <- data.frame(cohort = cohort[1:(length(cohort)-1)])
+           result_Z <- list()
+           for(i in 2:length(classes.num)){
+             Zi <- rep(NA,(length(classes.num)-1))
+             for(k in 1:(i-1)){
+               Zi[k] <- round((1 / (classes.num[i] - classes.num[k])) *
+                                (log(CPUE[k] /CPUE[i])),digits = 2)
+             }
+             result_Z[[i-1]] <- Zi
+           }
+           for(i in 1:length(result_Z)){
+             df.HZ[[paste(cohort[i+1])]] <- result_Z[[i]]
+           }
+           ret <- c(res,list(
+             Z_mat = df.HZ
+           ))
+           return(ret)
+         },
+
+         "Heincke" ={
+           CPUE[4] <- sum(CPUE[4:length(CPUE)])
+           if(omit_age1) CPUE <- CPUE[-1]
+           CPUE.H.n <- CPUE[2:length(CPUE)]
+           CPUE.H.d <- CPUE[1:length(CPUE)]
+           Z.H = - log( (sum(CPUE.H.n)) /
+                          (sum(CPUE.H.d)))
+           ret <- c(res,list(
+             Z = Z.H
+           ))
+           return(ret)
+         },
+         "RobsonChapman" ={
+           CPUE[4] <- sum(CPUE[4:length(CPUE)])
+           if(omit_age1) CPUE <- CPUE[-1]
+           sum_CPUE.H.n <- sum(CPUE[2:length(CPUE)])
+           sum_CPUE.H.d <- sum(CPUE[1:length(CPUE)])
+
+           Z.H = - log((sum_CPUE.H.n) /
+                          (sum_CPUE.H.d + sum_CPUE.H.n - 1))
+
+           ret <- c(res,list(
+             Z = Z.H
+           ))
+           return(ret)
+         })
+}
+

@@ -168,7 +168,7 @@ As with FiSAT II, TropFishR allows one to visualize fitting scores across a rang
 In TropFishR, RSA is conducted using the `ELEFAN` function. Specifically, a sequence of `Linf` and `K` values are provided to the arguments `Linf_range` and `K_range`. All combinations of those parameters are used, and the best scoring `t_anchor` is solved for. If a prominent cohort can be identified, one can force the VBGF to cross through a defined bin, using the argument setting `method = "cross"`, which will substantially reduce the computation time.
 ```{r}
 alba2 <- ELEFAN(
-  x = alba,  MA = 7,
+  lfq = alba,  MA = 7,
   Linf_range = seq(7, 20, length.out = 30),
   K_range = exp(seq(log(0.1),log(4), length.out = 30)),
   method = "cross",
@@ -203,7 +203,7 @@ The first optimization algorithm offered in TropFishR is called "simulated annea
 ```{r}
 set.seed(1)
 alba3 <- ELEFAN_SA(
-  x = alba, 
+  lfq = alba, 
   seasonalised = FALSE, 
   init_par = alba2$par[1:5], 
   low_par = list(Linf=PW$confidenceInt_Linf[1], K=1, t_anchor=0, ts=0, C=0),
@@ -238,7 +238,7 @@ Important settings include the number of individuals in the population (`popSize
 ```{r}
 set.seed(1)
 alba4 <- ELEFAN_GA(
-  x = alba, 
+  lfq = alba, 
   seasonalised = FALSE, 
   low_par = list(Linf=PW$confidenceInt_Linf[1], K=1, t_anchor=0, ts=0, C=0),
   up_par = list(Linf=PW$confidenceInt_Linf[2], K=4, t_anchor=1, ts=1, C=1), 
@@ -276,7 +276,7 @@ The following examples demonstrate fitting of soVBGF to both `alba` and a synthe
 ```{r}
 set.seed(1)
 alba5 <- ELEFAN_GA(
-  x = alba, 
+  lfq = alba, 
   seasonalised = TRUE, 
   low_par = list(Linf=PW$confidenceInt_Linf[1], K=0.1, t_anchor=0, ts=0, C=0),
   up_par = list(Linf=PW$confidenceInt_Linf[2], K=4, t_anchor=1, ts=1, C=1), 
@@ -309,7 +309,7 @@ The dataset is significantly more detailed (72 length bins, 25 time samples) tha
 ```{r}
 set.seed(1)
 synLFQ4 <- ELEFAN_GA(
-  x = synLFQ4, 
+  lfq = synLFQ4, 
   seasonalised = TRUE, 
   low_par = list(Linf=70, K=0.1, t_anchor=0, ts=0, C=0),
   up_par = list(Linf=110, K=1, t_anchor=1, ts=1, C=1), 
@@ -351,7 +351,7 @@ The following example uses `ELEFAN_GA` with a variable mutation rate, which star
 
 ```{r}
 synLFQ4 <- ELEFAN_GA(
-  x = synLFQ4, 
+  lfq = synLFQ4, 
   seasonalised = TRUE, 
   low_par = list(Linf=70, K=0.1, t_anchor=0, ts=0, C=0),
   up_par = list(Linf=110, K=1, t_anchor=1, ts=1, C=1), 

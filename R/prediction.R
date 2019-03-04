@@ -1,3 +1,645 @@
+#' @title Yield per recruit
+#'
+#' @description Estimates the absolute and relative yield and biomass per recruit and
+#'    the first order derivative.
+#'
+#' @param param a list consisting of following parameters (not all are required):
+#' \itemize{
+#'   \item \strong{Linf}: infinite length in cm,
+#'   \item \strong{Winf}: infinite weight,
+#'   \item \strong{K}: growth coefficent for investigated species per year [1/year],
+#'   \item \strong{t0}: theoretical time zero, at which individuals of this species
+#'        hatch,
+#'   \item \strong{M}: natural mortality,
+#'   \item \strong{tr}: age of recruitment,
+#'   \item \strong{tc}: age of first capture;}
+#' @param FM_change vector with ascending fishing mortalities,
+#' @param t default NA
+#'
+#' @keywords function prediction ypr
+#'
+#' @details The Thompson and Bell model incorporates an iteration step simulating the
+#'    stock by means
+#'    of the \code{\link{stock_sim}} function. In case changes in gear
+#'    characteristics -
+#'    here measured in terms of Lc or tc, the length or age at first capture,
+#'    respectively -
+#'    should be explored, a list with selectivity information about the gear has
+#'    to be provided and
+#'    the prediction models make use of the selectivity \code{\link{select_ogive}}
+#'    function.
+#'    Sparre and Venema (1998) recommend to treat the last length class always as plus group.
+#'    This model is very sensitive to zero observations in the ultimate length
+#'    classes. If unrealistic results are returned,
+#'    it is recommended to cut length classes with zero observations, group
+#'    them in a plus group or to change the interval between
+#'    length classes.
+#'    Equations which are used in this function assume isometric growth, an
+#'    assumption often not met. Further, the assumption that there is no relationship
+#'    between the parental stock size and progeny
+#'    over a wide range of fishing mortalities or exploitation values,
+#'    respectively, is also said to be untrue. By default, the functions assume
+#'    knife-edge recruitment and selection of gears (Sparre and Venema, 1998).
+#'
+#'
+#' @return A list with the input parameters and dependent on the model type following
+#'    list objects:
+#' \itemize{
+#'   \item \code{type = 'ypr'}
+#' }
+#'
+#' @references
+#' Berkeley, S.A., and Houde, E.D., 1980. Swordfish, Xiphias gladius, dynamics in
+#' the Straits of Florida. \emph{ICES C.M.}, 11.
+#'
+#' Beverton, R.J.H., and Holt, S.J., 1964. Table of yield functions for fishery
+#' management. \emph{FAO Fish. Tech. Pap.} 38, 49 p.
+#'
+#' Beverton, R.J.H., and Holt, S.J., 1966. Manual of methods for fish stock
+#' assessment. Pt. 2: Tables of yield functions. \emph{FAO Fisheries Technical Paper},
+#' (38)Rev.1:67 p.
+#'
+#' Boerema, L.K., and J.A. Gulland, 1973. Stock assessment of the Peruvian anchovy
+#' (Engraulis ringens) and management of the fishery. \emph{Journal of the Fisheries
+#' Board of Canada}, 30(12):2226-2235
+#'
+#' Garcia, S. and N.P. van Zalinge, 1982. Shrimp fishing in Kuwait: methodology
+#' for a joint analysis of the artisanal and industrial fisheries. pp. 119-142 In:
+#' Report on the Workshop on assessment of the shrimp stocks of the west coast of
+#' the Gulf between Iran and the Arabian Peninsula. Fisheries development in the
+#' Gulf. Rome, FAO, FI:DP/RAB/80/015/1, 163 p.
+#'
+#' Gulland, J.A., 1983. Fish stock assessment: a manual of basic methods.
+#' \emph{FAO/Wiley}, New York.
+#'
+#' Gulland, J.A. and Boerema, L., 1973. Scientific advice on catch levels.
+#' \emph{Fish. Bull. (US)} 71:325-335.
+#'
+#' Jones, R.E. 1957. A much simplified version of the fish yield equation. Doc. No.
+#' P. 21. Paper presented at the Lisbon joint meeting of International Commission
+#' Northwest Atlantic-Fisheries, International Council for the Exploration of the
+#' Sea, and Food and Agriculture Organization of the United Nations. 8 p. [Mimeo].
+#'
+#' Millar, R.B., and Holst, R., 1997. Estimation of gillnet and hook selectivity using
+#' log-linear models. \emph{ICES Journal of Marine Science: Journal du Conseil},
+#' 54(3):471-477
+#'
+#' Pauly, D., 1980. A selection of simple methods for the assessment of tropical fish
+#' stocks. \emph{FAO Fisheries Circulars (FAO)}. no. 729.
+#'
+#' Pauly, D., 1984. Fish population dynamics in tropical waters: a manual for use
+#' with programmable calculators. \emph{ICLARM} Stud. Rev. 8, 325 p.
+#'
+#' Pauly, D. and M. Soriano. 1986. Some practical extensions to Beverton and
+#' Holt's relative yield-per-recruit model, p. 491-495. In J.L. Maclean, L.B. Dizon
+#' and L.V. Hosillos (eds.) The First Asian Fisheries Forum. Asian Fisheries Society,
+#' Manila.
+#'
+#' Schaefer, M.B., 1954. Some aspects of the dynamics of populations important to the
+#' management of the commercial marine fisheries. \emph{Inter-Am. Trop. Tuna Comm.,
+#' Bull.} 1(2):27-56.
+#'
+#' Schaefer, M.B., 1957. A study of the dynamics of the fishery for yellowfin tuna
+#' in the eastern tropical Pacific Ocean. \emph{Inter-Am. Trop. Tuna Comm., Bull.}
+#' 2:247-268.
+#'
+#' Sparre, P., and Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+#' Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.
+
+ypr <- function(param, FM_change, t = NA){
+  # KNIFE EDGE
+  # t option used in sel_rel_ypr with a loop over FM
+
+  res <- param   # requires Winf (or Linf and a + b not implemented), K, t0, M, tr, tc
+
+  if(is.na(t[1])) S <- exp(-res$K * (res$tc - res$t0)) # knife edge  # S <- (1 - (Lci_tci/Linf))
+  if(!is.na(t[1])) S <- exp(-res$K * (t - res$t0)) # for each length group for selection ogive  #S <- (1 - (Lti/Linf))
+
+  Z <- (FM_change + res$M)
+  m <- ((1-(FM_change/Z))/(res$M/res$K))    ## == K/Z
+  A <- exp(-res$M * (res$tc - res$tr))  # A <- (((res$Linf - res$Lc)/(res$Linf - res$Lr)) ^ (res$M/res$K))
+
+  br <- A * res$Winf * ((1/Z) - (3*S)/(Z + res$K) +
+                          (3*S^2)/(Z + 2*res$K) - (S^3)/(Z + 3*res$K))
+
+  yr <- br * FM_change
+
+  if(is.na(t[1]))  m_p <- (1/(res$M/res$K))
+  if(!is.na(t[1]))  m_p <- (1/(1-(FM_change/Z)))
+
+  Ol <- 1-(3*S/(1+m_p))+(3*S^2/(1+(2*m_p)))-(S^3/(1+(3*m_p)))
+  Ox <- (1-(FM_change/Z))*(1-((3*S)/(1+m))+((3*S^2)/(1+(2*m)))-(S^3/(1+(3*m))))
+
+  # rel biomass per recruit
+  if(is.na(t[1])) rbr <- Ox/Ol
+  if(!is.na(t[1])) rbr <- (1-(FM_change/Z)) * (Ox/Ol)
+
+  # rel yield per recruit
+  ryr <- (FM_change/Z) * ((S)^(res$M/res$K)) * (1 - ((3*S)/(1+m)) + ((3*S^2)/(1+2*m)) - ((S^3)/(1+3*m)))
+
+  # derivative
+  C <- ((res$K*(1-(FM_change/Z)))/res$M)
+  B <- (S^(res$M/res$K)) * (1 - ((3*S)/(1+C)) + ((3*S^2)/(1+2*C)) - ((S^3)/(1+3*C)))
+  D <- (-((3*res$K*S^3)/(res$M*((3*res$K*(1-(FM_change/Z))/res$M)+1)^2)) +
+          ((6*res$K*S^2)/(res$M*((2*res$K*(1-(FM_change/Z))/res$M)+1)^2)) -
+          ((3*res$K*S)/(res$M*((res$K*(1-(FM_change/Z))/res$M)+1)^2)))
+  des <- (FM_change/Z) * (S^(res$M/res$K)) * D + B
+
+  ret <- c(res, list(yr = yr,
+                     br = br,
+                     ryr = ryr,
+                     rbr = rbr,
+                     derivative = des))
+  return(ret)
+}
+
+#' @title Yield per recruit with selection ogive
+#'
+#' @description Estimates relative yield and biomass, and the first order derivative.
+#'
+#' @param param a list consisting of following parameters (not all are required):
+#' \itemize{
+#'   \item \strong{Linf}: infinite length in cm
+#'   \item \strong{Winf}: infinite weight
+#'   \item \strong{K}: growth coefficent for investigated species per year [1/year],
+#'   \item \strong{t0}: theoretical time zero, at which individuals of this species
+#'        hatch
+#'   \item \strong{M}: natural mortality
+#'   \item \strong{tr}: age of recruitment
+#'   \item \strong{tc}: age of first capture}
+#' @param FM_change vector with ascending fishing mortalities
+#' @param Lt length at time
+#' @param P population size
+#'
+#' @keywords function prediction ypr
+#'
+#'
+#' @details The Thompson and Bell model incorporates an iteration step simulating the
+#'    stock by means
+#'    of the \code{\link{stock_sim}} function. In case changes in gear
+#'    characteristics -
+#'    here measured in terms of Lc or tc, the length or age at first capture,
+#'    respectively -
+#'    should be explored, a list with selectivity information about the gear has
+#'    to be provided and
+#'    the prediction models make use of the selectivity \code{\link{select_ogive}}
+#'    function.
+#'    Sparre and Venema (1998) recommend to treat the last length class always as plus group.
+#'    This model is very sensitive to zero observations in the ultimate length
+#'    classes. If unrealistic results are returned,
+#'    it is recommended to cut length classes with zero observations, group
+#'    them in a plus group or to change the interval between
+#'    length classes.
+#'    Equations which are used in this function assume isometric growth, an
+#'    assumption often not met. Further, the assumption that there is no relationship
+#'    between the parental stock size and progeny
+#'    over a wide range of fishing mortalities or exploitation values,
+#'    respectively, is also said to be untrue. By default, the functions assume
+#'    knife-edge recruitment and selection of gears (Sparre and Venema, 1998).
+#'
+#'
+#' @return A list with the input parameters and dependent on the model type following
+#'    list objects:
+#' \itemize{
+#'   \item
+#' }
+#'
+#'
+#' @references
+#' Berkeley, S.A., and Houde, E.D., 1980. Swordfish, Xiphias gladius, dynamics in
+#' the Straits of Florida. \emph{ICES C.M.}, 11.
+#'
+#' Beverton, R.J.H., and Holt, S.J., 1964. Table of yield functions for fishery
+#' management. \emph{FAO Fish. Tech. Pap.} 38, 49 p.
+#'
+#' Beverton, R.J.H., and Holt, S.J., 1966. Manual of methods for fish stock
+#' assessment. Pt. 2: Tables of yield functions. \emph{FAO Fisheries Technical Paper},
+#' (38)Rev.1:67 p.
+#'
+#' Boerema, L.K., and J.A. Gulland, 1973. Stock assessment of the Peruvian anchovy
+#' (Engraulis ringens) and management of the fishery. \emph{Journal of the Fisheries
+#' Board of Canada}, 30(12):2226-2235
+#'
+#' Garcia, S. and N.P. van Zalinge, 1982. Shrimp fishing in Kuwait: methodology
+#' for a joint analysis of the artisanal and industrial fisheries. pp. 119-142 In:
+#' Report on the Workshop on assessment of the shrimp stocks of the west coast of
+#' the Gulf between Iran and the Arabian Peninsula. Fisheries development in the
+#' Gulf. Rome, FAO, FI:DP/RAB/80/015/1, 163 p.
+#'
+#' Gulland, J.A., 1983. Fish stock assessment: a manual of basic methods.
+#' \emph{FAO/Wiley}, New York.
+#'
+#' Gulland, J.A. and Boerema, L., 1973. Scientific advice on catch levels.
+#' \emph{Fish. Bull. (US)} 71:325-335.
+#'
+#' Jones, R.E. 1957. A much simplified version of the fish yield equation. Doc. No.
+#' P. 21. Paper presented at the Lisbon joint meeting of International Commission
+#' Northwest Atlantic-Fisheries, International Council for the Exploration of the
+#' Sea, and Food and Agriculture Organization of the United Nations. 8 p. [Mimeo].
+#'
+#' Millar, R.B., and Holst, R., 1997. Estimation of gillnet and hook selectivity using
+#' log-linear models. \emph{ICES Journal of Marine Science: Journal du Conseil},
+#' 54(3):471-477
+#'
+#' Pauly, D., 1980. A selection of simple methods for the assessment of tropical fish
+#' stocks. \emph{FAO Fisheries Circulars (FAO)}. no. 729.
+#'
+#' Pauly, D., 1984. Fish population dynamics in tropical waters: a manual for use
+#' with programmable calculators. \emph{ICLARM} Stud. Rev. 8, 325 p.
+#'
+#' Pauly, D. and M. Soriano. 1986. Some practical extensions to Beverton and
+#' Holt's relative yield-per-recruit model, p. 491-495. In J.L. Maclean, L.B. Dizon
+#' and L.V. Hosillos (eds.) The First Asian Fisheries Forum. Asian Fisheries Society,
+#' Manila.
+#'
+#' Schaefer, M.B., 1954. Some aspects of the dynamics of populations important to the
+#' management of the commercial marine fisheries. \emph{Inter-Am. Trop. Tuna Comm.,
+#' Bull.} 1(2):27-56.
+#'
+#' Schaefer, M.B., 1957. A study of the dynamics of the fishery for yellowfin tuna
+#' in the eastern tropical Pacific Ocean. \emph{Inter-Am. Trop. Tuna Comm., Bull.}
+#' 2:247-268.
+#'
+#' Sparre, P., and Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+#' Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.
+
+ypr_sel <- function(param, FM_change, Lt, P){
+
+  res <- param
+
+  # Calculations per size class
+  interval <- (Lt[2] - Lt[1])/ 2
+  lower_classes <- Lt - interval
+  upper_classes <- Lt + interval
+
+  lower_t <- VBGF(param, L = lower_classes)
+  upper_t <- VBGF(param, L = upper_classes)
+
+  S1 <- (1 - (lower_classes/res$Linf))
+  S2 <- (1 - (upper_classes/res$Linf))
+
+
+  Z <- FM_change + res$M
+
+  sryr <- rep(NA,length(FM_change))
+  srbr <- rep(NA,length(FM_change))
+  des <- rep(NA,length(FM_change))
+
+  for(FMi in 1:length(FM_change)){
+    FMx <- FM_change[FMi]
+    Zx <- Z[FMi]
+    # population levels
+    # reduction factor per size group
+    r <- (S2 ^ ((res$M/res$K) * ((FMx/Zx)/(1-(FMx/Zx)))*P)) / (S1 ^ ((res$M/res$K) * ((FMx/Zx)/(1-(FMx/Zx)))*P))
+
+    # derivative of r
+    expo <- (res$M * P * FMx) / (res$K * Zx *(1 - (FMx/Zx)))
+    r.dev <- (res$M * P * S2^expo * (log(S2) - log(S1)) * Zx) / (res$K * S1^expo * (FMx-Zx)^2)
+
+    # G per size group
+    G <- rep(NA,length(Lt))
+    G[1] <- r[1]  # because: rLmin-1 = 1
+    for(x1 in 2:length(r)){
+      G[x1] <- prod(G[x1-1], r[x1], na.rm = TRUE)
+    }
+    # G[length(r)] <- 0  # because: rLinf = 0
+
+    # derivative of G
+    G.dev <- rep(NA,length(Lt))
+    G.dev[1] <- r.dev[1]
+    for(x2a in 2:length(r)){
+      G_pre <- rep(NA,x2a)
+      for(x2b in 1:x2a){
+        G_pre[x2b] <- r.dev[x2b] * prod(r[1:x2a][-x2b],na.rm = TRUE)
+      }
+      G.dev[x2a] <- sum(G_pre, na.rm = TRUE)
+    }
+
+    ry_rd1 <- ypr(param = res, FM_change = FMx, t = lower_t)
+    ry_rd2 <- ypr(param = res, FM_change = FMx, t = upper_t)
+
+    Y_R.rel_1 <- ry_rd1$ryr   #Y_R.rel_1 <- ypr.rel(FMx, Lti = lower_classes, type = "length")
+    Y_R.rel_2 <- ry_rd2$ryr   # Y_R.rel_2 <- ypr.rel(FMx, Lti = upper_classes, type = "length")
+    B_R.rel.tot <- ry_rd1$rbr  # B_R.rel.tot <- bpr.rel(FMx, Lti = lower_classes, type = "length")
+    # derivative of Y_R.rel per size group
+    dev.Y_R.rel.tot_1 <- ry_rd1$derivative  # dev.Y_R.rel.tot_1 <- derivative(FMx, Lti = lower_classes, type = "length")
+    dev.Y_R.rel.tot_2 <- ry_rd2$derivative  # dev.Y_R.rel.tot_2 <- derivative(FMx, Lti = upper_classes, type = "length")
+
+    b_1 <- rep(NA,length(S1))
+    b_2 <- rep(NA,length(S1))
+    for (x2 in 2:length(S1)){
+      b_1[x2] <- G[x2-1] * Y_R.rel_1[x2]
+      b_2[x2] <- G[x2] * Y_R.rel_2[x2]
+    }
+    Y_R.rel_pre <- P * (b_1-b_2)
+
+    # derivative of b1 and b2
+    dev.b_1 <- rep(NA,length(S1))
+    dev.b_2 <- rep(NA,length(S1))
+    for (x2 in 2:length(S1)){
+      dev.b_1[x2] <- G.dev[x2-1] * dev.Y_R.rel.tot_1[x2]
+      dev.b_2[x2] <- G.dev[x2] * dev.Y_R.rel.tot_2[x2]
+    }
+    dev.Y_R.rel_pre <- P * (dev.b_1 - dev.b_2)
+
+    cum_Y_R.rel <- rep(0,length(S1))
+    for (x3 in 2:length(S1)){
+      cum_Y_R.rel[x3] <- cum_Y_R.rel[x3-1] + Y_R.rel_pre[x3]
+    }
+
+    # total yield
+    nonNA <- which(!is.na(cum_Y_R.rel))
+    sryr[FMi] <- cum_Y_R.rel[length(nonNA)]
+
+    # total derivative
+    dev.tot <- rep(NA,length(Lt))
+    for(x5 in 2:(length(Lt)-1)){
+      firstA <- Y_R.rel_pre[x5] * G.dev[x5-1] + dev.Y_R.rel_pre[x5] * G[x5-1]
+      secondA <- Y_R.rel_pre[x5+1] * G.dev[x5] + dev.Y_R.rel_pre[x5+1] * G[x5]
+      dev.tot[x5] <- P[x5] * (firstA - secondA)
+      #dev.tot[x3] <- (P[x3]*((dev.Y_R.rel[x3]*G.dev[x3-1]) - (dev.Y_R.rel[x3+1]*G.dev[x3])))
+    }
+    des[FMi] <- sum(dev.tot, na.rm=TRUE)
+
+    # total biomass
+    srbr[FMi] <- B_R.rel.tot[!is.na(B_R.rel.tot)][length(B_R.rel.tot[!is.na(B_R.rel.tot)])]
+
+  }
+
+  ret <- c(res,list(rbr = srbr,
+                    ryr = sryr,
+                    derivative = des))
+
+  return(ret)
+}
+
+
+
+#' @title Stock simulation
+#
+#' @description  This function estimates stock size, biomass and yield of a stock from
+#'    fishing mortality per age class or length group. This function is embedded in the
+#'    Thompson and Bell model (prediction model: \code{\link{predict_mod}}).
+#'
+#' @param param a list consisting of following parameters:
+#' \itemize{
+#'   \item \code{age} or \code{midLengths}: midpoints of length classes (length-frequency
+#'   data) or ages (age composition data),
+#'   \item \code{meanWeight}: mean weight in kg per age class or length group,
+#'   \item \code{meanValue}: mean value per kg fish per age class or length group,
+#'   \item \code{FM}: fishing mortality rates per age class or length group,
+#'   \item \code{M} or \code{Z}: natural or total instantaneous mortality rate.
+#' }
+#' @param age_unit indicates if the age groups are per month (\code{"month"}) or
+#'    per year (\code{"year"}). Default: \code{"year"}
+#' @param stock_size_1 stock size of smallest age/length group
+#' @param plus_group indicates age/length group, which should be turned into a plus
+#'    group (i.e. all groups above are comprised in one group)
+#'
+#' @keywords function prediction ypr
+#'
+#' @examples
+#' # age-based stock simulation
+#' data(shrimps)
+#'
+#' # option 1: without plus group
+#' stock_sim(shrimps, age_unit = "month")
+#'
+#' # option 2: with plus group
+#' stock_sim(param = shrimps, age_unit = "month", plus_group = 11)
+#'
+#' # length-based stock simulation
+#' data(hake)
+#'
+#' stock_sim(param = hake, stock_size_1 = 98919.3)
+#'
+#' @details better to treat last group always as a plus group...
+#'      if stock size 1 not provided assumes 1000 as intital population size
+#'      make sure that FM is also in same unit as the classes, e.g. when classes in
+#'      months than also FM has to be provided in 1/months
+#'
+#' @return A list with the input parameters and following list objects:
+#' \itemize{
+#'   \item \strong{dt}: delta t,
+#'   \item \strong{N}: population numbers,
+#'   \item \strong{dead}: number of deaths due to natural mortality,
+#'   \item \strong{C}: catch,
+#'   \item \strong{Y}: yield,
+#'   \item \strong{B}: biomass,
+#'   \item \strong{V}: value,
+#'   \item \strong{totals}: summarised output:
+#'   \itemize{
+#'   \item \strong{totC} total catch,
+#'   \item \strong{totY} total yield,
+#'   \item \strong{totV} total value,
+#'   \item \strong{meanB} mean biomass.
+#'   },
+#' }
+#'
+#' @references
+#' Garcia, S. and N.P. van Zalinge, 1982. Shrimp fishing in Kuwait: methodology
+#'    for a joint analysis of the artisanal and industrial fisheries. pp. 119-142 In:
+#'    Report on the Workshop on assessment of the shrimp stocks of the west coast of
+#'    the Gulf between Iran and the Arabian Peninsula. Fisheries development in the
+#'    Gulf. Rome, FAO, FI:DP/RAB/80/015/1, 163 p.
+#'
+#' Millar, R. B., & Holst, R. (1997). Estimation of gillnet and hook selectivity using
+#' log-linear models. \emph{ICES Journal of Marine Science: Journal du Conseil},
+#' 54(3):471-477
+#'
+#' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
+#' Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.
+#'
+#' @export
+
+stock_sim <- function(param, age_unit = "year",
+                      stock_size_1 = NA, plus_group = NA){
+
+  res <- param
+  meanWeight <- res$meanWeight
+  meanValue <- res$meanValue
+
+  #mortalities
+  FM <- res$FM
+  if(!is.null(res$M)){
+    nM <- res$M
+    Z <- FM + nM
+  }else{
+    Z <- res$Z
+    nM <- mean(Z - FM,na.rm=T)
+  }
+
+  if('midLengths' %in% names(res)) classes <- as.character(res$midLengths)
+  if('age' %in% names(res)) classes <- as.character(res$age)
+  # create column without plus group (sign) if present
+  classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
+  classes.num <- as.numeric(classes.num[,1])
+
+  # age based
+  if('age' %in% names(res)){
+
+    # delta t
+    dt <- c(diff(classes.num),NA)
+    if(age_unit == 'month'){
+      dt <- dt * 1/12
+    }
+
+    #population per age group
+    N <- rep(NA,length(classes.num))
+    N[1] <- ifelse(is.na(stock_size_1),1000,stock_size_1)
+
+    for(x1 in 2:length(N)){
+      N[x1] <- N[x1-1] * exp(-Z[x1-1] * dt[x1-1])
+      # if(x1 == length(N)){
+      #   N[x1] <- N[x1-1] * exp(-Z[x1-1] * dt[x1-1])
+      # }
+    }
+
+    #number of deaths per time step month or year
+    dead <- c(abs(diff(N)),NA)
+
+    #catch in numbers
+    C <- dead * (FM / Z)
+
+    #yield in kg or g
+    Y <- C * meanWeight
+
+    #mean biomass in kg or g
+    B <- Y / (FM * dt)
+
+    #value expressed in money units
+    V <- Y * meanValue
+
+    #total catch, yield, value and average biomass
+    totals <- data.frame(totC = sum(C, na.rm=TRUE),
+                         totY = sum(Y, na.rm=TRUE),
+                         totV = sum(V, na.rm=TRUE),
+                         meanB = sum((B * dt), na.rm=TRUE) / sum(dt, na.rm=TRUE))   ### more complicated biomass concept if dt is not constant, see Chapter 5
+
+    res2 <- list(dt = dt, N = N, dead = dead, C = C,
+                 Y = Y, B = B, V = V,
+                 totals = totals)
+
+    #with plus group
+    if(!is.na(plus_group)){
+
+      df <- do.call(cbind,res2[1:7])
+      df <- df[1:plus_group,]
+      classes <- classes[1:plus_group]
+
+      #new class
+      classes[length(classes)] <-
+        paste(classes[length(classes)],"+",sep='')
+
+      #num deaths
+      df[plus_group, "dead"] <- df[plus_group, "N"]
+
+      #catch
+      new.C <- (FM[plus_group] / Z[plus_group]) * df[plus_group, "N"]
+      catch.plus.dif <- new.C - df[plus_group, "C"]
+      df[plus_group, "C"] <- new.C
+
+      #yield
+      df[plus_group, "Y"] <- meanWeight[plus_group] * catch.plus.dif
+
+      #value
+      df[plus_group, "V"] <-
+        df[plus_group, "Y"] * meanValue[plus_group]
+
+      #biomass       ####not sure....omitted in manual
+      df[plus_group, "B"] <-
+        df[plus_group, "Y"] / (FM[plus_group] * df[plus_group, "dt"])
+
+
+      res2 <- as.list(as.data.frame(df))
+
+      df2 <- do.call(cbind,res)
+      df2 <- df2[1:plus_group,]
+      res <- as.list(as.data.frame(df2))
+      res$age <- classes
+
+      #total catch, yield, value and average biomass
+      totals <- data.frame(totC = sum(res2$C, na.rm=TRUE),
+                           totY = sum(res2$Y, na.rm=TRUE),
+                           totV = sum(res2$V, na.rm=TRUE),
+                           meanB = sum((res2$B * res2$dt), na.rm=TRUE) / sum(dt, na.rm=TRUE))   ### more complicated biomass concept if dt is not constant, see Chapter 5
+
+      res2 <- c(res2,totals = list(totals))
+    }
+  }
+
+  # length based
+  if('midLengths' %in% names(res)){
+
+    Linf <- res$Linf
+    K <- res$K
+    a <- res$a
+    b <- res$b
+
+    #calculate size class interval
+    int <- classes.num[2] - classes.num[1]
+
+    # t of lower and upper length classes
+    lowL <- classes.num - (int / 2)
+    upL <- classes.num + (int/2)
+
+    # H
+    H <- ((Linf - lowL)/(Linf - upL)) ^ (nM/(2*K))
+
+    #population
+    N <- rep(NA,length(classes.num))
+    N[1] <- ifelse(is.na(stock_size_1), 1000, stock_size_1)
+    for(x1 in 2:length(classes.num)){
+      N[x1] <- N[x1-1] * ((1/H[x1-1]) - (FM[x1-1]/Z[x1-1])) /
+        (H[x1-1] - (FM[x1-1]/Z[x1-1]))
+    }
+
+    #number of deaths per time step month or year
+    dead <- c(abs(diff(N)),NA)
+
+    #catch
+    C <- dead * (FM/Z)
+
+    #average weight
+    W <- a * ((lowL + upL)/2 ) ^ b
+
+    #yield
+    Y <- C * W
+
+    #Value
+    V <- Y * meanValue
+
+    #biomass
+    B <- (dead / Z ) * W
+
+    #last length group
+    x2 <- length(classes.num)
+    C[x2] <- N[x2] * FM[x2]/Z[x2]
+    W[x2] <- a * ((lowL[x2] + Linf)/2 ) ^ b
+    Y[x2] <- C[x2] * W[x2]
+    B[x2] <- N[x2] / Z[x2] * W[x2]
+    V[x2] <- Y[x2] * meanValue[x2]
+
+    #total catch, yield, value and average biomass
+    totals <- data.frame(totC = sum(C, na.rm=TRUE),
+                         totY = sum(Y, na.rm=TRUE),
+                         totV = sum(V, na.rm=TRUE),
+                         meanB = sum((B), na.rm=TRUE))
+
+    res2 <- list(N = N,
+                 dead = dead,
+                 C = C,
+                 Y = Y,
+                 B = B,
+                 V = V,
+                 totals = totals)
+  }
+
+  ret <- c(res,res2)
+  return(ret)
+}
+
+
 #' @title Prediction models
 #'
 #' @description  This function applies Beverton & Holt's yield per recruit model
@@ -913,3 +1555,4 @@ predict_mod <- function(param, type, FM_change = NA,
   if(plot) plot(ret, mark = mark)
   return(ret)
 }
+
