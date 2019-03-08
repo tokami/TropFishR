@@ -6,9 +6,9 @@
 \usage{
 univariate_density(res, CI = 95, use_hist = FALSE, nbreaks = 10,
   truePar = NA, display_val = TRUE, display_median = FALSE,
-  display_legend = FALSE, display_rugs = FALSE, mar = c(1.5, 2, 2, 0),
-  oma = c(1.5, 0, 0, 0.5), mgp = c(2, 0.5, 0), tcl = -0.25, cex = 1,
-  mfrow = NA, ...)
+  display_legend = FALSE, display_rugs = FALSE, mar = c(1.5, 2, 2,
+  0), oma = c(1.5, 0, 0, 0.5), mgp = c(2, 0.5, 0), tcl = -0.25,
+  cex = 1, mfrow = NA, ylim = NA, ...)
 }
 \arguments{
 \item{res}{list of class `lfqBoot`}

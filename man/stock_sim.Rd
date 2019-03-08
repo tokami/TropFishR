@@ -4,7 +4,8 @@
 \alias{stock_sim}
 \title{Stock simulation}
 \usage{
-stock_sim(param, age_unit = "year", stock_size_1 = NA, plus_group = NA)
+stock_sim(param, age_unit = "year", stock_size_1 = NA,
+  plus_group = NA)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:

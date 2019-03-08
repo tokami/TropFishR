@@ -6,8 +6,8 @@
 \usage{
 ELEFAN_SA(x, seasonalised = FALSE, init_par = NULL, low_par = NULL,
   up_par = NULL, SA_time = 60 * 1, maxit = NULL,
-  nb.stop.improvement = NULL, SA_temp = 1e+05, verbose = TRUE, MA = 5,
-  addl.sqrt = FALSE, agemax = NULL, spawningTimes = 1,
+  nb.stop.improvement = NULL, SA_temp = 1e+05, verbose = TRUE,
+  MA = 5, addl.sqrt = FALSE, agemax = NULL, spawningTimes = 1,
   flagging.out = TRUE, plot = FALSE, plot.score = TRUE)
 }
 \arguments{

@@ -74,42 +74,20 @@ with(synLFQ4, image(x = dates, y = midLengths, z = t(rel.age),
 df <- data.frame(
   rel.age = c(synLFQ4$rel.age),
   n = c(synLFQ4$catch),
-  cohort = c(synLFQ4$cohort)
+  cohort = c(synLFQ4$cohort),
+  Ndt = c(synLFQ4$catch)/c(synLFQ4$dt)
 )
 
-# floor of rel.age
-df$age <- floor(df$rel.age)
-
-# Catch curve using age (floor rounded ages)
-agg <- aggregate(n ~ age, data = df, FUN = sum)
-plot(log(n) ~ age, agg)
-fit <- lm(log(n) ~ age,
-  data = subset(agg, age >= 1 & age <= 4)
+# Catch curve for each cohort
+agg <- aggregate(Ndt ~ rel.age + cohort, data = df, FUN = sum, na.rm=TRUE)
+agg <- agg[-which(agg$Ndt==0),] # remove zeros
+plot(log(Ndt) ~ rel.age, agg)
+aggsub <- subset(agg, rel.age >= 1.25 & rel.age <= 4) # subset of ages
+fit <- lm(log(Ndt) ~ rel.age + cohort,
+  data = aggsub
 )
-abline(fit)
--coef(fit)[2] # true value: Z = 1.0
-
-# Catch curve using rel.age (unrounded ages)
-agg <- aggregate(n ~ rel.age, data = df, FUN = sum)
-plot(log(n) ~ rel.age, agg)
-fit <- lm(log(n) ~ rel.age,
-  data = subset(agg, rel.age >= 1 & rel.age <= 4)
-)
-abline(fit)
--coef(fit)[2] # true value: Z = 1.0
-
-
-### Catch curve for a single cohort
-agg <- aggregate(n ~ cohort, df, FUN = "sum")
-dfsub <- subset(df, cohort == 7)# most complete cohort
-
-# direct rel.age
-agg <- aggregate(n ~ rel.age, data = dfsub, FUN = sum)
-plot(log(n) ~ rel.age, agg )
-fit <- lm(log(n) ~ rel.age,
-  data = subset(agg, rel.age >= 1 & rel.age <= 2)
-)
-abline(fit)
+summary(fit)
+abline(coef(fit)[1:2])
 -coef(fit)[2] # true value: Z = 1.0
 
 

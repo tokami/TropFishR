@@ -5,12 +5,12 @@
 \title{Prediction models}
 \usage{
 predict_mod(param, type, FM_change = NA, E_change = NA,
-  FM_relative = FALSE, Lc_change = NULL, tc_change = NULL, s_list = NA,
-  stock_size_1 = NA, age_unit = "year", curr.E = NA, curr.Lc = NA,
-  plus_group = FALSE, Lmin = NA, Lincr = NA, LW_unit = "g",
-  plot = FALSE, mark = TRUE, hide.progressbar = FALSE, boot = NULL,
-  natMort = NULL, yearSel = NA, yearCombine = FALSE, binSize = NA,
-  CI = 95)
+  FM_relative = FALSE, Lc_change = NULL, tc_change = NULL,
+  s_list = NA, stock_size_1 = NA, age_unit = "year", curr.E = NA,
+  curr.Lc = NA, plus_group = FALSE, Lmin = NA, Lincr = NA,
+  LW_unit = "g", plot = FALSE, mark = TRUE,
+  hide.progressbar = FALSE, boot = NULL, natMort = NULL,
+  yearSel = NA, yearCombine = FALSE, binSize = NA, CI = 95)
 }
 \arguments{
 \item{param}{a list consisting of following parameters (not all are required):
@@ -122,7 +122,7 @@ A list with the input parameters and dependent on the model type following
          and biomass values of current exploitation or selectivity (if E_curr or
          Lc_tc_curr provided).
   }
-  \item \code{type = 'ThomBell'}
+  \item \code{type = 'ThompBell'}
   \itemize{
      \item \strong{dt}: delta t,
      \item \strong{N}: population number,
@@ -138,7 +138,7 @@ A list with the input parameters and dependent on the model type following
      \item \strong{meanB}: average biomasses for different x factors,
      \item \strong{F_change}: fishing mortality changes;
   }
-  \item \code{type = 'ThomBell'} and \code{Lc_change} provided
+  \item \code{type = 'ThompBell'} and \code{Lc_change} provided
   \itemize{
      \item \strong{FM_change}: fishing mortality changes,
      \item \strong{Lc_change}: changes in length at first capture,

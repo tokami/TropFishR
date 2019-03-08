@@ -4,8 +4,8 @@
 \alias{plotLBB}
 \title{Plotting LBB fit}
 \usage{
-plotLBB(lfq, GausSel = FALSE, LcUser = NA, mmUser = FALSE, MKUser = NA,
-  LstartUser = NA)
+plotLBB(lfq, GausSel = FALSE, LcUser = NA, mmUser = FALSE,
+  MKUser = NA, LstartUser = NA)
 }
 \arguments{
 \item{lfq}{A list of the class "lfq" consisting of following parameters:

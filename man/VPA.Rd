@@ -5,10 +5,10 @@
 \title{Virtual Population Analysis (VPA)}
 \usage{
 VPA(param, catch_columns = NA, catch_unit = NA, catch_corFac = NA,
-  terminalF = NA, terminalE = NA, LW_unit = "g", analysis_type = "VPA",
-  algorithm = "new", plus_group = TRUE, plot = FALSE, boot = NULL,
-  natMort = NULL, yearSel = NA, yearCombine = FALSE, binSize = NA,
-  CI = 95)
+  terminalF = NA, terminalE = NA, LW_unit = "g",
+  analysis_type = "VPA", algorithm = "new", plus_group = TRUE,
+  plot = FALSE, boot = NULL, natMort = NULL, yearSel = NA,
+  yearCombine = FALSE, binSize = NA, CI = 95)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:

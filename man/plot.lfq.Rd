@@ -6,11 +6,13 @@
 \usage{
 \method{plot}{lfq}(x, Fname = "catch", par = NULL, agemax = NULL,
   rel = FALSE, y = NA, curve.col = 1, hist.sc = 0.5,
-  hist.col = c("white", "black", "orange", "darkgreen"), image.col = NULL,
-  region.col = NULL, zlim = NULL, zlimtype = "balanced",
-  date.axis = "traditional", date.at = seq(as.Date("1500-01-01"),
-  as.Date("2500-01-01"), by = "months"), date.format = "'\%y-\%b",
-  xlab = "", ylab = "Length classes", draw = TRUE, ...)
+  hist.col = c("white", "black", "orange", "darkgreen"),
+  image.col = NULL, region.col = NULL, zlim = NULL,
+  zlimtype = "balanced", date.axis = "traditional",
+  date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by =
+  "months"), date.format = "'\%y-\%b", xlab = "",
+  ylab = "Length classes", draw = TRUE, border = "grey20",
+  cex.axis = 1, ...)
 }
 \arguments{
 \item{x}{a list of the class "lfq" consisting of following parameters:
@@ -81,6 +83,8 @@ seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by="months")}
 
 \item{draw}{logical; indicating whether growth curves should be added to
 lfq plot if parameters are provided (default : TRUE)}
+
+\item{border}{colour of borders of histrograms ("grey20" by default; to get rid: NA)}
 
 \item{...}{additional options of the plot function}
 }

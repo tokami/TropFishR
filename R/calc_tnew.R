@@ -15,6 +15,7 @@
 #' @examples
 #'
 #' data(synLFQ4)
+#' synLFQ4$par <- list(Linf = 80, K = 0.5, t_anchor = 0.25, C = 0.75, ts = 0.5)
 #'
 #' # time at length = 0
 #' calc_tnew(par = synLFQ4$par, Lt = 70, t = 2000, Ltnew = 0)

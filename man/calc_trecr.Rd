@@ -4,7 +4,8 @@
 \alias{calc_trecr}
 \title{Calculate time at recruitment}
 \usage{
-calc_trecr(par = NULL, Lrecr = 0, Lt = NULL, t = NULL, tincr = 0.01)
+calc_trecr(par = NULL, Lrecr = 0, Lt = NULL, t = NULL,
+  tincr = 0.01)
 }
 \arguments{
 \item{par}{\code{\link{VBGF}} parameters}

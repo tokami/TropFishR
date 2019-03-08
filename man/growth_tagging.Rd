@@ -4,7 +4,8 @@
 \alias{growth_tagging}
 \title{Growth from tagging data}
 \usage{
-growth_tagging(param, method, Linf_range = c(5, 600), time_unit = "year")
+growth_tagging(param, method, Linf_range = c(5, 600),
+  time_unit = "year")
 }
 \arguments{
 \item{param}{a list consisting of following parameters:
