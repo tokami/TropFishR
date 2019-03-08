@@ -1,206 +1,465 @@
-#' @title Recruitment patterns
+#' calculate time for new length
 #'
-#' @description  This function estimates recrutiment patterns from length-frequency data.
+#' @param par VBGF parameters. If soVBGF, then ts should relate
+#' to time of calendar year rather than time of age year.
+#' @param Ltnew New length for which time is calculated
+#' @param Lt Known length at time t
+#' @param t known time t
+#' @param tincr time increment (year fraction) used for iterative
+#' hind-/fore-casting. Use smaller values for increased precision
+#' (Default: tincr = 0.01)
 #'
-#' @param lfq a list consisting of following parameters:
-#' \itemize{
-#'   \item \code{midLengths}: midpoints of the length classes (length-frequency
-#'   data),
-#'   \item \code{Linf}: infinite length for investigated species in cm [cm],
-#'   \item \code{K}: growth coefficent for investigated species per year [1/year],
-#'   \item \code{t0}: theoretical time zero, when growth curve crosses length equalling zero,
-#'   \item \code{D}: optional; for generalised vBGF
-#'   \item \code{C}: optional; intensity of the (sinusoid) growth oscillations of
-#'   the model,
-#'   \item \code{ts}: optional; onset of the positive phase of the growth oscillation (fraction of year; i.e. Jan 1 = 0, July 1 = 0.5, etc.),
-#'   \item \code{catch}: catches, vector or matrix with catches of subsequent sampling
-#'   times
-#' }
-#' @param tsample sampling time corresponding to time when catch was sampled as
-#'    fraction of year
-#'    (e.g. 0.25 for 1st of April). If catch was sampled several times (catch as matrix)
-#'    vector has to be provided with sampling times in equal order.
-#' @param catch_column numeric; if catch in param is a matrix, this number indicates
-#'    the column of the catch matrix which should be used for the analysis.
-#' @param plot logical; indicating whether a plot should be printed
+#' @return numeric value representing year decimal
+#' @export
 #'
 #' @examples
-#' # one sample
-#' dat <- list(midLengths = seq(2,98,4),
-#'                catch = c(0.6,17.6,93,83.2,12.6,0.3,0,0,0,1,17.1,51.4,
-#'                26.1,2.2,0.2,4.5,21.6,17.6,3.7,8.7,10.6,6.3,5.6,2.9,0.8),
-#'                par = list(Linf = 100,
-#'                           K = 0.5,
-#'                           t0 = 0))
-#' recruitment(lfq = dat, tsample = 0.25)
 #'
-#'
-#' # several samples
 #' data(synLFQ4)
+#' synLFQ4$par <- list(Linf = 80, K = 0.5, ta = 0.25, C = 0.75, ts = 0.5)
 #'
-#' # add growth parameters
-#' synLFQ4$par$Linf <- 80
-#' synLFQ4$par$K <- 0.5
-#' synLFQ4$par$t0 <- 0.25
+#' # time at length = 0
+#' calc_tnew(par = synLFQ4$par, Lt = 70, t = 2000, Ltnew = 0)
 #'
-#' # retrieve sampling times from catch matrix
-#' s_dates <- as.POSIXlt(synLFQ4$dates, format="%d.%m.%Y")
+#' # time at length = 75
+#' calc_tnew(par = synLFQ4$par, Lt = 70, t = 2000, Ltnew = 75)
 #'
-#' recruitment(lfq = synLFQ4, tsample = s_dates$yday/365, plot = TRUE)
+calc_tnew <- function(
+  par = NULL,
+  Ltnew = NULL,
+  Lt = NULL,
+  t = NULL,
+  tincr = 0.01
+){
+  if(Ltnew == Lt | Ltnew >= par$Linf | Lt >= par$Linf | Lt < 0){
+    tnew <- NA
+  }else{
+    Lt.i <- Lt
+    if(class(t)=="Date"){
+      t.i <- date2yeardec(t)
+    }else{
+      if(class(t)=="numeric"){
+        t.i <- t
+      }else{
+        stop("Error: t must be of class 'Date' or 'numeric'" )
+      }
+    }
+    seasonalized <- !is.null(par$C)
+    if(!seasonalized){par$ts <- 0; par$C <- 0}
+
+    if(Ltnew < Lt.i){
+      while(Lt.i > Ltnew){
+        t2 <- t.i
+        t1 <- t.i-tincr
+        slope <- {1 - exp(-(
+          par$K*(t2-t1)
+          - (((par$C*par$K)/(2*pi))*sin(2*pi*(t1-par$ts)))
+          + (((par$C*par$K)/(2*pi))*sin(2*pi*(t2-par$ts)))
+        ))}
+        Lt.i <- (par$Linf*slope - Lt.i) / (slope - 1)
+        t.i <- t1
+      }
+      tnew <- t.i
+    }
+
+    if(Ltnew > Lt){
+      while(Lt.i < Ltnew){
+        t2 <- t.i+tincr
+        t1 <- t.i
+        slope <- {1 - exp(-(
+          par$K*(t2-t1)
+          - (((par$C*par$K)/(2*pi))*sin(2*pi*(t1-par$ts)))
+          + (((par$C*par$K)/(2*pi))*sin(2*pi*(t2-par$ts)))
+        ))}
+        Lt.i <- (par$Linf*slope + Lt.i) / (slope + 1)
+        t.i <- t2
+      }
+      tnew <- t.i
+    }
+  }
+
+  # return result
+  return(tnew)
+}
+
+
+
+#' @title Assign cohort, relative ages and birth date to an lfq dataset
+#'
+#' @description The \code{lfqCohort} function will assign cohort number (1 = oldest),
+#' relative age (since length equal zero), and birth date (at length equal zero) to
+#' an \code{lfq} object given a set of VBGF parameters (\code{lfq$par}).
+#'
+#' The method is can be used as a precursor to cohort-based analyses
+#' (e.g. catch curve, VPA), or as means of identifying recruitment patterns.
+#' Relative ages consider seasonalized VBGF (when applicable), thus aiding the
+#' correct assignment of ages to lfq data (see Pauly 1990).
 #'
 #'
-#' plot(synLFQ4, Fname = "catch",
-#'    par = list(Linf = 80, K = 0.5, ta = 0.25, C = 0.75, ts = 0),
-#'    ylim = c(0,80))
+#' @param lfq an lfq object with fitted VBGF parameters in the \code{lfq$par} slot.
+#' @param n.per.yr number of cohorts per year for slicing (Default: \code{n.per.year  = 1}).
+#' See details section for more information on slicing.
+#' This argument should be set to a higher values in cases of multiple cohorts per year.
+#' @param agemax maximum age of the stock, which is used to define the extent of growth
+#' curves via a call to \code{\link{lfqFitCurves}}. When not supplied
+#' (Default: \code{agemax = NULL}), the value is estimated based on the time rquired
+#' to achieve a length of 95\% of Linf.
 #'
-#' @details
-#' This function calculates recruitment patterns of a
-#' stock by backward projection onto the length axis of a set of length frequency data
-#' using the (special, generalised or seasonalised)
-#' von Bertallanfy growth curve (vBGF, Pauly 1982). The method assumes that (i) all fish in a
-#' data set grow as described by a single set of growth parameters and (ii) one month out
-#' of twelve always has zero recruitment. The second assumption is probably not met, since
-#' temperate species may contain more than one month with zero recruitment, while tropical species
-#' may have more constant recruitment without months of no recruitment.
-#' If t0 is not provided, a relative recruitment pattern will be estimated without
-#' specific month values returned in the results. However, an estimate of t0
-#' can be obtained by the time
-#' lag between peak spawning and recruitment. Several length-frequency data sets
-#' can be used to estimate the recrutiment pattern by providing catch as a matrix and
-#' setting catch_column to NA (default). Then the fraction per time is calculated for
-#' each size class in each sample and then pooled together. For the generalised vBGF, D is
-#' required, for the seasonalised vBGF C, ts and D.
+#' @return a list of class `lfq` containing the additional slots for relative age
+#' (\code{rel.age}), cohort number (\code{cohort}), and birthday (\code{bday}).
 #'
-#' @return A list with the input parameters and following list objects:
-#' \itemize{
-#'   \item \strong{ti}: actual age,
-#'   \item \strong{tS_frac}: age at which the length was zero expressed as fraction
-#'   of the year,
-#'   \item \strong{cor_months}: corresponding months,
-#'   \item \strong{months}: numeric months (relative if no t0 is not given),
-#'   \item \strong{months_abb}: months (only presented if t0 is given),
-#'   \item \strong{all_recruits}: number of recruits per month as matrix if several
-#'   length-frequency data sets are provided,
-#'   \item \strong{mean_recruits}: (mean) number of recruits per month,
-#'   \item \strong{per_recruits}: precentage number of recruits per month.
-#' }
+#' @details The method involves "slicing" the lfq data based on the VBGF parameters, and
+#' follows the general approach described by Pauly (1990), and demonstrated by
+#' Pauly et al. (1995) using the "GOTCH.A" program. By default, a single slice per year
+#' (\code{n.per.yr = 1}) is used, which sets slice boundaries of +/- 0.5 yr around the
+#' \code{ta} parameter. For each lfq bin, cohort association is then determined by
+#' its inclusion within a given slice. Bins of length greater than Linf, are aggregated with
+#' the bin that includes Linf. In the case of multiple cohorts per year, a larger
+#' \code{n.per.yr} is needed in order to resolve intra-annual cohorts.
 #'
-#' @importFrom graphics plot
-#' @importFrom stats aggregate
 #'
 #' @references
-#' Brey, T., Soriano, M., Pauly, D., 1988. Electronic length frequency analysis. A
-#' revised and expanded user's guide to ELEFAN 0, 1 and 2. (Second edition).
-#' Berichte aus dem Institut f??r Meereskunde Kiel, No 177, 31p.
+#' Pauly, D., Moreau, J., & Abad, N. (1995). Comparison of age-structured
+#' and length-converted catch curves of brown trout Salmo trutta in two
+#' French rivers. Fisheries Research, 22(3–4), 197–204.
+#' https://doi.org/10.1016/0165-7836(94)00323-O
 #'
-#' Moreau, J., & Cuende, F. X., 1991. On improving the resolution of the recruitment
-#' patterns of fishes. \emph{Fishbyte}, 9(1), 45-46.
-#'
-#' Pauly, D., 1982. Studying single-species dynamics in a tropical multispecies context.
-#' In Theory and management of tropical fisheries. \emph{ICLARM Conference Proceedings}
-#' (Vol. 9, No. 360, pp. 33-70).
-#'
-#' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
-#' Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.
+#' Pauly, Daniel. (1990). Length-converted catch curves and the seasonal
+#' growth of fishes. Fishbyte, 8(3), 33–38.
 #'
 #' @export
+#'
+#' @examples
+#' # Load data and add VGBF parameters
+#' data(synLFQ4)
+#' synLFQ4$par <- list(Linf = 80, K = 0.5, ta = 0.25, C = 0.75, ts = 0.5)
+#'
+#' # visualize cohorts with lfqCohort
+#' synLFQ4 <- lfqCohort(synLFQ4, n.per.yr = 1)
+#' plot(synLFQ4, Fname = "catch",
+#'   ylim = c(0, max(synLFQ4$midLengths)), image.col=NA)
+#' pal <- colorRampPalette(c(4,5,7,2))
+#' with(synLFQ4, image(x = dates, y = midLengths, z = t(cohort),
+#'   col = adjustcolor(pal(max(cohort, na.rm = TRUE)), 0.75),
+#'   add=TRUE
+#' ))
+#'
+#' # visualize relative age with lfqCohort
+#' plot(synLFQ4, Fname = "catch",
+#'   ylim = c(0, max(synLFQ4$midLengths)), image.col=NA)
+#' pal <- colorRampPalette(c(4,5,7,2))
+#' with(synLFQ4, image(x = dates, y = midLengths, z = t(rel.age),
+#'   col = adjustcolor(pal(100), 0.75),
+#'   add=TRUE
+#' ))
+#'
+#'
+lfqCohort <- function(lfq, n.per.yr = 1, agemax = NULL){
 
-recruitment <- function(lfq, tsample, catch_column = NA, plot = FALSE){
-
-    res <- lfq
-    if("par" %in% names(res)){
-        par <- res$par
-    }else par <- list()
-    if(!"par" %in% names(res)) stop(noquote("Please provide the required parameters in res$par!"))    
-
-    Linf <- res$par$Linf
-    K <- res$par$K
-    ta <- ifelse("ta" %in% names(res$par), res$par$ta, 0)            
-    t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
-    C <- ifelse("C" %in% names(res$par), res$par$C, 0)
-    ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
-    D <- ifelse("D" %in% names(res$par),res$par$D, 1)
-
-    classes <- as.character(res$midLengths)
-    ## create column without plus group (sign) if present
-    classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
-    classes.num <- as.numeric(classes.num[,1])
-
-    if(is.na(catch_column)) catch <- res$catch
-    if(!is.na(catch_column)) catch <- res$catch[,catch_column]
-
-    if(class(catch) == "matrix" | class(catch) == "data.frame"){
-        len_catch <- dim(catch)[1]
-        catch_sets <- dim(catch)[2]
-    }else{
-        len_catch <- length(catch)
-        catch_sets <- 1
+  if(is.null(agemax)){
+    if(!is.null(lfq$agemax)){
+      agemax <- lfq$agemax
+    } else {
+      agemax <- ceiling((1/-lfq$par$K)*log(1-((lfq$par$Linf*0.95)/lfq$par$Linf)))
     }
+  }
 
-    res_months <- data.frame(month = 1:12)
-    ## number of recruits per month
-    N_months_loop <- matrix(NA, nrow = 12, ncol = catch_sets)
-    ti <- matrix(NA, nrow = len_catch, ncol = catch_sets)
-    tS_frac <- matrix(NA, nrow = len_catch, ncol = catch_sets)
-    correspond_month <- matrix(NA, nrow = len_catch, ncol = catch_sets)
-    for(i in 1:catch_sets){
-        if(catch_sets > 1){
-            catchi <- catch[,i]
-            tsampli <- tsample[i]
-        }else{
-            catchi <- catch
-            tsampli <- tsample
-        }
+  # record original par and make copy for adjusting ta
+  PAR <- lfq$par
+  PAR2 <- PAR
 
-        ## ## special vBGF (D = 1)
-        ## ti[,i] <- log(1 - classes.num/Linf)/-K + t0 - tsampli
-        ## ## generalised vBGF
-        ## if(!is.na(D)) ti[,i] <- log(1 - (classes.num/Linf)^D)/(-K*D) + t0 - tsampli
-        ## ## seasonalized vBGF
-        ## if(!is.na(C) & !is.na(ts)) ti[,i] <- (log(1 - (classes.num/Linf)^D) +
-        ##                                     C * ((K*D)/2*pi)*sin(2*pi)*((t0-tsampli)-ts))/(-K*D) + t0 - tsampli
+  # calc possible ta(s) (plus/minus 0.5 years to fitted lfq$par$ta)
+  tas <- sort(
+    seq(
+      from = (PAR$ta - 0.5),
+      by = 1/n.per.yr,
+      length.out = n.per.yr
+    ) %% 1
+  )
 
-        ti[,i] <- (log(1 - (classes.num/Linf)^D) +
-                   C * ((K*D)/2*pi)*sin(2*pi)*((t0-tsampli)-ts))/(-K*D) + t0 - tsampli
+  # positive adjustment to agemax (to correct for mid time of cohort)
+  t_shift <- 1/n.per.yr/2
 
-        ## t at S = 0 as fraction of year
-        tS_frac[,i] <- ti[,i] - floor(ti[,i])
-        ## corresponding months
-        correspond_month[,i] <- floor(tS_frac[,i] * 12 + 1)
+  # calc Lt for each ta; record bday to identify unique cohorts
+  Lts <- vector("list", length(tas))
+  for(n in seq(Lts)){
+    PAR2$ta <- tas[n]
+    Lts[[n]] <- lfqFitCurves(lfq, par = PAR2,
+      agemax = agemax + t_shift,
+      draw = FALSE)$Lt
+    Lts[[n]]$bday <- Lts[[n]]$t - Lts[[n]]$rel.age + t_shift
+  }
+  Lts <- do.call("rbind", Lts)
 
-        N_months_pre <- aggregate(list(numbers=catchi), by = list(month = correspond_month[,i]),
-                                  sum, na.rm =TRUE)
-        N_months_all <- merge(res_months, N_months_pre, by.x = "month", all.x=TRUE)
-        N_months_all$numbers[is.na(N_months_all$numbers)] <- 0
-        N_months_loop[,i] <- N_months_all$numbers
+  # assign cohort number based on bday (oldest = 1)
+  bdays <- sort(unique(Lts$bday))
+  Lts$ct <- match(Lts$bday, bdays)
+
+  # create output matrices for rel.age, cohort number, and bday
+  rel.age <- cohort <- bday <- lfq$catch*NaN
+  for(i in seq(length(lfq$dates))){
+    t.use <- which(Lts$t == date2yeardec(lfq$dates[i]))
+    Lt.use <-  Lts[t.use,]
+    Lt.use <- Lt.use[order(Lt.use$Lt, decreasing = TRUE),]
+
+    # identify upper cohort boundary
+    upper <- suppressWarnings(apply(
+      outer(X = lfq$midLengths, Y = Lt.use$Lt, FUN = "-"),
+      MARGIN = 1,
+      FUN = function(x){max(which(x < 0))}
+    ))
+
+    # If no upper exists, match to the oldest cohort (i.e. row 1 of Lt.use)
+    upper <- replace(upper, upper == -Inf, 1)
+
+    # extract result
+    rel.age[,i] <- Lt.use$rel.age[upper]
+    cohort[,i] <- Lt.use$ct[upper]
+    bday[,i] <- Lt.use$bday[upper]
+  }
+
+
+  # determine dt (time required to pass through bin)
+  dt <- cohort*NaN
+  dL <- diff(lfq$midLengths)/2
+  lowerL <- lfq$midLengths - c(dL[1], dL)
+  upperL <- lfq$midLengths + c(dL, Inf)
+  for(i in seq(length(lfq$dates))){
+    # t1i <- seq(length(lfq$midLengths))*NaN
+    for(j in seq(length(lfq$midLengths))){
+      lowert <- calc_tnew(par = PAR, Ltnew = 0,
+        Lt = lowerL[j], t = lfq$dates[i], tincr = 0.01)
+      uppert <- calc_tnew(par = PAR, Ltnew = 0,
+        Lt = upperL[j], t = lfq$dates[i], tincr = 0.01)
+      dt[j,i] <- lowert - uppert
     }
+  }
 
-    N_months_final <- apply(N_months_loop, 1, FUN = mean, na.rm = TRUE)
+  lfq$cohort <- cohort
+  lfq$rel.age <- rel.age
+  lfq$bday <- bday
+  lfq$dt <- dt
 
-    ## percentage of recruits per month
-    N_months_per <- (N_months_final/sum(N_months_final, na.rm = TRUE)) * 100
-
-    if("t0" %in% names(res)){
-        months_abb <- month.abb[res_months$month]
-    }
-
-    if(catch_sets == 1){
-        ti <- ti[,1]
-        tS_frac <- tS_frac[,1]
-        correspond_month <- correspond_month[,1]
-        N_months_loop <- N_months_loop[,1]
-    }
-
-    res2 <- c(res,list(ti = ti,
-                       tS_frac = tS_frac,
-                       cor_months = correspond_month,
-                       months = res_months$month))
-    if("t0" %in% names(res)) res2$months_abb <- months_abb
-    ret <- c(res2,list(all_recruits = N_months_loop,
-                       mean_recruits = N_months_final,
-                       per_recruits = N_months_per))
-
-    class(ret) <- "recruitment"
-    if(plot) plot(ret)
-    return(ret)
+  return(lfq)
 }
+
+
+
+#' @title Calculate recruitment pattern of lfq object using lfqCohort approach
+#'
+#' @description The \code{recruitment2} function calculates the
+#' recruitment pattern (i.e. monthly) of an lfq object given
+#' corresponding \code{\link{VBGF}} parameters.
+#' Time at recruitment is calculated via a call to
+#' \code{\link{lfqCohort}}, which slices the lfq data, and assigns
+#' bins to a given cohort, with associated relative ages and brithdays.
+#'
+#' This function does not represent a robust statistical method as it
+#' assumes the same growth parameters for all individual counts
+#' in the \code{lfq$catch} bins.
+#' Nevertheless, the results should provide general information about
+#' the recruitment pattern, e.g. relative recruitment strength by month as
+#' weighted by the catch frequencies (\code{lfq$catch}).
+#' Using the argument \code{use.rcounts = TRUE}, the recruitment pattern
+#' is weighted by positive restructured frequencies only.
+#'
+#' @param lfq a length-frequency object (i.e. class \code{lfq}) that contains
+#' a \code{lfq$par} slot with \code{\link{VBGF}} parameters (usually fit
+#' via \code{\link{ELEFAN}}, \code{\link{ELEFAN_GA}}, or \code{\link{ELEFAN_SA}}
+#' functions).
+#' @param n.per.yr number of cohorts per year for slicing
+#' (Default: \code{n.per.yr = 36}). Higher values may increase the resolution of the
+#' recruitment estimate,  although at the expense of computation time.
+#' @param agemax maximum age of the stock, which is used to define the extent of growth
+#' curves via a call to \code{\link{lfqFitCurves}}. When not supplied
+#' (Default: \code{agemax = NULL}), the value is estimated based on the time rquired
+#' to achieve a length of 95\% of Linf.
+#' @param use.rcounts logical. Should restructured counts
+#' (\code{lfq$rcounts}), rather than raw catch counts (\code{lfq$catch})
+#' be used to derive recruitment pattern. If true, only bins with positive restructures
+#' frequencies are considered, and those values are multiplied by 100
+#' in order to provide appropriate scaling for density approxmations via
+#' \code{\link[graphics]{hist}}.
+#' @param plot logical. Should monthly recruitment pattern [\%] by plotted
+#' as a \code{\link[graphics]{barplot}} (default: \code{plot = TRUE}).
+#' @param ... further arguments passed to
+#' \code{\link[graphics]{barplot}} when \code{plot = TRUE}.
+#'
+#' @return object of "histogram" class containing
+#' monthly recruitment pattern
+#'
+#' @details The method uses the \code{lfqCohort} function to "slice" lfq data
+#' into distinct cohorts.
+#' By setting the number of cohorts per year to a high value
+#' (e.g. \code{n.per.yr = 36}), specific bins get associated with a precise
+#' \code{ta} value, while other VBGF parameters are held constant.
+#' The method is more computationally efficient than \code{\link{recruitment}},
+#' which uses an iterative hindcast to derive recruitment patterns,
+#' although results are comparible.
+#' Given that the size of recruitment can be subjective,
+#' recruitment patterns should be interpreted as relative months since the
+#' assumption of length zero as a recruitment size is unrealistic, as are the
+#' associated precise recruitment times. Nevertheless, the overall pattern
+#' (e.g. one mode vs two), should inform the resolution at which to define
+#' cohorts (i.e. via \code{\link{lfqCohort}}).
+#'
+#' @export
+#'
+#' @examples
+#'
+#' # using catch frequencies
+#' data(synLFQ4)
+#' synLFQ4$par <- list(Linf = 80, K = 0.5, ta = 0.25, C = 0.75, ts = 0.5)
+#' res <- recruitment(synLFQ4)
+#'
+#' # using restructured frequencies
+#' synLFQ4 <- lfqRestructure(synLFQ4, MA = 11)
+#' res <- recruitment(lfq = synLFQ4, use.rcounts = TRUE)
+#'
+#' # use of results in external plotting (via histogram())
+#' plot(res, col = 5, freq = FALSE,
+#'   main = "Recruitment pattern for synLFQ4",
+#'   xlab = "Relative month"
+#' )
+#'
+#' # presentation as percentages
+#' barplot(res$counts/sum(res$counts)*100, names.arg = month.abb,
+#'   las = 2, ylab = "Recruitment [%]",
+#'   main = "Recruitment pattern for synLFQ4"
+#' )
+#'
+#'
+recruitment <- function(
+  lfq,
+  n.per.yr = 36,
+  agemax = NULL,
+  plot = TRUE,
+  use.rcounts = FALSE,
+  ...
+){
+  if(use.rcounts & is.null(lfq$rcounts)){stop(
+    "If use.rcounts = TRUE, then lfq$rcounts can not be empty.\n
+    Please run lfqRestructure first and replace lfq with the output."
+  )}
+
+  lfq <- lfqCohort(lfq = lfq, n.per.yr = n.per.yr, agemax = agemax)
+
+  if(!use.rcounts){
+    counts <- lfq$catch
+  } else {
+    counts <- round(lfq$rcounts*100)
+    counts[which(counts<0)] <- 0
+  }
+
+
+  trecr <- rep(x = c(lfq$bday), times=c(counts))
+  trecr <- trecr[!is.na(trecr)]
+  trecr <- yeardec2date(trecr)
+  trecr.mo <- as.numeric(format(trecr, "%m"))
+  h <- hist(trecr.mo, breaks = seq(0.5, 12.5, by=1), plot = FALSE)
+  if(plot){
+    barplot(h$counts/sum(h$counts)*100,
+      names.arg = 1:12,
+      ylab = "Recruitment [%]",
+      xlab = "Relative month",
+      ...
+    )
+  }
+  return(h)
+}
+
+
+#' @title Calculate age-based VBGF parameters from time-based estimates
+#'
+#' @description Translates ta to t0 and ts to age-adjusted ts. In addition to
+#' VBGF parameters calculated via e.g. ELEFAN, the length at recruitment
+#' (\code{Lrecr}) must also be provided.
+#'
+#' @param par list. VBGF parameters.
+#' @param Lrecr numeric. Length at recruitment
+#' (default: \code{Lrecr = NULL}).
+#' @param plot logical. Plot graphical representation of both
+#' time and age based growth curves (default: \code{plot = TRUE}).
+#'
+#' @return a list containging age-based VBGF parameters.
+#' @export
+#'
+#' @examples
+#' data(synLFQ4)
+#' lfq <- synLFQ4
+#' lfq$par <- list(
+#'   Linf = 80, K = 0.5, ta = 0.25, C = 0.75, ts = 0.5
+#' )
+#' ta2t0(par = lfq$par, Lrecr = 10)
+#'
+ta2t0 <- function(par = NULL, Lrecr = NULL, plot = TRUE){
+  if(is.null(par) | is.null(Lrecr)){
+    stop("Error: must provide both 'par' and 'Lrecr'")
+  }
+  if(Lrecr > par$Linf){stop("Error: 'Lrecr' must be lower than 'par$Linf'")}
+
+  # add seasonalized pars if needed
+  seasonalized <- !is.null(par$C)
+  if(!seasonalized){par$ts <- 0; par$C <- 0}
+
+  t <- seq(0, 3, 0.01)
+  Lt <- VBGF(par = par, t = t)
+  trecr <- t[which.min(sqrt((Lt - Lrecr)^2))]
+  t0 <- par$ta - trecr
+  if(seasonalized){
+    ts <- (par$ts - trecr)%%1
+  } else {
+    ts <- 0
+  }
+  par_age <- par
+  par_age$ta <- NULL
+  par_age$t0 <- t0
+  par_age$ts <- ts
+  age <- seq(t0, 3, 0.01)
+  Lage <- VBGF(par = par_age, t = age)
+
+  if(plot){
+    op <- par(mfcol = c(1,2), mar = c(4,4,1,1), mgp = c(2,0.5,0), cex = 1)
+    # plot by time
+    plot(t, Lt, t="l", xlab = "time", ylim = c(0, max(Lt)*1.1), yaxs="i", ylab = bquote(L[t]))
+    ylim <- par()$usr[3:4]
+    grid(); abline(v = trecr, lty=3); box()
+    lines(t, Lt)
+    points(trecr, Lrecr, pch = 1, col = 2)
+    points(trecr + t0, 0, pch = 4, col = 4)
+    tmp <- data.frame(var = c(names(par), "trecr", "Lrecr"), val = c(unlist(par), trecr, Lrecr))
+    tmp$pch = NA; tmp$col <- NA
+    is_t0 <- which(tmp$var=="ta")
+    tmp$pch[is_t0] <- 4
+    tmp$col[is_t0] <- 4
+    is_Lrecr <- which(tmp$var=="Lrecr")
+    tmp$pch[is_Lrecr] <- 1
+    tmp$col[is_Lrecr] <- 2
+    legend("bottomright",
+      legend = c(paste(tmp$var, "=", round(tmp$val,2))),
+      bty = "n", cex = 0.7, pt.cex = 1,
+      pch = tmp$pch, col = tmp$col
+    )
+    # plot by age
+    plot(age, Lage, t="l", ylim = ylim, yaxs = "i", ylab = bquote(L[age]))
+    grid(); abline(v = 0, lty=3); box()
+    lines(age, Lage)
+    points(0, Lrecr, pch = 1, col = 2)
+    points(t0, 0, pch = 4, col = 4)
+    tmp <- data.frame(var = c(names(par_age), "Lrecr"), val = c(unlist(par_age), Lrecr))
+    tmp$pch = NA; tmp$col <- NA
+    is_t0 <- which(tmp$var=="t0")
+    tmp$pch[is_t0] <- 4
+    tmp$col[is_t0] <- 4
+    is_Lrecr <- which(tmp$var=="Lrecr")
+    tmp$pch[is_Lrecr] <- 1
+    tmp$col[is_Lrecr] <- 2
+    legend("bottomright",
+      legend = c(paste(tmp$var, "=", round(tmp$val,2))),
+      bty = "n", cex = 0.7, pt.cex = 1,
+      pch = tmp$pch, col = tmp$col
+    )
+    par(op)
+  }
+  return(par_age)
+}
+

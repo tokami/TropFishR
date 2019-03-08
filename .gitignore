@@ -4,6 +4,8 @@ doc
 .Rhistory
 .Rapp.history
 
+# Working folder
+working
 # Session Data files
 .RData
 # Example code in package build process
@@ -30,3 +32,4 @@ src/NLLgtg.o
 *.o
 .DS_Store
 .Rproj.user
+
