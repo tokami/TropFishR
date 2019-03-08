@@ -312,7 +312,6 @@ predict_mod <- function(
         bootOut <- boot
         bootRaw <- boot$bootRaw
 
-
         if (any(is.null(bootRaw$Linf), is.null(bootRaw$K)))
             stop("YPR with boot requires a boot object with columns Linf and K")
 
@@ -332,7 +331,6 @@ predict_mod <- function(
             stop("YPR requires information about the length at recruitment and length at first capture. Please provide 'Lr' and 'Lc' estimates in param.")
         }
 
-
         ## resample data sets
         lfqAll <- lfqResample(param, boot=boot)
         ##  set.seed(boot$seed[bi])
@@ -341,11 +339,14 @@ predict_mod <- function(
         F01 <- vector("numeric",nrow(bootRaw))
         Fmax <- vector("numeric",nrow(bootRaw))
         F05 <- vector("numeric",nrow(bootRaw))
+        F04 <- vector("numeric",nrow(bootRaw))
+        SPR <- vector("numeric",nrow(bootRaw))        
         totYs <- vector("list",nrow(bootRaw))
         meanBs <- vector("list",nrow(bootRaw))
         nmaxs <- vector("numeric",nrow(bootRaw))
         n01s <- vector("numeric",nrow(bootRaw))
-        n05s <- vector("numeric",nrow(bootRaw))        
+        n05s <- vector("numeric",nrow(bootRaw))
+        n04s <- vector("numeric",nrow(bootRaw))                
         for(bi in 1:nrow(bootRaw)){
 
             lfqTemp <- lfqAll[[bi]]
@@ -381,6 +382,8 @@ predict_mod <- function(
             C <- ifelse("C" %in% names(bootRaw),bootRaw$C[bi],0)
             ts <- ifelse("ts" %in% names(bootRaw),bootRaw$ts[bi],0)
             t0 <- 0
+            Lmat <- ifelse("Lmat" %in% names(lfq$par),lfq$par$Lmat,NA)
+            wmat <- ifelse("wmat" %in% names(lfq$par),lfq$par$wmat,NA)            
 
             if(!(natMort %in% names(bootRaw))) stop("Please provide a natural mortality estimate 'M' in the boot object.")
             M <- bootRaw[bi,which(colnames(bootRaw) == natMort)] ## vector with Ms not yet implemented for boot YPR
@@ -475,11 +478,7 @@ predict_mod <- function(
 
                 ## selectivity information  (add possibility to provide externally estimated L50 and L75 in list)
                 ## checking for L50/L75 estimation in catch curve
-                if("FMvecVPA" %in% names(boot$misc)){
-                    FM <- boot$misc$FMvecVPA[[bi]]
-                }else if(is.na(s_list) &
-                         "L50" %in% names(bootRaw) &
-                         "L75" %in% names(bootRaw)){
+                if("L50" %in% names(bootRaw) & "L75" %in% names(bootRaw)){
                     s_list <- list(selecType = "trawl_ogive",
                                    L50 = bootRaw$L50[bi],
                                    L75 = bootRaw$L75[bi])
@@ -492,23 +491,28 @@ predict_mod <- function(
                         s_list$L75 <- 6
                     }
                     sel <- select_ogive(s_list, Lt = Lt)
-                    FM <- bootRaw$FM[bi] * sel
+                    FMvec <- bootRaw$FM[bi] * sel
+                }else if("FMvecVPA" %in% names(boot$misc)){
+                    FMvec <- boot$misc$FMvecVPA[[bi]]
                 }else{
                     stop("You need to run VPA or catchCurve with calc_ogive to have selectivity information")
                 }
 
                 ## add parameters to lfq data
-                lfqLoop$Linf <- Linf
-                lfqLoop$K <- K
-                lfqLoop$t_anchor <- t_anchor
-                lfqLoop$C <- C
-                lfqLoop$ts <- ts
-                lfqLoop$t0 <- t0
-                lfqLoop$a <- a
-                lfqLoop$b <- b
-
-                                        #prediction based on f_change
-                pred_mat <- as.matrix(FM/max(FM, na.rm = TRUE)) %*% FM_change
+                lfqLoop$par <- list()
+                lfqLoop$par$Linf <- Linf
+                lfqLoop$par$K <- K
+                lfqLoop$par$t_anchor <- t_anchor
+                lfqLoop$par$C <- C
+                lfqLoop$par$ts <- ts
+                lfqLoop$par$t0 <- t0
+                lfqLoop$par$a <- a
+                lfqLoop$par$b <- b
+                lfqLoop$par$Lmat <- Lmat
+                lfqLoop$par$wmat <- wmat
+                
+                ## prediction based on f_change
+                pred_mat <- as.matrix(FMvec/max(FMvec, na.rm = TRUE)) %*% FM_change
                 pred_res_list <- vector("list", length(FM_change))
                 for(x7 in 1:length(FM_change)){
                     lfqLoop$Z <- pred_mat[,x7] + M
@@ -518,7 +522,15 @@ predict_mod <- function(
                     pred_res_list[[x7]] <- resL$totals
                 }
 
+                ## SSB0 for SPR
+                lfqLoop$FM <- numeric(nrow(pred_mat)) * 0.0
+                lfqLoop$Z <- lfqLoop$FM + M
+                tmp <- stock_sim(lfqLoop, age_unit = age_unit,
+                                 stock_size_1 = stock_size_1, plus_group = plus_group)
+                SSB0 <- tmp$totals$meanSSB
+
                 pred_res_df <- do.call(rbind, pred_res_list)
+                pred_res_df$SPR <- pred_res_df$meanSSB/SSB0                
                 pred_res_df$FM_change <- FM_change
                 pred_res_df$E_change <- E_change
 
@@ -549,17 +561,26 @@ predict_mod <- function(
                 }
                 N05 <- which.min(abs(Bper - 50))
 
+                ## F_SPR40 considered risk adverse for many species
+                ## (Clark 2002: F35% revisted ten years later
+                N04 <- which.min(abs(pred_res_df$SPR - 0.4))
+
+                ## current SPR
+                SPR[bi] <- pred_res_df$SPR[which.min(abs(FM_change - FM))]
+
                 ## ref level
                 F01[bi] <- FM_change[N01]
                 Fmax[bi] <- FM_change[Nmax]
                 F05[bi] <- FM_change[N05]
+                F04[bi] <- FM_change[N04]                
 
                 ## for plotting
                 totYs[[bi]] <- pred_res_df$totY
                 meanBs[[bi]] <- pred_res_df$meanB
                 nmaxs[bi] <- Nmax
                 n01s[bi] <- N01
-                n05s[bi] <- N05                
+                n05s[bi] <- N05
+                n04s[bi] <- N04
 
 
                 ## if FMvecVPA not used and selectivity parameters could not be estimated
@@ -571,6 +592,8 @@ predict_mod <- function(
                         F01[bi] <- NaN  ## hack
                         Fmax[bi] <- NaN
                         F05[bi] <- NaN
+                        F04[bi] <- NaN
+                        SPR[bi] <- NaN                                                
                     }
                 }
                 if(is.na(bootRaw$Z[bi]) | is.nan(bootRaw$Z[bi]) |
@@ -579,6 +602,8 @@ predict_mod <- function(
                     F01[bi] <- NaN  ## hack
                     Fmax[bi] <- NaN
                     F05[bi] <- NaN
+                    F04[bi] <- NaN
+                    SPR[bi] <- NaN                                            
                 }
             }
 
@@ -811,6 +836,8 @@ predict_mod <- function(
                         F01[bi] <- NaN  ## hack
                         Fmax[bi] <- NaN
                         F05[bi] <- NaN
+                        F04[bi] <- NaN
+                        SPR[bi] <- NaN                                                
                     }
                 }
                 if(is.na(bootRaw$Z[bi]) | is.nan(bootRaw$Z[bi]) |
@@ -819,11 +846,13 @@ predict_mod <- function(
                     F01[bi] <- NaN  ## hack
                     Fmax[bi] <- NaN
                     F05[bi] <- NaN
+                    F04[bi] <- NaN
+                    SPR[bi] <- NaN                                            
                 }
             }
         }
-        bootRaw <- cbind(bootRaw, data.frame(F01,Fmax,F05))
-        tmp <- as.data.frame(bootRaw[,(ncol(boot$bootRaw)+(1:3))])
+        bootRaw <- cbind(bootRaw, data.frame(SPR,F01,Fmax,F05,F04))
+        tmp <- as.data.frame(bootRaw[,(ncol(boot$bootRaw)+(1:5))])
 
 
         ## estimate FF01, FFmax, FF05 if FM in dataframe
@@ -831,9 +860,10 @@ predict_mod <- function(
             bootRaw[,(ncol(bootRaw)+1)] <- bootRaw$FM / F01
             bootRaw[,(ncol(bootRaw)+1)] <- bootRaw$FM / Fmax
             bootRaw[,(ncol(bootRaw)+1)] <- bootRaw$FM / F05
-            colnames(bootRaw) <- c(colnames(bootRaw)[-((ncol(bootRaw)-2):ncol(bootRaw))],
-                                   c("FF01","FFmax","FF05"))
-            tmp <- cbind(tmp,as.data.frame(bootRaw[,((ncol(bootRaw)-2):ncol(bootRaw))]))
+            bootRaw[,(ncol(bootRaw)+1)] <- bootRaw$FM / F04            
+            colnames(bootRaw) <- c(colnames(bootRaw)[-((ncol(bootRaw)-3):ncol(bootRaw))],
+                                   c("FF01","FFmax","FF05", "FF04"))
+            tmp <- cbind(tmp,as.data.frame(bootRaw[,((ncol(bootRaw)-3):ncol(bootRaw))]))
         }
 
         idx <- apply(tmp, 2, function(x) all(x == 0 | is.na(x) | x == 1))
@@ -891,6 +921,7 @@ predict_mod <- function(
         ret$misc$nmax <- nmaxs
         ret$misc$n01 <- n01s
         ret$misc$n05 <- n05s
+        ret$misc$n04 <- n04s        
         class(ret) <- "lfqBoot"
         return(ret)
 
@@ -1269,7 +1300,7 @@ predict_mod <- function(
 
                                         # Only FM change provided without Lc_tc change
             if((is.null(tc_change) & is.null(Lc_change))){  #  | length(s_list) == 1){
-
+                
                                         #if(is.null(res$FM) | length(res$FM) == 1) stop(noquote("Please provide fishing mortality FM (in 'param') as a vector per size class!"))
 
                 if(is.null(res$FM)) stop(noquote("Please provide fishing mortality FM (in 'param')!"))
@@ -1280,18 +1311,18 @@ predict_mod <- function(
                             s_list <- list(selecType = "knife_edge", L50 = Lc[1])
                         }
                         sel <- select_ogive(s_list, Lt = Lt)
-                        FM <- res$FM * sel
+                        FMvec <- res$FM * sel
                     }else{
                         stop(noquote("Please provide either fishing mortality FM (in 'param') per length class or a Lc value!"))
                     }
                 }
 
-                                        #prediction based on f_change
+                ## prediction based on f_change
                 if(!FM_relative){
-                    pred_mat <- as.matrix(FM/max(FM, na.rm = TRUE)) %*% FM_change
+                    pred_mat <- as.matrix(FMvec/max(FMvec, na.rm = TRUE)) %*% FM_change
                 }
                 if(FM_relative){
-                    pred_mat <- as.matrix(FM) %*% FM_change
+                    pred_mat <- as.matrix(FMvec) %*% FM_change
                 }
 
 
@@ -1370,19 +1401,21 @@ predict_mod <- function(
                     if(!is.na(curr.Lc)){
                         curr.tc <- VBGF(L=curr.Lc, param = list(Linf=Linf, K=K, t0=t0))
                     }else curr.tc <- NA
-                                        # current exploitation rate
+
+                    ## current exploitation rate
                     curr.F = (nM * curr.E)/(1-curr.E)
 
-                    if(is.na(curr.Lc)){
-                        sel <- (FM / max(FM,na.rm=TRUE))
-                    }else if(!is.na(curr.Lc)){
-                        s_list <- list(selecType = "knife_edge", L50 = curr.Lc)
-                        Lt <- res$midLengths
-                        sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
-                    }
                     if(length(s_list) != 1){
                         Lt <- res$midLengths
                         sel <- select_ogive(s_list, Lt = Lt)
+                    }else{
+                        if(is.na(curr.Lc)){
+                            sel <- (FMvec / max(FMvec,na.rm=TRUE))
+                        }else if(!is.na(curr.Lc)){
+                            s_list <- list(selecType = "knife_edge", L50 = curr.Lc)
+                            Lt <- res$midLengths
+                            sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
+                        }                        
                     }
 
                     mati <- sel * curr.F
