@@ -167,7 +167,10 @@ lfqCohort <- function(lfq, n.per.yr = 1, agemax = NULL){
   PAR <- lfq$par
   PAR2 <- PAR
 
+
+  ### assign cohort, rel.age, and bday for each bin
   # calc possible ta(s) (plus/minus 0.5 years to fitted lfq$par$ta)
+  # defines the beginning time of the cohort ta
   tas <- sort(
     seq(
       from = (PAR$ta - 0.5),
@@ -176,10 +179,12 @@ lfqCohort <- function(lfq, n.per.yr = 1, agemax = NULL){
     ) %% 1
   )
 
-  # positive adjustment to agemax (to correct for mid time of cohort)
+  # positive adjustment to agemax
+  # (needed to correct for mid time of cohort)
   t_shift <- 1/n.per.yr/2
 
   # calc Lt for each ta; record bday to identify unique cohorts
+  # this calculates the relative ages, bdays of each slice (cohort)
   Lts <- vector("list", length(tas))
   for(n in seq(Lts)){
     PAR2$ta <- tas[n]
@@ -194,6 +199,7 @@ lfqCohort <- function(lfq, n.per.yr = 1, agemax = NULL){
   bdays <- sort(unique(Lts$bday))
   Lts$ct <- match(Lts$bday, bdays)
 
+  # matching each bin to a given slice (cohort).
   # create output matrices for rel.age, cohort number, and bday
   rel.age <- cohort <- bday <- lfq$catch*NaN
   for(i in seq(length(lfq$dates))){
@@ -218,7 +224,7 @@ lfqCohort <- function(lfq, n.per.yr = 1, agemax = NULL){
   }
 
 
-  # determine dt (time required to pass through bin)
+  ### determine dt (time required to pass through bin)
   dt <- cohort*NaN
   dL <- diff(lfq$midLengths)/2
   lowerL <- lfq$midLengths - c(dL[1], dL)
