@@ -6,8 +6,8 @@
 \usage{
 ELEFAN_GA(lfq, seasonalised = FALSE, low_par = NULL, up_par = NULL,
   popSize = 50, maxiter = 100, run = maxiter, parallel = FALSE,
-  pmutation = 0.1, pcrossover = 0.8, elitism = base::max(1,
-  round(popSize * 0.05)), MA = 5, addl.sqrt = FALSE, agemax = NULL,
+  pmutation = 0.1, pcrossover = 0.8, elitism = base::max(1, round(popSize
+  * 0.05)), MA = 5, addl.sqrt = FALSE, agemax = NULL,
   flagging.out = TRUE, seed = NULL, monitor = FALSE, plot = FALSE,
   plot.score = TRUE, ...)
 }
