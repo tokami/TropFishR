@@ -812,7 +812,7 @@ plot.lfq <- function(x,
 #' threadfin <- list(par = list(Winf = 286,K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4))
 #'
 #' output <- predict_mod(threadfin, FM_change = seq(0,6,0.1),
-#'    tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
+#'    tc_change = seq(0.2,1,0.2), type = 'ypr')
 #' plot(output)
 #'
 #' # hake - length structured data
@@ -888,10 +888,10 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
             }
 
             N05 <- df_Es$F05
-            Nmax <- df_Es$Fmsy
+            Nmax <- df_Es$Fmax
             if(length(N05) == 1){
-                legend.lab <- c("F0.5","Fmsy")
-            }else legend.lab <- c("Fmsy")
+                legend.lab <- c("F0.5","Fmax")
+            }else legend.lab <- c("Fmax")
             if("currents" %in% names(pes)) curr_markX <- pes$currents$curr.F
         }else{
             px <- pes$E_change
@@ -901,10 +901,10 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
             }
 
             N05 <- df_Es$E05
-            Nmax <- df_Es$Emsy
+            Nmax <- df_Es$Emax
             if(length(N05) == 1){
-                legend.lab <- c("E0.5","Emsy")
-            }else legend.lab <- c("Emsy")
+                legend.lab <- c("E0.5","Emax")
+            }else legend.lab <- c("Emax")
             if("currents" %in% names(pes)) curr_markX <- pes$currents$curr.E
         }
         if(!is.na(xlab[1])){
@@ -1135,18 +1135,18 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
         if(xaxis1 == "FM"){
             N01 <- df_Es$F01
             N05 <- df_Es$F05
-            Nmax <- df_Es$Fmsy
+            Nmax <- df_Es$Fmax
             if(length(N05) == 1){
-                legend.lab <- c("F0.1","F0.5","Fmsy")
-            }else legend.lab <- c("F0.1","Fmsy")
+                legend.lab <- c("F0.1","F0.5","Fmax")
+            }else legend.lab <- c("F0.1","Fmax")
             if("currents" %in% names(pes)) curr_markX <- pes$currents$curr.F
         }else{
             N01 <- df_Es$E01
             N05 <- df_Es$E05
-            Nmax <- df_Es$Emsy
+            Nmax <- df_Es$Emax
             if(length(N05) == 1){
-                legend.lab <- c("E0.1","E0.5","Emsy")
-            }else legend.lab <- c("E0.1","Emsy")
+                legend.lab <- c("E0.1","E0.5","Emax")
+            }else legend.lab <- c("E0.1","Emax")
             if("currents" %in% names(pes)) curr_markX <- pes$currents$curr.E
         }
 

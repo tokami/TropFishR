@@ -612,7 +612,7 @@ stock_sim <- function(lfq, age_unit = "year",
             C <- ifelse("C" %in% names(res), res$C, 0)
             ts <- ifelse("ts" %in% names(res), res$ts, 0)
         }
-        if(!("a" %in% names(par)) | !("b" %in% names(par))) stop("VPA requires information about the length-weight relationship. Please provide 'a' and 'b' estimates in res$par.")
+        if(!("a" %in% names(par)) | !("b" %in% names(par))) stop("stock_sim requires information about the length-weight relationship. Please provide 'a' and 'b' estimates in res$par.")
         a <- par$a
         b <- par$b
 
@@ -971,7 +971,7 @@ predict_mod <- function(lfq, type, FM_change = NA,
                         plus_group = NA, Lmin = NA, Lincr = NA, plot = FALSE, mark = TRUE,
                         hide.progressbar = FALSE){
     res <- lfq
-    if(!"par" %in% names(lfq)) stop(noquote("Please provide the required parameters in res$par!"))
+    if(!"par" %in% names(lfq)) stop(noquote("Please provide the required parameters in lfq$par!"))
     par <- res$par    
     res$FM_relative <- FM_relative
 

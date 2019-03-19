@@ -66,7 +66,7 @@ This function plots objects of the class "predict_mod", which are results
 threadfin <- list(par = list(Winf = 286,K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4))
 
 output <- predict_mod(threadfin, FM_change = seq(0,6,0.1),
-   tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
+   tc_change = seq(0.2,1,0.2), type = 'ypr')
 plot(output)
 
 # hake - length structured data
