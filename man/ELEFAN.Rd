@@ -4,12 +4,14 @@
 \alias{ELEFAN}
 \title{ELEFAN}
 \usage{
-ELEFAN(lfq, Linf_fix = NA, Linf_range = NA, K_range = exp(seq(log(0.1),
-  log(10), length.out = 100)), C = 0, ts = 0, MA = 5, addl.sqrt = FALSE,
-  agemax = NULL, flagging.out = TRUE, method = "optimise",
-  cross.date = NULL, cross.midLength = NULL, cross.max = FALSE,
+ELEFAN(lfq, Linf_fix = NA, Linf_range = NA,
+  K_range = exp(seq(log(0.1), log(10), length.out = 100)), C = 0,
+  ts = 0, MA = 5, addl.sqrt = FALSE, agemax = NULL,
+  flagging.out = TRUE, method = "optimise", cross.date = NULL,
+  cross.midLength = NULL, cross.max = FALSE,
   hide.progressbar = FALSE, plot = FALSE, contour = FALSE,
-  add.values = TRUE, rsa.colors = terrain.colors(20), plot_title = TRUE)
+  add.values = TRUE, rsa.colors = terrain.colors(20),
+  plot_title = TRUE)
 }
 \arguments{
 \item{lfq}{a list consisting of following parameters:

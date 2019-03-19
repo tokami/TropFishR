@@ -62,9 +62,6 @@ into distinct cohorts.
 By setting the number of cohorts per year to a high value
 (e.g. \code{n.per.yr = 36}), specific bins get associated with a precise
 \code{ta} value, while other VBGF parameters are held constant.
-The method is more computationally efficient than \code{\link{recruitment}},
-which uses an iterative hindcast to derive recruitment patterns,
-although results are comparible.
 Given that the size of recruitment can be subjective,
 recruitment patterns should be interpreted as relative months since the
 assumption of length zero as a recruitment size is unrealistic, as are the
