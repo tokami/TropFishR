@@ -204,7 +204,7 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
 
 
     lm1List <- pes$linear_mod
-    Z_lm1List <- pes$Z
+    Z_lm1List <- pes$par$Z
     SE_Z_lm1List <- pes$Z_se
     reg_intList <- pes$reg_int
     ## Assumption that Z of smallest selected individuals is most appropriate

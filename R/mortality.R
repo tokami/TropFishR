@@ -549,7 +549,7 @@ catchCurve <- function(lfq,
 
         ## L and t of lower length classes
         lowerLengths <- midLengths - (interval / 2)
-        if("C" %in% names(res) & "ts" %in% names(res)){
+        if("C" %in% names(par) & "ts" %in% names(par)){
             t_L1 <- VBGF(pars = list(Linf = Linf, K = K, t0 = t0, C=C, ts=ts), L = lowerLengths)
         }else{
             t_L1 <- VBGF(pars = list(Linf = Linf, K = K, t0 = t0), L = lowerLengths)
@@ -566,7 +566,7 @@ catchCurve <- function(lfq,
                                         #ln (Linf - L)
         ln_Linf_L <- log(Linf - lowerLengths)
 ### t of midlengths
-        if("C" %in% names(res) & "ts" %in% names(res)){
+        if("C" %in% names(par) & "ts" %in% names(par)){
             t_midL <- VBGF(pars = list(Linf = Linf, K = K, t0 = t0, C=C, ts=ts), L = midLengths)
         }else{
             t_midL <- VBGF(pars = list(Linf = Linf, K = K, t0 = t0), L = midLengths)
@@ -575,6 +575,7 @@ catchCurve <- function(lfq,
 
         ## y variable
                                         #ln C(L1,Linf)
+        
         lnC <- log(catch)
         ## ln( Catch / delta t)
         lnC_dt <- log(catch / dt)
@@ -862,6 +863,7 @@ catchCurve <- function(lfq,
         if(plot) plot(ret2, plot_selec=TRUE)
         return(ret2)
     }else {
+        ret$par <- par
         if(plot) plot(ret)
         return(ret)
     }
