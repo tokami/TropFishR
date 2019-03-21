@@ -4,7 +4,7 @@
 \alias{lfqCohort}
 \title{Assign cohort, relative ages and birth date to an lfq dataset}
 \usage{
-lfqCohort(lfq, n.per.yr = 1, agemax = NULL)
+lfqCohort(lfq, n.per.yr = 1, agemax = NULL, calc_dt = FALSE)
 }
 \arguments{
 \item{lfq}{an lfq object with fitted VBGF parameters in the \code{lfq$par} slot.}
@@ -17,10 +17,14 @@ This argument should be set to a higher values in cases of multiple cohorts per 
 curves via a call to \code{\link{lfqFitCurves}}. When not supplied
 (Default: \code{agemax = NULL}), the value is estimated based on the time rquired
 to achieve a length of 95\% of Linf.}
+
+\item{calc_dt}{logical. Should time required to grow through bin be calculated.
+(Default: \code{calc_dt = FALSE}).}
 }
 \value{
 a list of class `lfq` containing the additional slots for relative age
-(\code{rel.age}), cohort number (\code{cohort}), and birthday (\code{bday}).
+(\code{rel.age}), cohort number (\code{cohort}), birthday (\code{bday}), and
+(optionally) time required to growth through bin (\code{dt}).
 }
 \description{
 The \code{lfqCohort} function will assign cohort number (1 = oldest),

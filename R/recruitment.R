@@ -103,9 +103,12 @@ calc_tnew <- function(
 #' curves via a call to \code{\link{lfqFitCurves}}. When not supplied
 #' (Default: \code{agemax = NULL}), the value is estimated based on the time rquired
 #' to achieve a length of 95\% of Linf.
+#' @param calc_dt logical. Should time required to grow through bin be calculated.
+#'   (Default: \code{calc_dt = FALSE}).
 #'
 #' @return a list of class `lfq` containing the additional slots for relative age
-#' (\code{rel.age}), cohort number (\code{cohort}), and birthday (\code{bday}).
+#' (\code{rel.age}), cohort number (\code{cohort}), birthday (\code{bday}), and
+#' (optionally) time required to growth through bin (\code{dt}).
 #'
 #' @details The method involves "slicing" the lfq data based on the VBGF parameters, and
 #' follows the general approach described by Pauly (1990), and demonstrated by
@@ -153,13 +156,14 @@ calc_tnew <- function(
 #' ))
 #'
 #'
-lfqCohort <- function(lfq, n.per.yr = 1, agemax = NULL){
+lfqCohort <- function(lfq, n.per.yr = 1,
+  agemax = NULL, calc_dt = FALSE){
 
   if(is.null(agemax)){
     if(!is.null(lfq$agemax)){
       agemax <- lfq$agemax
     } else {
-      agemax <- ceiling((1/-lfq$par$K)*log(1-((lfq$par$Linf*0.95)/lfq$par$Linf)))
+      agemax <- ceiling(VBGF(pars = lfq$par, L = lfq$par$Linf*0.95))
     }
   }
 
@@ -222,28 +226,29 @@ lfqCohort <- function(lfq, n.per.yr = 1, agemax = NULL){
     cohort[,i] <- Lt.use$ct[upper]
     bday[,i] <- Lt.use$bday[upper]
   }
-
-
-  ### determine dt (time required to pass through bin)
-  dt <- cohort*NaN
-  dL <- diff(lfq$midLengths)/2
-  lowerL <- lfq$midLengths - c(dL[1], dL)
-  upperL <- lfq$midLengths + c(dL, Inf)
-  for(i in seq(length(lfq$dates))){
-    # t1i <- seq(length(lfq$midLengths))*NaN
-    for(j in seq(length(lfq$midLengths))){
-      lowert <- calc_tnew(par = PAR, Ltnew = 0,
-        Lt = lowerL[j], t = lfq$dates[i], tincr = 0.01)
-      uppert <- calc_tnew(par = PAR, Ltnew = 0,
-        Lt = upperL[j], t = lfq$dates[i], tincr = 0.01)
-      dt[j,i] <- lowert - uppert
-    }
-  }
-
   lfq$cohort <- cohort
   lfq$rel.age <- rel.age
   lfq$bday <- bday
-  lfq$dt <- dt
+
+
+  ### determine dt (time required to pass through bin)
+  if(calc_dt){
+    dt <- cohort*NaN
+    dL <- diff(lfq$midLengths)/2
+    lowerL <- lfq$midLengths - c(dL[1], dL)
+    upperL <- lfq$midLengths + c(dL, Inf)
+    for(i in seq(length(lfq$dates))){
+      # t1i <- seq(length(lfq$midLengths))*NaN
+      for(j in seq(length(lfq$midLengths))){
+        lowert <- calc_tnew(par = PAR, Ltnew = 0,
+          Lt = lowerL[j], t = lfq$dates[i], tincr = 0.01)
+        uppert <- calc_tnew(par = PAR, Ltnew = 0,
+          Lt = upperL[j], t = lfq$dates[i], tincr = 0.01)
+        dt[j,i] <- lowert - uppert
+      }
+    }
+    lfq$dt <- dt
+  }
 
   return(lfq)
 }
