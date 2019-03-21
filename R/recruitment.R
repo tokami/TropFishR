@@ -123,11 +123,11 @@ calc_tnew <- function(
 #' @references
 #' Pauly, D., Moreau, J., & Abad, N. (1995). Comparison of age-structured
 #' and length-converted catch curves of brown trout Salmo trutta in two
-#' French rivers. Fisheries Research, 22(3–4), 197–204.
+#' French rivers. Fisheries Research, 22(3-4), 197–204.
 #' https://doi.org/10.1016/0165-7836(94)00323-O
 #'
 #' Pauly, Daniel. (1990). Length-converted catch curves and the seasonal
-#' growth of fishes. Fishbyte, 8(3), 33–38.
+#' growth of fishes. Fishbyte, 8(3), 33-38.
 #'
 #' @export
 #'
@@ -410,7 +410,7 @@ ta2t0 <- function(par = NULL, Lrecr = NULL, plot = TRUE){
   if(!seasonalized){par$ts <- 0; par$C <- 0}
 
   t <- seq(0, 3, 0.01)
-  Lt <- VBGF(par = par, t = t)
+  Lt <- VBGF(pars = par, t = t)
   trecr <- t[which.min(sqrt((Lt - Lrecr)^2))]
   t0 <- par$ta - trecr
   if(seasonalized){
@@ -423,7 +423,7 @@ ta2t0 <- function(par = NULL, Lrecr = NULL, plot = TRUE){
   par_age$t0 <- t0
   par_age$ts <- ts
   age <- seq(t0, 3, 0.01)
-  Lage <- VBGF(par = par_age, t = age)
+  Lage <- VBGF(pars = par_age, t = age)
 
   if(plot){
     op <- par(mfcol = c(1,2), mar = c(4,4,1,1), mgp = c(2,0.5,0), cex = 1)
