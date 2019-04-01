@@ -189,10 +189,10 @@ lfqCreate <- function(data, Lname, Dname, Fname = NA, bin_size = 1,
 
     # order according to date
     data2 <- data2[order(data2$date),]
-    
+
 
     listi <- vector("list",length(unique(data2$date)))
-    LF_dat <- data.frame(bin = bin.breaks)    
+    LF_dat <- data.frame(bin = bin.breaks)
     for(i in 1:length(unique(data2$date))){
 
         sampli <- unique(data2$date)[i]
@@ -319,7 +319,7 @@ lfqModify <- function(lfq, par = NULL,
                       minDate = NA,
                       maxDate = NA,
                       years = NA,
-                      Lmin = NA,                      
+                      Lmin = NA,
                       Lmax = NA,
                       lfq2 = NA){
 
@@ -347,13 +347,13 @@ lfqModify <- function(lfq, par = NULL,
     ## select beyond certain date
     if(!is.na(minDate)){
         catch <- lfq$catch[,which(dates >= minDate)]
-        dates <- lfq$dates[which(dates >= minDate)]        
+        dates <- lfq$dates[which(dates >= minDate)]
     }
-    
+
     ## select before certain date
     if(!is.na(maxDate)){
         catch <- catch[,which(dates <= maxDate)]
-        dates <- dates[which(dates <= maxDate)]        
+        dates <- dates[which(dates <= maxDate)]
     }
 
     ## select certain years
@@ -378,7 +378,7 @@ lfqModify <- function(lfq, par = NULL,
     ## merge two lfq data sets (ADD weighing factor)
     if(!any(is.na(lfq2))){
         if(class(lfq2) != "lfq") stop("Your lfq2 data set has to have class 'lfq'!")
-        
+
         ## extract variables
         dates2 <- lfq2$dates
         midLengths2 <- lfq2$midLengths
@@ -387,7 +387,7 @@ lfqModify <- function(lfq, par = NULL,
         ## error messages
         if(diff(midLengths)[1] != diff(midLengths2)[1]) stop("The bin sizes do not fit eachother")
         if(any(!dates2 %in% dates)) warning("At least one sampling date of lfq2 does not match with the dates \nin lfq, not matching dates will be added!")
-        
+
         mergi <- merge(data.frame(dates=dates,x=dates),
                        data.frame(dates=dates2,y=dates2),
                        by="dates",all=TRUE)
@@ -407,7 +407,7 @@ lfqModify <- function(lfq, par = NULL,
         mat <- matrix(0, nrow=length(ind), ncol=ncol(catch))
         catch <- rbind(mat,catch)
 
-        
+
         ## both catch matrices should have same sampling dates
         designMat <- matrix(0, ncol=length(mergi$dates), nrow=length(mergi2$midLengths))
         temp <- designMat
@@ -430,7 +430,7 @@ lfqModify <- function(lfq, par = NULL,
             temp1 <- data.frame(midLengths = mergi2$midLengths,
                                 catch1 = catch[,i])
             temp2 <- data.frame(midLengths = mergi2$midLengths,
-                                catch2 = catch2[,i])            
+                                catch2 = catch2[,i])
             temp3 <- merge(temp1, temp2, by="midLengths", all=TRUE)
             designMat[,i] <- rowSums(temp3[,c(2,3)])
         }
@@ -439,9 +439,9 @@ lfqModify <- function(lfq, par = NULL,
         dates <- mergi$dates
         midLengths <- mergi2$midLengths
         catch <- designMat
-        
+
     }
-    
+
 
     if(!is.na(bin_size)){
 
@@ -452,7 +452,7 @@ lfqModify <- function(lfq, par = NULL,
         bin.breaks <- seq(0, max(midLengths) + bin_size, by=bin_size)
         midLengthsNEW <- bin.breaks + bin_size/2
         listi <- vector("list",length(unique(dates)))
-        LF_dat <- data.frame(bin = bin.breaks)    
+        LF_dat <- data.frame(bin = bin.breaks)
         for(i in 1:length(unique(dates))){
             sampli <- unique(dates)[i]
             lengthi <- as.numeric(midLengths)
@@ -461,7 +461,7 @@ lfqModify <- function(lfq, par = NULL,
                 freqi <- as.numeric(catch[,dates == sampli])
             }else{
                 freqi <- as.numeric(catch[dates == sampli])
-            }            
+            }
 
             bin.breaks2 <- rep(NA, length(bin.breaks))
             for(ii in 1:length(bin.breaks)){
@@ -718,7 +718,7 @@ lfqModify <- function(lfq, par = NULL,
     res$dates = dates
     res$midLengths = midLengths
     res$catch = catches
-    if("comment" %in% names(lfq)) res$comment <- lfq$comment 
+    if("comment" %in% names(lfq)) res$comment <- lfq$comment
 
     ## add growth parameter if known
     if("par" %in% names(lfq)){
@@ -946,7 +946,7 @@ lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE){
 
     # ASP calc
     sampASP <- NaN*seq(ncol(rcounts))
-    
+
     for(i in seq(ncol(rcounts))){
         ## lfq.i <- lfq[i,]
         tmp <- rle(sign(rcounts[,i]))
@@ -958,31 +958,32 @@ lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE){
             for(p in seq(length(posrun))){
                 peakval[p] <- max(rcounts[start.idx[posrun[p]]:end.idx[posrun[p]], i ])
             }
-            sampASP[i] <- sum(peakval)            
+            sampASP[i] <- sum(peakval)
         }else{
             sampASP[i] <- 0
         }
-    
+
     }
-    
+
     ASP <- sum(sampASP)
     lfq$ASP <- ASP
     lfq$MA <- MA
-    
+
     class(lfq) <- "lfq"
     return(lfq)
 }
 
 
+
 #' @title Calculate age-based VBGF parameters from time-based estimates
 #'
-#' @description Translates t_anchor to t0 and ts to age-adjusted ts. In addition to
+#' @description Translates ta to t0 and ts to age-adjusted ts. In addition to
 #' VBGF parameters calculated via e.g. ELEFAN, the length at recruitment
-#' (\code{Lrecr}) must also be provided.
+#' (\code{L0}) must also be provided.
 #'
 #' @param par list. VBGF parameters.
-#' @param Lrecr numeric. Length at recruitment
-#' (default: \code{Lrecr = NULL}).
+#' @param L0 numeric. Length at age zero (i.e. recruitment)
+#' (default: \code{L0 = 0}).
 #' @param plot logical. Plot graphical representation of both
 #' time and age based growth curves (default: \code{plot = TRUE}).
 #'
@@ -990,39 +991,39 @@ lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE){
 #' @export
 #'
 #' @examples
+#' data(synLFQ4)
 #' lfq <- synLFQ4
 #' lfq$par <- list(
-#'   Linf = 80, K = 0.5, t_anchor = 0.25, C = 0.75, ts = 0.5
+#'   Linf = 80, K = 0.5, ta = 0.25, C = 0.75, ts = 0.5
 #' )
-#' t_anchor2t0(par = lfq$par, Lrecr = 10)
+#' ta2t0(par = lfq$par)
 #'
-
-t_anchor2t0 <- function(par = NULL, Lrecr = NULL, plot = TRUE){
-  if(is.null(par) | is.null(Lrecr)){
-    stop("Error: must provide both 'par' and 'Lrecr'")
+ta2t0 <- function(par = NULL, L0 = 0, plot = TRUE){
+  if(is.null(par)){
+    stop("Error: must provide 'par'")
   }
-  if(Lrecr > par$Linf){stop("Error: 'Lrecr' must be lower than 'par$Linf'")}
+
+  if(L0 > par$Linf){stop("Error: 'L0' must be lower than 'par$Linf'")}
 
   # add seasonalized pars if needed
   seasonalized <- !is.null(par$C)
   if(!seasonalized){par$ts <- 0; par$C <- 0}
 
   t <- seq(0, 3, 0.01)
-  Lt <- VBGF(pars = par, t = t)
-  trecr <- t[min(which((Lt - Lrecr)>0))]
-  # calc_trecr(par = par, Lrecr = Lrecr, Lt = tail(Lt,1), t = tail(t,1)) # same
-  t0 <- par$t_anchor - trecr
+  Lt <- VBGF(par = par, t = t)
+  trecr <- t[which.min(sqrt((Lt - L0)^2))]
+  t0 <- par$ta - trecr
   if(seasonalized){
     ts <- (par$ts - trecr)%%1
   } else {
     ts <- 0
   }
   par_age <- par
-  par_age$t_anchor <- NULL
+  par_age$ta <- NULL
   par_age$t0 <- t0
   par_age$ts <- ts
   age <- seq(t0, 3, 0.01)
-  Lage <- VBGF(pars = par_age, t = age)
+  Lage <- VBGF(par = par_age, t = age)
 
   if(plot){
     op <- par(mfcol = c(1,2), mar = c(4,4,1,1), mgp = c(2,0.5,0), cex = 1)
@@ -1031,16 +1032,16 @@ t_anchor2t0 <- function(par = NULL, Lrecr = NULL, plot = TRUE){
     ylim <- par()$usr[3:4]
     grid(); abline(v = trecr, lty=3); box()
     lines(t, Lt)
-    points(trecr, Lrecr, pch = 1, col = 2)
+    points(trecr, L0, pch = 1, col = 2)
     points(trecr + t0, 0, pch = 4, col = 4)
-    tmp <- data.frame(var = c(names(par), "trecr", "Lrecr"), val = c(unlist(par), trecr, Lrecr))
+    tmp <- data.frame(var = c(names(par), "trecr", "L0"), val = c(unlist(par), trecr, L0))
     tmp$pch = NA; tmp$col <- NA
-    is_t0 <- which(tmp$var=="t_anchor")
+    is_t0 <- which(tmp$var=="ta")
     tmp$pch[is_t0] <- 4
     tmp$col[is_t0] <- 4
-    is_Lrecr <- which(tmp$var=="Lrecr")
-    tmp$pch[is_Lrecr] <- 1
-    tmp$col[is_Lrecr] <- 2
+    is_L0 <- which(tmp$var=="L0")
+    tmp$pch[is_L0] <- 1
+    tmp$col[is_L0] <- 2
     legend("bottomright",
       legend = c(paste(tmp$var, "=", round(tmp$val,2))),
       bty = "n", cex = 0.7, pt.cex = 1,
@@ -1050,16 +1051,16 @@ t_anchor2t0 <- function(par = NULL, Lrecr = NULL, plot = TRUE){
     plot(age, Lage, t="l", ylim = ylim, yaxs = "i", ylab = bquote(L[age]))
     grid(); abline(v = 0, lty=3); box()
     lines(age, Lage)
-    points(0, Lrecr, pch = 1, col = 2)
+    points(0, L0, pch = 1, col = 2)
     points(t0, 0, pch = 4, col = 4)
-    tmp <- data.frame(var = c(names(par_age), "Lrecr"), val = c(unlist(par_age), Lrecr))
+    tmp <- data.frame(var = c(names(par_age), "L0"), val = c(unlist(par_age), L0))
     tmp$pch = NA; tmp$col <- NA
     is_t0 <- which(tmp$var=="t0")
     tmp$pch[is_t0] <- 4
     tmp$col[is_t0] <- 4
-    is_Lrecr <- which(tmp$var=="Lrecr")
-    tmp$pch[is_Lrecr] <- 1
-    tmp$col[is_Lrecr] <- 2
+    is_L0 <- which(tmp$var=="L0")
+    tmp$pch[is_L0] <- 1
+    tmp$col[is_L0] <- 2
     legend("bottomright",
       legend = c(paste(tmp$var, "=", round(tmp$val,2))),
       bty = "n", cex = 0.7, pt.cex = 1,
