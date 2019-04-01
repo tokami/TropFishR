@@ -996,7 +996,7 @@ lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE){
 #' lfq$par <- list(
 #'   Linf = 80, K = 0.5, ta = 0.25, C = 0.75, ts = 0.5
 #' )
-#' ta2t0(par = lfq$par)
+#' ta2t0(par = lfq$par, L0=10)
 #'
 ta2t0 <- function(par = NULL, L0 = 0, plot = TRUE){
   if(is.null(par)){
