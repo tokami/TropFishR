@@ -123,11 +123,11 @@ calc_tnew <- function(
 #' @references
 #' Pauly, D., Moreau, J., & Abad, N. (1995). Comparison of age-structured
 #' and length-converted catch curves of brown trout Salmo trutta in two
-#' French rivers. Fisheries Research, 22(3–4), 197–204.
+#' French rivers. Fisheries Research, 22(3-4), 197-204.
 #' https://doi.org/10.1016/0165-7836(94)00323-O
 #'
 #' Pauly, Daniel. (1990). Length-converted catch curves and the seasonal
-#' growth of fishes. Fishbyte, 8(3), 33–38.
+#' growth of fishes. Fishbyte, 8(3), 33-38.
 #'
 #' @export
 #'
@@ -374,5 +374,4 @@ recruitment <- function(
   }
   return(h)
 }
-
 

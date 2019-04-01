@@ -753,7 +753,7 @@ stock_sim <- function(lfq, age_unit = "year",
 #' threadfin <- list(par = list(Winf = 286, K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4))
 #'
 #' predict_mod(threadfin, FM_change = seq(0,6,0.1),
-#'    tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
+#'    tc_change = seq(0.2,1,0.2), type = 'ypr')  
 #'
 #' # Leiognathus spendens (Pauly, 1980)
 #' ponyfish <- list(par = list(Winf = 64, K = 1, t0 = -0.2, M = 1.8, tr = 0.2))
@@ -1173,19 +1173,19 @@ predict_mod <- function(lfq, type, FM_change = NA,
 
 
             ## reference points
-            Nmsy <- which.max(Y_R.rel)  ##  should be the same as which.min(abs(deri)) which is also labelled Nmax
-            deri_pot <- deri[1:Nmsy]
+            Nmax <- which.max(Y_R.rel)  ##  should be the same as which.min(abs(deri)) which is also labelled Nmax
+            deri_pot <- deri[1:Nmax]
             N01 <- which.min(abs(deri_pot - (deri[1] * 0.1)))
             N05 <- which.min(abs(B_R.percent - 50))  ##which.min(abs(deri - (deri[1] * 0.5)))
 
             df_loop_Es <- data.frame(Lc = ifelse(!is.null(Lci),Lci,NA),
                                      tc = ifelse(!is.null(tci),tci,NA),
                                      F01 = FM_change[N01],
-                                     Fmsy = FM_change[Nmsy])
+                                     Fmax = FM_change[Nmax])
             if(length(B_R.percent) > 0) df_loop_Es$F05 <- FM_change[N05]   ## WHY NECESSARY????
             ## df_loop_Es$Fmax <- FM_change[Nmax]
             df_loop_Es$E01 <- E[N01]
-            df_loop_Es$Emsy <- E[Nmsy]
+            df_loop_Es$Emax <- E[Nmax]
             if(length(B_R.percent) > 0) df_loop_Es$E05 <- E[N05]    ## WHY NECESSARY????
             ## df_loop_Es$Emax <- E[Nmax]
 
@@ -1361,19 +1361,19 @@ predict_mod <- function(lfq, type, FM_change = NA,
                 Bper[ix] <- pred_res_df$meanB[ix]/pred_res_df$meanB[1] * 100
             }
             N05 <- which.min(abs(Bper - 50))
-            Nmsy <- which.max(pred_res_df$totY)
+            Nmax <- which.max(pred_res_df$totY)
 
             if(!is.null(Lc[1]) & !is.null(tc[1])){
                 df_Es <- data.frame(Lc = Lc,
                                     tc = tc,
-                                    Fmsy = FM_change[Nmsy],
+                                    Fmax = FM_change[Nmax],
                                     F05 = FM_change[N05],
-                                    Emsy = E_change[Nmsy],
+                                    Emax = E_change[Nmax],
                                     E05 = E_change[N05])
             }else{
-                df_Es <- data.frame(Fmsy = FM_change[Nmsy],
+                df_Es <- data.frame(Fmax = FM_change[Nmax],
                                     F05 = FM_change[N05],
-                                    Emsy = E_change[Nmsy],
+                                    Emax = E_change[Nmax],
                                     E05 = E_change[N05])
             }
 
@@ -1532,19 +1532,19 @@ predict_mod <- function(lfq, type, FM_change = NA,
             N05 <- apply(mat_FM_Lc_com.Bper, MARGIN = 2,
                          FUN = function(x) which.min(abs(x - 50)))
 
-            Nmsy <- apply(mat_FM_Lc_com.Y, MARGIN = 2, FUN = which.max)
+            Nmax <- apply(mat_FM_Lc_com.Y, MARGIN = 2, FUN = which.max)
 
             if((!is.null(Lc[1]) & !is.null(tc[1])) | (!is.na(Lc[1]) & !is.na(tc[1])) ){
                 df_Es <- data.frame(Lc = Lc,
                                     tc = tc,
-                                    Fmsy = FM_change[Nmsy],
+                                    Fmax = FM_change[Nmax],
                                     F05 = FM_change[N05],
-                                    Emsy = E_change[Nmsy],
+                                    Emax = E_change[Nmax],
                                     E05 = E_change[N05])
             }else{
-                df_Es <- data.frame(Fmsy = FM_change[Nmsy],
+                df_Es <- data.frame(Fmax = FM_change[Nmax],
                                     F05 = FM_change[N05],
-                                    Emsy = E_change[Nmsy],
+                                    Emax = E_change[Nmax],
                                     E05 = E_change[N05])
             }
 
