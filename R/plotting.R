@@ -1069,7 +1069,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
         if(yaxis_iso != "Lc" & "Linf" %in% names(pes)){
             m$y <- Lc_change/pes$Linf
             if("currents" %in% names(pes)) curr_markY <- pes$currents$curr.Lc/pes$Linf
-        }
+        }        
 
         ##plot
         if(identify == TRUE){
