@@ -1402,8 +1402,8 @@ predict_mod <- function(lfq, type, FM_change = NA,
 
                 mati <- sel * curr.F
                 param.loop <- res
-                param.loop$FM <- mati
-                param.loop$Z <- mati + nM
+                param.loop$par$FM <- mati
+                param.loop$par$Z <- mati + nM
                 res2 <- stock_sim(lfq = param.loop, age_unit = age_unit,
                                   stock_size_1 = stock_size_1, plus_group=plus_group)
                 mati2 <- res2$totals
@@ -1472,8 +1472,8 @@ predict_mod <- function(lfq, type, FM_change = NA,
                 pred.FM_Lc_com_res_loop1_list <- list()
                 for(x22 in 1:dim(mati)[2]){
 
-                    param.loop$FM <- mati[,x22]
-                    param.loop$Z <- mati[,x22] + nM
+                    param.loop$par$FM <- mati[,x22]
+                    param.loop$par$Z <- mati[,x22] + nM
                     res2 <- stock_sim(lfq = param.loop, age_unit = age_unit,
                                       stock_size_1 = stock_size_1, plus_group=plus_group)
                     pred.FM_Lc_com_res_loop1_list[[x22]] <- res2$totals
@@ -1484,6 +1484,7 @@ predict_mod <- function(lfq, type, FM_change = NA,
                         counter <- counter + 1
                     }
                 }
+                
                 prev_mat <- do.call(rbind, pred.FM_Lc_com_res_loop1_list)
                 prev_matC <- prev_mat[,'totC']
                 prev_matY <- prev_mat[,'totY']
@@ -1582,8 +1583,8 @@ predict_mod <- function(lfq, type, FM_change = NA,
                 }
                 mati <- sel * curr.F
                 param.loop <- res
-                param.loop$FM <- mati
-                param.loop$Z <- mati + nM
+                param.loop$par$FM <- mati
+                param.loop$par$Z <- mati + nM
                 res2 <- stock_sim(param.loop, age_unit,
                                   stock_size_1, plus_group=plus_group)
                 mati2 <- res2$totals
