@@ -504,6 +504,21 @@ stock_sim <- function(lfq, age_unit = "year",
     ## age based
     if('age' %in% names(res)){
 
+
+        ## length at maturity
+        Lmat <- ifelse(is.null(res$Lmat), NA, res$Lmat)
+        wmat <- ifelse(is.null(res$wmat), NA, res$wmat)        
+        ## mature individuals
+        if(all(c("Linf","K") %in% names(param))){
+            mids <- VBGF(param, t = classes.num)
+            matP <- 1 / (1 + exp(-(mids - Lmat) /
+                                   (wmat / ( log(0.75/(1-0.75)) - log(0.25/(1-0.25))))))
+        }else{
+            ## writeLines("For estimation of SSB please provide Lmat, wmat and VBGF parameters.")
+            matP <- NA
+
+        } 
+
         ## delta t
         dt <- c(diff(classes.num),NA)
         if(age_unit == 'month'){
@@ -536,14 +551,18 @@ stock_sim <- function(lfq, age_unit = "year",
         ##value expressed in money units
         V <- Y * meanValue
 
+        ## SSB
+        SSB <- B * matP
+
         ##total catch, yield, value and average biomass
         totals <- data.frame(totC = sum(C, na.rm=TRUE),
                              totY = sum(Y, na.rm=TRUE),
                              totV = sum(V, na.rm=TRUE),
-                             meanB = sum((B * dt), na.rm=TRUE) / sum(dt, na.rm=TRUE))   ###### more complicated biomass concept if dt is not constant, see Chapter 5
+                             meanB = sum((B * dt), na.rm=TRUE) / sum(dt, na.rm=TRUE), ###### more complicated biomass concept if dt is not constant, see Chapter 5
+                             meanSSB = sum((SSB * dt), na.rm=TRUE) / sum(dt, na.rm=TRUE))
 
         res2 <- list(dt = dt, N = N, dead = dead, C = C,
-                     Y = Y, B = B, V = V,
+                     Y = Y, B = B, SSB = SSB, V = V,
                      totals = totals)
 
         ##with plus group
@@ -576,6 +595,8 @@ stock_sim <- function(lfq, age_unit = "year",
             df[plus_group, "B"] <-
                 df[plus_group, "Y"] / (FM[plus_group] * df[plus_group, "dt"])
 
+            ## SSB
+            df[plus_group, "SSB"] <- df[plus_group, "B"] * matP[plus_group]            
 
             res2 <- as.list(as.data.frame(df))
 
@@ -588,7 +609,9 @@ stock_sim <- function(lfq, age_unit = "year",
             totals <- data.frame(totC = sum(res2$C, na.rm=TRUE),
                                  totY = sum(res2$Y, na.rm=TRUE),
                                  totV = sum(res2$V, na.rm=TRUE),
-                                 meanB = sum((res2$B * res2$dt), na.rm=TRUE) / sum(dt, na.rm=TRUE))   #### more complicated biomass concept if dt is not constant, see Chapter 5
+                                 meanB = sum((res2$B * res2$dt), na.rm=TRUE) / sum(dt, na.rm=TRUE),  #### more complicated biomass concept if dt is not constant, see Chapter 5
+                                 meanSSB = sum((res2$SSB * res2$dt), na.rm=TRUE) / sum(dt, na.rm=TRUE))
+            
 
             res2 <- c(res2,totals = list(totals))
         }
@@ -603,7 +626,9 @@ stock_sim <- function(lfq, age_unit = "year",
             ta <- ifelse("ta" %in% names(res$par), res$par$ta, 0)            
             t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
             C <- ifelse("C" %in% names(res$par), res$par$C, 0)
-            ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
+            ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)
+            Lmat <- ifelse("Lmat" %in% names(res$par), res$par$Lmat, NA)
+            wmat <- ifelse("wmat" %in% names(res$par), res$par$wmat, NA)               
         }else{
             Linf <- res$Linf
             K <- res$K
@@ -611,10 +636,18 @@ stock_sim <- function(lfq, age_unit = "year",
             t0 <- ifelse("t0" %in% names(res), res$t0, 0)
             C <- ifelse("C" %in% names(res), res$C, 0)
             ts <- ifelse("ts" %in% names(res), res$ts, 0)
+            Lmat <- ifelse("Lmat" %in% names(res), res$Lmat, NA)
+            wmat <- ifelse("wmat" %in% names(res), res$wmat, NA)   
         }
         if(!("a" %in% names(par)) | !("b" %in% names(par))) stop("stock_sim requires information about the length-weight relationship. Please provide 'a' and 'b' estimates in res$par.")
         a <- par$a
         b <- par$b
+
+
+        ## mature individuals
+        mids <- classes.num
+        matP <- 1 / (1 + exp(-(mids - Lmat) /
+                             (wmat / ( log(0.75/(1-0.75)) - log(0.25/(1-0.25))))))        
 
         ##calculate size class interval
         int <- classes.num[2] - classes.num[1]
@@ -652,6 +685,9 @@ stock_sim <- function(lfq, age_unit = "year",
         ##biomass
         B <- (dead / Z ) * W
 
+        ## SSB
+        SSB <- B * matP
+
         ##last length group
         x2 <- length(classes.num)
         C[x2] <- N[x2] * FM[x2]/Z[x2]
@@ -659,18 +695,21 @@ stock_sim <- function(lfq, age_unit = "year",
         Y[x2] <- C[x2] * W[x2]
         B[x2] <- N[x2] / Z[x2] * W[x2]
         V[x2] <- Y[x2] * meanValue[x2]
+        SSB[x2] <- B[x2] * matP[x2]        
 
         ##total catch, yield, value and average biomass
         totals <- data.frame(totC = sum(C, na.rm=TRUE),
                              totY = sum(Y, na.rm=TRUE),
                              totV = sum(V, na.rm=TRUE),
-                             meanB = sum((B), na.rm=TRUE))
+                             meanB = sum((B), na.rm=TRUE),
+                             meanSSB = sum(SSB, na.rm=TRUE))                             
 
         res2 <- list(N = N,
                      dead = dead,
                      C = C,
                      Y = Y,
                      B = B,
+                     SSB = SSB,
                      V = V,
                      totals = totals)
     }
@@ -983,6 +1022,8 @@ predict_mod <- function(lfq, type, FM_change = NA,
         t0 <- ifelse(!is.null(par$t0),par$t0,0)
         a <- par$a  ## might be NULL
         b <- par$b  ## might be NULL
+        Lmat <- ifelse("Lmat" %in% names(lfq$par),lfq$par$Lmat,NA)
+        wmat <- ifelse("wmat" %in% names(lfq$par),lfq$par$wmat,NA)         
         Winf <- par$Winf  ## might be NULL
         Linf <- par$Linf ## might be NULL
         if("Linf" %in% names(par) & "a" %in% names(par) & "b" %in% names(par)){
@@ -1262,6 +1303,8 @@ predict_mod <- function(lfq, type, FM_change = NA,
         Linf <- par$Linf
         K <- par$K
         t0 <- ifelse("t0" %in% names(par),par$t0,0)
+        Lmat <- ifelse("Lmat" %in% names(lfq$par),lfq$par$Lmat,NA)
+        wmat <- ifelse("wmat" %in% names(lfq$par),lfq$par$wmat,NA)         
 
         ## Selectivity - knife edge or with selctivtiy ogive
         tc <- res$tc   ## might be NULL
@@ -1321,7 +1364,7 @@ predict_mod <- function(lfq, type, FM_change = NA,
                         s_list <- list(selecType = "knife_edge", L50 = Lc[1])
                     }
                     sel <- select_ogive(s_list, Lt = Lt)
-                    FM <- res$par$FM * sel
+                    FMvec <- res$par$FM * sel
                 }else{
                     stop(noquote("Please provide either fishing mortality FM (in 'lfq$par') per length class or a Lc value!"))
                 }
@@ -1330,10 +1373,10 @@ predict_mod <- function(lfq, type, FM_change = NA,
 
             ##prediction based on f_change
             if(!FM_relative){
-                pred_mat <- as.matrix(FM/max(FM, na.rm = TRUE)) %*% FM_change
+                pred_mat <- as.matrix(FMvec/max(FMvec, na.rm = TRUE)) %*% FM_change
             }
             if(FM_relative){
-                pred_mat <- as.matrix(FM) %*% FM_change
+                pred_mat <- as.matrix(FMvec) %*% FM_change
             }
 
 
@@ -1347,34 +1390,92 @@ predict_mod <- function(lfq, type, FM_change = NA,
                 pred_res_list[[x7]] <- resL$totals
             }
 
+
+            ## SSB0 for SPR
+            lfqX$FM <- numeric(nrow(pred_mat)) * 0.0
+            lfqX$Z <- lfqX$FM + nM
+            tmp <- stock_sim(lfqX, age_unit = age_unit,
+                             stock_size_1 = stock_size_1, plus_group = plus_group)
+            SSB0 <- tmp$totals$meanSSB
+
             pred_res_df <- do.call(rbind, pred_res_list)
+            pred_res_df$SPR <- SSB0 / pred_res_df$meanSSB
             pred_res_df$FM_change <- FM_change
             pred_res_df$E_change <- E_change
 
             res2 <- pred_res_df
             res3 <- c(res,res2)
+            
 
             ## reference points
+            ## Fmax
+            Nmax <- which.max(pred_res_df$totY)
+            ## F01 (proxy for Fmsy in ICES)
+            slopeOrg <- (pred_res_df$totY[2] - pred_res_df$totY[1]) / (FM_change[2] - FM_change[1])
+            slope01 <- round(0.1*slopeOrg, 2)
+            slopes <- rep(NA, length(FM_change))
+            slopes[1] <- slopeOrg
+            for(i in 3:length(FM_change)){
+                slopes[i-1] <- round((pred_res_df$totY[i] - pred_res_df$totY[i-1]) /
+                                     (FM_change[i] - FM_change[i-1]),2)
+            }
+            dif <- abs(slopes - slope01)
+            dif[is.na(dif)] <- 1e+11
+            difpot <- dif[1:Nmax]
+            N01 <- which.min(difpot)
+            ## F05
             Bper <- rep(NA,length(pred_res_df$meanB))
             Bper[1] <- 100
             for(ix in 2:length(Bper)){
                 Bper[ix] <- pred_res_df$meanB[ix]/pred_res_df$meanB[1] * 100
             }
             N05 <- which.min(abs(Bper - 50))
-            Nmax <- which.max(pred_res_df$totY)
+            
+            ## Bper <- rep(NA,length(pred_res_df$meanB))
+            ## Bper[1] <- 100
+            ## for(ix in 2:length(Bper)){
+            ##     Bper[ix] <- pred_res_df$meanB[ix]/pred_res_df$meanB[1] * 100
+            ## }
+            ## N05 <- which.min(abs(Bper - 50))
+            ## Nmax <- which.max(pred_res_df$totY)
+
+            ## F_SPR40 considered risk adverse for many species
+            ## (Clark 2002: F35% revisted ten years later
+            N10SPR <- which.min(abs(pred_res_df$SPR - 0.1))
+            N35SPR <- which.min(abs(pred_res_df$SPR - 0.35))
+            N40SPR <- which.min(abs(pred_res_df$SPR - 0.4))            
+
+            ## current SPR
+            SPR <- pred_res_df$SPR[which.min(abs(FM_change - FM))]            
 
             if(!is.null(Lc[1]) & !is.null(tc[1])){
                 df_Es <- data.frame(Lc = Lc,
                                     tc = tc,
+                                    F01 = FM_change[N01],
                                     Fmax = FM_change[Nmax],
                                     F05 = FM_change[N05],
+                                    F10SPR = FM_change[N10SPR],
+                                    F35SPR = FM_change[N35SPR],
+                                    F40SPR = FM_change[N40SPR],
+                                    E01 = E_change[N01],                                    
                                     Emax = E_change[Nmax],
-                                    E05 = E_change[N05])
+                                    E05 = E_change[N05],
+                                    E10SPR = E_change[N10SPR],
+                                    E35SPR = E_change[N35SPR],
+                                    E40SPR = E_change[N40SPR])
             }else{
-                df_Es <- data.frame(Fmax = FM_change[Nmax],
+                df_Es <- data.frame(F01 = FM_change[N01],
+                                    Fmax = FM_change[Nmax],
                                     F05 = FM_change[N05],
+                                    F10SPR = FM_change[N10SPR],
+                                    F35SPR = FM_change[N35SPR],
+                                    F40SPR = FM_change[N40SPR],
+                                    E01 = E_change[N01],
                                     Emax = E_change[Nmax],
-                                    E05 = E_change[N05])
+                                    E05 = E_change[N05],
+                                    E10SPR = E_change[N10SPR],
+                                    E35SPR = E_change[N35SPR],
+                                    E40SPR = E_change[N40SPR])                                    
             }
 
 
@@ -1388,25 +1489,43 @@ predict_mod <- function(lfq, type, FM_change = NA,
                 ## current exploitation rate
                 curr.F = (nM * curr.E)/(1-curr.E)
 
-                if(is.na(curr.Lc)){
-                    sel <- (FM / max(FM,na.rm=TRUE))
-                }else if(!is.na(curr.Lc)){
-                    s_list <- list(selecType = "knife_edge", L50 = curr.Lc)
-                    Lt <- res$midLengths
-                    sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
-                }
+                ## if(is.na(curr.Lc)){
+                ##     sel <- (FM / max(FM,na.rm=TRUE))
+                ## }else if(!is.na(curr.Lc)){
+                ##     s_list <- list(selecType = "knife_edge", L50 = curr.Lc)
+                ##     Lt <- res$midLengths
+                ##     sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
+                ## }
                 if(length(s_list) != 1){
                     Lt <- res$midLengths
                     sel <- select_ogive(s_list, Lt = Lt)
+                }else{
+                    if(is.na(curr.Lc)){
+                        sel <- (FMvec / max(FMvec,na.rm=TRUE))
+                    }else if(!is.na(curr.Lc)){
+                        s_list <- list(selecType = "knife_edge", L50 = curr.Lc)
+                        Lt <- res$midLengths
+                        sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
+                    }
                 }
+                
 
                 mati <- sel * curr.F
-                param.loop <- res
+                param.loop <- lfq
                 param.loop$par$FM <- mati
                 param.loop$par$Z <- mati + nM
                 res2 <- stock_sim(lfq = param.loop, age_unit = age_unit,
                                   stock_size_1 = stock_size_1, plus_group=plus_group)
                 mati2 <- res2$totals
+
+                ## SPR
+                param.loop <- lfq
+                param.loop$par$FM <- sel * 0.0
+                param.loop$par$Z <- param.loop$FM + nM                    
+                res2 <- stock_sim(lfq = param.loop, age_unit = age_unit,
+                                  stock_size_1 = stock_size_1, plus_group=plus_group)
+                SSB0 <- res2$totals$meanSSB
+##                SPR <- SSB0 / mati2$meanSSB
 
                 df_currents <- data.frame(curr.Lc = curr.Lc,
                                           curr.tc = curr.tc,
@@ -1415,7 +1534,9 @@ predict_mod <- function(lfq, type, FM_change = NA,
                                           curr.C = mati2$totC,
                                           curr.Y = mati2$totY,
                                           curr.V = mati2$totV,
-                                          curr.B = mati2$meanB)
+                                          curr.B = mati2$meanB,
+                                          curr.SSB = mati2$meanSSB,
+                                          curr.SPR = SPR)
                 ret$currents <- df_currents
             }
         }
@@ -1458,6 +1579,8 @@ predict_mod <- function(lfq, type, FM_change = NA,
             pred.FM_Lc_com_res_loopC_list <- vector("list",length(FM_Lc_com_mat.list))
             pred.FM_Lc_com_res_loopY_list <- vector("list",length(FM_Lc_com_mat.list))
             pred.FM_Lc_com_res_loopB_list <- vector("list",length(FM_Lc_com_mat.list))
+            pred.FM_Lc_com_res_loopSSB_list <- vector("list",length(FM_Lc_com_mat.list))
+            pred.FM_Lc_com_res_loopSPR_list <- vector("list",length(FM_Lc_com_mat.list))
             pred.FM_Lc_com_res_loopV_list <- vector("list",length(FM_Lc_com_mat.list))
 
             if (!hide.progressbar) {
@@ -1484,17 +1607,28 @@ predict_mod <- function(lfq, type, FM_change = NA,
                         counter <- counter + 1
                     }
                 }
+
+                ## SSB0 for SPR
+                param.loop$FM <- 0.0 * FM_Lc_com_mat.list[[1]][,1]
+                param.loop$Z <- param.loop$FM + nM
+                tmp <- stock_sim(lfq = param.loop, age_unit = age_unit,
+                                 stock_size_1 = stock_size_1, plus_group=plus_group)
+                SSB0 <- tmp$totals$meanSSB                
                 
                 prev_mat <- do.call(rbind, pred.FM_Lc_com_res_loop1_list)
                 prev_matC <- prev_mat[,'totC']
                 prev_matY <- prev_mat[,'totY']
                 prev_matB <- prev_mat[,'meanB']
+                prev_matSSB <- prev_mat[,'meanSSB']                
                 prev_matV <- prev_mat[,'totV']
+                prev_matSPR <- SSB0 / prev_mat[,'meanSSB']
 
                 pred.FM_Lc_com_res_loopC_list[[x21]] <- prev_matC
                 pred.FM_Lc_com_res_loopY_list[[x21]] <- prev_matY
                 pred.FM_Lc_com_res_loopB_list[[x21]] <- prev_matB
+                pred.FM_Lc_com_res_loopSSB_list[[x21]] <- prev_matSSB                
                 pred.FM_Lc_com_res_loopV_list[[x21]] <- prev_matV
+                pred.FM_Lc_com_res_loopSPR_list[[x21]] <- prev_matSPR                
             }
 
             ##for catch
@@ -1512,6 +1646,17 @@ predict_mod <- function(lfq, type, FM_change = NA,
             rownames(mat_FM_Lc_com.B) <- Lc
             colnames(mat_FM_Lc_com.B) <- FM_change
 
+            ##for SSB
+            mat_FM_Lc_com.SSB <- do.call(rbind, pred.FM_Lc_com_res_loopSSB_list)
+            rownames(mat_FM_Lc_com.SSB) <- Lc
+            colnames(mat_FM_Lc_com.SSB) <- FM_change
+
+
+            ## for SPR
+            mat_FM_Lc_com.SPR <- do.call(rbind, pred.FM_Lc_com_res_loopSPR_list)
+            rownames(mat_FM_Lc_com.SPR) <- Lc
+            colnames(mat_FM_Lc_com.SPR) <- FM_change            
+
             ##for value
             mat_FM_Lc_com.V <- do.call(rbind, pred.FM_Lc_com_res_loopV_list)
             rownames(mat_FM_Lc_com.V) <- Lc
@@ -1521,9 +1666,35 @@ predict_mod <- function(lfq, type, FM_change = NA,
             mat_FM_Lc_com.C <- t(mat_FM_Lc_com.C)
             mat_FM_Lc_com.Y <- t(mat_FM_Lc_com.Y)
             mat_FM_Lc_com.B <- t(mat_FM_Lc_com.B)
+            mat_FM_Lc_com.SSB <- t(mat_FM_Lc_com.SSB)
+            mat_FM_Lc_com.SPR <- t(mat_FM_Lc_com.SPR)             
             mat_FM_Lc_com.V <- t(mat_FM_Lc_com.V)
 
             ## reference points
+            ## Fmax
+            Nmax <- apply(mat_FM_Lc_com.Y, MARGIN = 2, FUN = which.max)
+            
+            ## F01 (proxy for Fmsy in ICES)
+            slopes <- matrix(NA,ncol=dim(mat_FM_Lc_com.Y)[2],
+                             nrow=dim(mat_FM_Lc_com.Y)[1])
+            slopeOrg <- (mat_FM_Lc_com.Y[2,] - mat_FM_Lc_com.Y[1,]) /
+                (rep(FM_change[2],dim(mat_FM_Lc_com.Y)[2]) -
+                 rep(FM_change[1],dim(mat_FM_Lc_com.Y)[2]))
+            slope01 <- round(0.1*slopeOrg, 2)
+            slopes[1,] <- slopeOrg
+            for(i in 3:length(FM_change)){
+                slopes[i-1,] <- round((mat_FM_Lc_com.Y[i,] - mat_FM_Lc_com.Y[i-1,]) /
+                                      (rep(FM_change[i],dim(mat_FM_Lc_com.Y)[2]) -
+                                       rep(FM_change[i-1],dim(mat_FM_Lc_com.Y)[2])),2)
+            }
+            dif <- t(apply(slopes,1,function(x) abs(x - slope01)))
+            dif[is.na(dif)] <- 1e+11
+            difpot <- dif
+            for(i in 1:ncol(dif)){
+                difpot[(Nmax[i]:nrow(difpot)),i] <- 1e+11
+            }
+            N01 <- apply(difpot, MARGIN = 2, FUN = which.min)
+            ## F05
             mat_FM_Lc_com.Bper <- matrix(NA,ncol=dim(mat_FM_Lc_com.B)[2],
                                          nrow=dim(mat_FM_Lc_com.B)[1])
             mat_FM_Lc_com.Bper[1,] <- 100
@@ -1532,21 +1703,60 @@ predict_mod <- function(lfq, type, FM_change = NA,
             }
             N05 <- apply(mat_FM_Lc_com.Bper, MARGIN = 2,
                          FUN = function(x) which.min(abs(x - 50)))
+            
 
-            Nmax <- apply(mat_FM_Lc_com.Y, MARGIN = 2, FUN = which.max)
+            ## mat_FM_Lc_com.Bper <- matrix(NA,ncol=dim(mat_FM_Lc_com.B)[2],
+            ##                              nrow=dim(mat_FM_Lc_com.B)[1])
+            ## mat_FM_Lc_com.Bper[1,] <- 100
+            ## for(ix in 2:dim(mat_FM_Lc_com.B)[1]){
+            ##     mat_FM_Lc_com.Bper[ix,] <- mat_FM_Lc_com.B[ix,]/mat_FM_Lc_com.B[1,] *100
+            ## }
+            ## N05 <- apply(mat_FM_Lc_com.Bper, MARGIN = 2,
+            ##              FUN = function(x) which.min(abs(x - 50)))
+
+            ## Nmax <- apply(mat_FM_Lc_com.Y, MARGIN = 2, FUN = which.max)
+
+            ## F_SPR40 considered risk adverse for many species
+            ## (Clark 2002: F35% revisted ten years later
+            N10SPR <- apply(mat_FM_Lc_com.SPR, MARGIN = 2,
+                            FUN = function(x) which.min(abs(x - 0.1)))
+            N35SPR <- apply(mat_FM_Lc_com.SPR, MARGIN = 2,
+                            FUN = function(x) which.min(abs(x - 0.35)))
+            N40SPR <- apply(mat_FM_Lc_com.SPR, MARGIN = 2,
+                            FUN = function(x) which.min(abs(x - 0.4)))
+
+            ## current SPR
+##            SPR <- pred_res_df$SPR[which.min(abs(FM_change - FM))]                        
+            
 
             if((!is.null(Lc[1]) & !is.null(tc[1])) | (!is.na(Lc[1]) & !is.na(tc[1])) ){
                 df_Es <- data.frame(Lc = Lc,
                                     tc = tc,
+                                    F01 = FM_change[N01],                                    
                                     Fmax = FM_change[Nmax],
                                     F05 = FM_change[N05],
+                                    F10SPR = FM_change[N10SPR],
+                                    F35SPR = FM_change[N35SPR],
+                                    F40SPR = FM_change[N40SPR],
+                                    E01 = E_change[N01],                                    
                                     Emax = E_change[Nmax],
-                                    E05 = E_change[N05])
+                                    E05 = E_change[N05],
+                                    E10SPR = E_change[N10SPR],
+                                    E35SPR = E_change[N35SPR],
+                                    E40SPR = E_change[N40SPR])                                    
             }else{
-                df_Es <- data.frame(Fmax = FM_change[Nmax],
+                df_Es <- data.frame(F01 = FM_change[N01],
+                                    Fmax = FM_change[Nmax],
                                     F05 = FM_change[N05],
+                                    F10SPR = FM_change[N10SPR],
+                                    F35SPR = FM_change[N35SPR],
+                                    F40SPR = FM_change[N40SPR],
+                                    E01 = E_change[N01],
                                     Emax = E_change[Nmax],
-                                    E05 = E_change[N05])
+                                    E05 = E_change[N05],
+                                    E10SPR = E_change[N10SPR],
+                                    E35SPR = E_change[N35SPR],
+                                    E40SPR = E_change[N40SPR])
             }
 
 
@@ -1562,6 +1772,8 @@ predict_mod <- function(lfq, type, FM_change = NA,
                           mat_FM_Lc_com.Y = mat_FM_Lc_com.Y,
                           mat_FM_Lc_com.V = mat_FM_Lc_com.V,
                           mat_FM_Lc_com.B = mat_FM_Lc_com.B,
+                          mat_FM_Lc_com.SSB = mat_FM_Lc_com.SSB,
+                          mat_FM_Lc_com.SPR = mat_FM_Lc_com.SPR,                          
                           df_Es = df_Es))
 
 
@@ -1589,6 +1801,15 @@ predict_mod <- function(lfq, type, FM_change = NA,
                                   stock_size_1, plus_group=plus_group)
                 mati2 <- res2$totals
 
+                ## SPR
+                param.loop <- res
+                param.loop$par$FM <- 0.0 * sel
+                param.loop$par$Z <- nM + param.loop$FM
+                res2 <- stock_sim(lfq = param.loop, age_unit = age_unit,
+                                  stock_size_1 = stock_size_1, plus_group=plus_group)
+                SSB0 <- res2$totals$meanSSB
+                SPR <- SSB0/mati2$meanSSB
+
                 df_currents <- data.frame(curr.Lc = curr.Lc,
                                           curr.tc = curr.tc,
                                           curr.E = curr.E,
@@ -1596,7 +1817,9 @@ predict_mod <- function(lfq, type, FM_change = NA,
                                           curr.C = mati2$totC,
                                           curr.Y = mati2$totY,
                                           curr.V = mati2$totV,
-                                          curr.B = mati2$meanB)
+                                          curr.B = mati2$meanB,
+                                          curr.SSB = mati2$meanSSB,
+                                          curr.SPR = SPR)                                          
                 ret$currents <- df_currents
             }
         }
