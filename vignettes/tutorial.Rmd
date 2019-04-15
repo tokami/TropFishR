@@ -220,7 +220,7 @@ For further analysis, we use the outcomes of the simulated annealing approach by
 
 ```{r}
 # assign estimates to the data list
-synLFQ7a$par <- res_SA$par
+synLFQ7a$par <- res_GA$par
 ```
 
 ####*Natural mortality*

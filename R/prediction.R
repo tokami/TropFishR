@@ -1368,6 +1368,8 @@ predict_mod <- function(lfq, type, FM_change = NA,
                 }else{
                     stop(noquote("Please provide either fishing mortality FM (in 'lfq$par') per length class or a Lc value!"))
                 }
+            }else{
+                FMvec <- res$par$FM
             }
 
 
@@ -1389,7 +1391,6 @@ predict_mod <- function(lfq, type, FM_change = NA,
                                   stock_size_1 = stock_size_1, plus_group = plus_group)
                 pred_res_list[[x7]] <- resL$totals
             }
-
 
             ## SSB0 for SPR
             lfqX$FM <- numeric(nrow(pred_mat)) * 0.0
@@ -1441,9 +1442,17 @@ predict_mod <- function(lfq, type, FM_change = NA,
 
             ## F_SPR40 considered risk adverse for many species
             ## (Clark 2002: F35% revisted ten years later
-            N10SPR <- which.min(abs(pred_res_df$SPR - 0.1))
-            N35SPR <- which.min(abs(pred_res_df$SPR - 0.35))
-            N40SPR <- which.min(abs(pred_res_df$SPR - 0.4))            
+            if(any(!is.na(pred_res_df$SPR))){
+                N10SPR <- which.min(abs(pred_res_df$SPR - 0.1))
+                N35SPR <- which.min(abs(pred_res_df$SPR - 0.35))
+                N40SPR <- which.min(abs(pred_res_df$SPR - 0.4))
+            }else{
+                N10SPR <- NULL
+                N35SPR <- NULL
+                N40SPR <- NULL                
+            }
+            
+            
 
             ## current SPR
             SPR <- pred_res_df$SPR[which.min(abs(FM_change - FM))]            
@@ -1454,28 +1463,29 @@ predict_mod <- function(lfq, type, FM_change = NA,
                                     F01 = FM_change[N01],
                                     Fmax = FM_change[Nmax],
                                     F05 = FM_change[N05],
-                                    F10SPR = FM_change[N10SPR],
-                                    F35SPR = FM_change[N35SPR],
-                                    F40SPR = FM_change[N40SPR],
+                                    F10SPR = ifelse(!is.null(N10SPR), FM_change[N10SPR], NA),
+                                    F35SPR = ifelse(!is.null(N35SPR), FM_change[N35SPR], NA),
+                                    F40SPR = ifelse(!is.null(N35SPR), FM_change[N40SPR], NA),
                                     E01 = E_change[N01],                                    
                                     Emax = E_change[Nmax],
                                     E05 = E_change[N05],
-                                    E10SPR = E_change[N10SPR],
-                                    E35SPR = E_change[N35SPR],
-                                    E40SPR = E_change[N40SPR])
+                                    E10SPR = ifelse(!is.null(N10SPR), E_change[N10SPR], NA),
+                                    E35SPR = ifelse(!is.null(N35SPR), E_change[N35SPR], NA),
+                                    E40SPR = ifelse(!is.null(N40SPR), E_change[N40SPR], NA))
+        
             }else{
                 df_Es <- data.frame(F01 = FM_change[N01],
                                     Fmax = FM_change[Nmax],
                                     F05 = FM_change[N05],
-                                    F10SPR = FM_change[N10SPR],
-                                    F35SPR = FM_change[N35SPR],
-                                    F40SPR = FM_change[N40SPR],
-                                    E01 = E_change[N01],
+                                    F10SPR = ifelse(!is.null(N10SPR), FM_change[N10SPR], NA),
+                                    F35SPR = ifelse(!is.null(N35SPR), FM_change[N35SPR], NA),
+                                    F40SPR = ifelse(!is.null(N35SPR), FM_change[N40SPR], NA),
+                                    E01 = E_change[N01],                                    
                                     Emax = E_change[Nmax],
                                     E05 = E_change[N05],
-                                    E10SPR = E_change[N10SPR],
-                                    E35SPR = E_change[N35SPR],
-                                    E40SPR = E_change[N40SPR])                                    
+                                    E10SPR = ifelse(!is.null(N10SPR), E_change[N10SPR], NA),
+                                    E35SPR = ifelse(!is.null(N35SPR), E_change[N35SPR], NA),
+                                    E40SPR = ifelse(!is.null(N40SPR), E_change[N40SPR], NA))
             }
 
 
@@ -1718,12 +1728,19 @@ predict_mod <- function(lfq, type, FM_change = NA,
 
             ## F_SPR40 considered risk adverse for many species
             ## (Clark 2002: F35% revisted ten years later
-            N10SPR <- apply(mat_FM_Lc_com.SPR, MARGIN = 2,
-                            FUN = function(x) which.min(abs(x - 0.1)))
-            N35SPR <- apply(mat_FM_Lc_com.SPR, MARGIN = 2,
-                            FUN = function(x) which.min(abs(x - 0.35)))
-            N40SPR <- apply(mat_FM_Lc_com.SPR, MARGIN = 2,
-                            FUN = function(x) which.min(abs(x - 0.4)))
+            if(any(!is.na(mat_FM_Lc_com.SPR))){
+                N10SPR <- apply(mat_FM_Lc_com.SPR, MARGIN = 2,
+                                FUN = function(x) which.min(abs(x - 0.1)))
+                N35SPR <- apply(mat_FM_Lc_com.SPR, MARGIN = 2,
+                                FUN = function(x) which.min(abs(x - 0.35)))
+                N40SPR <- apply(mat_FM_Lc_com.SPR, MARGIN = 2,
+                                FUN = function(x) which.min(abs(x - 0.4)))
+            }else{
+                N10SPR <- NULL
+                N35SPR <- NULL
+                N40SPR <- NULL                
+            }            
+
 
             ## current SPR
 ##            SPR <- pred_res_df$SPR[which.min(abs(FM_change - FM))]                        
@@ -1735,28 +1752,28 @@ predict_mod <- function(lfq, type, FM_change = NA,
                                     F01 = FM_change[N01],                                    
                                     Fmax = FM_change[Nmax],
                                     F05 = FM_change[N05],
-                                    F10SPR = FM_change[N10SPR],
-                                    F35SPR = FM_change[N35SPR],
-                                    F40SPR = FM_change[N40SPR],
+                                    F10SPR = ifelse(!is.null(N10SPR), FM_change[N10SPR], NA),
+                                    F35SPR = ifelse(!is.null(N35SPR), FM_change[N35SPR], NA),
+                                    F40SPR = ifelse(!is.null(N35SPR), FM_change[N40SPR], NA),
                                     E01 = E_change[N01],                                    
                                     Emax = E_change[Nmax],
                                     E05 = E_change[N05],
-                                    E10SPR = E_change[N10SPR],
-                                    E35SPR = E_change[N35SPR],
-                                    E40SPR = E_change[N40SPR])                                    
+                                    E10SPR = ifelse(!is.null(N10SPR), E_change[N10SPR], NA),
+                                    E35SPR = ifelse(!is.null(N35SPR), E_change[N35SPR], NA),
+                                    E40SPR = ifelse(!is.null(N40SPR), E_change[N40SPR], NA))
             }else{
                 df_Es <- data.frame(F01 = FM_change[N01],
                                     Fmax = FM_change[Nmax],
                                     F05 = FM_change[N05],
-                                    F10SPR = FM_change[N10SPR],
-                                    F35SPR = FM_change[N35SPR],
-                                    F40SPR = FM_change[N40SPR],
-                                    E01 = E_change[N01],
+                                    F10SPR = ifelse(!is.null(N10SPR), FM_change[N10SPR], NA),
+                                    F35SPR = ifelse(!is.null(N35SPR), FM_change[N35SPR], NA),
+                                    F40SPR = ifelse(!is.null(N35SPR), FM_change[N40SPR], NA),
+                                    E01 = E_change[N01],                                    
                                     Emax = E_change[Nmax],
                                     E05 = E_change[N05],
-                                    E10SPR = E_change[N10SPR],
-                                    E35SPR = E_change[N35SPR],
-                                    E40SPR = E_change[N40SPR])
+                                    E10SPR = ifelse(!is.null(N10SPR), E_change[N10SPR], NA),
+                                    E35SPR = ifelse(!is.null(N35SPR), E_change[N35SPR], NA),
+                                    E40SPR = ifelse(!is.null(N40SPR), E_change[N40SPR], NA))
             }
 
 

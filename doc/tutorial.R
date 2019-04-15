@@ -145,7 +145,7 @@ lt <- lfqFitCurves(synLFQ7a, par = res_GA$par,
 
 ## ------------------------------------------------------------------------
 # assign estimates to the data list
-synLFQ7a$par <- res_SA$par
+synLFQ7a$par <- res_GA$par
 
 ## ---- echo=TRUE----------------------------------------------------------
 # estimation of M

@@ -4,9 +4,9 @@
 \alias{lfqFitCurves}
 \title{Fitting VBGF growth curves through lfq data}
 \usage{
-lfqFitCurves(lfq, par = list(Linf = 100, K = 0.1, ta = 0.25, C = 0, ts =
-  0), agemax = NULL, flagging.out = TRUE, lty = 2, lwd = 1,
-  col = 1, draw = FALSE, tincr = 0.05)
+lfqFitCurves(lfq, par = list(Linf = 100, K = 0.1, ta = 0.25, C = 0, ts = 0),
+  agemax = NULL, flagging.out = TRUE, lty = 2, lwd = 1, col = 1,
+  draw = FALSE, tincr = 0.05)
 }
 \arguments{
 \item{lfq}{a list of the class "lfq" consisting of following parameters:

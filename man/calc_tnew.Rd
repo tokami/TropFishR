@@ -4,8 +4,7 @@
 \alias{calc_tnew}
 \title{calculate time for new length}
 \usage{
-calc_tnew(par = NULL, Ltnew = NULL, Lt = NULL, t = NULL,
-  tincr = 0.01)
+calc_tnew(par = NULL, Ltnew = NULL, Lt = NULL, t = NULL, tincr = 0.01)
 }
 \arguments{
 \item{par}{VBGF parameters. If soVBGF, then ts should relate
