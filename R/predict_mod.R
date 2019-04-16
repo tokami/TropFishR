@@ -866,7 +866,8 @@ predict_mod <- function(
             tmp <- cbind(tmp,as.data.frame(bootRaw[,((ncol(bootRaw)-3):ncol(bootRaw))]))
         }
 
-        idx <- apply(tmp, 2, function(x) all(x == 0 | is.na(x) | x == 1))
+##        idx <- apply(tmp, 2, function(x) all(x == 0 | is.na(x) | x == 1))
+        idx <- apply(tmp, 2, function(x) all(is.na(x)))        
         tmp <- tmp[,!idx]
         nx <- ncol(tmp)
 
