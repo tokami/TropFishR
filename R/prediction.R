@@ -1393,14 +1393,14 @@ predict_mod <- function(lfq, type, FM_change = NA,
             }
 
             ## SSB0 for SPR
-            lfqX$FM <- numeric(nrow(pred_mat)) * 0.0
-            lfqX$Z <- lfqX$FM + nM
+            lfqX$par$FM <- numeric(nrow(pred_mat)) * 0.0
+            lfqX$par$Z <- lfqX$FM + nM
             tmp <- stock_sim(lfqX, age_unit = age_unit,
                              stock_size_1 = stock_size_1, plus_group = plus_group)
             SSB0 <- tmp$totals$meanSSB
 
             pred_res_df <- do.call(rbind, pred_res_list)
-            pred_res_df$SPR <- SSB0 / pred_res_df$meanSSB
+            pred_res_df$SPR <- pred_res_df$meanSSB / SSB0
             pred_res_df$FM_change <- FM_change
             pred_res_df$E_change <- E_change
 
@@ -1535,7 +1535,7 @@ predict_mod <- function(lfq, type, FM_change = NA,
                 res2 <- stock_sim(lfq = param.loop, age_unit = age_unit,
                                   stock_size_1 = stock_size_1, plus_group=plus_group)
                 SSB0 <- res2$totals$meanSSB
-##                SPR <- SSB0 / mati2$meanSSB
+##                SPR <- mati2$meanSSB  / SSB0
 
                 df_currents <- data.frame(curr.Lc = curr.Lc,
                                           curr.tc = curr.tc,
@@ -1619,8 +1619,8 @@ predict_mod <- function(lfq, type, FM_change = NA,
                 }
 
                 ## SSB0 for SPR
-                param.loop$FM <- 0.0 * FM_Lc_com_mat.list[[1]][,1]
-                param.loop$Z <- param.loop$FM + nM
+                param.loop$par$FM <- 0.0 * FM_Lc_com_mat.list[[1]][,1]
+                param.loop$par$Z <- param.loop$FM + nM
                 tmp <- stock_sim(lfq = param.loop, age_unit = age_unit,
                                  stock_size_1 = stock_size_1, plus_group=plus_group)
                 SSB0 <- tmp$totals$meanSSB                
@@ -1631,7 +1631,7 @@ predict_mod <- function(lfq, type, FM_change = NA,
                 prev_matB <- prev_mat[,'meanB']
                 prev_matSSB <- prev_mat[,'meanSSB']                
                 prev_matV <- prev_mat[,'totV']
-                prev_matSPR <- SSB0 / prev_mat[,'meanSSB']
+                prev_matSPR <- prev_mat[,'meanSSB']  / SSB0
 
                 pred.FM_Lc_com_res_loopC_list[[x21]] <- prev_matC
                 pred.FM_Lc_com_res_loopY_list[[x21]] <- prev_matY
@@ -1743,7 +1743,8 @@ predict_mod <- function(lfq, type, FM_change = NA,
 
 
             ## current SPR
-##            SPR <- pred_res_df$SPR[which.min(abs(FM_change - FM))]                        
+            sprTmp <- mat_FM_Lc_com.SPR[,which.min(abs(Lc_change - Lc))]
+            SPR <- sprTmp[which.min(abs(FM_change - FM))]                        
             
 
             if((!is.null(Lc[1]) & !is.null(tc[1])) | (!is.na(Lc[1]) & !is.na(tc[1])) ){
@@ -1825,7 +1826,7 @@ predict_mod <- function(lfq, type, FM_change = NA,
                 res2 <- stock_sim(lfq = param.loop, age_unit = age_unit,
                                   stock_size_1 = stock_size_1, plus_group=plus_group)
                 SSB0 <- res2$totals$meanSSB
-                SPR <- SSB0/mati2$meanSSB
+##                SPR <- mati2$meanSSB / SSB0
 
                 df_currents <- data.frame(curr.Lc = curr.Lc,
                                           curr.tc = curr.tc,
