@@ -576,6 +576,11 @@ predict_mod <- function(
                 SPR[bi] <- pred_res_df$SPR[which.min(abs(FM_change - FM))]
 
                 ## ref level
+                N01 <- ifelse(is.integer(N01),N01,NA)
+                Nmax <- ifelse(is.integer(Nmax),Nmax,NA)
+                N05 <- ifelse(is.integer(N05),N05,NA)
+                N04 <- ifelse(is.integer(N04),N04,NA)
+                ##
                 F01[bi] <- ifelse(is.integer(N01),FM_change[N01],NA)
                 Fmax[bi] <- ifelse(is.integer(Nmax),FM_change[Nmax],NA)
                 F05[bi] <- ifelse(is.integer(N05),FM_change[N05],NA)
