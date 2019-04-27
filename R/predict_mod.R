@@ -576,10 +576,10 @@ predict_mod <- function(
                 SPR[bi] <- pred_res_df$SPR[which.min(abs(FM_change - FM))]
 
                 ## ref level
-                F01[bi] <- FM_change[N01]
-                Fmax[bi] <- FM_change[Nmax]
-                F05[bi] <- FM_change[N05]
-                F04[bi] <- FM_change[N04]                
+                F01[bi] <- ifelse(is.integer(N01),FM_change[N01],NA)
+                Fmax[bi] <- ifelse(is.integer(Nmax),FM_change[Nmax],NA)
+                F05[bi] <- ifelse(is.integer(N05),FM_change[N05],NA)
+                F04[bi] <- ifelse(is.integer(N04),FM_change[N04],NA)
 
                 ## for plotting
                 totYs[[bi]] <- pred_res_df$totY
