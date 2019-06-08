@@ -447,7 +447,7 @@ Bhattacharya <- function(lfq, n_rnorm = 1000, savePlots = FALSE){
 }
 
 #' @title Powell-Wetherall method
-#' 
+#'
 #' @description A method to estimate the instantaneous total mortality rate (Z) and
 #'    the infinite length of the von Bertalanffy growth equation
 #'    (Powell, 1979; Wetherall et al., 1987).
@@ -540,7 +540,7 @@ powell_wetherall <- function(lfq, catch_columns = NA,
     catch <- res$catch
     if("par" %in% names(res)){
         par <- res$par
-    }else par <- list()        
+    }else par <- list()
 
     if(class(catch) == "data.frame" | class(catch) == "matrix"){
         if(is.na(catch_columns[1])){
@@ -685,7 +685,7 @@ powell_wetherall <- function(lfq, catch_columns = NA,
                          confidenceInt_ZK = conf_ZK.BH,
                          plot = ploti
                      ))
-        
+
         par$Linf_est <- Linf.BH
         par$ZK <- ZK.BH
         ret$par <- par
@@ -694,7 +694,7 @@ powell_wetherall <- function(lfq, catch_columns = NA,
 }
 
 #' @title Von Bertalanffy Growth function (VBGF)
-#' 
+#'
 #' @description  This function applies the von Bertalanffy growth function (VBGF).
 #'    It allows to calculate ages from lengths or lengths from ages based on the special,
 #'    generalised or seasonalised VBGF.
@@ -713,7 +713,7 @@ powell_wetherall <- function(lfq, catch_columns = NA,
 #' }
 #' @param t ages for which to calculate corresponding lengths, or
 #' @param L lengths for which to calculate corresponding ages
-#' 
+#'
 #' @keywords function growth VBGF
 #'
 #' @examples
@@ -760,7 +760,7 @@ powell_wetherall <- function(lfq, catch_columns = NA,
 #' @export
 
 VBGF <- function(pars, t = NA, L = NA){
-    
+
     res <- pars
     if(is.na(t[1]) & is.na(L[1])) stop("Either length L or age t has to be provided to calculate the corresponding.")
     Linf <- ifelse("Linf" %in% names(res),res$Linf, NA)
@@ -1822,7 +1822,7 @@ ELEFAN_SA <- function(lfq,
 
     if(plot){
         plot(res, Fname = "rcounts")
-        Lt <- lfqFitCurves(res, par = res$pars, draw=TRUE)
+        Lt <- lfqFitCurves(res, par = res$par, draw=TRUE)
     }
     return(res)
 }
@@ -1992,26 +1992,26 @@ ELEFAN_SA <- function(lfq,
 #' @export
 
 ELEFAN_GA <- function(lfq,
-                      seasonalised = FALSE,
-                      low_par = NULL,
-                      up_par = NULL,
-                      popSize = 50,
-                      maxiter = 100,
-                      run = maxiter,
-                      parallel = FALSE,
-                      pmutation = 0.1,
-                      pcrossover = 0.8,
-                      elitism = base::max(1, round(popSize*0.05)),
-                      MA = 5,
-                      addl.sqrt = FALSE,
-                      agemax = NULL,
-                      flagging.out = TRUE,
-                      seed = NULL,
-                      monitor = FALSE,
-                      plot = FALSE,
-                      plot.score = TRUE,
-                      ...
-                      ){
+  seasonalised = FALSE,
+  low_par = NULL,
+  up_par = NULL,
+  popSize = 50,
+  maxiter = 100,
+  run = maxiter,
+  parallel = FALSE,
+  pmutation = 0.2,
+  pcrossover = 0.8,
+  elitism = base::max(1, round(popSize*0.05)),
+  MA = 5,
+  addl.sqrt = FALSE,
+  agemax = NULL,
+  flagging.out = TRUE,
+  seed = NULL,
+  monitor = FALSE,
+  plot = FALSE,
+  plot.score = TRUE,
+  ...
+){
 
     classes <- lfq$midLengths
     n_classes <- length(classes)
@@ -2123,10 +2123,10 @@ ELEFAN_GA <- function(lfq,
         names(pars) <- c("Linf", "K", "ta")
     }
 
-    ## Fitness graph
-    if(plot.score){
-        GA::plot(fit)
-    }
+    # ## Fitness graph
+    # if(plot.score){
+    #     GA::plot(fit)
+    # }
 
     final_res <- lfqFitCurves(
         lfq = lfq, par=pars,
@@ -2143,10 +2143,11 @@ ELEFAN_GA <- function(lfq,
     lfq$par <- pars
     lfq$fESP <- fit@fitnessValue
     lfq$Rn_max <- fit@fitnessValue
+    attr(lfq, "ELEFAN_fit") <- fit
 
     if(plot){
         plot(lfq, Fname = "rcounts")
-        Lt <- lfqFitCurves(lfq, par = lfq$pars, draw=TRUE)
+        Lt <- lfqFitCurves(lfq, par = lfq$par, draw=TRUE)
     }
     return(lfq)
 }
@@ -2643,7 +2644,7 @@ growth_length_age <- function(laa, method, Linf_est = NA,
 #'   the growth parameters estimated with ELEFAN.
 #'
 #' @param elefanFit lfq list fitted with growth parameters estimated with ELEFAN_SA or ELEFAN_GA
-#' 
+#'
 #' @keywords function jackknife CI
 #'
 #' @importFrom stats t.test
@@ -2663,7 +2664,7 @@ jackknife <- function(elefanFit){
     }else method <- "GA"
 
     JK <- vector("list", length(res$dates))
-    rns <- vector("numeric", length(res$dates))    
+    rns <- vector("numeric", length(res$dates))
     for(i in 1:length(res$dates)){
       loop_data <- list(dates = res$dates[-i],
                       midLengths = res$midLengths,
@@ -2705,7 +2706,7 @@ jackknife <- function(elefanFit){
         JK[[i]] <- unlist(tmp$par)
         rns[i] <- tmp$Rn_max
     }
-    
+
     JKres <- do.call(cbind, JK)
     ## mean
     JKmeans <- apply(as.matrix(JKres), MARGIN = 1, FUN = mean)

@@ -29,7 +29,7 @@ License: GPL-3
 NeedsCompilation: no
 BugReports: https://github.com/tokami/TropFishR/issues
 URL: https://github.com/tokami/TropFishR
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 Suggests:
     stats,
     graphics,
