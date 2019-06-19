@@ -1070,3 +1070,85 @@ ta2t0 <- function(par = NULL, L0 = 0, plot = TRUE){
   }
   return(par_age)
 }
+
+#' Automated determination of values to include in catch curve
+#'
+#' @description Procedure described by Pauly (1990) to automate the selection
+#'   of points used in a catch curve (\code{log(y)~x}). The sequential
+#'   data indices that result in the highest F-ststistic in a linear regression
+#'   are returned. Results should still be visualized to prevent suboptimal
+#'   results form 'pathological' datasets.
+#'
+#' @param x vector. Age or relative age associated with catch numbers
+#'   (\code{x}).
+#' @param y vector. catch numbers.
+#' @param minN numeric. Minimum number of values to include in the regression
+#'   (Default = 3).
+#'
+#' @return list containing the indices and F-statistic of the highest scoring
+#' subset of (sequantial) data points.
+#'
+#' @export
+#'
+#' @references
+#' Pauly, D. (1990). Length-converted catch curves and the seasonal growth
+#'   of fishes. Fishbyte, 8(3), 33–38.
+#'
+#' @examples
+#' # generate example data
+#' set.seed(1)
+#' n <- 10
+#' x <- seq(n)
+#' logy <- 10 + -2*x + rnorm(n, sd = 0.5)
+#' logy[1:2] <- logy[1:2] * c(0.5, 0.75)
+#' y <- exp(logy)
+#' plot(y ~ x, log = "y")
+#'
+#' # When lm can reduce to 3 points, this is chosen as the 'best'
+#' (tmp <- bestCC(x = x, y = y, minN = 3))
+#' plot(y ~ x, log = "y")
+#' points(x[tmp$samples], y[tmp$samples], pch = 16)
+#'
+#' # Any min number of points above this threshhold increases the best n a lot
+#' (tmp <- bestCC(x = x, y = y, minN = 4))
+#' plot(y ~ x, log = "y")
+#' points(x[tmp$samples], y[tmp$samples], pch = 16)
+#'
+bestCC <- function(x, y, minN = 6){
+
+  # return unique combinations of sequential data points
+  res <- vector("list", length(minN:length(x)))
+  for(i in seq(minN:length(x))){
+    len <- (minN:length(x))[i]
+    res.i <- vector("list", length(1:(length(x)-len+1)))
+    for(j in seq(1:(length(x)-len+1))){
+      start <- (1:(length(x)-len+1))[j]
+      res.i[[j]] <- seq(from = start, by = 1, length.out = len)
+    }
+    res[[i]] <- res.i
+  }
+  res <- do.call("c", res)
+  res <- unique(res)
+
+  # fit lm to each comb and return the indices and f-statistic
+  res2 <- vector("list", length(res))
+  for(i in seq(res2)){
+    res2[[i]]$n <- length(res[[i]])
+    res2[[i]]$samples <- res[[i]]
+    df.i <- data.frame(y = y[res[[i]]], x = x[res[[i]]])
+    fit <- lm(log(y) ~ x, data = df.i)
+    S <- summary(fit)
+    res2[[i]]$f <- 0
+    if(coef(fit)[2] < 0 & S$coefficients[2,4] < 0.05){res2[[i]]$f <- S$fstatistic[1]}
+  }
+
+  bestbyn <- do.call("rbind", lapply(res2, FUN = function(x){data.frame(n=x$n,f=x$f)}))
+  bestbyn <- aggregate(f ~ n, data = bestbyn, FUN = max)
+  # plot(f ~ n, bestbyn, log = "y", t = "b")
+
+  # 'best' model is that with highest f-statistic
+  best <- which.max(do.call("c", lapply(res2, FUN = function(x){x$f})))
+
+  return(res2[[best]])
+}
+

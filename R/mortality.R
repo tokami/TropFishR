@@ -1,5 +1,5 @@
 #' @title Empirical formulas for the estimation of natural mortality
-#' 
+#'
 #' @description Functions to calculate the instantaneous natural mortality rate (M)
 #'      according to 12 different empirical formulas.
 #' @param lfq a list consisting of following parameters:
@@ -115,12 +115,12 @@
 M_empirical <- function(lfq, method, schooling = FALSE){
 
     res <- lfq
-    if(!"par" %in% names(lfq)) stop(noquote("Please provide the required parameters in res$par!"))    
+    if(!"par" %in% names(lfq)) stop(noquote("Please provide the required parameters in res$par!"))
     par <- lfq$par
 
     Linf <- ifelse("Linf" %in% names(par), par$Linf, NA)
     K_l <- ifelse("K" %in% names(par), par$K, NA)            ## old K_l
-    K_w <- ifelse("K_w" %in% names(par), par$K_w, NA)    
+    K_w <- ifelse("K_w" %in% names(par), par$K_w, NA)
     Winf <- ifelse("Winf" %in% names(par), par$Winf, NA)
     temp <- ifelse("temp" %in% names(par), par$temp, NA)
     tmax <- ifelse("tmax" %in% names(par), par$tmax, NA)
@@ -281,7 +281,7 @@ M_empirical <- function(lfq, method, schooling = FALSE){
 #'     \item \strong{t0}: theoretical time zero, at which individuals of this species hatch,
 #'     \item \strong{C}: amplitude of growth oscillation of soVBGF (range: 0 to 1, default: 0),
 #'     \item \strong{ts}: summer point of soVBGF (ts = WP - 0.5) (range: 0 to 1, default: 0);
-#'     
+#'
 #'  }
 #' }
 #' @param catch_columns numerical; indicating the column of the catch matrix which should be
@@ -299,7 +299,7 @@ M_empirical <- function(lfq, method, schooling = FALSE){
 #' @param auto logical; no interactive functions used instead regression line is chosen
 #'    automatically. Default = FALSE
 #' @param plot logical; should a plot be displayed? Default = TRUE
-#' 
+#'
 #'
 #' @keywords function mortality Z catchCurve
 #'
@@ -455,7 +455,7 @@ catchCurve <- function(lfq,
     res <- lfq
     if("par" %in% names(res)){
         par <- res$par
-    }else par <- list()     
+    }else par <- list()
 
     if("midLengths" %in% names(res)) classes <- as.character(res$midLengths)
     if("age" %in% names(res)) classes <- as.character(res$age)
@@ -523,23 +523,23 @@ catchCurve <- function(lfq,
 
         if(!"par" %in% names(lfq)) stop(noquote("Please provide the required parameters in res$par!"))
         par <- res$par
-        
+
         if("par" %in% names(res)){
             Linf <- res$par$Linf
             K <- res$par$K
-            ta <- ifelse("ta" %in% names(res$par), res$par$ta, 0)            
+            ta <- ifelse("ta" %in% names(res$par), res$par$ta, 0)
             t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
             C <- ifelse("C" %in% names(res$par), res$par$C, 0)
-            ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
+            ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)
         }else{
             Linf <- res$Linf
             K <- res$K
-            ta <- ifelse("ta" %in% names(res), res$ta, 0)            
+            ta <- ifelse("ta" %in% names(res), res$ta, 0)
             t0 <- ifelse("t0" %in% names(res), res$t0, 0)
             C <- ifelse("C" %in% names(res), res$C, 0)
             ts <- ifelse("ts" %in% names(res), res$ts, 0)
         }
-        
+
         if((is.null(Linf) | is.null(K))) stop(noquote(
                                              "You need to assign values to Linf and K in lfq$par for the catch curve based on length-frequency data!"))
 
@@ -575,7 +575,7 @@ catchCurve <- function(lfq,
 
         ## y variable
                                         #ln C(L1,Linf)
-        
+
         lnC <- log(catch)
         ## ln( Catch / delta t)
         lnC_dt <- log(catch / dt)
@@ -670,7 +670,7 @@ catchCurve <- function(lfq,
                       oma = c(2, 1, 0, 1) + 0.1)
             plot(x = xvar,y = yvar, ylim = c(minY,maxY), xlim = xlims,
                  xlab = xlabel, ylab = ylabel, type = "n")
-            
+
 ### plot previous regression lines when using multiple regression lines
             if(I > 1){
                 for(II in 1:(I-1)){
@@ -693,10 +693,10 @@ catchCurve <- function(lfq,
 ### save results to list
             cutterList[[I]] <- cutter
         }
-        
+
 
     }
-    
+
 
     if(!is.null(reg_int)){
         cutterList <- reg_int
@@ -758,7 +758,7 @@ catchCurve <- function(lfq,
         conf_Z_lm1List[[I]] <- conf_Z_lm1
         intercept_lm1List[[I]] <- intercept_lm1
     }
-    
+
     ##save all in list
     if(reg_num > 1){
         ret <- c(res,list(
@@ -779,14 +779,14 @@ catchCurve <- function(lfq,
                          confidenceInt = unlist(conf_Z_lm1List)))
         par$Z <- unlist(Z_lm1List)
     }
-    
+
     if("M" %in% names(par) && length(par$M)==1){
         par$FM <- lapply(par$Z, function(x) x - par$M)
         par$E <- lapply(par$FM, function(x) x/par$Z)
             if(length(par$FM) == 1){
                 par$FM <- unlist(par$FM)
-                par$E <- unlist(par$E)                
-            }        
+                par$E <- unlist(par$E)
+            }
     }
     names(ret)[names(ret) == "xvar"] <- xname
     names(ret)[names(ret) == "yvar"] <- yname
@@ -890,7 +890,7 @@ catchCurve <- function(lfq,
 #'     \item \strong{t0}: theoretical time zero, at which individuals of this species hatch,
 #'     \item \strong{C}: amplitude of growth oscillation of soVBGF (range: 0 to 1, default: 0),
 #'     \item \strong{ts}: summer point of soVBGF (ts = WP - 0.5) (range: 0 to 1, default: 0);
-#'     
+#'
 #'  }
 #' }
 #' @param catch_columns optional; in case catch is a matrix or data.frame, a number or vector
@@ -961,13 +961,13 @@ Z_BevertonHolt <- function(lfq,
 
         Linf <- res$par$Linf
         K <- res$par$K
-        ta <- ifelse("ta" %in% names(res$par), res$par$ta, 0)            
+        ta <- ifelse("ta" %in% names(res$par), res$par$ta, 0)
         t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
         C <- ifelse("C" %in% names(res$par), res$par$C, 0)
-        ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
-        
+        ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)
+
         if((is.null(Linf) | is.null(K))) stop(noquote("You need to assign values to Linf and K to lfq$par for Z_BevertonHolt!"))
-        
+
 
         ## Error message if catch and age do not have same length
         if(class(catch) == 'numeric'){
@@ -999,9 +999,9 @@ Z_BevertonHolt <- function(lfq,
             par$E <- lapply(par$FM, function(x) x/par$Z)
             if(length(par$FM) == 1){
                 par$FM <- unlist(par$FM)
-                par$E <- unlist(par$E)                
-            }            
-        }      
+                par$E <- unlist(par$E)
+            }
+        }
         ret$par <- par
         return(ret)
     }
@@ -1043,10 +1043,10 @@ Z_BevertonHolt <- function(lfq,
             par$E <- lapply(par$FM, function(x) x/par$Z)
             if(length(par$FM) == 1){
                 par$FM <- unlist(par$FM)
-                par$E <- unlist(par$E)                
+                par$E <- unlist(par$E)
             }
-        }      
-        ret$par <- par      
+        }
+        ret$par <- par
         return(ret)
     }
 
@@ -1108,7 +1108,7 @@ Z_CPUE <- function(cpue, method = "standard", omit_age1 = FALSE){
     res <- cpue
     if("par" %in% names(res)){
         par <- res$par
-    }else par <- list()    
+    }else par <- list()
     cohort <- res$cohort
     classes <- as.character(res$age)
     CPUE <- res$CPUE
@@ -1135,7 +1135,7 @@ Z_CPUE <- function(cpue, method = "standard", omit_age1 = FALSE){
                }
                ret <- res
                par$Z <- df.HZ
-               ret$par <- par                 
+               ret$par <- par
                return(ret)
            },
 
@@ -1150,13 +1150,13 @@ Z_CPUE <- function(cpue, method = "standard", omit_age1 = FALSE){
                par$Z <- Z.H
                if("M" %in% names(par) && length(par$M)==1){
                    par$FM <- lapply(par$Z, function(x) x - par$M)
-                   par$E <- lapply(par$FM, function(x) x/par$Z)                   
+                   par$E <- lapply(par$FM, function(x) x/par$Z)
                    if(length(par$FM) == 1){
                        par$FM <- unlist(par$FM)
-                       par$E <- unlist(par$E)                
-                   }                   
-               }      
-               ret$par <- par                 
+                       par$E <- unlist(par$E)
+                   }
+               }
+               ret$par <- par
                return(ret)
            },
            "RobsonChapman" ={
@@ -1172,14 +1172,125 @@ Z_CPUE <- function(cpue, method = "standard", omit_age1 = FALSE){
                par$Z <- Z.H
                if("M" %in% names(par) && length(par$M)==1){
                    par$FM <- lapply(par$Z, function(x) x - par$M)
-                   par$E <- lapply(par$FM, function(x) x/par$Z)                   
+                   par$E <- lapply(par$FM, function(x) x/par$Z)
                    if(length(par$FM) == 1){
                        par$FM <- unlist(par$FM)
-                       par$E <- unlist(par$E)                
-                   }                   
-               }      
-               ret$par <- par                 
+                       par$E <- unlist(par$E)
+                   }
+               }
+               ret$par <- par
                return(ret)
            })
+}
+
+
+#' 'GOTCHA' method for aggregating catch numbers by pseudocohort
+#'
+#' @description The method is useful as a pre-cursor to a catch-curve analysis
+#'   whereby total mortality can be estimated based on the slope of catch numbers
+#'   (log-transformed) as a function of (relative) age. As demonstrated by Pauly
+#'   (1990), the method can be applied to cases where seasonally-oscillating
+#'   growth creates inconsistencies of age at length depending on the time of
+#'   year. The method aggregates by pseudocohort (n), as opposed to by length class
+#'   in the length-converted-catch-curve (LCCC), and therefore does not require
+#'   the correction of dividing numbers by time spent in a given length bin
+#'   (n/dt).
+#'
+#' @param lfq an object of class lfq
+#' @param n.pseudocohort numeric. Number of pseudocohorts (i.e. total slices).
+#'   Defaults to the number of length bins in the lfq object. Overridden
+#'   when \code{n.pseudocohort.per.yr} is defined.
+#' @param n.pseudocohort.per.yr numeric. Number of pseudocohorts per year. For
+#'   longer-lived species, setting \code{n.pseudocohort.per.yr = 1} would
+#'   result in a single aggregate value per year class. When specified,
+#'     \code{n.pseudocohort} and  \code{slice.reso} are overridden.
+#' @param slice.reso numeric. When \code{n.pseudocohort} is defined (default),
+#'   \code{slice.reso} defines a fine level of cohort slices per year to be
+#'   used as an initial determination of birthdates before pseudocohort
+#'   aggregation. Overridden when \code{n.pseudocohort.per.yr} is defined.
+#'
+#' @return a data.frame with catch numbers (n) aggregated by pseudocohort
+#'   (bday, rel.age).
+#'
+#' @references
+#' Pauly, D. (1990). Length-converted catch curves and the seasonal growth
+#'   of fishes. Fishbyte, 8(3), 33–38.
+#'
+#' @export
+#'
+#' @examples
+#' # load and visualize fit and cohorts
+#' lfq <- synLFQ4
+#' lfq$par <- list(Linf = 80, K = 0.5, ta = 0.25, C = 0.75, ts = 0.5)
+#' lfq <- lfqModify(lfq, bin_size = 2, years = 2006:2007)
+#' lfq <- lfqRestructure(lfq, MA = 5)
+#' plot(lfq, image.col = NA)
+#' lfq <- lfqCohort(lfq, n.per.yr = 1, calc_dt = FALSE)
+#' image(lfq$dates, lfq$midLengths, t(lfq$cohort),
+#'   col = adjustcolor(rainbow(100),0.4), add = TRUE)
+#'
+#' # default settings - n.pseudocohorts = number of length bins
+#' res <- gotcha(lfq, slice.reso = 36)
+#' plot(log(n) ~ rel.age, res)
+#' ressub <- subset(res, subset = rel.age > 2)
+#' points(log(n) ~ rel.age, ressub, pch = 16)
+#' fit <- lm(log(n) ~ rel.age, data = ressub)
+#' abline(fit)
+#' legend("topright", legend = paste("Z =", round(-coef(fit)[2],2)), bty = "n")
+#'
+#' # n.pseudocohorts = defined number of bins
+#' res <- gotcha(lfq, n.pseudocohort = 16)
+#' plot(log(n) ~ rel.age, res)
+#' ressub <- subset(res, subset = rel.age > 2)
+#' points(log(n) ~ rel.age, ressub, pch = 16)
+#' fit <- lm(log(n) ~ rel.age, data = ressub)
+#' abline(fit)
+#' legend("topright", legend = paste("Z =", round(-coef(fit)[2],2)), bty = "n")
+#'
+#' # n.pseudocohorts = one per year
+#' res <- gotcha(lfq, n.pseudocohort.per.yr = 1)
+#' plot(log(n) ~ rel.age, res)
+#' ressub <- subset(res, subset = rel.age > 2)
+#' points(log(n) ~ rel.age, ressub, pch = 16)
+#' fit <- lm(log(n) ~ rel.age, data = ressub)
+#' abline(fit)
+#' legend("topright", legend = paste("Z =", round(-coef(fit)[2],2)), bty = "n")
+#'
+gotcha <- function(lfq, n.pseudocohort = dim(lfq$catch)[1],
+  n.pseudocohort.per.yr = NULL, slice.reso = 52){
+
+  # if n.pseudocohort.per.yr is defined, slice accordingly,
+  #  else use default slice.reso.
+  # Overrides n.pseudocohort
+  if(!is.null(n.pseudocohort.per.yr)){
+    slice.reso = n.pseudocohort.per.yr
+  }
+
+  # slice and assign cohort, rel.ages etc.
+  lfq <- lfqCohort(lfq, n.per.yr = slice.reso, calc_dt = FALSE)
+  # image(lfq$dates, lfq$midLengths, t(lfq$cohort), col = adjustcolor(rainbow(1000),0.4), add = TRUE)
+  df <- data.frame(
+    length = rep(lfq$midLengths, times = length(lfq$dates)),
+    rel.age = c(lfq$rel.age),
+    bday = c(lfq$bday),
+    cohort = c(lfq$cohort),
+    n = c(lfq$catch))
+
+  # if n.pseudocohort.per.yr is not defined, aggregate results to defined number of slices
+  if(is.null(n.pseudocohort.per.yr)){
+    breaks <- seq(min(df$bday, na.rm = TRUE), max(df$bday, na.rm = TRUE),
+      length.out = n.pseudocohort+1)
+    mids <- breaks[-length(breaks)] + diff(breaks)/2
+    bday.cat <- cut(df$bday, breaks = breaks)
+    df$bday <- mids[as.numeric(bday.cat)]
+  }
+
+  # aggregate by rel.age (and remove zeros)
+  res <- aggregate(n ~ bday, data = df, FUN = sum, na.rm=TRUE)
+  res$rel.age <- max(res$bday) - res$bday + 1
+  if(length(which(res$n == 0))){res <- res[-which(res$n == 0),]}
+
+  # return results
+  return(res)
 }
 

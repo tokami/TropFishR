@@ -23,7 +23,7 @@ Z_BevertonHolt(lfq, catch_columns = NA, Lprime_tprime)
     \item \strong{t0}: theoretical time zero, at which individuals of this species hatch,
     \item \strong{C}: amplitude of growth oscillation of soVBGF (range: 0 to 1, default: 0),
     \item \strong{ts}: summer point of soVBGF (ts = WP - 0.5) (range: 0 to 1, default: 0);
-    
+
  }
 }}
 
