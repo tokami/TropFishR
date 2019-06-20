@@ -1106,15 +1106,19 @@ ta2t0 <- function(par = NULL, L0 = 0, plot = TRUE){
 #'
 #' # When lm can reduce to 3 points, this is chosen as the 'best'
 #' (tmp <- bestCC(x = x, y = y, minN = 3))
+#' plot(f~n, data = tmp$bestbyn, t = "b", log="y")
 #' plot(y ~ x, log = "y")
-#' points(x[tmp$samples], y[tmp$samples], pch = 16)
+#' points(x[tmp$best$samples], y[tmp$best$samples], pch = 16)
 #'
 #' # Any min number of points above this threshhold increases the best n a lot
 #' (tmp <- bestCC(x = x, y = y, minN = 4))
+#' plot(f~n, data = tmp$bestbyn, t = "b", log="y")
 #' plot(y ~ x, log = "y")
-#' points(x[tmp$samples], y[tmp$samples], pch = 16)
+#' points(x[tmp$best$samples], y[tmp$best$samples], pch = 16)
 #'
-bestCC <- function(x, y, minN = 6){
+bestCC <- function(x, y, minN = max(3,0.25*length(x))){
+
+  if(minN < 3){stop("'minN' must be greater than or equal to 3")}
 
   # return unique combinations of sequential data points
   res <- vector("list", length(minN:length(x)))
@@ -1144,11 +1148,13 @@ bestCC <- function(x, y, minN = 6){
 
   bestbyn <- do.call("rbind", lapply(res2, FUN = function(x){data.frame(n=x$n,f=x$f)}))
   bestbyn <- aggregate(f ~ n, data = bestbyn, FUN = max)
-  # plot(f ~ n, bestbyn, log = "y", t = "b")
 
   # 'best' model is that with highest f-statistic
   best <- which.max(do.call("c", lapply(res2, FUN = function(x){x$f})))
 
-  return(res2[[best]])
+  return(list(
+    best = res2[[best]],
+    bestbyn = bestbyn
+  ))
 }
 

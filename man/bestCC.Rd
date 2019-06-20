@@ -4,7 +4,7 @@
 \alias{bestCC}
 \title{Automated determination of values to include in catch curve}
 \usage{
-bestCC(x, y, minN = 6)
+bestCC(x, y, minN = max(3, 0.25 * length(x)))
 }
 \arguments{
 \item{x}{vector. Age or relative age associated with catch numbers
@@ -38,13 +38,15 @@ plot(y ~ x, log = "y")
 
 # When lm can reduce to 3 points, this is chosen as the 'best'
 (tmp <- bestCC(x = x, y = y, minN = 3))
+plot(f~n, data = tmp$bestbyn, t = "b", log="y")
 plot(y ~ x, log = "y")
-points(x[tmp$samples], y[tmp$samples], pch = 16)
+points(x[tmp$best$samples], y[tmp$best$samples], pch = 16)
 
 # Any min number of points above this threshhold increases the best n a lot
 (tmp <- bestCC(x = x, y = y, minN = 4))
+plot(f~n, data = tmp$bestbyn, t = "b", log="y")
 plot(y ~ x, log = "y")
-points(x[tmp$samples], y[tmp$samples], pch = 16)
+points(x[tmp$best$samples], y[tmp$best$samples], pch = 16)
 
 }
 \references{
