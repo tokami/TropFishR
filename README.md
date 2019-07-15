@@ -35,8 +35,8 @@ install.packages("TropFishR")
 Or the development version from GitHub:
 
 ```R
-# install.packages("devtools")
-devtools::install_github("tokami/TropFishR")
+# install.packages("remotes")
+remotes::install_github("tokami/TropFishR")
 ```
 
 ## Citation
