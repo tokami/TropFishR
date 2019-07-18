@@ -161,7 +161,7 @@ plot.lfq <- function(x,
   date.axis = "traditional",  # alternative : "modern"
   date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by="months"),
   date.format = "'%y-%b", xlab = "", ylab = "Length classes",
-  draw = TRUE, border = "grey20", cex.axis=1,
+  draw = TRUE, border = "grey20", cex.axis=1, yaxt = "t",
   ...){
 
     dates <- x$dates
@@ -280,7 +280,7 @@ plot.lfq <- function(x,
             x=dates, y=classes, z=t(catch), col=image.col, zlim=zlim,
             xaxt="n", xlab = xlab, ylab = ylab, yaxt="n",...)
     }
-    axis(2, cex.axis=cex.axis)
+    if(yaxt != "n") axis(2, cex.axis=cex.axis)
 
     if(!is.null(region.col)){
       usr <- par()$usr
@@ -292,7 +292,8 @@ plot.lfq <- function(x,
     # add time axis
     if(date.axis == "modern"){
       axis.Date(side = 1, x=dates, at=date.at, format = date.format, cex.axis=cex.axis)
-    }else if(date.axis == "traditional"){
+    }
+    if(date.axis == "traditional"){
       axis.Date(side = 1, x = dates, at = date.at, format = "%b", cex.axis=cex.axis)
       year <- seq(min(as.numeric(format(dates, "%Y"))), max(as.numeric(format(dates, "%Y"))), 1)
       date_seq <- seq.Date(dates[1],dates[length(dates)], by = "month")
@@ -303,7 +304,7 @@ plot.lfq <- function(x,
       year_ticks <- dates_for_years[year_pre]
       mtext(side = 1, at = year_ticks, text = year, line = 2.5)
     }
-
+    
     ## Histograms
     if(any(!is.na(y))){
         bin.width <- diff(mergi2$classes)

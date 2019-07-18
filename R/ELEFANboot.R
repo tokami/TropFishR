@@ -956,6 +956,7 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
         M_Then = expression(bolditalic(M)),
         M_Pauly = expression(bolditalic(M)),
         Z = expression(bolditalic(Z)),
+        E = expression(bolditalic(E)),
         FM = expression(bolditalic(F)),
         L50 = expression(bolditalic("L50")),
         L75 = expression(bolditalic("L75")),
@@ -972,6 +973,7 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
         bpr = expression(bolditalic(bpr)),
         bprrel = expression(bolditalic(bprrel))
     )
+
 
     ## univariate plots
     for(i in seq(ncol(res))){

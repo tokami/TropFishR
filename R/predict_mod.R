@@ -305,7 +305,7 @@ predict_mod <- function(
                         CI = 95
                         ){
     res <- param
-    
+
     ## VPA with bootstrapping ELEFAN results
     if(!is.null(boot) & class(boot) == "lfqBoot"){
 
@@ -529,6 +529,7 @@ predict_mod <- function(
                     pred_res_list[[x7]] <- resL$totals
                 }
 
+
                 ## SSB0 for SPR
                 lfqLoop$FM <- numeric(nrow(pred_mat)) * 0.0
                 lfqLoop$Z <- lfqLoop$FM + M
@@ -537,43 +538,40 @@ predict_mod <- function(
                 SSB0 <- tmp$totals$meanSSB
 
                 pred_res_df <- do.call(rbind, pred_res_list)
-                pred_res_df$SPR <- pred_res_df$meanSSB/SSB0                
+                pred_res_df$SPR <- pred_res_df$meanSSB/SSB0
                 pred_res_df$FM_change <- FM_change
                 pred_res_df$E_change <- E_change
 
                 res2 <- pred_res_df
                 res3 <- c(res,res2)
 
-                ## reference points
-                ## Fmax
-                Nmax <- which.max(pred_res_df$totY)                
-                ## F01 (proxy for Fmsy in ICES)
-                slopeOrg <- (pred_res_df$totY[2] - pred_res_df$totY[1]) / (FM_change[2] - FM_change[1])
-                slope01 <- round(0.1*slopeOrg, 2)
-                slopes <- rep(NA, length(FM_change))
-                slopes[1] <- slopeOrg
-                for(i in 3:length(FM_change)){
-                    slopes[i-1] <- round((pred_res_df$totY[i] - pred_res_df$totY[i-1]) /
-                                         (FM_change[i] - FM_change[i-1]),2)
-                }
-                dif <- abs(slopes - slope01)
-                dif[is.na(dif)] <- 1e+11
-                difpot <- dif[1:Nmax]
-                N01 <- which.min(difpot)                
-                ## F05
-                Bper <- rep(NA,length(pred_res_df$meanB))
-                Bper[1] <- 100
-                for(ix in 2:length(Bper)){
-                    Bper[ix] <- pred_res_df$meanB[ix]/pred_res_df$meanB[1] * 100
-                }
-                N05 <- which.min(abs(Bper - 50))
-
-                ## F_SPR40 considered risk adverse for many species
-                ## (Clark 2002: F35% revisted ten years later
-                N04 <- which.min(abs(pred_res_df$SPR - 0.4))
+                ## reference points  NEW
+                spr <- pred_res_df$SPR
+                ypr <- pred_res_df$totY
+                bpr <- pred_res_df$meanB
+                splSPR <- smooth.spline(x = FM_change, y = spr, spar = 0.4)                
+                splYPR <- smooth.spline(x = FM_change, y = ypr, spar = 0.4)
+                splBPR <- smooth.spline(x = FM_change, y = bpr, spar = 0.4)
+                newdat <- data.frame(F=seq(0,5,length.out = 500))
+                newdat$YPR <- predict(splYPR, x=newdat$F)$y
+                newdat$YPR.d1 <- predict(splYPR, x=newdat$F, deriv = 1)$y
+                newdat$BPR <- predict(splBPR, x=newdat$F)$y
+                newdat$SPR <- predict(splSPR, x=newdat$F)$y
+                Nmax <- which.max(newdat$YPR)
+##                Fmax <- newdat[Nmax,1]
+##                Emax <- Fmax/Z
+                N01 <- which.min(((newdat$YPR.d1/newdat$YPR.d1[1])-0.1)^2)
+             ##   F01 <- newdat[N01,1]
+##                E01 <- F01/Z 
+                N05 <- which.min((newdat$BPR - newdat$BPR[1]/2)^2)
+##                F05 <- newdat[N05,1]
+##                E05 <- F05/Z
+                N04 <- which.min((newdat$SPR - 0.4)^2)
+##                F04 <- newdat[N04,1]
+##                E04 <- F04/Z
 
                 ## current SPR
-                SPR[bi] <- pred_res_df$SPR[which.min(abs(FM_change - FM))]
+                SPR[bi] <- newdat$SPR[which.min((newdat$F - FM)^2)]
 
                 ## ref level
                 N01 <- ifelse(is.integer(N01),N01,NA)
@@ -581,10 +579,56 @@ predict_mod <- function(
                 N05 <- ifelse(is.integer(N05),N05,NA)
                 N04 <- ifelse(is.integer(N04),N04,NA)
                 ##
-                F01[bi] <- ifelse(is.integer(N01),FM_change[N01],NA)
-                Fmax[bi] <- ifelse(is.integer(Nmax),FM_change[Nmax],NA)
-                F05[bi] <- ifelse(is.integer(N05),FM_change[N05],NA)
-                F04[bi] <- ifelse(is.integer(N04),FM_change[N04],NA)
+                F01[bi] <- ifelse(is.integer(N01),newdat[N01,1],NA)
+                Fmax[bi] <- ifelse(is.integer(Nmax),newdat[Nmax,1],NA)
+                F05[bi] <- ifelse(is.integer(N05),newdat[N05,1],NA)
+                F04[bi] <- ifelse(is.integer(N04),newdat[N04,1],NA)
+
+
+                if(FALSE){
+                    ## Fmax
+                    Nmax <- which.max(pred_res_df$totY)
+                    ## F01 (proxy for Fmsy in ICES)
+                    slopeOrg <- (pred_res_df$totY[2] - pred_res_df$totY[1]) /
+                        (FM_change[2] - FM_change[1])
+                    slope01 <- round(0.1*slopeOrg, 2)
+                    slopes <- rep(NA, length(FM_change))
+                    slopes[1] <- slopeOrg
+                    for(i in 3:length(FM_change)){
+                        slopes[i-1] <- round((pred_res_df$totY[i] - pred_res_df$totY[i-1]) /
+                                             (FM_change[i] - FM_change[i-1]),2)
+                    }
+                    dif <- abs(slopes - slope01)
+                    dif[is.na(dif)] <- 1e+11
+                    difpot <- dif[1:Nmax]
+                    N01 <- which.min(difpot)                
+                    ## F05
+                    Bper <- rep(NA,length(pred_res_df$meanB))
+                    Bper[1] <- 100
+                    for(ix in 2:length(Bper)){
+                        Bper[ix] <- pred_res_df$meanB[ix]/pred_res_df$meanB[1] * 100
+                    }
+                    N05 <- which.min(abs(Bper - 50))
+
+                    ## F_SPR40 considered risk adverse for many species
+                    ## (Clark 2002: F35% revisted ten years later
+                    N04 <- which.min(abs(pred_res_df$SPR - 0.4))
+
+                    ## current SPR
+                    SPR[bi] <- pred_res_df$SPR[which.min(abs(FM_change - FM))]
+
+                    ## ref level
+                    N01 <- ifelse(is.integer(N01),N01,NA)
+                    Nmax <- ifelse(is.integer(Nmax),Nmax,NA)
+                    N05 <- ifelse(is.integer(N05),N05,NA)
+                    N04 <- ifelse(is.integer(N04),N04,NA)
+                    ##
+                    F01[bi] <- ifelse(is.integer(N01),FM_change[N01],NA)
+                    Fmax[bi] <- ifelse(is.integer(Nmax),FM_change[Nmax],NA)
+                    F05[bi] <- ifelse(is.integer(N05),FM_change[N05],NA)
+                    F04[bi] <- ifelse(is.integer(N04),FM_change[N04],NA)
+
+                }
 
                 ## for plotting
                 totYs[[bi]] <- pred_res_df$totY
@@ -863,6 +907,8 @@ predict_mod <- function(
                 }
             }
         }
+
+
         bootRaw <- cbind(bootRaw, data.frame(SPR,F01,Fmax,F05,F04))
         tmp <- as.data.frame(bootRaw[,(ncol(boot$bootRaw)+(1:5))])
 
@@ -1364,46 +1410,94 @@ predict_mod <- function(
                 res2 <- pred_res_df
                 res3 <- c(res,res2)
 
-                ## reference points
-                ## Fmax
-                Nmax <- which.max(pred_res_df$totY)
-                ## F01 (proxy for Fmsy in ICES)
-                slopeOrg <- (pred_res_df$totY[2] - pred_res_df$totY[1]) / (FM_change[2] - FM_change[1])
-                slope01 <- round(0.1*slopeOrg, 2)
-                slopes <- rep(NA, length(FM_change))
-                slopes[1] <- slopeOrg
-                for(i in 3:length(FM_change)){
-                    slopes[i-1] <- round((pred_res_df$totY[i] - pred_res_df$totY[i-1]) /
-                                         (FM_change[i] - FM_change[i-1]),2)
+                ## reference points  NEW
+                spr <- pred_res_df$SPR
+                ypr <- pred_res_df$totY
+                bpr <- pred_res_df$meanB
+                splSPR <- smooth.spline(x = FM_change, y = spr, spar = 0.4)                
+                splYPR <- smooth.spline(x = FM_change, y = ypr, spar = 0.4)
+                splBPR <- smooth.spline(x = FM_change, y = bpr, spar = 0.4)
+                newdat <- data.frame(F=seq(0,5,length.out = 500))
+                newdat$YPR <- predict(splYPR, x=newdat$F)$y
+                newdat$YPR.d1 <- predict(splYPR, x=newdat$F, deriv = 1)$y
+                newdat$BPR <- predict(splBPR, x=newdat$F)$y
+                newdat$SPR <- predict(splSPR, x=newdat$F)$y
+                Nmax <- which.max(newdat$YPR)
+##                Fmax <- newdat[Nmax,1]
+##                Emax <- Fmax/Z
+                N01 <- which.min(((newdat$YPR.d1/newdat$YPR.d1[1])-0.1)^2)
+             ##   F01 <- newdat[N01,1]
+##                E01 <- F01/Z 
+                N05 <- which.min((newdat$BPR - newdat$BPR[1]/2)^2)
+##                F05 <- newdat[N05,1]
+##                E05 <- F05/Z
+                N04 <- which.min((newdat$SPR - 0.4)^2)
+##                F04 <- newdat[N04,1]
+##                E04 <- F04/Z
+
+                ## current SPR
+                SPR <- newdat$SPR[which.min((newdat$F - FM)^2)]
+
+                ## ref level
+                N01 <- ifelse(is.integer(N01),N01,NA)
+                Nmax <- ifelse(is.integer(Nmax),Nmax,NA)
+                N05 <- ifelse(is.integer(N05),N05,NA)
+                N04 <- ifelse(is.integer(N04),N04,NA)
+                ##
+                F01 <- ifelse(is.integer(N01),newdat[N01,1],NA)
+                Fmax <- ifelse(is.integer(Nmax),newdat[Nmax,1],NA)
+                F05 <- ifelse(is.integer(N05),newdat[N05,1],NA)
+                F04 <- ifelse(is.integer(N04),newdat[N04,1],NA)
+
+
+                if(FALSE){
+                    ## Fmax
+                    Nmax <- which.max(pred_res_df$totY)
+                    ## F01 (proxy for Fmsy in ICES)                                    
+                    slopeOrg <- (pred_res_df$totY[2] - pred_res_df$totY[1]) / (FM_change[2] - FM_change[1])
+                    slope01 <- round(0.1*slopeOrg, 2)
+                    slopes <- rep(NA, length(FM_change))
+                    slopes[1] <- slopeOrg
+                    for(i in 3:length(FM_change)){
+                        slopes[i-1] <- round((pred_res_df$totY[i] - pred_res_df$totY[i-1]) /
+                                             (FM_change[i] - FM_change[i-1]),2)
+                    }
+                    dif <- abs(slopes - slope01)
+                    dif[is.na(dif)] <- 1e+11
+                    difpot <- dif[1:Nmax]
+                    N01 <- which.min(difpot)
+                    ## F05
+                    Bper <- rep(NA,length(pred_res_df$meanB))
+                    Bper[1] <- 100
+                    for(ix in 2:length(Bper)){
+                        Bper[ix] <- pred_res_df$meanB[ix]/pred_res_df$meanB[1] * 100
+                    }
+                    N05 <- which.min(abs(Bper - 50))
+                    ##
+                    F01 = FM_change[N01]
+                    Fmax = FM_change[Nmax]
+                    F05 = FM_change[N05]
+                    E01 = E_change[N01]                                   
+                    Emax = E_change[Nmax]
+                    E05 = E_change[N05]                    
                 }
-                dif <- abs(slopes - slope01)
-                dif[is.na(dif)] <- 1e+11
-                difpot <- dif[1:Nmax]
-                N01 <- which.min(difpot)
-                ## F05
-                Bper <- rep(NA,length(pred_res_df$meanB))
-                Bper[1] <- 100
-                for(ix in 2:length(Bper)){
-                    Bper[ix] <- pred_res_df$meanB[ix]/pred_res_df$meanB[1] * 100
-                }
-                N05 <- which.min(abs(Bper - 50))
 
                 if(!is.null(Lc[1]) & !is.null(tc[1])){
                     df_Es <- data.frame(Lc = Lc,
                                         tc = tc,
-                                        F01 = FM_change[N01],                                    
-                                        Fmax = FM_change[Nmax],
-                                        F05 = FM_change[N05],
-                                        E01 = E_change[N01],                                    
-                                        Emax = E_change[Nmax],
-                                        E05 = E_change[N05])
+                                        F01 = F01,
+                                        Fmax = Fmax,
+                                        F05 = F05,
+                                        E01 = E01,
+                                        Emax = Emax,
+                                        E05 = E05)
                 }else{
-                    df_Es <- data.frame(F01 = FM_change[N01],
-                                        Fmax = FM_change[Nmax],
-                                        F05 = FM_change[N05],
-                                        E01 = E_change[N01],                      
-                                        Emax = E_change[Nmax],
-                                        E05 = E_change[N05])
+                    df_Es <- data.frame(F01 = F01,
+                                        Fmax = Fmax,
+                                        F05 = F05,
+                                        E01 = E01,
+                                        Emax = Emax,
+                                        E05 = E05)
                 }
 
 
