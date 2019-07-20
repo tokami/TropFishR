@@ -1448,6 +1448,12 @@ predict_mod <- function(
                 Fmax <- ifelse(is.integer(Nmax),newdat[Nmax,1],NA)
                 F05 <- ifelse(is.integer(N05),newdat[N05,1],NA)
                 F04 <- ifelse(is.integer(N04),newdat[N04,1],NA)
+                ## E
+                newdat$E <- newdat$F/Z
+                E01 <- ifelse(is.integer(N01),newdat$E[N01],NA)
+                Emax <- ifelse(is.integer(Nmax),newdat$E[Nmax],NA)
+                E05 <- ifelse(is.integer(N05),newdat$E[N05],NA)
+                E04 <- ifelse(is.integer(N04),newdat$E[N04],NA)                
 
 
                 if(FALSE){
