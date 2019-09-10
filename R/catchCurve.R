@@ -856,7 +856,22 @@ catchCurve <- function(param,
           if(auto){
               yvar2 <- as.numeric(yvar)
               xvar2 <- xvar[which(yvar2 > 0.5)]
-              cutter <- c(which(yvar2 == max(as.numeric(yvar2),na.rm=TRUE))+1, which(xvar2 == max(xvar2,na.rm=TRUE)))
+              cutter <- c(which(yvar2 == max(as.numeric(yvar2),na.rm=TRUE))+1,
+                          which(xvar2 == max(xvar2,na.rm=TRUE)))
+              ltest <- cutter[2] - cutter[1]
+              if(ltest > 30){
+                  cutter[2] <- cutter[2] - 15
+              }else if(ltest > 20){
+                  cutter[2] <- cutter[2] - 12
+              }else if(ltest > 15){
+                  cutter[2] <- cutter[2] - 7
+              }else if(ltest > 10){
+                  cutter[2] <- cutter[2] - 5                  
+              }else if(ltest > 7){
+                  cutter[2] <- cutter[2] - 3
+              }else if(ltest > 5){
+                  cutter[2] <- cutter[2] - 2
+              }              
               cutterList <- list()
               cutterList[[1]] <- cutter
           }
