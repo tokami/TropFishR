@@ -4,7 +4,7 @@
 \alias{recruitment}
 \title{Calculate recruitment pattern of lfq object using lfqCohort approach}
 \usage{
-recruitment(lfq, n.per.yr = 36, agemax = NULL, plot = TRUE,
+recruitment(lfq, n.cohort.per.yr = 36, agemax = NULL, plot = TRUE,
   use.rcounts = FALSE, ...)
 }
 \arguments{
@@ -13,8 +13,8 @@ a \code{lfq$par} slot with \code{\link{VBGF}} parameters (usually fit
 via \code{\link{ELEFAN}}, \code{\link{ELEFAN_GA}}, or \code{\link{ELEFAN_SA}}
 functions).}
 
-\item{n.per.yr}{number of cohorts per year for slicing
-(Default: \code{n.per.yr = 36}). Higher values may increase the resolution of the
+\item{n.cohort.per.yr}{number of cohorts per year for slicing
+(Default: \code{n.cohort.per.yr = 36}). Higher values may increase the resolution of the
 recruitment estimate,  although at the expense of computation time.}
 
 \item{agemax}{maximum age of the stock, which is used to define the extent of growth
@@ -60,7 +60,7 @@ is weighted by positive restructured frequencies only.
 The method uses the \code{lfqCohort} function to "slice" lfq data
 into distinct cohorts.
 By setting the number of cohorts per year to a high value
-(e.g. \code{n.per.yr = 36}), specific bins get associated with a precise
+(e.g. \code{n.cohort.per.yr = 36}), specific bins get associated with a precise
 \code{ta} value, while other VBGF parameters are held constant.
 Given that the size of recruitment can be subjective,
 recruitment patterns should be interpreted as relative months since the

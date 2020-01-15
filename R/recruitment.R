@@ -96,7 +96,7 @@ calc_tnew <- function(
 #'
 #'
 #' @param lfq an lfq object with fitted VBGF parameters in the \code{lfq$par} slot.
-#' @param n.per.yr number of cohorts per year for slicing (Default: \code{n.per.year  = 1}).
+#' @param n.cohort.per.yr number of cohorts per year for slicing (Default: \code{n.per.year  = 1}).
 #' See details section for more information on slicing.
 #' This argument should be set to a higher values in cases of multiple cohorts per year.
 #' @param agemax maximum age of the stock, which is used to define the extent of growth
@@ -113,11 +113,11 @@ calc_tnew <- function(
 #' @details The method involves "slicing" the lfq data based on the VBGF parameters, and
 #' follows the general approach described by Pauly (1990), and demonstrated by
 #' Pauly et al. (1995) using the "GOTCH.A" program. By default, a single slice per year
-#' (\code{n.per.yr = 1}) is used, which sets slice boundaries of +/- 0.5 yr around the
+#' (\code{n.cohort.per.yr = 1}) is used, which sets slice boundaries of +/- 0.5 yr around the
 #' \code{ta} parameter. For each lfq bin, cohort association is then determined by
 #' its inclusion within a given slice. Bins of length greater than Linf, are aggregated with
 #' the bin that includes Linf. In the case of multiple cohorts per year, a larger
-#' \code{n.per.yr} is needed in order to resolve intra-annual cohorts.
+#' \code{n.cohort.per.yr} is needed in order to resolve intra-annual cohorts.
 #'
 #'
 #' @references
@@ -137,7 +137,7 @@ calc_tnew <- function(
 #' synLFQ4$par <- list(Linf = 80, K = 0.5, ta = 0.25, C = 0.75, ts = 0.5)
 #'
 #' # visualize cohorts with lfqCohort
-#' synLFQ4 <- lfqCohort(synLFQ4, n.per.yr = 1)
+#' synLFQ4 <- lfqCohort(synLFQ4, n.cohort.per.yr = 1)
 #' plot(synLFQ4, Fname = "catch",
 #'   ylim = c(0, max(synLFQ4$midLengths)), image.col=NA)
 #' pal <- colorRampPalette(c(4,5,7,2))
@@ -156,7 +156,7 @@ calc_tnew <- function(
 #' ))
 #'
 #'
-lfqCohort <- function(lfq, n.per.yr = 1,
+lfqCohort <- function(lfq, n.cohort.per.yr = 1,
   agemax = NULL, calc_dt = FALSE){
 
   if(is.null(agemax)){
@@ -178,14 +178,14 @@ lfqCohort <- function(lfq, n.per.yr = 1,
   tas <- sort(
     seq(
       from = (PAR$ta - 0.5),
-      by = 1/n.per.yr,
-      length.out = n.per.yr
+      by = 1/n.cohort.per.yr,
+      length.out = n.cohort.per.yr
     ) %% 1
   )
 
   # positive adjustment to agemax
   # (needed to correct for mid time of cohort)
-  t_shift <- 1/n.per.yr/2
+  t_shift <- 1/n.cohort.per.yr/2
 
   # calc Lt for each ta; record bday to identify unique cohorts
   # this calculates the relative ages, bdays of each slice (cohort)
@@ -277,8 +277,8 @@ lfqCohort <- function(lfq, n.per.yr = 1,
 #' a \code{lfq$par} slot with \code{\link{VBGF}} parameters (usually fit
 #' via \code{\link{ELEFAN}}, \code{\link{ELEFAN_GA}}, or \code{\link{ELEFAN_SA}}
 #' functions).
-#' @param n.per.yr number of cohorts per year for slicing
-#' (Default: \code{n.per.yr = 36}). Higher values may increase the resolution of the
+#' @param n.cohort.per.yr number of cohorts per year for slicing
+#' (Default: \code{n.cohort.per.yr = 36}). Higher values may increase the resolution of the
 #' recruitment estimate,  although at the expense of computation time.
 #' @param agemax maximum age of the stock, which is used to define the extent of growth
 #' curves via a call to \code{\link{lfqFitCurves}}. When not supplied
@@ -301,7 +301,7 @@ lfqCohort <- function(lfq, n.per.yr = 1,
 #' @details The method uses the \code{lfqCohort} function to "slice" lfq data
 #' into distinct cohorts.
 #' By setting the number of cohorts per year to a high value
-#' (e.g. \code{n.per.yr = 36}), specific bins get associated with a precise
+#' (e.g. \code{n.cohort.per.yr = 36}), specific bins get associated with a precise
 #' \code{ta} value, while other VBGF parameters are held constant.
 #' Given that the size of recruitment can be subjective,
 #' recruitment patterns should be interpreted as relative months since the
@@ -338,7 +338,7 @@ lfqCohort <- function(lfq, n.per.yr = 1,
 #'
 recruitment <- function(
   lfq,
-  n.per.yr = 36,
+  n.cohort.per.yr = 36,
   agemax = NULL,
   plot = TRUE,
   use.rcounts = FALSE,
@@ -349,7 +349,7 @@ recruitment <- function(
     Please run lfqRestructure first and replace lfq with the output."
   )}
 
-  lfq <- lfqCohort(lfq = lfq, n.per.yr = n.per.yr, agemax = agemax)
+  lfq <- lfqCohort(lfq = lfq, n.cohort.per.yr = n.cohort.per.yr, agemax = agemax)
 
   if(!use.rcounts){
     counts <- lfq$catch
@@ -357,7 +357,6 @@ recruitment <- function(
     counts <- round(lfq$rcounts*100)
     counts[which(counts<0)] <- 0
   }
-
 
   trecr <- rep(x = c(lfq$bday), times=c(counts))
   trecr <- trecr[!is.na(trecr)]

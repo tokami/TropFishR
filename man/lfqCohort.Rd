@@ -4,12 +4,12 @@
 \alias{lfqCohort}
 \title{Assign cohort, relative ages and birth date to an lfq dataset}
 \usage{
-lfqCohort(lfq, n.per.yr = 1, agemax = NULL, calc_dt = FALSE)
+lfqCohort(lfq, n.cohort.per.yr = 1, agemax = NULL, calc_dt = FALSE)
 }
 \arguments{
 \item{lfq}{an lfq object with fitted VBGF parameters in the \code{lfq$par} slot.}
 
-\item{n.per.yr}{number of cohorts per year for slicing (Default: \code{n.per.year  = 1}).
+\item{n.cohort.per.yr}{number of cohorts per year for slicing (Default: \code{n.per.year  = 1}).
 See details section for more information on slicing.
 This argument should be set to a higher values in cases of multiple cohorts per year.}
 
@@ -40,11 +40,11 @@ correct assignment of ages to lfq data (see Pauly 1990).
 The method involves "slicing" the lfq data based on the VBGF parameters, and
 follows the general approach described by Pauly (1990), and demonstrated by
 Pauly et al. (1995) using the "GOTCH.A" program. By default, a single slice per year
-(\code{n.per.yr = 1}) is used, which sets slice boundaries of +/- 0.5 yr around the
+(\code{n.cohort.per.yr = 1}) is used, which sets slice boundaries of +/- 0.5 yr around the
 \code{ta} parameter. For each lfq bin, cohort association is then determined by
 its inclusion within a given slice. Bins of length greater than Linf, are aggregated with
 the bin that includes Linf. In the case of multiple cohorts per year, a larger
-\code{n.per.yr} is needed in order to resolve intra-annual cohorts.
+\code{n.cohort.per.yr} is needed in order to resolve intra-annual cohorts.
 }
 \examples{
 # Load data and add VGBF parameters
@@ -52,7 +52,7 @@ data(synLFQ4)
 synLFQ4$par <- list(Linf = 80, K = 0.5, ta = 0.25, C = 0.75, ts = 0.5)
 
 # visualize cohorts with lfqCohort
-synLFQ4 <- lfqCohort(synLFQ4, n.per.yr = 1)
+synLFQ4 <- lfqCohort(synLFQ4, n.cohort.per.yr = 1)
 plot(synLFQ4, Fname = "catch",
   ylim = c(0, max(synLFQ4$midLengths)), image.col=NA)
 pal <- colorRampPalette(c(4,5,7,2))

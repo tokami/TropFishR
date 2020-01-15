@@ -1071,6 +1071,187 @@ ta2t0 <- function(par = NULL, L0 = 0, plot = TRUE){
   return(par_age)
 }
 
+
+
+#' Convert length-frequency data into aggregate numbers by relative age and
+#' (optionally) cohort
+#'
+#' @param lfq an object of class lfq
+#' @param method method of conversion (LCCC, GOTCHA, SLICC)
+#' @param agemax integer. Maximum age plus group
+#' @param n.cohort integer. Number of pseudocohort to derive from lfq.
+#'   Only used GOTCHA method (Defaults to number of length bins for
+#'   consistency with LCCC).
+#' @param n.cohort.per.yr integer. Number of pseudocohorts per year.
+#'   Overrides `n.cohort`. Can be applied to GOTCHA and SLICC. Default
+#' @param use.ndt
+#'
+#' @return list.
+#' @export
+#'
+#' @examples
+#'
+#' data("synLFQ4")
+#' lfq <- synLFQ4
+#' lfq$par <- list(Linf = 80, K = 0.5, C = 0.75, ts = 0.5, ta = 0.25)
+#' lfq <- lfqModify(lfq, year = 2006, bin_size = 2)
+#' lfq <- lfqRestructure(lfq)
+#' plot(lfq)
+#'
+#' # LCCC
+#' res <- catchCurvePrep(lfq = lfq, method = "LCCC")
+#' plot(log(n) ~ rel.age, res$tab)
+#' incl <- which(res$tab$rel.age > 1)
+#' points(log(n) ~ rel.age, res$tab[incl,], pch = 20 )
+#' fit <- lm(log(n) ~ rel.age, res$tab[incl,])
+#' abline(fit)
+#' -coef(fit)[2] # true: Z = 1.0
+#'
+#' # GOTCHA (default settings)
+#' res <- catchCurvePrep(lfq = lfq, method = "GOTCHA")
+#' plot(log(n) ~ rel.age, res$tab)
+#' incl <- which(res$tab$rel.age > 2 & res$tab$rel.age < 6)
+#' points(log(n) ~ rel.age, res$tab[incl,], pch = 20 )
+#' fit <- lm(log(n) ~ rel.age, res$tab[incl,])
+#' abline(fit)
+#' -coef(fit)[2] # true: Z = 1.0
+#'
+#' # GOTCHA (1 cohort per year)
+#' res <- catchCurvePrep(lfq = lfq, method = "GOTCHA", n.cohort.per.yr = 1)
+#' plot(log(n) ~ rel.age, res$tab)
+#' incl <- which(res$tab$rel.age > 1.5 & res$tab$rel.age < 6)
+#' points(log(n) ~ rel.age, res$tab[incl,], pch = 20 )
+#' fit <- lm(log(n) ~ rel.age, res$tab[incl,])
+#' abline(fit)
+#' -coef(fit)[2] # true: Z = 1.0
+#'
+#' # SLICC
+#' res <- catchCurvePrep(lfq = lfq, method = "SLICC")
+#' plot(log(n) ~ rel.age, res$tab, col = res$tab$cohort)
+#' incl <- which(res$tab$rel.age > 1 & res$tab$rel.age < 6)
+#' points(log(n) ~ rel.age, res$tab[incl,], pch = 20,
+#'   col = res$tab$cohort[incl])
+#' fit0 <- lm(log(n) ~ rel.age + cohort, res$tab[incl,])
+#' fit1 <- lm(log(n) ~ rel.age, res$tab[incl,])
+#' fit <- get(c("fit0", "fit1")[which.min(AIC(fit0, fit1)$AIC)])
+#' abline(fit)
+#' -coef(fit)[2] # true: Z = 1.0
+#'
+#'
+#'
+catchCurvePrep <- function(
+  lfq,
+  method = "LCCC",
+  agemax = NULL,
+  n.cohort = NULL, # only applies to GOTCHA1
+  n.cohort.per.yr = NULL, # this should override n.cohort in GOTCHA
+  use.ndt = NULL
+  ){
+
+  # replace zeros in catch mat
+  lfq$catch[which(is.na(lfq$catch))] <- 0
+
+  if(is.null(agemax)) agemax <- ceiling(VBGF(pars = lfq$par, L = lfq$par$Linf*0.95))
+
+  if(is.null(use.ndt)){
+    if(method == "LCCC"){
+      use.ndt <- TRUE
+    }else{
+      use.ndt <- FALSE
+    }
+  }
+
+  if(method == "LCCC"){
+    lfqx <- lfq
+    lfqx$par$C <- 0 # remove seasonality
+    if(is.null(n.cohort.per.yr)){n.cohort.per.yr <- 36}
+    lfqx <- lfqCohort(lfqx, n.cohort.per.yr = n.cohort.per.yr, calc_dt = TRUE, agemax = agemax)
+    sumtab = data.frame(rel.age = apply(lfqx$rel.age, 1, mean, na.rm = TRUE))
+    if(use.ndt){
+      sumtab$n <- apply(lfqx$catch/lfqx$dt, 1, sum, na.rm = TRUE)
+    }else{
+      sumtab$n <- apply(lfqx$catch, 1, sum, na.rm = TRUE)
+    }
+    sumtab$length <- apply(array(lfqx$midLengths, dim = dim(lfqx$catch)), 1, mean, na.rm = TRUE)
+    sumtab <- sumtab[which(sumtab$n > 0),] # remove rows where n == 0 | NA
+  }
+
+  if(method == "GOTCHA"){
+    # if n.cohort.per.yr not NULL, then use this criteria for slicing
+    if(!is.null(n.cohort.per.yr)) n.cohort <- NULL
+    # if NULL, then use thin slices (n=36 per year) and aggregate later to n.cohort bins
+    if(is.null(n.cohort.per.yr)){
+      n.cohort.per.yr <- 36
+      if(is.null(n.cohort)) n.cohort <- dim(lfq$catch)[1]
+    }
+    lfqx <- lfq
+    lfqx <- lfqCohort(lfqx, calc_dt = TRUE, n.cohort.per.yr = n.cohort.per.yr, agemax = agemax)
+    df <- data.frame(
+      length = rep(lfqx$midLengths, times = length(lfqx$dates)),
+      rel.age = c(lfqx$rel.age),
+      bday = c(lfqx$bday),
+      cohort = factor(c(lfqx$cohort)),
+      dt = c(lfqx$dt))
+    if(use.ndt){
+      df$n <- c(lfqx$catch)/c(lfqx$dt)
+    }else{
+      df$n <- c(lfqx$catch)
+    }
+    df <- df[which(df$n > 0),] # remove rows where n == 0 | NA
+    # create new slice aggregates if n.cohort is defined
+    if(!is.null(n.cohort)){
+      breaks <- seq(min(df$bday), max(df$bday), length.out = n.cohort)
+      mids <- breaks[-1] - (diff(breaks)[1]/2)
+      df$bday.cat <- cut(df$bday, breaks = breaks)
+      df$bday2 <- mids[df$bday.cat]
+      df$rel.age2 <- max(date2yeardec(lfqx$dates)) - df$bday2
+      agg <- aggregate(n ~ rel.age2, df, sum, na.rm = TRUE)
+      agg2 <- aggregate(length ~ rel.age2, df, max, na.rm = TRUE)
+      sumtab <- data.frame(rel.age = agg$rel.age2, n = agg$n, length = agg2$length)
+    }
+    if(is.null(n.cohort)){
+      agg <- aggregate(n ~ bday, df, sum, na.rm = TRUE)
+      agg$rel.age <- max(date2yeardec(lfqx$dates)) - agg$bday
+      agg2 <- aggregate(length ~ bday, df, max, na.rm = TRUE)
+      sumtab <- data.frame(rel.age = agg$rel.age, n = agg$n, length = agg2$length)
+    }
+  }
+
+  if(method == "SLICC"){
+    lfqx <- lfq
+    if(!is.null(n.cohort)) n.cohort <- NULL # always set n.cohort to NULL
+    if(is.null(n.cohort.per.yr)) n.cohort.per.yr <- 1 # set to 1 cohort per year as default
+    lfqx <- lfqCohort(lfqx, calc_dt = TRUE, n.cohort.per.yr = n.cohort.per.yr, agemax = agemax)
+    df <- data.frame(
+      length = rep(lfqx$midLengths, times = length(lfqx$dates)),
+      rel.age = c(lfqx$rel.age),
+      bday = c(lfqx$bday),
+      cohort = factor(c(lfqx$cohort)),
+      dt = c(lfqx$dt))
+    if(use.ndt){
+      df$n <- c(lfqx$catch)/c(lfqx$dt)
+    }else{
+      df$n <- c(lfqx$catch)
+    }
+    df <- df[which(df$n > 0),] # remove rows where n == 0 | NA
+    agg <- aggregate(n ~ cohort + rel.age, df, sum, na.rm = TRUE)
+    agg2 <- aggregate(length ~ cohort + rel.age, df, mean, na.rm = TRUE)
+    sumtab <- data.frame(rel.age = agg$rel.age, cohort = agg$cohort, n = agg$n, length = agg2$length)
+  }
+
+  res <- list(tab = sumtab, method = method, agemax = agemax,
+    n.cohort = NULL, n.cohort.per.yr = n.cohort.per.yr,
+    use.ndt = use.ndt)
+
+  return(res)
+
+}
+
+
+
+
+
+
 #' Automated determination of values to include in catch curve
 #'
 #' @description Procedure described by Pauly (1990) to automate the selection
