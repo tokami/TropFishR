@@ -4,8 +4,14 @@
 \alias{prod_mod_ts}
 \title{Production models with time series fitting}
 \usage{
-prod_mod_ts(data, method = "Schaefer", B0_init = NA, B0_est = NA,
-  effort_unit = 1, plot = TRUE)
+prod_mod_ts(
+  data,
+  method = "Schaefer",
+  B0_init = NA,
+  B0_est = NA,
+  effort_unit = 1,
+  plot = TRUE
+)
 }
 \arguments{
 \item{data}{a dataframe of parameters

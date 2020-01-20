@@ -5,8 +5,14 @@
 \title{Convert length-frequency data into aggregate numbers by relative age and
 (optionally) cohort}
 \usage{
-catchCurvePrep(lfq, method = "LCCC", agemax = NULL, n.cohort = NULL,
-  n.cohort.per.yr = NULL, use.ndt = NULL)
+catchCurvePrep(
+  lfq,
+  method = "LCCC",
+  agemax = NULL,
+  n.cohort = NULL,
+  n.cohort.per.yr = NULL,
+  use.ndt = NULL
+)
 }
 \arguments{
 \item{lfq}{an object of class lfq}
@@ -22,7 +28,10 @@ consistency with LCCC).}
 \item{n.cohort.per.yr}{integer. Number of pseudocohorts per year.
 Overrides `n.cohort`. Can be applied to GOTCHA and SLICC. Default}
 
-\item{use.ndt}{}
+\item{use.ndt}{logical. Should numbers be divided by the time required to
+grow through bin. This argument was used for method development and is
+not expected to be defined by the user. For LCCC, this is set to TRUE,
+and set to FALSE for other methods.}
 }
 \value{
 list.

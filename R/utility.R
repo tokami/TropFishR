@@ -1084,7 +1084,10 @@ ta2t0 <- function(par = NULL, L0 = 0, plot = TRUE){
 #'   consistency with LCCC).
 #' @param n.cohort.per.yr integer. Number of pseudocohorts per year.
 #'   Overrides `n.cohort`. Can be applied to GOTCHA and SLICC. Default
-#' @param use.ndt
+#' @param use.ndt logical. Should numbers be divided by the time required to
+#'   grow through bin. This argument was used for method development and is
+#'   not expected to be defined by the user. For LCCC, this is set to TRUE,
+#'   and set to FALSE for other methods.
 #'
 #' @return list.
 #' @export
@@ -1136,6 +1139,7 @@ ta2t0 <- function(par = NULL, L0 = 0, plot = TRUE){
 #' fit <- get(c("fit0", "fit1")[which.min(AIC(fit0, fit1)$AIC)])
 #' abline(fit)
 #' -coef(fit)[2] # true: Z = 1.0
+#'
 #'
 #'
 #'
@@ -1239,6 +1243,9 @@ catchCurvePrep <- function(
     sumtab <- data.frame(rel.age = agg$rel.age, cohort = agg$cohort, n = agg$n, length = agg2$length)
   }
 
+  # order sumtab by rel.age
+  sumtab <- sumtab[order(sumtab$rel.age),]
+
   res <- list(tab = sumtab, method = method, agemax = agemax,
     n.cohort = NULL, n.cohort.per.yr = n.cohort.per.yr,
     use.ndt = use.ndt)
@@ -1255,16 +1262,21 @@ catchCurvePrep <- function(
 #' Automated determination of values to include in catch curve
 #'
 #' @description Procedure described by Pauly (1990) to automate the selection
-#'   of points used in a catch curve (\code{log(y)~x}). The sequential
+#'   of points used in a catch curve (\code{log(n) ~ rel.age}). The sequential
 #'   data indices that result in the highest F-ststistic in a linear regression
 #'   are returned. Results should still be visualized to prevent suboptimal
-#'   results form 'pathological' datasets.
+#'   results from 'pathological' datasets.
 #'
-#' @param x vector. Age or relative age associated with catch numbers
-#'   (\code{x}).
-#' @param y vector. catch numbers.
+#' @param fmla formula. Default is `formula(log(n) ~ rel.age)`. It is assumed
+#'   that the main explanatory variable is named `rel.age`. Other formulas
+#'   are allowed (e.g. `formula(log(n) ~ rel.age + cohort)`), but only the
+#'   extent of rel.age is tested.
+#' @param df data.frame holding the data.
 #' @param minN numeric. Minimum number of values to include in the regression
-#'   (Default = 3).
+#'   (Default: `minN = round(max(3,0.35*nrow(df)))`).
+#' @param minP numeric. A value used as a trhreshhold for eliminating
+#'   models with insignificant slopes (i.e. the statistical significance
+#'   of the term `rel.age`)
 #'
 #' @return list containing the indices and F-statistic of the highest scoring
 #' subset of (sequantial) data points.
@@ -1279,35 +1291,43 @@ catchCurvePrep <- function(
 #' # generate example data
 #' set.seed(1)
 #' n <- 10
-#' x <- seq(n)
-#' logy <- 10 + -2*x + rnorm(n, sd = 0.5)
-#' logy[1:2] <- logy[1:2] * c(0.5, 0.75)
-#' y <- exp(logy)
-#' plot(y ~ x, log = "y")
+#' rel.age <- seq(n)
+#' logn <- 10 + -2*rel.age + rnorm(n, sd = 0.5)
+#' logn[1:2] <- logy[1:2] * c(0.5, 0.75)
+#' n <- exp(logn)
+#' df <- data.frame(n = n, rel.age = rel.age)
+#' plot(log(n) ~ rel.age, df)
 #'
 #' # When lm can reduce to 3 points, this is chosen as the 'best'
-#' (tmp <- bestCC(x = x, y = y, minN = 3))
+#' (tmp <- bestCC(df = df, minN = 3))
 #' plot(f~n, data = tmp$bestbyn, t = "b", log="y")
-#' plot(y ~ x, log = "y")
-#' points(x[tmp$best$samples], y[tmp$best$samples], pch = 16)
+#' plot(log(n)~rel.age, df)
+#' points(log(n)~rel.age, df[tmp$best$samples,], pch = 16)
 #'
 #' # Any min number of points above this threshhold increases the best n a lot
-#' (tmp <- bestCC(x = x, y = y, minN = 4))
-#' plot(f~n, data = tmp$bestbyn, t = "b", log="y")
-#' plot(y ~ x, log = "y")
-#' points(x[tmp$best$samples], y[tmp$best$samples], pch = 16)
+#' (tmp <- bestCC(df = df))
+#' plot(log(n)~rel.age, df)
+#' points(log(n)~rel.age, df[tmp$best$samples,], pch = 16)
+#' fit <- lm(tmp$fmla, data = df[tmp$best$samples,])
+#' abline(fit)
+#' -coef(fit)[2] # true = 2
 #'
-bestCC <- function(x, y, minN = max(3,0.25*length(x))){
+bestCC <- function(fmla = formula(log(n)~rel.age),
+  df, minN = round(max(3,0.35*nrow(df))), minP = 0.01){
 
   if(minN < 3){stop("'minN' must be greater than or equal to 3")}
 
+  # test if order of rel.age is sequential
+  if( !all(diff(order(df$rel.age)) == 1) ){
+    stop("df$rel.age values must be ordered sequentially")}
+
   # return unique combinations of sequential data points
-  res <- vector("list", length(minN:length(x)))
-  for(i in seq(minN:length(x))){
-    len <- (minN:length(x))[i]
-    res.i <- vector("list", length(1:(length(x)-len+1)))
-    for(j in seq(1:(length(x)-len+1))){
-      start <- (1:(length(x)-len+1))[j]
+  res <- vector("list", length(minN:nrow(df)))
+  for(i in seq(minN:nrow(df))){
+    len <- (minN:nrow(df))[i]
+    res.i <- vector("list", length(1:(nrow(df)-len+1)))
+    for(j in seq(1:(nrow(df)-len+1))){
+      start <- (1:(nrow(df)-len+1))[j]
       res.i[[j]] <- seq(from = start, by = 1, length.out = len)
     }
     res[[i]] <- res.i
@@ -1317,25 +1337,38 @@ bestCC <- function(x, y, minN = max(3,0.25*length(x))){
 
   # fit lm to each comb and return the indices and f-statistic
   res2 <- vector("list", length(res))
+  pb <- txtProgressBar(min = 0, max = length(res), style = 3)
   for(i in seq(res2)){
     res2[[i]]$n <- length(res[[i]])
     res2[[i]]$samples <- res[[i]]
-    df.i <- data.frame(y = y[res[[i]]], x = x[res[[i]]])
-    fit <- lm(log(y) ~ x, data = df.i)
+    df.i <- df[res[[i]],]
+    fit <- lm(fmla, data = df.i)
     S <- summary(fit)
     res2[[i]]$f <- 0
-    if(coef(fit)[2] < 0 & S$coefficients[2,4] < 0.05){res2[[i]]$f <- S$fstatistic[1]}
+    # if slope is negative and significant at minP, then record f-statistic
+    if(coef(fit)[2] < 0 & S$coefficients[2,4] < minP){
+      res2[[i]]$f <- S$fstatistic[1]
+    }
+    setTxtProgressBar(pb, i)
   }
+  close(pb)
 
-  bestbyn <- do.call("rbind", lapply(res2, FUN = function(x){data.frame(n=x$n,f=x$f)}))
+  bestbyn <- do.call("rbind",
+    lapply(res2, FUN = function(x){data.frame(n = x$n,f = x$f)}))
   bestbyn <- aggregate(f ~ n, data = bestbyn, FUN = max)
+  # plot(f ~ n, bestbyn)
 
   # 'best' model is that with highest f-statistic
   best <- which.max(do.call("c", lapply(res2, FUN = function(x){x$f})))
 
   return(list(
+    fmla = fmla,
+    df = df,
+    minN = minN,
+    minP = minP,
     best = res2[[best]],
     bestbyn = bestbyn
   ))
+
 }
 

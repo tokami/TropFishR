@@ -4,8 +4,13 @@
 \alias{powell_wetherall}
 \title{Powell-Wetherall method}
 \usage{
-powell_wetherall(lfq, catch_columns = NA, savePlots = FALSE,
-  reg_int = NULL, main = "Powell-Wetherall plot")
+powell_wetherall(
+  lfq,
+  catch_columns = NA,
+  savePlots = FALSE,
+  reg_int = NULL,
+  main = "Powell-Wetherall plot"
+)
 }
 \arguments{
 \item{lfq}{a list consisting of following parameters:

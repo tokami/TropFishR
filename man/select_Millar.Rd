@@ -7,8 +7,13 @@
 https://www.stat.auckland.ac.nz/~millar/selectware/
 }
 \usage{
-select_Millar(param, x0 = NULL, rtype = "norm.loc", rel.power = NULL,
-  plot = TRUE)
+select_Millar(
+  param,
+  x0 = NULL,
+  rtype = "norm.loc",
+  rel.power = NULL,
+  plot = TRUE
+)
 }
 \arguments{
 \item{param}{A list with following parameters: vector with midlengths of size classes

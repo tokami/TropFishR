@@ -4,16 +4,27 @@
 \alias{bestCC}
 \title{Automated determination of values to include in catch curve}
 \usage{
-bestCC(x, y, minN = max(3, 0.25 * length(x)))
+bestCC(
+  fmla = formula(log(n) ~ rel.age),
+  df,
+  minN = round(max(3, 0.35 * nrow(df))),
+  minP = 0.01
+)
 }
 \arguments{
-\item{x}{vector. Age or relative age associated with catch numbers
-(\code{x}).}
+\item{fmla}{formula. Default is `formula(log(n) ~ rel.age)`. It is assumed
+that the main explanatory variable is named `rel.age`. Other formulas
+are allowed (e.g. `formula(log(n) ~ rel.age + cohort)`), but only the
+extent of rel.age is tested.}
 
-\item{y}{vector. catch numbers.}
+\item{df}{data.frame holding the data.}
 
 \item{minN}{numeric. Minimum number of values to include in the regression
-(Default = 3).}
+(Default: `minN = round(max(3,0.35*nrow(df)))`).}
+
+\item{minP}{numeric. A value used as a trhreshhold for eliminating
+models with insignificant slopes (i.e. the statistical significance
+of the term `rel.age`)}
 }
 \value{
 list containing the indices and F-statistic of the highest scoring
@@ -21,32 +32,35 @@ subset of (sequantial) data points.
 }
 \description{
 Procedure described by Pauly (1990) to automate the selection
-  of points used in a catch curve (\code{log(y)~x}). The sequential
+  of points used in a catch curve (\code{log(n) ~ rel.age}). The sequential
   data indices that result in the highest F-ststistic in a linear regression
   are returned. Results should still be visualized to prevent suboptimal
-  results form 'pathological' datasets.
+  results from 'pathological' datasets.
 }
 \examples{
 # generate example data
 set.seed(1)
 n <- 10
-x <- seq(n)
-logy <- 10 + -2*x + rnorm(n, sd = 0.5)
-logy[1:2] <- logy[1:2] * c(0.5, 0.75)
-y <- exp(logy)
-plot(y ~ x, log = "y")
+rel.age <- seq(n)
+logn <- 10 + -2*rel.age + rnorm(n, sd = 0.5)
+logn[1:2] <- logy[1:2] * c(0.5, 0.75)
+n <- exp(logn)
+df <- data.frame(n = n, rel.age = rel.age)
+plot(log(n) ~ rel.age, df)
 
 # When lm can reduce to 3 points, this is chosen as the 'best'
-(tmp <- bestCC(x = x, y = y, minN = 3))
+(tmp <- bestCC(df = df, minN = 3))
 plot(f~n, data = tmp$bestbyn, t = "b", log="y")
-plot(y ~ x, log = "y")
-points(x[tmp$best$samples], y[tmp$best$samples], pch = 16)
+plot(log(n)~rel.age, df)
+points(log(n)~rel.age, df[tmp$best$samples,], pch = 16)
 
 # Any min number of points above this threshhold increases the best n a lot
-(tmp <- bestCC(x = x, y = y, minN = 4))
-plot(f~n, data = tmp$bestbyn, t = "b", log="y")
-plot(y ~ x, log = "y")
-points(x[tmp$best$samples], y[tmp$best$samples], pch = 16)
+(tmp <- bestCC(df = df))
+plot(log(n)~rel.age, df)
+points(log(n)~rel.age, df[tmp$best$samples,], pch = 16)
+fit <- lm(tmp$fmla, data = df[tmp$best$samples,])
+abline(fit)
+-coef(fit)[2] # true = 2
 
 }
 \references{

@@ -4,8 +4,12 @@
 \alias{gotcha}
 \title{'GOTCHA' method for aggregating catch numbers by pseudocohort}
 \usage{
-gotcha(lfq, n.pseudocohort = dim(lfq$catch)[1],
-  n.pseudocohort.per.yr = NULL, slice.reso = 52)
+gotcha(
+  lfq,
+  n.pseudocohort = dim(lfq$catch)[1],
+  n.pseudocohort.per.yr = NULL,
+  slice.reso = 52
+)
 }
 \arguments{
 \item{lfq}{an object of class lfq}

@@ -4,9 +4,18 @@
 \alias{VPA}
 \title{Virtual Population Analysis (VPA)}
 \usage{
-VPA(lfq, catch_columns = NA, catch_unit = NA, catch_corFac = NA,
-  terminalF = NA, terminalE = NA, analysis_type = "VPA",
-  algorithm = "new", plus_group = TRUE, plot = FALSE)
+VPA(
+  lfq,
+  catch_columns = NA,
+  catch_unit = NA,
+  catch_corFac = NA,
+  terminalF = NA,
+  terminalE = NA,
+  analysis_type = "VPA",
+  algorithm = "new",
+  plus_group = TRUE,
+  plot = FALSE
+)
 }
 \arguments{
 \item{lfq}{a list consisting of following parameters:

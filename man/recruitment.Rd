@@ -4,8 +4,14 @@
 \alias{recruitment}
 \title{Calculate recruitment pattern of lfq object using lfqCohort approach}
 \usage{
-recruitment(lfq, n.cohort.per.yr = 36, agemax = NULL, plot = TRUE,
-  use.rcounts = FALSE, ...)
+recruitment(
+  lfq,
+  n.cohort.per.yr = 36,
+  agemax = NULL,
+  plot = TRUE,
+  use.rcounts = FALSE,
+  ...
+)
 }
 \arguments{
 \item{lfq}{a length-frequency object (i.e. class \code{lfq}) that contains

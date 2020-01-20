@@ -4,9 +4,20 @@
 \alias{lfqModify}
 \title{Modify lfq data for further analysis}
 \usage{
-lfqModify(lfq, par = NULL, bin_size = NA, aggregate = NA,
-  vectorise_catch = FALSE, plus_group = FALSE, minDate = NA,
-  maxDate = NA, years = NA, Lmin = NA, Lmax = NA, lfq2 = NA)
+lfqModify(
+  lfq,
+  par = NULL,
+  bin_size = NA,
+  aggregate = NA,
+  vectorise_catch = FALSE,
+  plus_group = FALSE,
+  minDate = NA,
+  maxDate = NA,
+  years = NA,
+  Lmin = NA,
+  Lmax = NA,
+  lfq2 = NA
+)
 }
 \arguments{
 \item{lfq}{lfq object with dates, midLengths, and catch}
