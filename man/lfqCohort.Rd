@@ -9,7 +9,8 @@ lfqCohort(lfq, n.cohort.per.yr = 1, agemax = NULL, calc_dt = FALSE)
 \arguments{
 \item{lfq}{an lfq object with fitted VBGF parameters in the \code{lfq$par} slot.}
 
-\item{n.cohort.per.yr}{number of cohorts per year for slicing (Default: \code{n.per.year  = 1}).
+\item{n.cohort.per.yr}{number of cohorts per year for slicing (Default:
+ \code{n.cohort.per.year  = 1}).
 See details section for more information on slicing.
 This argument should be set to a higher values in cases of multiple cohorts per year.}
 

@@ -96,7 +96,8 @@ calc_tnew <- function(
 #'
 #'
 #' @param lfq an lfq object with fitted VBGF parameters in the \code{lfq$par} slot.
-#' @param n.cohort.per.yr number of cohorts per year for slicing (Default: \code{n.per.year  = 1}).
+#' @param n.cohort.per.yr number of cohorts per year for slicing (Default:
+#'  \code{n.cohort.per.year  = 1}).
 #' See details section for more information on slicing.
 #' This argument should be set to a higher values in cases of multiple cohorts per year.
 #' @param agemax maximum age of the stock, which is used to define the extent of growth

@@ -443,14 +443,14 @@ M_empirical <- function(lfq, method, schooling = FALSE){
 #' @export
 
 catchCurve <- function(lfq,
-                       catch_columns = NA,
-                       cumulative = FALSE,
-                       calc_ogive = FALSE,
-                       reg_int = NULL,
-                       reg_num = 1,
-                       auto = FALSE,
-                       plot = TRUE
-                       ){
+  catch_columns = NA,
+  cumulative = FALSE,
+  calc_ogive = FALSE,
+  reg_int = NULL,
+  reg_num = 1,
+  auto = FALSE,
+  plot = TRUE
+  ){
 
     res <- lfq
     if("par" %in% names(res)){
@@ -1184,113 +1184,329 @@ Z_CPUE <- function(cpue, method = "standard", omit_age1 = FALSE){
 }
 
 
-#' 'GOTCHA' method for aggregating catch numbers by pseudocohort
+
+#' Prepare length-frequency data for catch curve analysis
 #'
-#' @description The method is useful as a pre-cursor to a catch-curve analysis
-#'   whereby total mortality can be estimated based on the slope of catch numbers
-#'   (log-transformed) as a function of (relative) age. As demonstrated by Pauly
-#'   (1990), the method can be applied to cases where seasonally-oscillating
-#'   growth creates inconsistencies of age at length depending on the time of
-#'   year. The method aggregates by pseudocohort (n), as opposed to by length class
-#'   in the length-converted-catch-curve (LCCC), and therefore does not require
-#'   the correction of dividing numbers by time spent in a given length bin
-#'   (n/dt).
+#' @description The function can apply various methods of converting
+#'   length-frequency data into aggregate numbers by relative age and
+#'   (optionally) cohort. The method LCCC (length converted catch curve)
+#'   does not account for seasonal oscillations in growth when determining age.
+#'   Each length bin corresponds to given age according to the VBGF,
+#'   and numbers are aggregated across length bins.
+#'   With the GOTCHA method (Pauly, 1990), lfq data is sliced along growth
+#'   trajectories to identify 'pseudocohorts', whose numbers are aggregated.
+#'   As demonstrated by Pauly (1990), the method can be applied to cases where
+#'   seasonally-oscillating growth creates inconsistencies of age at length
+#'   depending on the time of year. The GOTCHA method aggregates by
+#'   pseudocohort, as opposed to by length class in LCCC, and therefore does
+#'   not require the correction of dividing numbers by time spent in a given
+#'   length bin (n/dt).
+#'   SLICC (slice-based catch curve) is an adaptation of GOTCHA whereby yearly
+#'   cohorts are assigned but no aggregations are done. With this approach, one
+#'   has the ability to regress numbers (i.e. individual bin counts) against
+#'   both relative age (rel.age) and a factor relating to cohort. In principle,
+#'   this should allow for the calculation of a single total mortality value
+#'   (Z), while allowing for variable intercepts for each cohort, as might be
+#'   assumed under conditions of variable recruitment.
 #'
 #' @param lfq an object of class lfq
-#' @param n.pseudocohort numeric. Number of pseudocohorts (i.e. total slices).
-#'   Defaults to the number of length bins in the lfq object. Overridden
-#'   when \code{n.pseudocohort.per.yr} is defined.
-#' @param n.pseudocohort.per.yr numeric. Number of pseudocohorts per year. For
-#'   longer-lived species, setting \code{n.pseudocohort.per.yr = 1} would
-#'   result in a single aggregate value per year class. When specified,
-#'     \code{n.pseudocohort} and  \code{slice.reso} are overridden.
-#' @param slice.reso numeric. When \code{n.pseudocohort} is defined (default),
-#'   \code{slice.reso} defines a fine level of cohort slices per year to be
-#'   used as an initial determination of birthdates before pseudocohort
-#'   aggregation. Overridden when \code{n.pseudocohort.per.yr} is defined.
+#' @param method method of conversion (LCCC, GOTCHA, SLICC)
+#' @param agemax integer. Maximum age plus group
+#' @param n.cohort integer. Number of pseudocohort to derive from lfq.
+#'   Only used GOTCHA method (Defaults to number of length bins for
+#'   consistency with LCCC).
+#' @param n.cohort.per.yr integer. Number of pseudocohorts per year.
+#'   Overrides `n.cohort`. Can be applied to GOTCHA and SLICC. Default
+#' @param use.ndt logical. Should numbers be divided by the time required to
+#'   grow through bin. This argument was used for method development and is
+#'   not expected to be defined by the user. For LCCC, this is set to TRUE,
+#'   and set to FALSE for other methods.
 #'
-#' @return a data.frame with catch numbers (n) aggregated by pseudocohort
-#'   (bday, rel.age).
+#' @return list.
+#' @export
 #'
 #' @references
 #' Pauly, D. (1990). Length-converted catch curves and the seasonal growth
 #'   of fishes. Fishbyte, 8(3), 33–38.
 #'
+#' @examples
+#'
+#' data("synLFQ4")
+#' lfq <- synLFQ4
+#' lfq$par <- list(Linf = 80, K = 0.5, C = 0.75, ts = 0.5, ta = 0.25)
+#' lfq <- lfqModify(lfq, year = 2006, bin_size = 2)
+#' lfq <- lfqRestructure(lfq)
+#' plot(lfq)
+#'
+#' # LCCC
+#' res <- catchCurvePrep(lfq = lfq, method = "LCCC")
+#' plot(log(n) ~ rel.age, res$tab)
+#' incl <- which(res$tab$rel.age > 1)
+#' points(log(n) ~ rel.age, res$tab[incl,], pch = 20 )
+#' fit <- lm(log(n) ~ rel.age, res$tab[incl,])
+#' abline(fit)
+#' -coef(fit)[2] # true: Z = 1.0
+#'
+#' # GOTCHA (default settings)
+#' res <- catchCurvePrep(lfq = lfq, method = "GOTCHA")
+#' plot(log(n) ~ rel.age, res$tab)
+#' incl <- which(res$tab$rel.age > 2 & res$tab$rel.age < 6)
+#' points(log(n) ~ rel.age, res$tab[incl,], pch = 20 )
+#' fit <- lm(log(n) ~ rel.age, res$tab[incl,])
+#' abline(fit)
+#' -coef(fit)[2] # true: Z = 1.0
+#'
+#' # GOTCHA (1 cohort per year)
+#' res <- catchCurvePrep(lfq = lfq, method = "GOTCHA", n.cohort.per.yr = 1)
+#' plot(log(n) ~ rel.age, res$tab)
+#' incl <- which(res$tab$rel.age > 1.5 & res$tab$rel.age < 6)
+#' points(log(n) ~ rel.age, res$tab[incl,], pch = 20 )
+#' fit <- lm(log(n) ~ rel.age, res$tab[incl,])
+#' abline(fit)
+#' -coef(fit)[2] # true: Z = 1.0
+#'
+#' # SLICC
+#' res <- catchCurvePrep(lfq = lfq, method = "SLICC")
+#' plot(log(n) ~ rel.age, res$tab, col = res$tab$cohort)
+#' incl <- which(res$tab$rel.age > 1 & res$tab$rel.age < 6)
+#' points(log(n) ~ rel.age, res$tab[incl,], pch = 20,
+#'   col = res$tab$cohort[incl])
+#' fit0 <- lm(log(n) ~ rel.age + cohort, res$tab[incl,])
+#' fit1 <- lm(log(n) ~ rel.age, res$tab[incl,])
+#' fit <- get(c("fit0", "fit1")[which.min(AIC(fit0, fit1)$AIC)])
+#' abline(fit)
+#' -coef(fit)[2] # true: Z = 1.0
+#'
+#'
+#'
+#'
+catchCurvePrep <- function(
+  lfq,
+  method = "LCCC",
+  agemax = NULL,
+  n.cohort = NULL, # only applies to GOTCHA1
+  n.cohort.per.yr = NULL, # this should override n.cohort in GOTCHA
+  use.ndt = NULL
+  ){
+
+  # replace zeros in catch mat
+  lfq$catch[which(is.na(lfq$catch))] <- 0
+
+  if(is.null(agemax)) agemax <- ceiling(VBGF(pars = lfq$par, L = lfq$par$Linf*0.95))
+
+  if(is.null(use.ndt)){
+    if(method == "LCCC"){
+      use.ndt <- TRUE
+    }else{
+      use.ndt <- FALSE
+    }
+  }
+
+  if(method == "LCCC"){
+    lfqx <- lfq
+    lfqx$par$C <- 0 # remove seasonality
+    if(is.null(n.cohort.per.yr)){n.cohort.per.yr <- 36}
+    lfqx <- lfqCohort(lfqx, n.cohort.per.yr = n.cohort.per.yr, calc_dt = TRUE, agemax = agemax)
+    sumtab = data.frame(rel.age = apply(lfqx$rel.age, 1, mean, na.rm = TRUE))
+    if(use.ndt){
+      sumtab$n <- apply(lfqx$catch/lfqx$dt, 1, sum, na.rm = TRUE)
+    }else{
+      sumtab$n <- apply(lfqx$catch, 1, sum, na.rm = TRUE)
+    }
+    sumtab$length <- apply(array(lfqx$midLengths, dim = dim(lfqx$catch)), 1, mean, na.rm = TRUE)
+    sumtab <- sumtab[which(sumtab$n > 0),] # remove rows where n == 0 | NA
+  }
+
+  if(method == "GOTCHA"){
+    # if n.cohort.per.yr not NULL, then use this criteria for slicing
+    if(!is.null(n.cohort.per.yr)) n.cohort <- NULL
+    # if NULL, then use thin slices (n=36 per year) and aggregate later to n.cohort bins
+    if(is.null(n.cohort.per.yr)){
+      n.cohort.per.yr <- 36
+      if(is.null(n.cohort)) n.cohort <- dim(lfq$catch)[1]
+    }
+    lfqx <- lfq
+    lfqx <- lfqCohort(lfqx, calc_dt = TRUE, n.cohort.per.yr = n.cohort.per.yr, agemax = agemax)
+    df <- data.frame(
+      length = rep(lfqx$midLengths, times = length(lfqx$dates)),
+      rel.age = c(lfqx$rel.age),
+      bday = c(lfqx$bday),
+      cohort = factor(c(lfqx$cohort)),
+      dt = c(lfqx$dt))
+    if(use.ndt){
+      df$n <- c(lfqx$catch)/c(lfqx$dt)
+    }else{
+      df$n <- c(lfqx$catch)
+    }
+    df <- df[which(df$n > 0),] # remove rows where n == 0 | NA
+    # create new slice aggregates if n.cohort is defined
+    if(!is.null(n.cohort)){
+      breaks <- seq(min(df$bday), max(df$bday), length.out = n.cohort)
+      mids <- breaks[-1] - (diff(breaks)[1]/2)
+      df$bday.cat <- cut(df$bday, breaks = breaks)
+      df$bday2 <- mids[df$bday.cat]
+      df$rel.age2 <- max(date2yeardec(lfqx$dates)) - df$bday2
+      agg <- aggregate(n ~ rel.age2, df, sum, na.rm = TRUE)
+      agg2 <- aggregate(length ~ rel.age2, df, max, na.rm = TRUE)
+      sumtab <- data.frame(rel.age = agg$rel.age2, n = agg$n, length = agg2$length)
+    }
+    if(is.null(n.cohort)){
+      agg <- aggregate(n ~ bday, df, sum, na.rm = TRUE)
+      agg$rel.age <- max(date2yeardec(lfqx$dates)) - agg$bday
+      agg2 <- aggregate(length ~ bday, df, max, na.rm = TRUE)
+      sumtab <- data.frame(rel.age = agg$rel.age, n = agg$n, length = agg2$length)
+    }
+  }
+
+  if(method == "SLICC"){
+    lfqx <- lfq
+    if(!is.null(n.cohort)) n.cohort <- NULL # always set n.cohort to NULL
+    if(is.null(n.cohort.per.yr)) n.cohort.per.yr <- 1 # set to 1 cohort per year as default
+    lfqx <- lfqCohort(lfqx, calc_dt = TRUE, n.cohort.per.yr = n.cohort.per.yr, agemax = agemax)
+    df <- data.frame(
+      length = rep(lfqx$midLengths, times = length(lfqx$dates)),
+      rel.age = c(lfqx$rel.age),
+      bday = c(lfqx$bday),
+      cohort = factor(c(lfqx$cohort)),
+      dt = c(lfqx$dt))
+    if(use.ndt){
+      df$n <- c(lfqx$catch)/c(lfqx$dt)
+    }else{
+      df$n <- c(lfqx$catch)
+    }
+    df <- df[which(df$n > 0),] # remove rows where n == 0 | NA
+    agg <- aggregate(n ~ cohort + rel.age, df, sum, na.rm = TRUE)
+    agg2 <- aggregate(length ~ cohort + rel.age, df, mean, na.rm = TRUE)
+    sumtab <- data.frame(rel.age = agg$rel.age, cohort = agg$cohort, n = agg$n, length = agg2$length)
+  }
+
+  # order sumtab by rel.age
+  sumtab <- sumtab[order(sumtab$rel.age),]
+
+  res <- list(tab = sumtab, method = method, agemax = agemax,
+    n.cohort = NULL, n.cohort.per.yr = n.cohort.per.yr,
+    use.ndt = use.ndt)
+
+  return(res)
+
+}
+
+
+
+
+
+
+#' Automated determination of values to include in catch curve
+#'
+#' @description Procedure described by Pauly (1990) to automate the selection
+#'   of points used in a catch curve (\code{log(n) ~ rel.age}). The sequential
+#'   data indices that result in the highest F-ststistic in a linear regression
+#'   are returned. Results should still be visualized to prevent suboptimal
+#'   results from 'pathological' datasets.
+#'
+#' @param fmla formula. Default is `formula(log(n) ~ rel.age)`. It is assumed
+#'   that the main explanatory variable is named `rel.age`. Other formulas
+#'   are allowed (e.g. `formula(log(n) ~ rel.age + cohort)`), but only the
+#'   extent of rel.age is tested.
+#' @param df data.frame holding the data.
+#' @param minN numeric. Minimum number of values to include in the regression
+#'   (Default: `minN = round(max(3,0.35*nrow(df)))`).
+#' @param minP numeric. A value used as a trhreshhold for eliminating
+#'   models with insignificant slopes (i.e. the statistical significance
+#'   of the term `rel.age`)
+#'
+#' @return list containing the indices and F-statistic of the highest scoring
+#' subset of (sequantial) data points.
+#'
 #' @export
 #'
+#' @references
+#' Pauly, D. (1990). Length-converted catch curves and the seasonal growth
+#'   of fishes. Fishbyte, 8(3), 33–38.
+#'
 #' @examples
-#' # load and visualize fit and cohorts
-#' lfq <- synLFQ4
-#' lfq$par <- list(Linf = 80, K = 0.5, ta = 0.25, C = 0.75, ts = 0.5)
-#' lfq <- lfqModify(lfq, bin_size = 2, years = 2006:2007)
-#' lfq <- lfqRestructure(lfq, MA = 5)
-#' plot(lfq, image.col = NA)
-#' lfq <- lfqCohort(lfq, n.per.yr = 1, calc_dt = FALSE)
-#' image(lfq$dates, lfq$midLengths, t(lfq$cohort),
-#'   col = adjustcolor(rainbow(100),0.4), add = TRUE)
+#' # generate example data
+#' set.seed(1)
+#' n <- 10
+#' rel.age <- seq(n)
+#' logn <- 10 + -2*rel.age + rnorm(n, sd = 0.5)
+#' logn[1:2] <- logy[1:2] * c(0.5, 0.75)
+#' n <- exp(logn)
+#' df <- data.frame(n = n, rel.age = rel.age)
+#' plot(log(n) ~ rel.age, df)
 #'
-#' # default settings - n.pseudocohorts = number of length bins
-#' res <- gotcha(lfq, slice.reso = 36)
-#' plot(log(n) ~ rel.age, res)
-#' ressub <- subset(res, subset = rel.age > 2)
-#' points(log(n) ~ rel.age, ressub, pch = 16)
-#' fit <- lm(log(n) ~ rel.age, data = ressub)
+#' # When lm can reduce to 3 points, this is chosen as the 'best'
+#' (tmp <- bestCC(df = df, minN = 3))
+#' plot(f~n, data = tmp$bestbyn, t = "b", log="y")
+#' plot(log(n)~rel.age, df)
+#' points(log(n)~rel.age, df[tmp$best$samples,], pch = 16)
+#'
+#' # Any min number of points above this threshhold increases the best n a lot
+#' (tmp <- bestCC(df = df))
+#' plot(log(n)~rel.age, df)
+#' points(log(n)~rel.age, df[tmp$best$samples,], pch = 16)
+#' fit <- lm(tmp$fmla, data = df[tmp$best$samples,])
 #' abline(fit)
-#' legend("topright", legend = paste("Z =", round(-coef(fit)[2],2)), bty = "n")
+#' -coef(fit)[2] # true = 2
 #'
-#' # n.pseudocohorts = defined number of bins
-#' res <- gotcha(lfq, n.pseudocohort = 16)
-#' plot(log(n) ~ rel.age, res)
-#' ressub <- subset(res, subset = rel.age > 2)
-#' points(log(n) ~ rel.age, ressub, pch = 16)
-#' fit <- lm(log(n) ~ rel.age, data = ressub)
-#' abline(fit)
-#' legend("topright", legend = paste("Z =", round(-coef(fit)[2],2)), bty = "n")
-#'
-#' # n.pseudocohorts = one per year
-#' res <- gotcha(lfq, n.pseudocohort.per.yr = 1)
-#' plot(log(n) ~ rel.age, res)
-#' ressub <- subset(res, subset = rel.age > 2)
-#' points(log(n) ~ rel.age, ressub, pch = 16)
-#' fit <- lm(log(n) ~ rel.age, data = ressub)
-#' abline(fit)
-#' legend("topright", legend = paste("Z =", round(-coef(fit)[2],2)), bty = "n")
-#'
-gotcha <- function(lfq, n.pseudocohort = dim(lfq$catch)[1],
-  n.pseudocohort.per.yr = NULL, slice.reso = 52){
+bestCC <- function(fmla = formula(log(n)~rel.age),
+  df, minN = round(max(3,0.35*nrow(df))), minP = 0.01){
 
-  # if n.pseudocohort.per.yr is defined, slice accordingly,
-  #  else use default slice.reso.
-  # Overrides n.pseudocohort
-  if(!is.null(n.pseudocohort.per.yr)){
-    slice.reso = n.pseudocohort.per.yr
+  if(minN < 3){stop("'minN' must be greater than or equal to 3")}
+
+  # test if order of rel.age is sequential
+  if( !all(diff(order(df$rel.age)) == 1) ){
+    stop("df$rel.age values must be ordered sequentially")}
+
+  # return unique combinations of sequential data points
+  res <- vector("list", length(minN:nrow(df)))
+  for(i in seq(minN:nrow(df))){
+    len <- (minN:nrow(df))[i]
+    res.i <- vector("list", length(1:(nrow(df)-len+1)))
+    for(j in seq(1:(nrow(df)-len+1))){
+      start <- (1:(nrow(df)-len+1))[j]
+      res.i[[j]] <- seq(from = start, by = 1, length.out = len)
+    }
+    res[[i]] <- res.i
   }
+  res <- do.call("c", res)
+  res <- unique(res)
 
-  # slice and assign cohort, rel.ages etc.
-  lfq <- lfqCohort(lfq, n.per.yr = slice.reso, calc_dt = FALSE)
-  # image(lfq$dates, lfq$midLengths, t(lfq$cohort), col = adjustcolor(rainbow(1000),0.4), add = TRUE)
-  df <- data.frame(
-    length = rep(lfq$midLengths, times = length(lfq$dates)),
-    rel.age = c(lfq$rel.age),
-    bday = c(lfq$bday),
-    cohort = c(lfq$cohort),
-    n = c(lfq$catch))
-
-  # if n.pseudocohort.per.yr is not defined, aggregate results to defined number of slices
-  if(is.null(n.pseudocohort.per.yr)){
-    breaks <- seq(min(df$bday, na.rm = TRUE), max(df$bday, na.rm = TRUE),
-      length.out = n.pseudocohort+1)
-    mids <- breaks[-length(breaks)] + diff(breaks)/2
-    bday.cat <- cut(df$bday, breaks = breaks)
-    df$bday <- mids[as.numeric(bday.cat)]
+  # fit lm to each comb and return the indices and f-statistic
+  res2 <- vector("list", length(res))
+  pb <- txtProgressBar(min = 0, max = length(res), style = 3)
+  for(i in seq(res2)){
+    res2[[i]]$n <- length(res[[i]])
+    res2[[i]]$samples <- res[[i]]
+    df.i <- df[res[[i]],]
+    fit <- lm(fmla, data = df.i)
+    S <- summary(fit)
+    res2[[i]]$f <- 0
+    # if slope is negative and significant at minP, then record f-statistic
+    if(coef(fit)[2] < 0 & S$coefficients[2,4] < minP){
+      res2[[i]]$f <- S$fstatistic[1]
+    }
+    setTxtProgressBar(pb, i)
   }
+  close(pb)
 
-  # aggregate by rel.age (and remove zeros)
-  res <- aggregate(n ~ bday, data = df, FUN = sum, na.rm=TRUE)
-  res$rel.age <- max(res$bday) - res$bday + 1
-  if(length(which(res$n == 0))){res <- res[-which(res$n == 0),]}
+  bestbyn <- do.call("rbind",
+    lapply(res2, FUN = function(x){data.frame(n = x$n,f = x$f)}))
+  bestbyn <- aggregate(f ~ n, data = bestbyn, FUN = max)
+  # plot(f ~ n, bestbyn)
 
-  # return results
-  return(res)
+  # 'best' model is that with highest f-statistic
+  best <- which.max(do.call("c", lapply(res2, FUN = function(x){x$f})))
+
+  return(list(
+    fmla = fmla,
+    df = df,
+    minN = minN,
+    minP = minP,
+    best = res2[[best]],
+    bestbyn = bestbyn
+  ))
+
 }
+
 
