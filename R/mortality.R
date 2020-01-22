@@ -1430,7 +1430,7 @@ catchCurvePrep <- function(
 #' n <- 10
 #' rel.age <- seq(n)
 #' logn <- 10 + -2*rel.age + rnorm(n, sd = 0.5)
-#' logn[1:2] <- logy[1:2] * c(0.5, 0.75)
+#' logn[1:2] <- logn[1:2] * c(0.5, 0.75)
 #' n <- exp(logn)
 #' df <- data.frame(n = n, rel.age = rel.age)
 #' plot(log(n) ~ rel.age, df)
