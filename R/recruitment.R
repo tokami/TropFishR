@@ -122,7 +122,7 @@ recruitment <- function(param, tsample, catch_column = NA, plot = FALSE){
   if(is.na(catch_column)) catch <- res$catch
   if(!is.na(catch_column)) catch <- res$catch[,catch_column]
 
-  if(class(catch) == "matrix" | class(catch) == "data.frame"){
+  if(inherits(catch,"matrix") || inherits(catch,"data.frame")){
     len_catch <- dim(catch)[1]
     catch_sets <- dim(catch)[2]
     }else{

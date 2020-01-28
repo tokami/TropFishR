@@ -83,7 +83,7 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
     noquote('The parameter list does not contain an object with name "catch"'))
 
   #Transform matrix into vector if provided
-  if(class(catch) == 'matrix'){
+  if(inherits(catch,'matrix')){
     catch.vec <- rowSums(catch, na.rm = TRUE)
   }else catch.vec <- catch
   if(length(midLengths.num) != length(catch.vec)) stop(

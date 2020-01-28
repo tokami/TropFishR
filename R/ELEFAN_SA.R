@@ -3,7 +3,7 @@
 #' @description Electronic LEngth Frequency ANalysis with simulated annealing
 #'    for estimating growth parameters.
 #'
-#' @param x a list consisting of following parameters:
+#' @param lfq a list consisting of following parameters:
 #' \itemize{
 #'   \item \strong{midLengths} midpoints of the length classes,
 #'   \item \strong{dates} dates of sampling times (class Date),
@@ -145,116 +145,114 @@
 #' annealing for global optimization: the GenSA Package. R Journal, 5(1), 13-28.
 #' @export
 
-ELEFAN_SA <- function(
-  x,
-  seasonalised = FALSE,
-  init_par = list(Linf = 50, K = 0.5, t_anchor = 0.5, C = 0, ts = 0),
-  low_par = NULL,
-  up_par = NULL,
-  SA_time = 60 * 1,
-  maxit = NULL,
-  nb.stop.improvement = NULL,
-  SA_temp = 1e5,
-  verbose = TRUE,
-  MA = 5, addl.sqrt = FALSE,
-  agemax = NULL,
-  flagging.out = TRUE,
-  plot = FALSE,
-  plot.score = TRUE
-){
+ELEFAN_SA <- function(lfq,
+                      seasonalised = FALSE,
+                      init_par = list(Linf = 50, K = 0.5, t_anchor = 0.5, C = 0, ts = 0),
+                      low_par = NULL,
+                      up_par = NULL,
+                      SA_time = 60 * 1,
+                      maxit = NULL,
+                      nb.stop.improvement = NULL,
+                      SA_temp = 1e5,
+                      verbose = TRUE,
+                      MA = 5, addl.sqrt = FALSE,
+                      agemax = NULL,
+                      flagging.out = TRUE,
+                      plot = FALSE,
+                      plot.score = TRUE){
 
-  res <- x
-  classes <- res$midLengths
-  n_classes <- length(classes)
-  Linf_est <- classes[n_classes]
+    res <- lfq
+    classes <- res$midLengths
+    n_classes <- length(classes)
+    Linf_est <- classes[n_classes]
 
 
-  # initial parameters
-  init_par_ALL <- list(Linf = Linf_est,
-                       K = 0.5, t_anchor = 0.5, C = 0, ts = 0)
-  init_Linf <- ifelse("Linf" %in% names(init_par),
-                      get("Linf", init_par),
-                      get("Linf", init_par_ALL))
-  init_K <- ifelse("K" %in% names(init_par),
-                   get("K", init_par),
-                   get("K", init_par_ALL))
-  init_tanc <- ifelse("t_anchor" %in% names(init_par),
-                      get("t_anchor", init_par),
-                      get("t_anchor", init_par_ALL))
-  init_C <- ifelse("C" %in% names(init_par),
-                   get("C", init_par),
-                   get("C", init_par_ALL))
-  init_ts <- ifelse("ts" %in% names(init_par),
-                    get("ts", init_par),
-                    get("ts", init_par_ALL))
+    # initial parameters
+    init_par_ALL <- list(Linf = Linf_est,
+                         K = 0.5, t_anchor = 0.5, C = 0, ts = 0)
+    init_Linf <- ifelse("Linf" %in% names(init_par),
+                        get("Linf", init_par),
+                        get("Linf", init_par_ALL))
+    init_K <- ifelse("K" %in% names(init_par),
+                     get("K", init_par),
+                     get("K", init_par_ALL))
+    init_tanc <- ifelse("t_anchor" %in% names(init_par),
+                        get("t_anchor", init_par),
+                        get("t_anchor", init_par_ALL))
+    init_C <- ifelse("C" %in% names(init_par),
+                     get("C", init_par),
+                     get("C", init_par_ALL))
+    init_ts <- ifelse("ts" %in% names(init_par),
+                      get("ts", init_par),
+                      get("ts", init_par_ALL))
 
-  # lower parameter bounds
-  low_par_ALL <- list(Linf = Linf_est * 0.5,
-                      K = 0.01,
-                      t_anchor = 0,
-                      C = 0,
-                      ts = 0)
-  low_Linf <- ifelse("Linf" %in% names(low_par),
-                     get("Linf", low_par),
-                     get("Linf", low_par_ALL))
-  low_K <- ifelse("K" %in% names(low_par),
-                  get("K", low_par),
-                  get("K", low_par_ALL))
-  low_tanc <- ifelse("t_anchor" %in% names(low_par),
-                     get("t_anchor", low_par),
-                     get("t_anchor", low_par_ALL))
-  low_C <- ifelse("C" %in% names(low_par),
-                  get("C", low_par),
-                  get("C", low_par_ALL))
-  low_ts <- ifelse("ts" %in% names(low_par),
-                   get("ts", low_par),
-                   get("ts", low_par_ALL))
+    # lower parameter bounds
+    low_par_ALL <- list(Linf = Linf_est * 0.5,
+                        K = 0.01,
+                        t_anchor = 0,
+                        C = 0,
+                        ts = 0)
+    low_Linf <- ifelse("Linf" %in% names(low_par),
+                       get("Linf", low_par),
+                       get("Linf", low_par_ALL))
+    low_K <- ifelse("K" %in% names(low_par),
+                    get("K", low_par),
+                    get("K", low_par_ALL))
+    low_tanc <- ifelse("t_anchor" %in% names(low_par),
+                       get("t_anchor", low_par),
+                       get("t_anchor", low_par_ALL))
+    low_C <- ifelse("C" %in% names(low_par),
+                    get("C", low_par),
+                    get("C", low_par_ALL))
+    low_ts <- ifelse("ts" %in% names(low_par),
+                     get("ts", low_par),
+                     get("ts", low_par_ALL))
 
-  # upper parameter bounds
-  up_par_ALL <- list(Linf = Linf_est * 1.5,
-                     K = 1,
-                     t_anchor = 1,
-                     C = 1,
-                     ts = 1)
-  up_Linf <- ifelse("Linf" %in% names(up_par),
-                    get("Linf", up_par),
-                    get("Linf", up_par_ALL))
-  up_K <- ifelse("K" %in% names(up_par),
-                 get("K", up_par),
-                 get("K", up_par_ALL))
-  up_tanc <- ifelse("t_anchor" %in% names(up_par),
-                    get("t_anchor", up_par),
-                    get("t_anchor", up_par_ALL))
-  up_C <- ifelse("C" %in% names(up_par),
-                 get("C", up_par),
-                 get("C", up_par_ALL))
-  up_ts <- ifelse("ts" %in% names(up_par),
-                  get("ts", up_par),
-                  get("ts", up_par_ALL))
+    # upper parameter bounds
+    up_par_ALL <- list(Linf = Linf_est * 1.5,
+                       K = 1,
+                       t_anchor = 1,
+                       C = 1,
+                       ts = 1)
+    up_Linf <- ifelse("Linf" %in% names(up_par),
+                      get("Linf", up_par),
+                      get("Linf", up_par_ALL))
+    up_K <- ifelse("K" %in% names(up_par),
+                   get("K", up_par),
+                   get("K", up_par_ALL))
+    up_tanc <- ifelse("t_anchor" %in% names(up_par),
+                      get("t_anchor", up_par),
+                      get("t_anchor", up_par_ALL))
+    up_C <- ifelse("C" %in% names(up_par),
+                   get("C", up_par),
+                   get("C", up_par_ALL))
+    up_ts <- ifelse("ts" %in% names(up_par),
+                    get("ts", up_par),
+                    get("ts", up_par_ALL))
 
 
-  # ELEFAN 0
-  res <- lfqRestructure(res, MA = MA, addl.sqrt = addl.sqrt)
-  catch_aAF_F <- res$rcounts
-  peaks_mat <- res$peaks_mat
-  ASP <- res$ASP
+    # ELEFAN 0
+    res <- lfqRestructure(res, MA = MA, addl.sqrt = addl.sqrt)
+    catch_aAF_F <- res$rcounts
+    peaks_mat <- res$peaks_mat
+    ASP <- res$ASP
 
-  # seasonalised cost function
-  soSAfun <- function(lfq, par=c(init_Linf, init_K, init_tanc, init_C, init_ts),
+    # seasonalised cost function
+    soSAfun <- function(lfq, par=c(init_Linf, init_K, init_tanc, init_C, init_ts),
+                        agemax, flagging.out){
+        Lt <- lfqFitCurves(lfq,
+                           par=list(Linf=par[1], K=par[2], t_anchor=par[3], C=par[4], ts=par[5]),
+                           flagging.out = flagging.out, agemax = agemax)
+        return(-Lt$fESP)
+    }
+    # cost function
+    SAfun <- function(lfq, par=c(init_Linf, init_K, init_tanc),
                       agemax, flagging.out){
-    Lt <- lfqFitCurves(lfq,
-                 par=list(Linf=par[1], K=par[2], t_anchor=par[3], C=par[4], ts=par[5]),
-                 flagging.out = flagging.out, agemax = agemax)
-    return(-Lt$fESP)
-  }
-  # cost function
-  SAfun <- function(lfq, par=c(init_Linf, init_K, init_tanc),
-                    agemax, flagging.out){
-    Lt <- lfqFitCurves(lfq,
-                 par=list(Linf=par[1], K=par[2], t_anchor=par[3], C = 0, ts = 0),
-                 flagging.out = flagging.out, agemax = agemax)
-    return(-Lt$fESP)
-  }
+        Lt <- lfqFitCurves(lfq,
+                           par=list(Linf=par[1], K=par[2], t_anchor=par[3], C = 0, ts = 0),
+                           flagging.out = flagging.out, agemax = agemax)
+        return(-Lt$fESP)
+    }
 
 
     ## control list
@@ -265,98 +263,98 @@ ELEFAN_SA <- function(
     if(!is.null(nb.stop.improvement)) control$nb.stop.improvement
 
 
-  if(seasonalised){
-    # Simulated annealing with seasonalised VBGF
-    writeLines(paste(
-      "Simulated annealing is running. \nThis will take approximately",
-      round(SA_time/60,digits=2),
-      "minutes.",
-      sep=" "
-    ))
-    flush.console()
-    SAfit <- GenSA::GenSA(
-      par = c(init_Linf, init_K, init_tanc, init_C, init_ts),
-      fn = soSAfun,
-      lower = c(low_Linf, low_K, low_tanc, low_C, low_ts),
-      upper = c(up_Linf, up_K, up_tanc, up_C, up_ts),
-      agemax = agemax,
-      flagging.out = flagging.out,
-      control = control,
-      lfq = res
-    )
+    if(seasonalised){
+        # Simulated annealing with seasonalised VBGF
+        writeLines(paste(
+            "Simulated annealing is running. \nThis will take approximately",
+            round(SA_time/60,digits=2),
+            "minutes.",
+            sep=" "
+        ))
+        flush.console()
+        SAfit <- GenSA::GenSA(
+                            par = c(init_Linf, init_K, init_tanc, init_C, init_ts),
+                            fn = soSAfun,
+                            lower = c(low_Linf, low_K, low_tanc, low_C, low_ts),
+                            upper = c(up_Linf, up_K, up_tanc, up_C, up_ts),
+                            agemax = agemax,
+                            flagging.out = flagging.out,
+                            control = control,
+                            lfq = res
+                        )
 
-    pars <- as.list(SAfit$par)
-    names(pars) <- c("Linf","K","t_anchor", "C", "ts")
-  }else{
-    # Simulated annealing
-    writeLines(paste(
-      "Simulated annealing is running. \nThis will take approximately",
-      round(SA_time/60,digits=2),
-      "minutes.",
-      sep=" "
-    ))
-    flush.console()
-    SAfit <- GenSA::GenSA(par = c(init_Linf, init_K, init_tanc),
-      fn = SAfun,
-      lower = c(low_Linf, low_K, low_tanc),
-      upper = c(up_Linf, up_K, up_tanc),
-      agemax = agemax,
-      flagging.out = flagging.out,
-      control = control,
-      lfq = res
-    )
+        pars <- as.list(SAfit$par)
+        names(pars) <- c("Linf","K","t_anchor", "C", "ts")
+    }else{
+        # Simulated annealing
+        writeLines(paste(
+            "Simulated annealing is running. \nThis will take approximately",
+            round(SA_time/60,digits=2),
+            "minutes.",
+            sep=" "
+        ))
+        flush.console()
+        SAfit <- GenSA::GenSA(par = c(init_Linf, init_K, init_tanc),
+                              fn = SAfun,
+                              lower = c(low_Linf, low_K, low_tanc),
+                              upper = c(up_Linf, up_K, up_tanc),
+                              agemax = agemax,
+                              flagging.out = flagging.out,
+                              control = control,
+                              lfq = res
+                              )
 
-    pars <- as.list(SAfit$par)
-    names(pars) <- c("Linf","K","t_anchor")
-  }
+        pars <- as.list(SAfit$par)
+        names(pars) <- c("Linf","K","t_anchor")
+    }
 
-  # Score graph in GA style
-  tmp <- as.data.frame(SAfit$trace.mat)
-  meani <- aggregate(tmp$function.value, list(step = tmp$nb.steps),mean, na.rm = TRUE)
-  exe <- aggregate(tmp$current.minimum, list(step = tmp$nb.steps),mean, na.rm = TRUE)
-  medi <- aggregate(tmp$function.value, list(step = tmp$nb.steps),median, na.rm = TRUE)
-  ylim <- c(min(range(exe$x,na.rm = TRUE, finite = TRUE)),
-            max(range(meani$x, na.rm = TRUE, finite = TRUE)))
-  if(plot.score){
-      op <- par(mar=c(5.1, 4.1, 1, 4.1))
-    plot(tmp$nb.steps, tmp$function.value, type = "n", ylim = ylim, xlab = "Iteration",
-         ylab = "Cost value")
-    graphics::grid(equilogs = FALSE)
-    points(tmp$nb.steps, tmp$current.minimum, type = "o", pch = 16, lty = 1,
-           col = "green3", cex = 0.7)
-    points(meani$step, meani$x, type = "o", pch = 1, lty = 2,
-           col = "dodgerblue3", cex = 0.7)
-    polygon(c(meani$step, rev(meani$step)),
-            c(exe$x, rev(medi$x)),
-            border = FALSE, col = adjustcolor("green3", alpha.f = 0.1))
-    par(new=TRUE)
-    plot(tmp$nb.steps, tmp$temperature, t="l", col=2, lty=2, log="y", axes = FALSE, xlab = "", ylab = "")
-    axis(4, col=2, col.axis=2); mtext(text = "Temperature", side = 4, line = par()$mgp[1], col=2)
-    legend("topright", legend = c("Best", "Mean", "Median", "Temperature"),
-           col = c("green3", "dodgerblue3", adjustcolor("green3", alpha.f = 0.1), 2),
-           pch = c(16, 1, NA, NA), lty = c(1,2,1,2),
-           lwd = c(1, 1, 10, 1), pt.cex = c(rep(0.7,2), 2, NA),
-           inset = 0.02)
-    par(op)
-  }
+    # Score graph in GA style
+    tmp <- as.data.frame(SAfit$trace.mat)
+    meani <- aggregate(tmp$function.value, list(step = tmp$nb.steps),mean, na.rm = TRUE)
+    exe <- aggregate(tmp$current.minimum, list(step = tmp$nb.steps),mean, na.rm = TRUE)
+    medi <- aggregate(tmp$function.value, list(step = tmp$nb.steps),median, na.rm = TRUE)
+    ylim <- c(min(range(exe$x,na.rm = TRUE, finite = TRUE)),
+              max(range(meani$x, na.rm = TRUE, finite = TRUE)))
+    if(plot.score){
+        op <- par(mar=c(5.1, 4.1, 1, 4.1))
+        plot(tmp$nb.steps, tmp$function.value, type = "n", ylim = ylim, xlab = "Iteration",
+             ylab = "Cost value")
+        graphics::grid(equilogs = FALSE)
+        points(tmp$nb.steps, tmp$current.minimum, type = "o", pch = 16, lty = 1,
+               col = "green3", cex = 0.7)
+        points(meani$step, meani$x, type = "o", pch = 1, lty = 2,
+               col = "dodgerblue3", cex = 0.7)
+        polygon(c(meani$step, rev(meani$step)),
+                c(exe$x, rev(medi$x)),
+                border = FALSE, col = adjustcolor("green3", alpha.f = 0.1))
+        par(new=TRUE)
+        plot(tmp$nb.steps, tmp$temperature, t="l", col=2, lty=2, log="y", axes = FALSE, xlab = "", ylab = "")
+        axis(4, col=2, col.axis=2); mtext(text = "Temperature", side = 4, line = par()$mgp[1], col=2)
+        legend("topright", legend = c("Best", "Mean", "Median", "Temperature"),
+               col = c("green3", "dodgerblue3", adjustcolor("green3", alpha.f = 0.1), 2),
+               pch = c(16, 1, NA, NA), lty = c(1,2,1,2),
+               lwd = c(1, 1, 10, 1), pt.cex = c(rep(0.7,2), 2, NA),
+               inset = 0.02)
+        par(op)
+    }
 
-  final_res <- lfqFitCurves(lfq = res,par=pars,flagging.out = flagging.out,
-                            agemax = agemax)
+    final_res <- lfqFitCurves(lfq = res,par=pars,flagging.out = flagging.out,
+                              agemax = agemax)
 
-  # growth performance index
-  phiL <- log10(pars$K) + 2 * log10(pars$Linf)
-  pars$phiL <- phiL
+    # growth performance index
+    phiL <- log10(pars$K) + 2 * log10(pars$Linf)
+    pars$phiL <- phiL
 
-  # Results
-  res$ncohort <- final_res$ncohort
-  res$agemax <- final_res$agemax
-  res$par <- pars
-  res$fESP <- abs(SAfit$value)
-  res$Rn_max <- abs(SAfit$value)
+    # Results
+    res$ncohort <- final_res$ncohort
+    res$agemax <- final_res$agemax
+    res$par <- pars
+    res$fESP <- abs(SAfit$value)
+    res$Rn_max <- abs(SAfit$value)
 
-  if(plot){
-    plot(res, Fname = "rcounts")
-    Lt <- lfqFitCurves(res, par = res$pars, draw=TRUE)
-  }
-  return(res)
+    if(plot){
+        plot(res, Fname = "rcounts")
+        Lt <- lfqFitCurves(res, par = res$pars, draw=TRUE)
+    }
+    return(res)
 }

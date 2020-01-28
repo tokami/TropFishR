@@ -4,13 +4,28 @@
 \alias{plot.lfq}
 \title{Plotting of length frequency data (with VBGF curves)}
 \usage{
-\method{plot}{lfq}(x, Fname = "rcounts", par = NULL, agemax = NULL,
-  rel = FALSE, y = NA, curve.col = 1, hist.sc = 0.5,
-  hist.col = c("white", "black", "orange", "darkgreen"), image.col = NULL,
-  region.col = NULL, zlim = NULL, zlimtype = "balanced",
-  date.axis = "traditional", date.at = seq(as.Date("1500-01-01"),
-  as.Date("2500-01-01"), by = "months"), date.format = "'\%y-\%b",
-  xlab = "", ylab = "Length classes", draw = TRUE, ...)
+\method{plot}{lfq}(
+  x,
+  Fname = "rcounts",
+  par = NULL,
+  agemax = NULL,
+  rel = FALSE,
+  y = NA,
+  curve.col = 1,
+  hist.sc = 0.5,
+  hist.col = c("white", "black", "orange", "darkgreen"),
+  image.col = NULL,
+  region.col = NULL,
+  zlim = NULL,
+  zlimtype = "balanced",
+  date.axis = "traditional",
+  date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by = "months"),
+  date.format = "'\%y-\%b",
+  xlab = "",
+  ylab = "Length classes",
+  draw = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{a list of the class "lfq" consisting of following parameters:

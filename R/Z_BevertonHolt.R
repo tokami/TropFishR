@@ -53,7 +53,7 @@ Z_BevertonHolt <- function(param, catch_columns = NA, Lprime_tprime){
   res <- param
   catch <- res$catch
 
-  if(class(catch) == "data.frame" | class(catch) == "matrix"){
+  if(inherits(catch,"matrix") || inherits(catch,"data.frame")){
     if(is.na(catch_columns[1])) stop("Please provide numbers indicating which column of the catch matrix should be analysed!")
     catchmat <- res$catch[,(catch_columns)]
     if(length(catch_columns) > 1){
@@ -74,7 +74,7 @@ Z_BevertonHolt <- function(param, catch_columns = NA, Lprime_tprime){
     K <- res$K
 
     # Error message if catch and age do not have same length
-    if(class(catch) == 'numeric'){
+    if(inherits(catch,'numeric')){
       if(length(classes) != length(catch)) stop("Ages and catch do not have the same length!")
     }
 
@@ -115,7 +115,7 @@ Z_BevertonHolt <- function(param, catch_columns = NA, Lprime_tprime){
     Lprime_tprime_ind <- which.min(abs(classes.num - Lprime_tprime))
 
     # Error message if catch and age do not have same length
-    if(class(catch) == 'numeric'){
+    if(inherits(catch,'numeric')){
       if(length(classes) != length(catch)) stop("Ages and catch do not have the same length!")
     }
 

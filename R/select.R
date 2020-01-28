@@ -172,7 +172,7 @@ select <- function(param, plot = FALSE){
                  SF = SF)
   }
   ret <- c(res,res2)
-  class(ret) = 'select'
+  class(ret) <- 'select'
   if(plot) plot(ret)
   return(ret)
 }

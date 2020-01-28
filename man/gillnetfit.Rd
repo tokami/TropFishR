@@ -7,8 +7,14 @@
 https://www.stat.auckland.ac.nz/~millar/selectware/
 }
 \usage{
-gillnetfit(data, meshsizes, rtype = "norm.loc", rel.power = NULL,
-  plotlens = NULL, details = FALSE)
+gillnetfit(
+  data,
+  meshsizes,
+  rtype = "norm.loc",
+  rel.power = NULL,
+  plotlens = NULL,
+  details = FALSE
+)
 }
 \arguments{
 \item{data}{matrix with the number of individuals caught with each sized mesh

@@ -7,9 +7,21 @@
 https://cran.r-project.org/web/packages/fishmethods/index.html
 }
 \usage{
-M_empirical(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
-  temp = NULL, tmax = NULL, tm50 = NULL, GSI = NULL, Wdry = NULL,
-  Wwet = NULL, Bl = NULL, schooling = FALSE, method)
+M_empirical(
+  Linf = NULL,
+  Winf = NULL,
+  K_l = NULL,
+  K_w = NULL,
+  temp = NULL,
+  tmax = NULL,
+  tm50 = NULL,
+  GSI = NULL,
+  Wdry = NULL,
+  Wwet = NULL,
+  Bl = NULL,
+  schooling = FALSE,
+  method
+)
 }
 \arguments{
 \item{Linf}{infinite total length (TL) from a von Bertalanffy

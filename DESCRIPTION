@@ -1,8 +1,8 @@
 Package: TropFishR
 Type: Package
 Title: Tropical Fisheries Analysis
-Version: 1.6.1
-Date: 2019-01-17
+Version: 1.6.2
+Date: 2020-01-27
 Author: Tobias K. Mildenberger, Marc H. Taylor, Matthias Wolff
 Maintainer: Tobias K. Mildenberger <t.k.mildenberger@gmail.com>
 Depends:
@@ -22,14 +22,13 @@ Description: A compilation of fish stock assessment methods for the
     analysis of length-frequency data in the context of data-poor
     fisheries. Includes methods and examples included in the FAO
     Manual by P. Sparre and S.C. Venema (1998), "Introduction to tropical fish
-    stock assessment"
-    (<http://www.fao.org/docrep/W5449E/W5449E00.htm>), as well as
-    other more recent methods.
+    stock assessment" (<http://www.fao.org/documents/card/en/c/9bb12a06-2f05-5dcb-a6ca-2d6dd3080f65/>),
+    as well as other more recent methods.
 License: GPL-3
 NeedsCompilation: no
 BugReports: https://github.com/tokami/TropFishR/issues
 URL: https://github.com/tokami/TropFishR
-RoxygenNote: 6.0.1
+RoxygenNote: 7.0.2
 Suggests:
     stats,
     graphics,

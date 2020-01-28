@@ -4,15 +4,31 @@
 \alias{ELEFAN}
 \title{ELEFAN}
 \usage{
-ELEFAN(x, Linf_fix = NA, Linf_range = NA, K_range = exp(seq(log(0.1),
-  log(10), length.out = 100)), C = 0, ts = 0, MA = 5, addl.sqrt = FALSE,
-  agemax = NULL, flagging.out = TRUE, method = "optimise",
-  cross.date = NULL, cross.midLength = NULL, cross.max = FALSE,
-  hide.progressbar = FALSE, plot = FALSE, contour = FALSE,
-  add.values = TRUE, rsa.colors = terrain.colors(20), plot_title = TRUE)
+ELEFAN(
+  lfq,
+  Linf_fix = NA,
+  Linf_range = NA,
+  K_range = exp(seq(log(0.1), log(10), length.out = 100)),
+  C = 0,
+  ts = 0,
+  MA = 5,
+  addl.sqrt = FALSE,
+  agemax = NULL,
+  flagging.out = TRUE,
+  method = "optimise",
+  cross.date = NULL,
+  cross.midLength = NULL,
+  cross.max = FALSE,
+  hide.progressbar = FALSE,
+  plot = FALSE,
+  contour = FALSE,
+  add.values = TRUE,
+  rsa.colors = terrain.colors(20),
+  plot_title = TRUE
+)
 }
 \arguments{
-\item{x}{a list consisting of following parameters:
+\item{lfq}{a list consisting of following parameters:
 \itemize{
   \item \strong{midLengths} midpoints of the length classes,
   \item \strong{dates} dates of sampling times (class Date),
@@ -136,7 +152,7 @@ data(alba)
 
 # 'cross' method (used in FiSAT)
 fit1 <- ELEFAN(
-   x = alba, method = "cross",
+   lfq = alba, method = "cross",
    Linf_range = seq(from = 10, to = 20, length.out = 10),
    K_range = exp(seq(from = log(0.1), to = log(2), length.out = 20)),
    cross.date = alba$dates[3], cross.midLength = alba$midLengths[4],
@@ -147,7 +163,7 @@ plot(fit1); points(alba$dates[3], alba$midLengths[4], col=2, cex=2, lwd=2)
 
 # 'cross' method (bin with maximum score crossed)
 fit2 <- ELEFAN(
-   x = alba, method = "cross",
+   lfq = alba, method = "cross",
    Linf_range = seq(from = 10, to = 20, length.out = 20),
    K_range = exp(seq(from = log(0.1), to = log(2), length.out = 20)),
    cross.max = TRUE,
@@ -159,7 +175,7 @@ plot(fit2); points(alba$dates[7], alba$midLengths[9], col=2, cex=2, lwd=2)
 
 # 'optimise' method (default)
 fit3 <- ELEFAN(
-   x = alba, method = "optimise",
+   lfq = alba, method = "optimise",
    Linf_range = seq(from = 10, to = 20, length.out = 10),
    K_range = exp(seq(from = log(0.1), to = log(2), length.out = 20)),
    contour = TRUE
@@ -172,7 +188,7 @@ plot(fit3)
 
 # 'cross' method
 fit4 <- ELEFAN(
-   x = alba, method = "cross",
+   lfq = alba, method = "cross",
    Linf_fix = 10,
    K_range = round(exp(seq(from = log(0.1), to = log(2), length.out = 50)),2),
    cross.date = alba$dates[3], cross.midLength = alba$midLengths[4]

@@ -62,7 +62,7 @@ lfqCreate <- function(data, Lname, Dname, Fname = NA, bin_size = 1,
     }else{
         data$freq <- rep(1,nrow(data))
     }
-    if(class(data$date) != "Date") stop(noquote("Please provide the date as 'Date' class (e.g. as.Date())."))
+    if(!inherits(data$date,"Date")) stop(noquote("Please provide the date as 'Date' class (e.g. as.Date())."))
 
     # convert length if necessary
     if(length_unit == "m") data$length <- data$length * 100
@@ -95,10 +95,10 @@ lfqCreate <- function(data, Lname, Dname, Fname = NA, bin_size = 1,
 
     # order according to date
     data2 <- data2[order(data2$date),]
-    
+
 
     listi <- vector("list",length(unique(data2$date)))
-    LF_dat <- data.frame(bin = bin.breaks)    
+    LF_dat <- data.frame(bin = bin.breaks)
     for(i in 1:length(unique(data2$date))){
 
         sampli <- unique(data2$date)[i]

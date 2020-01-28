@@ -119,7 +119,7 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
              max(xplot[which(yplot > 0)], na.rm = TRUE)+0.5)
   }else xlims <- xlim
 
-  if(class(Z_lm1List) == "list"){
+  if(inherits(Z_lm1List,"list")){
       reg_num <- length(Z_lm1List)
   }else{
       reg_num <- 1
@@ -167,22 +167,22 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
               Z_lm1 <- Z_lm1List[[I]]
               SE_Z_lm1 <- SE_Z_lm1List[[I]]
           }else{
-              if(class(lm1List)=="list"){
+              if(inherits(lm1List,"list")){
                   lm1 <- lm1List[[I]]
               }else{
                   lm1 <- lm1List
               }
-              if(class(reg_intList)=="list"){
+              if(inherits(reg_intList,"list")){
                   reg_int <- reg_intList[[I]]
               }else{
                   reg_int <- reg_intList
               }
-              if(class(Z_lm1List)=="list"){
+              if(inherits(Z_lm1List,"list")){
                   Z_lm1 <- Z_lm1List[[I]]
               }else{
                   Z_lm1 <- Z_lm1List
               }
-              if(class(SE_Z_lm1List)=="list"){
+              if(inherits(SE_Z_lm1List,"list")){
                   SE_Z_lm1 <- SE_Z_lm1List[[I]]
               }else{
                   SE_Z_lm1 <- SE_Z_lm1List
@@ -279,22 +279,22 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
               Z_lm1 <- Z_lm1List[[I]]
               SE_Z_lm1 <- SE_Z_lm1List[[I]]
           }else{
-              if(class(lm1List)=="list"){
+              if(inherits(lm1List,"list")){
                   lm1 <- lm1List[[I]]
               }else{
                   lm1 <- lm1List
               }
-              if(class(reg_intList)=="list"){
+              if(inherits(reg_intList,"list")){
                   reg_int <- reg_intList[[I]]
               }else{
                   reg_int <- reg_intList
               }
-              if(class(Z_lm1List)=="list"){
+              if(inherits(Z_lm1List,"list")){
                   Z_lm1 <- Z_lm1List[[I]]
               }else{
                   Z_lm1 <- Z_lm1List
               }
-              if(class(SE_Z_lm1List)=="list"){
+              if(inherits(SE_Z_lm1List,"list")){
                   SE_Z_lm1 <- SE_Z_lm1List[[I]]
               }else{
                   SE_Z_lm1 <- SE_Z_lm1List
@@ -313,4 +313,3 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
     }
   }
 }
-

@@ -4,8 +4,14 @@
 \alias{plot.recruitment}
 \title{Plot of recruitment patterns}
 \usage{
-\method{plot}{recruitment}(x, percent = TRUE, col = "darkgreen",
-  xtitle = "default", ytitle = "default", ...)
+\method{plot}{recruitment}(
+  x,
+  percent = TRUE,
+  col = "darkgreen",
+  xtitle = "default",
+  ytitle = "default",
+  ...
+)
 }
 \arguments{
 \item{x}{list of the class \code{"recruitment"}}

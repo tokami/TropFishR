@@ -4,8 +4,13 @@
 \alias{powell_wetherall}
 \title{Powell-Wetherall method}
 \usage{
-powell_wetherall(param, catch_columns = NA, savePlots = FALSE,
-  reg_int = NULL, main = "Powell-Wetherall plot")
+powell_wetherall(
+  param,
+  catch_columns = NA,
+  savePlots = FALSE,
+  reg_int = NULL,
+  main = "Powell-Wetherall plot"
+)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:

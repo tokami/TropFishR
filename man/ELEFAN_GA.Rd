@@ -4,15 +4,31 @@
 \alias{ELEFAN_GA}
 \title{ELEFAN_GA}
 \usage{
-ELEFAN_GA(x, seasonalised = FALSE, low_par = NULL, up_par = NULL,
-  popSize = 50, maxiter = 100, run = maxiter, parallel = FALSE,
-  pmutation = 0.1, pcrossover = 0.8, elitism = base::max(1, round(popSize
-  * 0.05)), MA = 5, addl.sqrt = FALSE, agemax = NULL,
-  flagging.out = TRUE, seed = NULL, monitor = FALSE, plot = FALSE,
-  plot.score = TRUE, ...)
+ELEFAN_GA(
+  lfq,
+  seasonalised = FALSE,
+  low_par = NULL,
+  up_par = NULL,
+  popSize = 50,
+  maxiter = 100,
+  run = maxiter,
+  parallel = FALSE,
+  pmutation = 0.1,
+  pcrossover = 0.8,
+  elitism = base::max(1, round(popSize * 0.05)),
+  MA = 5,
+  addl.sqrt = FALSE,
+  agemax = NULL,
+  flagging.out = TRUE,
+  seed = NULL,
+  monitor = FALSE,
+  plot = FALSE,
+  plot.score = TRUE,
+  ...
+)
 }
 \arguments{
-\item{x}{a list consisting of following parameters:
+\item{lfq}{a list consisting of following parameters:
 \itemize{
   \item \strong{midLengths} midpoints of the length classes,
   \item \strong{dates} dates of sampling times (class Date),

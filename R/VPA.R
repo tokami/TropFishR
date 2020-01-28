@@ -159,10 +159,10 @@ VPA <- function(param,
     classes <- as.character(res$age)
 
     # Error message if catch and age do not have same length
-    if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
+    if(inherits(catch,'matrix') || inherits(catch,'data.frame')){
       #if(length(classes) != length(catch[,1])) stop("Age/length classes and catch do not have the same length!")
       if(length(classes) != length(diag(as.matrix(catch)))) warning("Age/length classes and the real cohort in the catch matrix do not have the same length. The missing age/length classes will be omitted.")
-      }else if(class(catch) == 'numeric'){
+      }else if(inherits(catch,'numeric')){
       if(length(classes) != length(catch)) stop("Age/length classes and catch do not have the same length!")
     }
 
@@ -192,7 +192,7 @@ VPA <- function(param,
     classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
     classes.num <- as.numeric(classes.num[,1])
 
-    if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
+      if(inherits(catch,"matrix") || inherits(catch,"data.frame")){
       writeLines(noquote("A catch matrix was provided: The VPA/CA will follow the 'real' cohort, assuming yearly intervals in the catch matrix. If you want to perform the VPA/CA with a pseudo cohort please use the argument 'catch_columns' specifying which column(s) of the catch matrix to use."))
       #find cohort to analyse
       real.cohort <- diag(as.matrix(catch))
@@ -206,7 +206,7 @@ VPA <- function(param,
          M_vec <- M_vec[1:length(classes.num)]
        }
     }
-    if(class(catch) == 'numeric'){
+    if(inherits(catch,'numeric')){
       catch.cohort <- catch
     }
 
@@ -357,24 +357,23 @@ VPA <- function(param,
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
   #          LENGTH BASED VPA AND COHORT ANALYSIS            #
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
-  if("midLengths" %in% names(res) == TRUE &
-     (class(catch) == 'matrix' |
-      class(catch) == 'data.frame')){
+    if("midLengths" %in% names(res) == TRUE &&
+      (inherits(catch,"matrix") || inherits(catch,"data.frame"))){
     if(is.na(catch_columns[1])) stop("The length-based Cohort analysis is not applicable to length frequency data. Please provide catch as vector or use the argument 'catch_columns'.")
     if(!is.na(catch_columns[1])){
       catch <- rowSums(catch)
     }
   }
 
-  if((class(catch) == 'numeric' | class(catch) == 'integer') &
+  if((inherits(catch,'numeric') || inherits(catch,'integer')) &&
      "midLengths" %in% names(res) == TRUE){
 
     classes <- as.character(res$midLengths)
 
-    # Error message if catch and age do not have same length
-    if(class(catch) == 'matrix' | class(catch) == 'data.frame'){
+      # Error message if catch and age do not have same length
+      if(inherits(catch,"matrix") || inherits(catch,"data.frame")){
       if(length(classes) != length(catch[,1])) stop("Midlengths and catch do not have the same length!")
-    }else if(class(catch) == 'numeric'){
+    }else if(inherits(catch,'numeric')){
       if(length(classes) != length(catch)) stop("Midlengths and catch do not have the same length!")
     }
 

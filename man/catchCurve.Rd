@@ -4,9 +4,16 @@
 \alias{catchCurve}
 \title{Catch curve}
 \usage{
-catchCurve(param, catch_columns = NA, cumulative = FALSE,
-  calc_ogive = FALSE, reg_int = NULL, reg_num = 1, auto = FALSE,
-  plot = TRUE)
+catchCurve(
+  param,
+  catch_columns = NA,
+  cumulative = FALSE,
+  calc_ogive = FALSE,
+  reg_int = NULL,
+  reg_num = 1,
+  auto = FALSE,
+  plot = TRUE
+)
 }
 \arguments{
 \item{param}{a list consisting of following parameters:

@@ -31,7 +31,7 @@
 #' @param auto logical; no interactive functions used instead regression line is chosen
 #'    automatically. Default = FALSE
 #' @param plot logical; should a plot be displayed? Default = TRUE
-#' 
+#'
 #'
 #' @keywords function mortality Z catchCurve
 #'
@@ -193,8 +193,8 @@ catchCurve <- function(param,
   classes.num <- as.numeric(classes.num[,1])
 
   constant_dt <- FALSE
-  if(is.na(catch_columns[1]) & (class(res$catch) == 'matrix' |
-     class(res$catch) == 'data.frame')){
+  if(is.na(catch_columns[1]) && (inherits(res$catch,'matrix') ||
+     inherits(res$catch,'data.frame'))){
     writeLines("Please be aware that you provided the catch as a matrix without specifiying any columns for \n the analysis. In this case the methods applies by default the catch curve with constant \n parameter system (refer to the help file for more information).")
     flush.console()
     constant_dt <- TRUE
@@ -242,7 +242,7 @@ catchCurve <- function(param,
       catch <- c(real.cohort, rep(NA,length(classes.num) - length(real.cohort)))
     }
 
-  }else if(class(catch) == 'numeric'){
+  }else if(inherits(catch,'numeric')){
     if(length(classes) != length(catch)) stop(noquote(
       "Age/length classes and catch vector do not have the same length!"))
   }
@@ -254,7 +254,7 @@ catchCurve <- function(param,
             K <- res$par$K
             t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
             C <- ifelse("C" %in% names(res$par), res$par$C, 0)
-            ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)            
+            ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)
         }else{
             Linf <- res$Linf
             K <- res$K
@@ -262,7 +262,7 @@ catchCurve <- function(param,
             C <- ifelse("C" %in% names(res), res$C, 0)
             ts <- ifelse("ts" %in% names(res), res$ts, 0)
         }
-        
+
     if((is.null(Linf) | is.null(K))) stop(noquote(
       "You need to assign values to Linf and K for the catch curve based on length-frequency data!"))
 
@@ -392,7 +392,7 @@ catchCurve <- function(param,
                   oma = c(2, 1, 0, 1) + 0.1)
         plot(x = xvar,y = yvar, ylim = c(minY,maxY), xlim = xlims,
              xlab = xlabel, ylab = ylabel, type = "n")
-        
+
         ## plot previous regression lines when using multiple regression lines
         if(I > 1){
             for(II in 1:(I-1)){
@@ -415,15 +415,15 @@ catchCurve <- function(param,
         ## save results to list
         cutterList[[I]] <- cutter
     }
-    
+
 
   }
-    
+
 
     if(!is.null(reg_int)){
         cutterList <- reg_int
-        if(class(cutterList) != "list" && length(cutterList) != 2) stop("You have to provide 2 numbers in reg_int.")
-        if(class(cutterList) == "list" && any(unlist(lapply(cutterList,length)) != 2)) stop("You have to provide 2 numbers in reg_int.")
+        if(!inherits(cutterList,"list") && length(cutterList) != 2) stop("You have to provide 2 numbers in reg_int.")
+        if(inherits(cutterList,"list") && any(unlist(lapply(cutterList,length)) != 2)) stop("You have to provide 2 numbers in reg_int.")
     }
 
     if(auto){
@@ -444,7 +444,7 @@ catchCurve <- function(param,
 
     for(I in 1:reg_num){
 
-        if(class(cutterList) == "list"){
+        if(inherits(cutterList,"list")){
             cutter <- cutterList[[I]]
         }else{
             cutter <- cutterList
@@ -480,7 +480,7 @@ catchCurve <- function(param,
         conf_Z_lm1List[[I]] <- conf_Z_lm1
         intercept_lm1List[[I]] <- intercept_lm1
     }
-    
+
     ##save all in list
     if(reg_num > 1){
         ret <- c(res,list(
@@ -490,7 +490,7 @@ catchCurve <- function(param,
                          linear_mod = lm1List,
                          Z =  Z_lm1List,
                          se = SE_Z_lm1List,
-                         confidenceInt = conf_Z_lm1List))        
+                         confidenceInt = conf_Z_lm1List))
     }else{
         ret <- c(res,list(
                          xvar = xvar,
@@ -501,7 +501,7 @@ catchCurve <- function(param,
                          se = unlist(SE_Z_lm1List),
                          confidenceInt = unlist(conf_Z_lm1List)))
     }
-    
+
     if("M" %in% names(ret) && length(ret$M)==1){
         ret$FM <- lapply(ret$Z, function(x) x - ret$M)
     }
@@ -523,8 +523,7 @@ catchCurve <- function(param,
         ## only use part of catch and t which is not fully exploited by the gear
         t_ogive <- xvar[1:(cutter[1]-1)]
         dt_ogive <- dt[1:(cutter[1]-1)]
-        if("age" %in% names(res) == TRUE &
-           class(catch) == 'matrix' | class(catch) == 'data.frame'){
+        if("age" %in% names(res) == TRUE && (inherits(catch,'matrix') || inherits(catch,'data.frame'))){
           catch_ogive <- catch[1:(cutter[1]-1)] ## catch.cohort
         }else catch_ogive <- catch[1:(cutter[1]-1)]
 

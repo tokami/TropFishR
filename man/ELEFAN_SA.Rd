@@ -4,14 +4,27 @@
 \alias{ELEFAN_SA}
 \title{ELEFAN_SA}
 \usage{
-ELEFAN_SA(x, seasonalised = FALSE, init_par = list(Linf = 50, K = 0.5,
-  t_anchor = 0.5, C = 0, ts = 0), low_par = NULL, up_par = NULL,
-  SA_time = 60 * 1, maxit = NULL, nb.stop.improvement = NULL,
-  SA_temp = 1e+05, verbose = TRUE, MA = 5, addl.sqrt = FALSE,
-  agemax = NULL, flagging.out = TRUE, plot = FALSE, plot.score = TRUE)
+ELEFAN_SA(
+  lfq,
+  seasonalised = FALSE,
+  init_par = list(Linf = 50, K = 0.5, t_anchor = 0.5, C = 0, ts = 0),
+  low_par = NULL,
+  up_par = NULL,
+  SA_time = 60 * 1,
+  maxit = NULL,
+  nb.stop.improvement = NULL,
+  SA_temp = 1e+05,
+  verbose = TRUE,
+  MA = 5,
+  addl.sqrt = FALSE,
+  agemax = NULL,
+  flagging.out = TRUE,
+  plot = FALSE,
+  plot.score = TRUE
+)
 }
 \arguments{
-\item{x}{a list consisting of following parameters:
+\item{lfq}{a list consisting of following parameters:
 \itemize{
   \item \strong{midLengths} midpoints of the length classes,
   \item \strong{dates} dates of sampling times (class Date),
