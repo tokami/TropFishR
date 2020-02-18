@@ -1,4 +1,4 @@
-## ----ReaddataLoadLibraries, message=FALSE, include=FALSE, echo=FALSE-----
+## ----ReaddataLoadLibraries, message=FALSE, include=FALSE, echo=FALSE----------
 knitr::opts_chunk$set(echo = TRUE,
                       cache = FALSE,
                       warning = FALSE,
@@ -12,18 +12,18 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.show = "hold",
                       fig.width=8, fig.height=7)
 
-## ---- echo = TRUE, include = TRUE, eval = FALSE--------------------------
+## ---- echo = TRUE, include = TRUE, eval = FALSE-------------------------------
 #  install.packages("TropFishR", repos = "https://cran.rstudio.com/")
 
-## ---- eval=FALSE, echo=TRUE----------------------------------------------
+## ---- eval=FALSE, echo=TRUE---------------------------------------------------
 #  library(devtools)
 #  install_github("tokami/TropFishR", ref="master")
 #  library(TropFishR)
 
-## ---- eval=TRUE, echo=FALSE----------------------------------------------
+## ---- eval=TRUE, echo=FALSE---------------------------------------------------
 library(TropFishR)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 data("synLFQ7")
 
 ## ----Figure 1, echo=TRUE, eval=TRUE, fig.cap="Length frequency data visualised in terms of (a) catches and (b) restructured data with MA = 7."----
@@ -48,7 +48,7 @@ res_PW <- powell_wetherall(lfq = synLFQ7a,
 # show results
 paste("Linf =",round(res_PW$par$Linf_est), "±", round(res_PW$se_Linf))
 
-## ---- include=TRUE, eval = FALSE, echo=TRUE------------------------------
+## ---- include=TRUE, eval = FALSE, echo=TRUE-----------------------------------
 #  # ELEFAN with K-Scan
 #  res_KScan <- ELEFAN(synLFQ7a, Linf_fix = res_PW$par$Linf_est,
 #                      MA=5, addl.sqrt = TRUE, hide.progressbar = TRUE)
@@ -56,7 +56,7 @@ paste("Linf =",round(res_PW$par$Linf_est), "±", round(res_PW$se_Linf))
 #  # show results
 #  res_KScan$par; res_KScan$Rn_max
 
-## ----Figure 3, fig.width=8, eval = FALSE---------------------------------
+## ----Figure 3, fig.width=8, eval = FALSE--------------------------------------
 #  # Response surface analyss
 #  res_RSA <- ELEFAN(synLFQ7a, Linf_range = seq(119,139,1), MA = 5,
 #                    K_range = seq(0.01,2,0.1), addl.sqrt = TRUE,
@@ -65,7 +65,7 @@ paste("Linf =",round(res_PW$par$Linf_est), "±", round(res_PW$se_Linf))
 #  # show results
 #  res_RSA$par; res_RSA$Rn_max
 
-## ---- eval = FALSE, echo=TRUE, include=TRUE------------------------------
+## ---- eval = FALSE, echo=TRUE, include=TRUE-----------------------------------
 #  # find 3 highest score values
 #  n <- length(res_RSA$score_mat)
 #  best_scores <- sort(res_RSA$score_mat,partial=n-0:2)[n-0:2]
@@ -97,7 +97,7 @@ res_SA <- ELEFAN_SA(synLFQ7a, SA_time = 60*0.5, SA_temp = 6e5,
 # show results
 res_SA$par; res_SA$Rn_max
 
-## ---- eval = FALSE, echo = TRUE------------------------------------------
+## ---- eval = FALSE, echo = TRUE-----------------------------------------------
 #  JK <- vector("list", length(synLFQ7a$dates))
 #  for(i in 1:length(synLFQ7a$dates)){
 #    loop_data <- list(dates = synLFQ7a$dates[-i],
@@ -143,11 +143,11 @@ lt <- lfqFitCurves(synLFQ7a, par = res_SA$par,
 lt <- lfqFitCurves(synLFQ7a, par = res_GA$par,
                    draw = TRUE, col = "darkgreen", lty = 1, lwd=1.5)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # assign estimates to the data list
 synLFQ7a$par <- res_GA$par
 
-## ---- echo=TRUE----------------------------------------------------------
+## ---- echo=TRUE---------------------------------------------------------------
 # estimation of M
 synLFQ7b <- M_empirical(synLFQ7a, method = "Then_growth")
 
@@ -157,7 +157,7 @@ synLFQ7c <- lfqModify(synLFQ7b, vectorise_catch = TRUE, plus_group = "Linf")
 # run catch curve
 synLFQ7d <- catchCurve(synLFQ7c, reg_int = c(8,26), calc_ogive = TRUE)
 
-## ---- echo=FALSE, eval=TRUE----------------------------------------------
+## ---- echo=FALSE, eval=TRUE---------------------------------------------------
 paste("Z =",round(synLFQ7d$par$Z,2))
 paste("FM =",round(synLFQ7d$par$FM,2))
 paste("E =",round(synLFQ7d$par$E,2))

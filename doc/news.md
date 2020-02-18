@@ -1,18 +1,25 @@
-### TropFishR 1.6.2
-    
+### TropFishR 1.6.3
+
 ---
 
+
 ##### New features
+    - bestCC function
+    - catchCurvePrep added
+    - SPR added
+    - bootstrapping ELEFAN?
+    - stoch M Then?
 
 
 ##### User-visible changes
-      - argument "x" of all ELEFAN functions (ELEFAN, ELEFAN\_GA, and
-        ELEFAN\_SA) was changed to lfq
-	  - Parameter "ta" was renamed to "ta"
-	  - All life-history parameters (e.g. Linf, K, M, a, b) are now
-        stored in a sub-list of the lfq list called "par" and can be
-        accessed with `lfq$par`
-		
+    - argument "x" of all ELEFAN functions (ELEFAN, ELEFAN\_GA, and
+      ELEFAN\_SA) was changed to lfq
+    - Parameter "ta" was renamed to "ta"
+    - All life-history parameters (e.g. Linf, K, M, a, b) are now
+      stored in a sub-list of the lfq list called "par" and can be
+      accessed with `lfq$par`
+    -
+
 
 ##### Documentation
       - Vignettes were updated
@@ -28,20 +35,30 @@
       - The structure of the R directory changed and functions for
         related analysis steps were collected in common R scripts
         (e.g. all ELEFAN functions are now in the R script "growth.R")
-      
+
 <br><br>
 
 
+### TropFishR 1.6.2
+
+---
+
+##### Bug fixes
+      - Use of matrices was adjusted to comply with new R matrix classes
+      - ELEFAN_GA was adjusted to use new arguments of the underlying GA::ga
+        function
+
+<br><br>
 
 
 ### TropFishR 1.6.1
-    
+
 ---
 
 ##### User-visible changes
       - All LBB related functions and vignettes have been removed
         again from the package due to problems stated by users
-      
+
 <br><br>
 
 
@@ -49,7 +66,7 @@
 
 
 ### TropFishR 1.6
-    
+
 ---
 
 ##### New features
@@ -67,39 +84,39 @@
 ##### Documentation
       - A new vignette "LBBmanual" with the introduction and
         demonstration of LBB within TropFishR has been added.
-      
+
 ##### Bug fixes
       - Seasonal growth parameters are now added correctly to the lfq
         object in lfqModify
-      
-      
+
+
 <br><br>
 
 
 
 ### TropFishR 1.2.1
-    
+
 ---
-	
+
 ##### Documentation
       - A new vignette has been added to the package. The vignette "ELEFANTutorial" outlines
       all ELEFAN functions available in TropFishR in detail.
-      
-      
+
+
 ##### Bug fixes
       - The ELEFAN functions did not overwrite any element of the lfq object but instead
       concatinated parameters onto the object. This can have unintended side effects, e.g. if several
       growth parameters are saved in the lfq object and the plotting functions are called.
       Now, the application of ELEFAN functions overwrites any growth parameters in the lfq object.
 
-      
+
 <br><br>
 
-	
+
 ### TropFishR 1.2
-    
+
 ---
-	
+
 ##### New features
       - Due to more efficient matrix computations ELEFAN is 2-4 times faster as before
       - missing seed values were added in ELEFAN_GA()
@@ -124,12 +141,12 @@
 
 ##### Documentation
       - new vignette with a short description of lfq data and
-      how to import lfq data into R 
+      how to import lfq data into R
       - updated tutorial vignette
       - more informative error and warning messages for many functions
       - document with news and changes about package version was added
 
-      
+
 ##### Bug fixes
       - crash report of ELEFAN_GA with interactive sessions (Rstudio) fixed
       and more stable on windows
@@ -140,4 +157,3 @@
       - when merging lfq data with another list using c() one has to reassign
       the class "lfq" to the merged object, this has been added in the tutorial
       - beep sound was causing R crashes on windows computers and was therefore removed
-

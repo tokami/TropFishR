@@ -1,4 +1,4 @@
-## ----ReaddataLoadLibraries, message=FALSE, include=FALSE, echo=FALSE-----
+## ----ReaddataLoadLibraries, message=FALSE, include=FALSE, echo=FALSE----------
 knitr::opts_chunk$set(echo = TRUE,
                       cache = FALSE,
                       warning = FALSE,
@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.show = "hold",
                       fig.width=8, fig.height=7)
 
-## ----eval=FALSE, echo = TRUE---------------------------------------------
+## ----eval=FALSE, echo = TRUE--------------------------------------------------
 #  lfq1 <- read.csv2("lfq1.csv")
 #  
 #  lfq1$date <- as.Date(lfq1$date, format = "%d.%m.%Y")
@@ -21,7 +21,7 @@ knitr::opts_chunk$set(echo = TRUE,
 #  
 #  plot(lfq1new, Fname = "catch")
 
-## ----eval=FALSE, echo = TRUE---------------------------------------------
+## ----eval=FALSE, echo = TRUE--------------------------------------------------
 #  lfq2 <- read.csv2("lfq2.csv")
 #  
 #  lfq2$date <- as.Date(lfq2$date, format = "%d/%m/%y")
@@ -30,7 +30,7 @@ knitr::opts_chunk$set(echo = TRUE,
 #  
 #  plot(lfq2new, Fname = "catch")
 
-## ----eval=FALSE, echo = TRUE---------------------------------------------
+## ----eval=FALSE, echo = TRUE--------------------------------------------------
 #  lfq3 <- read.csv2("lfq3.csv")
 #  
 #  dates <- colnames(lfq3)[-1]
@@ -46,7 +46,7 @@ knitr::opts_chunk$set(echo = TRUE,
 #  
 #  plot(lfq3new, Fname = "catch")
 
-## ----echo=TRUE, eval=FALSE-----------------------------------------------
+## ----echo=TRUE, eval=FALSE----------------------------------------------------
 #  lfq2a <- read.table("lfq2.txt", sep="\t", dec=',', fileEncoding="latin1", skipNul=TRUE)
 #  
 #  install.packages("openxlsx")

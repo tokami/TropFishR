@@ -1227,7 +1227,7 @@ Z_CPUE <- function(cpue, method = "standard", omit_age1 = FALSE){
 #'
 #' @references
 #' Pauly, D. (1990). Length-converted catch curves and the seasonal growth
-#'   of fishes. Fishbyte, 8(3), 33–38.
+#'   of fishes. Fishbyte, 8(3), 33-38.
 #'
 #' @examples
 #'
@@ -1422,7 +1422,7 @@ catchCurvePrep <- function(
 #'
 #' @references
 #' Pauly, D. (1990). Length-converted catch curves and the seasonal growth
-#'   of fishes. Fishbyte, 8(3), 33–38.
+#'   of fishes. Fishbyte, 8(3), 33-38.
 #'
 #' @examples
 #' # generate example data
@@ -1508,5 +1508,3 @@ bestCC <- function(fmla = formula(log(n)~rel.age),
   ))
 
 }
-
-

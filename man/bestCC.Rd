@@ -43,7 +43,7 @@ set.seed(1)
 n <- 10
 rel.age <- seq(n)
 logn <- 10 + -2*rel.age + rnorm(n, sd = 0.5)
-logn[1:2] <- logy[1:2] * c(0.5, 0.75)
+logn[1:2] <- logn[1:2] * c(0.5, 0.75)
 n <- exp(logn)
 df <- data.frame(n = n, rel.age = rel.age)
 plot(log(n) ~ rel.age, df)
@@ -65,5 +65,5 @@ abline(fit)
 }
 \references{
 Pauly, D. (1990). Length-converted catch curves and the seasonal growth
-  of fishes. Fishbyte, 8(3), 33–38.
+  of fishes. Fishbyte, 8(3), 33-38.
 }

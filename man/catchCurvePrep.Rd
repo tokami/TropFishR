@@ -112,5 +112,5 @@ abline(fit)
 }
 \references{
 Pauly, D. (1990). Length-converted catch curves and the seasonal growth
-  of fishes. Fishbyte, 8(3), 33–38.
+  of fishes. Fishbyte, 8(3), 33-38.
 }
