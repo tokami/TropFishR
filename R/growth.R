@@ -424,7 +424,7 @@ Bhattacharya <- function(lfq, n_rnorm = 1000, savePlots = FALSE){
         ## seperation index (SI)
         SIs <- rep(NA,length(l.s.df[,1]))
         for(i in 1:(length(l.s.df[,1])-1)){
-            SIs[i] <- abs(l.s.df[i+1,2]-l.s.df[i,2]) / abs(l.s.df[i+1,3]-l.s.df[i,3])
+            SIs[i] <- abs(l.s.df[i+1,2]-l.s.df[i,2]) / (abs(l.s.df[i+1,3] + l.s.df[i,3]) / 2)
         }
         l.s.df <- cbind(l.s.df,SIs)
         colnames(l.s.df) <- c("Cohort","Lmean","SD","SI")
@@ -2722,4 +2722,3 @@ jackknife <- function(elefanFit){
 
     return(ret)
 }
-
