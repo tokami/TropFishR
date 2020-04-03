@@ -2,11 +2,15 @@
 title: "Using the TropFishR ELEFAN functions"
 author: "Marc H. Taylor"
 date: "`r Sys.Date()`"
-output: 
+output:
   rmarkdown::html_vignette:
     fig_caption: yes
     number_sections: true
     df_print: kable
+  pdf_document:
+    number_sections: false
+    toc: false
+    keep_tex: false
 vignette: >
   %\VignetteIndexEntry{ELEFANTutorial}
   %\VignetteEngine{knitr::rmarkdown}
@@ -30,7 +34,7 @@ The growth model presently implemented within TropFishR is the von Bertalanffy g
 
 $$ L_{t} = L_{\infty} (1-\exp(-K(t-t_0))), $$
 
-where $L_t$ is length-at-age $t$, $L_\infty$ is asymptotic length, $K$ is the von Bertalanffy growth constant, and $t_0$ is the theoretical age when length equals zero. $t_0$ is usually negative, resulting in a positive length at the time of recruitment (t = 0). In TropFishR, these parameters are referred to as `Linf`, `K`, and `t0`. 
+where $L_t$ is length-at-age $t$, $L_\infty$ is asymptotic length, $K$ is the von Bertalanffy growth constant, and $t_0$ is the theoretical age when length equals zero. $t_0$ is usually negative, resulting in a positive length at the time of recruitment (t = 0). In TropFishR, these parameters are referred to as `Linf`, `K`, and `t0`.
 
 The following plot shows the basic form of the VBGF under varying K settings:
 
@@ -60,7 +64,7 @@ TropFishR also offers users the ability to model inter-annual variability in gro
 
 $$ L_{t} = L_{\infty} (1-\exp(-(K(t-t_0)+S(t)-S(t_0)))), $$
 
-where $S(t) = (CK/2\pi)\sin 2\pi(t−t_s)$, $C$ is a constant indicating the amplitude of the oscillation, typically ranging from 0 to 1 (a value $>1$ implies periods of shrinkage, which is rare), and $t_s$ is the fraction of a year (relative to the age of recruitment, $t=0$) where the sine wave oscillation begins (i.e. turns positive). In TropFishR, these additional oscillation parameters are written as `C` and `ts`.  
+where $S(t) = (CK/2\pi)\sin 2\pi(t-t_s)$, $C$ is a constant indicating the amplitude of the oscillation, typically ranging from 0 to 1 (a value $>1$ implies periods of shrinkage, which is rare), and $t_s$ is the fraction of a year (relative to the age of recruitment, $t=0$) where the sine wave oscillation begins (i.e. turns positive). In TropFishR, these additional oscillation parameters are written as `C` and `ts`.
 
 The following plot demonstrates the effect of variable $C$ settings:
 
@@ -79,7 +83,7 @@ abline(v=0, col = 8, lty = 3)
 abline(h = 20, col = 8, lty=3)
 ```
 
-Such variation in growth is common in many organisms, but may be more pronounced in temperate areas where intra-annual environmental variability is of larger magnitude (e.g. temperature, primary production). 
+Such variation in growth is common in many organisms, but may be more pronounced in temperate areas where intra-annual environmental variability is of larger magnitude (e.g. temperature, primary production).
 
 # Length-frequency data preparation
 
@@ -116,21 +120,21 @@ plot(alba, hist.sc = 0.75)
 ```
 
 ## Scoring of VGBF parameter combinations
-Depending on the restructuring settings, the distribution and amplitude of positive and negative scoring bins will be affected. The scoring procedure used in TropFishR follows that of FiSAT II, as outlined by @gayanilo_fao-iclarm_1997. For a given set of VBGF parameters, yearly repeating growth curves are drawn through the lfq data. Scoring is based on the concept of "peaks", which are runs of positive or negative scoring bins. Each peak takes the value of the largest absolute value contained within. 
+Depending on the restructuring settings, the distribution and amplitude of positive and negative scoring bins will be affected. The scoring procedure used in TropFishR follows that of FiSAT II, as outlined by @gayanilo_fao-iclarm_1997. For a given set of VBGF parameters, yearly repeating growth curves are drawn through the lfq data. Scoring is based on the concept of "peaks", which are runs of positive or negative scoring bins. Each peak takes the value of the largest absolute value contained within.
 
-The sum of all positive peaks is called the "available sum of peaks" (ASP), which represents a maximum possible score (if no negative bins are crossed). The "estimated sum of peaks" (ESP) is the sum of peak values crossed by the growth curves, with the caveat that positively crossed bins are only counted once (i.e. "flagged out") while negatively crossed bins are counted every time they are hit [@pauly_improving_1985]. 
+The sum of all positive peaks is called the "available sum of peaks" (ASP), which represents a maximum possible score (if no negative bins are crossed). The "estimated sum of peaks" (ESP) is the sum of peak values crossed by the growth curves, with the caveat that positively crossed bins are only counted once (i.e. "flagged out") while negatively crossed bins are counted every time they are hit [@pauly_improving_1985].
 
-Finally, as a measure of relative fit, the ratio of the two values is used to calculate "new R" (Rn), which can have a maximum value of 1.0: 
+Finally, as a measure of relative fit, the ratio of the two values is used to calculate "new R" (Rn), which can have a maximum value of 1.0:
 
 $$Rn = 10^{(ESP/ASP)}/10$$
 
-In the following plot, background shading shows runs of peaks, with positive peaks in blue, negative peaks in red, and values of zero in white.  
+In the following plot, background shading shows runs of peaks, with positive peaks in blue, negative peaks in red, and values of zero in white.
 ```{r}
 alba <- lfqRestructure(alba, MA=7)
-plot(alba, hist.col = c("white", "black"), 
+plot(alba, hist.col = c("white", "black"),
   image.col = c(rep(rgb(1,0.8,0.8),1000), "white", rep(rgb(0.8,0.8,1),1000)),
   ylim = c(0,max(alba$midLengths+0.5)))
-tmp <- lfqFitCurves(alba, par = list(Linf=11, K=2.5, ta=0.5), 
+tmp <- lfqFitCurves(alba, par = list(Linf=11, K=2.5, ta=0.5),
   draw = TRUE, col=4, lty=2)
 ```
 
@@ -140,9 +144,9 @@ In ELEFAN, *time* is used rather than *age*, and the point where the growth curv
 # Restricting the VBGF parameter search range
 
 ## Asymptotic length (Linf)
-Linf has been a historically difficult parameter to estimate with ELEFAN due to low counts at large sizes. One recommendation is to approximate Linf outside of ELEFAN, e.g. via a *Powell-Wetherall* plot, which may help to refine searches to a smaller range of possible values. We will see later that several maxima (high scoring regions) of the parameter search space can make the selection of a "best" combination difficult, so searches restricted to sensible values is recommended. 
+Linf has been a historically difficult parameter to estimate with ELEFAN due to low counts at large sizes. One recommendation is to approximate Linf outside of ELEFAN, e.g. via a *Powell-Wetherall* plot, which may help to refine searches to a smaller range of possible values. We will see later that several maxima (high scoring regions) of the parameter search space can make the selection of a "best" combination difficult, so searches restricted to sensible values is recommended.
 
-TropFishR includes the function `powell_wetherall`, which can be used to estimate Linf, including confidence intervals. The selection of length classes to include in the regression should be restricted to fully-exploited sizes that contain relatively large frequencies. In this example, both the smallest and largest sizes have been excluded, which results in Linf = 11.74cm and a confidence interval between 9.90 and 13.58cm. 
+TropFishR includes the function `powell_wetherall`, which can be used to estimate Linf, including confidence intervals. The selection of length classes to include in the regression should be restricted to fully-exploited sizes that contain relatively large frequencies. In this example, both the smallest and largest sizes have been excluded, which results in Linf = 11.74cm and a confidence interval between 9.90 and 13.58cm.
 
 ```{r}
 PW <- powell_wetherall(alba, catch_columns = 1:7, reg_int = c(2,9) )
@@ -150,15 +154,15 @@ PW$par$Linf_est
 PW$confidenceInt_Linf
 ```
 
-However, the Powell-Wetherall approach has been criticized for providing unreliable results in cases where lfq data spans a small range of length classes, or in severely depleted populations where large individuals are rare. Therefore, the results should be used with caution. 
+However, the Powell-Wetherall approach has been criticized for providing unreliable results in cases where lfq data spans a small range of length classes, or in severely depleted populations where large individuals are rare. Therefore, the results should be used with caution.
 
-Another approach may be to inform first guesstimates of Linf from other data sources, and allow ELEFAN a significant range of values for searching during VBGF fitting. @froese_empirical_2000 also showed strong correlation between the largest individuals (Lmax) and Linf, 
+Another approach may be to inform first guesstimates of Linf from other data sources, and allow ELEFAN a significant range of values for searching during VBGF fitting. @froese_empirical_2000 also showed strong correlation between the largest individuals (Lmax) and Linf,
 $$ \log(L_\infty) = 0.044 + 0.9841 * \log(L_{max}) $$
-, but Lmax may also be difficult to obtain in highly exploited populations.   
+, but Lmax may also be difficult to obtain in highly exploited populations.
 
 
 ## Growth constant (K)
-Following limiting the range for Linf, K is likely to be restricted automatically based on the quality of the lfq data. Nevertheless, viewing possible K values for similar species, or for the same species in other studies, may allow for restrictions in the search range. Generally, small, short-lived species will have higher values in K (e.g. > 1.5), while large, longer-lived species will have lower values (< 1.0).  
+Following limiting the range for Linf, K is likely to be restricted automatically based on the quality of the lfq data. Nevertheless, viewing possible K values for similar species, or for the same species in other studies, may allow for restrictions in the search range. Generally, small, short-lived species will have higher values in K (e.g. > 1.5), while large, longer-lived species will have lower values (< 1.0).
 
 
 
@@ -172,8 +176,8 @@ alba2 <- ELEFAN(
   Linf_range = seq(7, 20, length.out = 30),
   K_range = exp(seq(log(0.1),log(4), length.out = 30)),
   method = "cross",
-  cross.date = alba$dates[3], 
-  cross.midLength = alba$midLengths[5], 
+  cross.date = alba$dates[3],
+  cross.midLength = alba$midLengths[5],
   contour = TRUE, add.values = FALSE,
   hide.progressbar = TRUE # change to 'TRUE' to follow algorithm's progression
 )
@@ -183,7 +187,7 @@ alba2$Rn_max
 ```
 
 In the above plot, the highest Rn score is denoted by a red star symbol(*), although there exists a larger area of relatively similar scores. This is typical of an RSA plot, where a plateau of higher scores often forms
- along a banana-shaped area of negatively correlated K and Linf values, which generally follows an isocline of the growth performance index ($\phi' = \log(K)+ 2\log(L_{\infty})$). In the best case, a single maxima will stand out, revealing the best parameter combination, however this is usually rare. Nevertheless, a wide range of values can be visualized, allowing for reduced ranges in subsequent RSAs or refined searches via other algorithms (see following section below). 
+ along a banana-shaped area of negatively correlated K and Linf values, which generally follows an isocline of the growth performance index ($\phi' = \log(K)+ 2\log(L_{\infty})$). In the best case, a single maxima will stand out, revealing the best parameter combination, however this is usually rare. Nevertheless, a wide range of values can be visualized, allowing for reduced ranges in subsequent RSAs or refined searches via other algorithms (see following section below).
 
 The resulting best scoring combination is added to the lfq object in the `par` element, allowing for direct visualization via `plot.lfq`. In the following plot, the bin designated for crossing is denoted by a red star symbol(*):
 ```{r}
@@ -203,16 +207,16 @@ The first optimization algorithm offered in TropFishR is called "simulated annea
 ```{r}
 set.seed(1)
 alba3 <- ELEFAN_SA(
-  lfq = alba, 
-  seasonalised = FALSE, 
-  init_par = alba2$par[1:5], 
+  lfq = alba,
+  seasonalised = FALSE,
+  init_par = alba2$par[1:5],
   low_par = list(Linf=PW$confidenceInt_Linf[1], K=1, ta=0, ts=0, C=0),
-  up_par = list(Linf=PW$confidenceInt_Linf[2], K=4, ta=1, ts=1, C=1), 
+  up_par = list(Linf=PW$confidenceInt_Linf[2], K=4, ta=1, ts=1, C=1),
   SA_temp = 2e5,
   SA_time = 60,
   maxit = 400,
   MA = 7,
-  plot.score = TRUE, 
+  plot.score = TRUE,
   verbose = FALSE
 )
 unlist(alba3$par)
@@ -230,24 +234,24 @@ plot(alba3)
 
 ## Genetic algorithm (ELEFAN_GA)
 
-The second optimization algorithm offered in TropFishR is called "genetic algorithm" (`ELEFAN_GA`). The genetic algorithm uses the idea of natural selection to find best scoring parameter combinations. Parameters are treated like genes carried by *individuals* in the population carry. Individuals that have the highest *fitness* (i.e. Rn score) reproduce and recombine their parameter values in subsequent generations. Over time, the population will come to be dominated by individuals that have ever increasing fitness. As with `ELEFAN_SA`, the initial generations have parameters chosen at random within the defined intervals. Over time, the variability in the parameters gradually decreases becomes more focused on local maxima. 
+The second optimization algorithm offered in TropFishR is called "genetic algorithm" (`ELEFAN_GA`). The genetic algorithm uses the idea of natural selection to find best scoring parameter combinations. Parameters are treated like genes carried by *individuals* in the population carry. Individuals that have the highest *fitness* (i.e. Rn score) reproduce and recombine their parameter values in subsequent generations. Over time, the population will come to be dominated by individuals that have ever increasing fitness. As with `ELEFAN_SA`, the initial generations have parameters chosen at random within the defined intervals. Over time, the variability in the parameters gradually decreases becomes more focused on local maxima.
 
-Important settings include the number of individuals in the population (`popSize`), the probability of mutation in the parent gene (`pmutation`), the maximum number generations (`maxiter`), and, as a stopping rule, the maximum number of generations without improvement (`run`). The `pmutation` setting is usually set low, although higher values will increase the randomness of the search. Increasing `popSize` will increase the number of starting parameter combinations in the population, which will both increase the initial coverage of the parameter space as well as effect the degree of localized searching during later generations. 
+Important settings include the number of individuals in the population (`popSize`), the probability of mutation in the parent gene (`pmutation`), the maximum number generations (`maxiter`), and, as a stopping rule, the maximum number of generations without improvement (`run`). The `pmutation` setting is usually set low, although higher values will increase the randomness of the search. Increasing `popSize` will increase the number of starting parameter combinations in the population, which will both increase the initial coverage of the parameter space as well as effect the degree of localized searching during later generations.
 
 
 ```{r}
 set.seed(1)
 alba4 <- ELEFAN_GA(
-  lfq = alba, 
-  seasonalised = FALSE, 
+  lfq = alba,
+  seasonalised = FALSE,
   low_par = list(Linf=PW$confidenceInt_Linf[1], K=1, ta=0, ts=0, C=0),
-  up_par = list(Linf=PW$confidenceInt_Linf[2], K=4, ta=1, ts=1, C=1), 
+  up_par = list(Linf=PW$confidenceInt_Linf[2], K=4, ta=1, ts=1, C=1),
   popSize = 60,
   pmutation = 0.2,
   maxiter = 100,
   run = 20,
   MA = 7,
-  plot.score = TRUE, 
+  plot.score = TRUE,
   monitor = FALSE,
   parallel = FALSE
 )
@@ -276,16 +280,16 @@ The following examples demonstrate fitting of soVBGF to both `alba` and a synthe
 ```{r}
 set.seed(1)
 alba5 <- ELEFAN_GA(
-  lfq = alba, 
-  seasonalised = TRUE, 
+  lfq = alba,
+  seasonalised = TRUE,
   low_par = list(Linf=PW$confidenceInt_Linf[1], K=0.1, ta=0, ts=0, C=0),
-  up_par = list(Linf=PW$confidenceInt_Linf[2], K=4, ta=1, ts=1, C=1), 
+  up_par = list(Linf=PW$confidenceInt_Linf[2], K=4, ta=1, ts=1, C=1),
   popSize = 60,
   pmutation = 0.2,
   maxiter = 100,
   run = 20,
   MA = 7,
-  plot.score = TRUE, 
+  plot.score = TRUE,
   monitor = FALSE,
   parallel = FALSE
 )
@@ -298,27 +302,27 @@ In the case of the `alba` dataset, no real improvement in Rn is observed for the
 
 
 ### A synthetic example
-For the synthetic lfq dataset `synLFQ4`, the soVBGF parameters used in its generation are known: 
+For the synthetic lfq dataset `synLFQ4`, the soVBGF parameters used in its generation are known:
 ```{r}
 true_par <- list(Linf = 80, K = 0.5, ta = 0.25,C = 0.75,  ts = 0.5, phiL = 3.51)
 ```
 
-The dataset is significantly more detailed (72 length bins, 25 time samples) than `alba` (14 length bins, 7 time samples), and thus will take longer to solve. For such large lfq data sets, solution time may be reduced through use of parallel computing (i.e. `parallel = TRUE`).  From the previous work presented by @taylor_extending_2017, we know that a moving average setting of `MA = 11` is appropriate for this lfq data. 
+The dataset is significantly more detailed (72 length bins, 25 time samples) than `alba` (14 length bins, 7 time samples), and thus will take longer to solve. For such large lfq data sets, solution time may be reduced through use of parallel computing (i.e. `parallel = TRUE`).  From the previous work presented by @taylor_extending_2017, we know that a moving average setting of `MA = 11` is appropriate for this lfq data.
 
 
 ```{r}
 set.seed(1)
 synLFQ4 <- ELEFAN_GA(
-  lfq = synLFQ4, 
-  seasonalised = TRUE, 
+  lfq = synLFQ4,
+  seasonalised = TRUE,
   low_par = list(Linf=70, K=0.1, ta=0, ts=0, C=0),
-  up_par = list(Linf=110, K=1, ta=1, ts=1, C=1), 
+  up_par = list(Linf=110, K=1, ta=1, ts=1, C=1),
   popSize = 60,
   pmutation = 0.2,
   maxiter = 100,
   run = 20,
   MA = 11,
-  plot.score = TRUE, 
+  plot.score = TRUE,
   monitor = FALSE,
   parallel = FALSE
 )
@@ -336,7 +340,7 @@ tmp
 
 
 ```{r}
-plot(synLFQ4, draw = FALSE) 
+plot(synLFQ4, draw = FALSE)
 tmp <- lfqFitCurves(synLFQ4, par = true_par, col=8, lty=1, draw = TRUE)
 tmp <- lfqFitCurves(synLFQ4, par = synLFQ4$par, col=4, lty=2, draw = TRUE)
 legend("top", ncol=2, legend = c("true", "estimated"), col=c(8,4), lty=c(1,2))
@@ -351,16 +355,16 @@ The following example uses `ELEFAN_GA` with a variable mutation rate, which star
 
 ```{r}
 synLFQ4 <- ELEFAN_GA(
-  lfq = synLFQ4, 
-  seasonalised = TRUE, 
+  lfq = synLFQ4,
+  seasonalised = TRUE,
   low_par = list(Linf=70, K=0.1, ta=0, ts=0, C=0),
-  up_par = list(Linf=110, K=1, ta=1, ts=1, C=1), 
+  up_par = list(Linf=110, K=1, ta=1, ts=1, C=1),
   popSize = 60,
   pmutation = function(...) GA::ga_pmutation(..., p0=0.5, p=0.1),
   maxiter = 100,
   run = 20,
   MA = 11,
-  plot.score = TRUE, 
+  plot.score = TRUE,
   monitor = FALSE,
   parallel = FALSE
 )
@@ -373,7 +377,7 @@ synLFQ4 <- ELEFAN_GA(
 
 The following list highlights some existing best practices for using the ELEFAN approach:
 
-* `lfq` data 
+* `lfq` data
     + should contain relatively high counts that are representative of the length distribution of the population (in the best case) or catches.
     + should be sampled at regular intervals throughout the year, and at roughly the same sampling effort.
     + should cover a substantial degree of small length classes, as their relatively higher numbers and more apparent growth will aid in the fitting of the VBGF. A general rule-of-thumb could be that the smallest bins should start at at least 25\% of Linf.
@@ -387,8 +391,3 @@ The following list highlights some existing best practices for using the ELEFAN 
 
 
 # References
-
-
-
-
-

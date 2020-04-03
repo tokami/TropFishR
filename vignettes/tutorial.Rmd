@@ -3,14 +3,18 @@ title: "Single-species fish stock assessment with TropFishR"
 author: "Tobias K. Mildenberger"
 date: "`r Sys.Date()`"
 output:
-    rmarkdown::html_vignette:
+  rmarkdown::html_vignette:
     fig_caption: yes
     number_sections: true
     df_print: paged
     toc: true
     toc_depth: 2
     toc_float:
-      collapsed: false  
+      collapsed: false
+  pdf_document:
+    number_sections: false
+    toc: false
+    keep_tex: false
 vignette: >
   %\VignetteIndexEntry{StockAssessmentTutorial}
   %\VignetteEngine{knitr::rmarkdown}
@@ -33,7 +37,7 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.width=8, fig.height=7)
 ```
 
-This tutorial illustrates the application of the **`TropFishR`** package to perform a single-species fish stock assessment with length frequency (LFQ) data. According to @Sparre1998b, this includes following steps: (1) estimation of biological stock characteristics (growth and natural mortality), (2) exploration of fisheries aspects (exploitation rate and selectivity), (3) assessment of stock size and status. The order of the methods is important as they build upon each other in a sequential way. Data from literature might be used to skip a step in this workflow or to compare them to the outcomes of this routine. 
+This tutorial illustrates the application of the **`TropFishR`** package to perform a single-species fish stock assessment with length frequency (LFQ) data. According to @Sparre1998b, this includes following steps: (1) estimation of biological stock characteristics (growth and natural mortality), (2) exploration of fisheries aspects (exploitation rate and selectivity), (3) assessment of stock size and status. The order of the methods is important as they build upon each other in a sequential way. Data from literature might be used to skip a step in this workflow or to compare them to the outcomes of this routine.
 
 ###*Installing TropFishR*
 The current version of **`TropFishR`** (v1.6.1) requires R $>= 3.0.0$ and can be downloaded from CRAN as follows:
@@ -145,7 +149,7 @@ for(i in 1:3){
 results <- do.call(rbind, res_loop)
 ```
 
-Note that RSA does not allow to optimise over the parameters C and $t_s$ of the seasonalised VBGF (soVBGF). It only allows to compare the score of ELEFAN runs with manually fixed C and $t_s$ values. In contrast, the newly implemented ELEFAN method `ELEFAN_SA` using a simulated annealing algorithm [@Xiang2013] and `ELEFAN_GA` using genetic algorithms allow for the optimisation of the soVBGF [@Taylor2016]. The optimisation procedure in the simulated annealing algorithm gradually reduces the stochasticity of the search process as a function of the decreasing "temperature" value, which describes the probability of accepting worse conditions. In reference to the results of the Powell-Wetherall plot a second search within the range of `r {round(res_PW$par$Linf_est)}` ± 10 cm for $L_{inf}$ is conducted. The search space of K is limted by 0.01 and 1. 
+Note that RSA does not allow to optimise over the parameters C and $t_s$ of the seasonalised VBGF (soVBGF). It only allows to compare the score of ELEFAN runs with manually fixed C and $t_s$ values. In contrast, the newly implemented ELEFAN method `ELEFAN_SA` using a simulated annealing algorithm [@Xiang2013] and `ELEFAN_GA` using genetic algorithms allow for the optimisation of the soVBGF [@Taylor2016]. The optimisation procedure in the simulated annealing algorithm gradually reduces the stochasticity of the search process as a function of the decreasing "temperature" value, which describes the probability of accepting worse conditions. In reference to the results of the Powell-Wetherall plot a second search within the range of `r {round(res_PW$par$Linf_est)}` ± 10 cm for $L_{inf}$ is conducted. The search space of K is limted by 0.01 and 1.
 
 ```{r Figure 4,  fig.height=5, fig.width=5, eval=TRUE, results="hide", fig.cap="Score graph of the ELEFAN method with simulated annealing. Green dots indicate the runnning minimum value of the cost function, while blue dots indicate the mean score of each iteration. The red line shows the decline of the 'temperature' value, which describes the probability of accepting worse solutions as the parameter space is explored."}
 # run ELEFAN with simulated annealing
@@ -158,7 +162,7 @@ res_SA <- ELEFAN_SA(synLFQ7a, SA_time = 60*0.5, SA_temp = 6e5,
 res_SA$par; res_SA$Rn_max
 ```
 
-Note that the computing time can be controlled with the argument "SA_time" and the results might change when increasing the time, in case the stable optimum of the objective function was not yet reached^[Stable optimum is indicated by overlapping blue and green dots in the score graph.]. Due to the limitations of the vignette format the computation time was set to 0.5 minutes, which results already in acceptable results of $L_{inf}$ = `r {round(res_SA$par$Linf,2)}`, K = `r {round(res_SA$par$K,2)}`, $t_{anchor}$ = `r {round(res_SA$par$ta,2)}`, C = `r {round(res_SA$par$C,2)}`, and $t_s$ = `r {round(res_SA$par$ts,2)}` with a score value ($Rn_{max}$) of `r {round(res_SA$Rn_max,2)}`. I recommend to increase 'SA_time' to 3 - 5 minutes to increase chances of finding the stable optimum. The jack knife technique allows to estimate a confidence interval around the parameters of the soVBGF [@Quenouille1956; @Tukey1958; @Tukey1986]. This can be automated in R with following code: 
+Note that the computing time can be controlled with the argument "SA_time" and the results might change when increasing the time, in case the stable optimum of the objective function was not yet reached^[Stable optimum is indicated by overlapping blue and green dots in the score graph.]. Due to the limitations of the vignette format the computation time was set to 0.5 minutes, which results already in acceptable results of $L_{inf}$ = `r {round(res_SA$par$Linf,2)}`, K = `r {round(res_SA$par$K,2)}`, $t_{anchor}$ = `r {round(res_SA$par$ta,2)}`, C = `r {round(res_SA$par$C,2)}`, and $t_s$ = `r {round(res_SA$par$ts,2)}` with a score value ($Rn_{max}$) of `r {round(res_SA$Rn_max,2)}`. I recommend to increase 'SA_time' to 3 - 5 minutes to increase chances of finding the stable optimum. The jack knife technique allows to estimate a confidence interval around the parameters of the soVBGF [@Quenouille1956; @Tukey1958; @Tukey1986]. This can be automated in R with following code:
 
 ```{r, eval = FALSE, echo = TRUE}
 JK <- vector("list", length(synLFQ7a$dates))
@@ -317,4 +321,3 @@ If you have comments or questions please write an [email](mailto:t.k.mildenberge
 
 
 ##*References*
-

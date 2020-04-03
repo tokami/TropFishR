@@ -1,5 +1,6 @@
 Meta
 doc
+!inst/doc
 # History files
 .Rhistory
 .Rapp.history
