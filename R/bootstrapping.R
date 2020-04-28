@@ -783,9 +783,9 @@ vbgfCI_time <- function(res, CI = 95, agemax = NULL,
         par0 <- par_minus <- par_plus <- as.list(x[i,])
         par_minus$t_anchor <- par0$t_anchor-1
         par_plus$t_anchor <- par0$t_anchor+1
-        Lt0[,i] <- TropFishR::VBGF(param = par0, t = age)
-        Lt_minus[,i] <- TropFishR::VBGF(param = par_minus, t = age)
-        Lt_plus[,i] <- TropFishR::VBGF(param = par_plus, t = age)
+        Lt0[,i] <- TropFishR::VBGF(pars = par0, t = age)
+        Lt_minus[,i] <- TropFishR::VBGF(pars = par_minus, t = age)
+        Lt_plus[,i] <- TropFishR::VBGF(pars = par_plus, t = age)
     }
 
                                         # replace negative lengths with NA
@@ -808,7 +808,7 @@ vbgfCI_time <- function(res, CI = 95, agemax = NULL,
     for(i in seq(ncol(Lt))){
         par0 <- as.list(x[i,])
         par0$t_anchor <- par0$t_anchor + shift[i]
-        Lt[,i] <- TropFishR::VBGF(param = par0, t = agenew)
+        Lt[,i] <- TropFishR::VBGF(pars = par0, t = agenew)
     }
 
     for(i in seq(ncol(Lt))){
@@ -852,7 +852,7 @@ vbgfCI_time <- function(res, CI = 95, agemax = NULL,
     inCI <- as.data.frame(inCI)
 
     lines(
-        agenew, TropFishR::VBGF(param = as.list(max_dens), t = agenew),
+        agenew, TropFishR::VBGF(pars = as.list(max_dens), t = agenew),
         col = maxd.col, lwd = maxd.lwd, lty = maxd.lty
     )
 
@@ -1689,9 +1689,9 @@ plotBoot <- function(lfq,    ## lfq object
             par0 <- par_minus <- par_plus <- as.list(x[i,])
             par_minus$t_anchor <- par0$t_anchor-1
             par_plus$t_anchor <- par0$t_anchor+1
-            Lt0[,i] <- TropFishR::VBGF(param = par0, t = age)
-            Lt_minus[,i] <- TropFishR::VBGF(param = par_minus, t = age)
-            Lt_plus[,i] <- TropFishR::VBGF(param = par_plus, t = age)
+            Lt0[,i] <- TropFishR::VBGF(pars = par0, t = age)
+            Lt_minus[,i] <- TropFishR::VBGF(pars = par_minus, t = age)
+            Lt_plus[,i] <- TropFishR::VBGF(pars = par_plus, t = age)
         }
 
         ## replace negative lengths with NA
@@ -1715,7 +1715,7 @@ plotBoot <- function(lfq,    ## lfq object
         for(i in seq(ncol(Lt))){
             par0 <- as.list(x[i,])
             par0$t_anchor <- par0$t_anchor + shift[i]
-            Lt[,i] <- TropFishR::VBGF(param = par0, t = agenew)
+            Lt[,i] <- TropFishR::VBGF(pars = par0, t = agenew)
         }
 
 
@@ -1750,7 +1750,7 @@ plotBoot <- function(lfq,    ## lfq object
             lines(xvals, limCI$min, col = ci.col, lwd = ci.lwd, lty = ci.lty)
 
             lines(xvals,
-                  TropFishR::VBGF(param = as.list(max_dens), t = agenew),
+                  TropFishR::VBGF(pars = as.list(max_dens), t = agenew),
                   col = maxd.col, lwd = maxd.lwd, lty = maxd.lty)
         }
 
@@ -1798,14 +1798,14 @@ plotBoot <- function(lfq,    ## lfq object
         lowerLengths <- midLengths - (interval / 2)
         ## seasonalised
         if("C" %in% names(grPars)){
-            t_midL <- VBGF(param = list(Linf = grPars[1], K = grPars[2],
+            t_midL <- VBGF(pars = list(Linf = grPars[1], K = grPars[2],
                                         t0 = 0, C=grPars[4], ts=grPars[5]), L = midLengths)
-            t_L1 <- VBGF(param = list(Linf = grPars[1], K = grPars[2],
+            t_L1 <- VBGF(pars = list(Linf = grPars[1], K = grPars[2],
                                       t0 = 0, C=grPars[4], ts=grPars[5]), L = lowerLengths)
         }else{
-            t_midL <- VBGF(param = list(Linf = grPars[1], K = grPars[2],
+            t_midL <- VBGF(pars = list(Linf = grPars[1], K = grPars[2],
                                         t0 = 0), L = midLengths)
-            t_L1 <- VBGF(param = list(Linf = grPars[1], K = grPars[2],
+            t_L1 <- VBGF(pars = list(Linf = grPars[1], K = grPars[2],
                                       t0 = 0), L = lowerLengths)
         }
 
