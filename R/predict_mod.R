@@ -301,7 +301,7 @@ predict_mod <- function(
                         natMort = NULL,
                         yearSel = NA,
                         yearCombine = FALSE,
-                        binSize = NA,  
+                        binSize = NA,
                         CI = 95
                         ){
     res <- param
@@ -340,13 +340,13 @@ predict_mod <- function(
         Fmax <- vector("numeric",nrow(bootRaw))
         F05 <- vector("numeric",nrow(bootRaw))
         F04 <- vector("numeric",nrow(bootRaw))
-        SPR <- vector("numeric",nrow(bootRaw))        
+        SPR <- vector("numeric",nrow(bootRaw))
         totYs <- vector("list",nrow(bootRaw))
         meanBs <- vector("list",nrow(bootRaw))
         nmaxs <- vector("numeric",nrow(bootRaw))
         n01s <- vector("numeric",nrow(bootRaw))
         n05s <- vector("numeric",nrow(bootRaw))
-        n04s <- vector("numeric",nrow(bootRaw))                
+        n04s <- vector("numeric",nrow(bootRaw))
         for(bi in 1:nrow(bootRaw)){
 
             lfqTemp <- lfqAll[[bi]]
@@ -370,8 +370,8 @@ predict_mod <- function(
             }
 
 
-            if(yearCombine) lfqLoop$catch <- rowSums(lfqLoop$catch)
-            
+            if(yearCombine && inherits(lfqLoop$catch, "matrix")) lfqLoop$catch <- rowSums(lfqLoop$catch)
+
             ## error if lfq data spans several years!
             if(class(lfqLoop$catch) == "matrix") stop("The lfq data spans several years, please subset for one year at a time!")
 
@@ -382,9 +382,16 @@ predict_mod <- function(
             C <- ifelse("C" %in% names(bootRaw),bootRaw$C[bi],0)
             ts <- ifelse("ts" %in% names(bootRaw),bootRaw$ts[bi],0)
             t0 <- 0
-            Lmat <- ifelse("Lmat" %in% names(lfq$par),lfq$par$Lmat,NA)
-            wmat <- ifelse("wmat" %in% names(lfq$par),lfq$par$wmat,NA)            
-
+            if("Lmat" %in% names(lfq$par)){
+                Lmat <- lfq$par$Lmat
+            }else if("Lmat" %in% names(lfq)){
+                Lmat <- lfq$Lmat
+            }else Lmat <- NA
+            if("wmat" %in% names(lfq$par)){
+                wmat <- lfq$par$wmat
+            }else if("wmat" %in% names(lfq)){
+                wmat <- lfq$wmat
+            }else wmat <- NA
             if(!(natMort %in% names(bootRaw))) stop("Please provide a natural mortality estimate 'M' in the boot object.")
             M <- bootRaw[bi,which(colnames(bootRaw) == natMort)] ## vector with Ms not yet implemented for boot YPR
 
@@ -483,12 +490,12 @@ predict_mod <- function(
                        bootRaw$L50[bi] == bootRaw$L75[bi]){
                         s_list <- list(selecType = "knife_edge",
                                    L50 = bootRaw$L50[bi])
-                        selecType = s_list$selecType                        
+                        selecType = s_list$selecType
                     }else{
                         s_list <- list(selecType = "trawl_ogive",
                                        L50 = bootRaw$L50[bi],
                                        L75 = bootRaw$L75[bi])
-                        selecType = s_list$selecType                        
+                        selecType = s_list$selecType
                     }
                     if(is.na(bootRaw$L50[bi]) | is.nan(bootRaw$L50[bi]) |
                        is.null(bootRaw$L50[bi]) | bootRaw$L50[bi] == Inf |
@@ -517,7 +524,7 @@ predict_mod <- function(
                 lfqLoop$par$b <- b
                 lfqLoop$par$Lmat <- Lmat
                 lfqLoop$par$wmat <- wmat
-                
+
                 ## prediction based on f_change
                 pred_mat <- as.matrix(FMvec/max(FMvec, na.rm = TRUE)) %*% FM_change
                 pred_res_list <- vector("list", length(FM_change))
@@ -549,24 +556,34 @@ predict_mod <- function(
                 spr <- pred_res_df$SPR
                 ypr <- pred_res_df$totY
                 bpr <- pred_res_df$meanB
-                splSPR <- smooth.spline(x = FM_change, y = spr, spar = 0.4)                
+                if(!is.na(Lmat) && !is.na(wmat)){
+                    splSPR <- smooth.spline(x = FM_change, y = spr, spar = 0.4)
+                }
                 splYPR <- smooth.spline(x = FM_change, y = ypr, spar = 0.4)
                 splBPR <- smooth.spline(x = FM_change, y = bpr, spar = 0.4)
                 newdat <- data.frame(F=seq(0,5,length.out = 500))
                 newdat$YPR <- predict(splYPR, x=newdat$F)$y
                 newdat$YPR.d1 <- predict(splYPR, x=newdat$F, deriv = 1)$y
                 newdat$BPR <- predict(splBPR, x=newdat$F)$y
-                newdat$SPR <- predict(splSPR, x=newdat$F)$y
+                if(!is.na(Lmat) && !is.na(wmat)){
+                    newdat$SPR <- predict(splSPR, x=newdat$F)$y
+                }else{
+                    newdat$SPR <- NA
+                }
                 Nmax <- which.max(newdat$YPR)
 ##                Fmax <- newdat[Nmax,1]
 ##                Emax <- Fmax/Z
                 N01 <- which.min(((newdat$YPR.d1/newdat$YPR.d1[1])-0.1)^2)
              ##   F01 <- newdat[N01,1]
-##                E01 <- F01/Z 
+##                E01 <- F01/Z
                 N05 <- which.min((newdat$BPR - newdat$BPR[1]/2)^2)
 ##                F05 <- newdat[N05,1]
-##                E05 <- F05/Z
-                N04 <- which.min((newdat$SPR - 0.4)^2)
+                ##                E05 <- F05/Z
+                if(!is.na(Lmat) && !is.na(wmat)){
+                    N04 <- which.min((newdat$SPR - 0.4)^2)
+                }else{
+                    N04 <- NA
+                }
 ##                F04 <- newdat[N04,1]
 ##                E04 <- F04/Z
 
@@ -601,7 +618,7 @@ predict_mod <- function(
                     dif <- abs(slopes - slope01)
                     dif[is.na(dif)] <- 1e+11
                     difpot <- dif[1:Nmax]
-                    N01 <- which.min(difpot)                
+                    N01 <- which.min(difpot)
                     ## F05
                     Bper <- rep(NA,length(pred_res_df$meanB))
                     Bper[1] <- 100
@@ -649,7 +666,7 @@ predict_mod <- function(
                         Fmax[bi] <- NaN
                         F05[bi] <- NaN
                         F04[bi] <- NaN
-                        SPR[bi] <- NaN                                                
+                        SPR[bi] <- NaN
                     }
                 }
                 if(is.na(bootRaw$Z[bi]) | is.nan(bootRaw$Z[bi]) |
@@ -659,7 +676,7 @@ predict_mod <- function(
                     Fmax[bi] <- NaN
                     F05[bi] <- NaN
                     F04[bi] <- NaN
-                    SPR[bi] <- NaN                                            
+                    SPR[bi] <- NaN
                 }
             }
 
@@ -893,7 +910,7 @@ predict_mod <- function(
                         Fmax[bi] <- NaN
                         F05[bi] <- NaN
                         F04[bi] <- NaN
-                        SPR[bi] <- NaN                                                
+                        SPR[bi] <- NaN
                     }
                 }
                 if(is.na(bootRaw$Z[bi]) | is.nan(bootRaw$Z[bi]) |
@@ -903,7 +920,7 @@ predict_mod <- function(
                     Fmax[bi] <- NaN
                     F05[bi] <- NaN
                     F04[bi] <- NaN
-                    SPR[bi] <- NaN                                            
+                    SPR[bi] <- NaN
                 }
             }
         }
@@ -918,30 +935,33 @@ predict_mod <- function(
             bootRaw[,(ncol(bootRaw)+1)] <- bootRaw$FM / F01
             bootRaw[,(ncol(bootRaw)+1)] <- bootRaw$FM / Fmax
             bootRaw[,(ncol(bootRaw)+1)] <- bootRaw$FM / F05
-            bootRaw[,(ncol(bootRaw)+1)] <- bootRaw$FM / F04            
+            bootRaw[,(ncol(bootRaw)+1)] <- bootRaw$FM / F04
             colnames(bootRaw) <- c(colnames(bootRaw)[-((ncol(bootRaw)-3):ncol(bootRaw))],
                                    c("FF01","FFmax","FF05", "FF04"))
             tmp <- cbind(tmp,as.data.frame(bootRaw[,((ncol(bootRaw)-3):ncol(bootRaw))]))
         }
 
 ##        idx <- apply(tmp, 2, function(x) all(x == 0 | is.na(x) | x == 1))
-        idx <- apply(tmp, 2, function(x) all(is.na(x)))        
+        idx <- apply(tmp, 2, function(x) all(is.na(x)))
         tmp <- tmp[,!idx]
         nx <- ncol(tmp)
 
+        ## do not include only NA columns, e.g. SPR, N04, F04, if no Lmat provided
+        idx2 <- apply(bootRaw, 2, function(x) all(is.na(x)))
+        bootRaw <- bootRaw[,!idx2]
 
         ## max density and CIS
         resMaxDen <- vector("numeric", ncol(tmp))
-        resMed <- vector("numeric", ncol(tmp))                
+        resMed <- vector("numeric", ncol(tmp))
         ciList <- vector("list", ncol(tmp))
         for(i in seq(nx)){
             ## median
             resMed[i] <- median(tmp[,i], na.rm = TRUE)
-            
+
             ## confidence intervals
             citmp <- (100-CI)/2/100
             ciList[[i]] <- quantile(tmp[,i],  probs = c(citmp, 1-citmp), na.rm = TRUE)
-            
+
             ## max densities
             x <- try(ks::kde(as.numeric(na.omit(tmp[,i]))), TRUE)
             if(class(x) != "try-error"){
@@ -958,11 +978,11 @@ predict_mod <- function(
             }
         }
         resMaxDen <- c(boot$maxDen, resMaxDen)
-        names(resMaxDen) <- c(names(boot$maxDen),
-                              colnames(bootRaw)[(ncol(bootRaw)-(nx)+1):ncol(bootRaw)])
+        names(resMaxDen) <- c(names(boot$maxDen), colnames(tmp))
+##                              colnames(bootRaw)[(ncol(bootRaw)-(nx)+1):ncol(bootRaw)])
         resCIs <- cbind(boot$CI,t(do.call(rbind,ciList)))
         colnames(resCIs) <- names(resMaxDen)
-        rownames(resCIs) <- c("lo","up")        
+        rownames(resCIs) <- c("lo","up")
         resMed <- c(boot$median, resMed)
         names(resMed) <- names(resMaxDen)
 
@@ -970,7 +990,7 @@ predict_mod <- function(
         ret$bootRaw <- bootRaw
         ret$seed <- boot$seed
         ret$maxDen <- resMaxDen
-        ret$median <- resMed        
+        ret$median <- resMed
         ret$CI <- resCIs
         if("multiCI" %in% names(boot)) ret$multiCI <- boot$multiCI
         ret$misc <- boot$misc
@@ -980,7 +1000,7 @@ predict_mod <- function(
         ret$misc$nmax <- nmaxs
         ret$misc$n01 <- n01s
         ret$misc$n05 <- n05s
-        ret$misc$n04 <- n04s        
+        ret$misc$n04 <- n04s
         class(ret) <- "lfqBoot"
         return(ret)
 
@@ -1282,7 +1302,7 @@ predict_mod <- function(
         if(type == "ThompBell"){
             meanWeight <- res$meanWeight
             meanValue <- res$meanValue
-            
+
 
             ## mortalities
             FM <- res$FM
@@ -1359,7 +1379,7 @@ predict_mod <- function(
 
                                         # Only FM change provided without Lc_tc change
             if((is.null(tc_change) & is.null(Lc_change))){  #  | length(s_list) == 1){
-                
+
                                         #if(is.null(res$FM) | length(res$FM) == 1) stop(noquote("Please provide fishing mortality FM (in 'param') as a vector per size class!"))
 
                 if(is.null(res$FM)) stop(noquote("Please provide fishing mortality FM (in 'param')!"))
@@ -1391,7 +1411,7 @@ predict_mod <- function(
                     param$FM <- pred_mat[,x7]
                     resL <- stock_sim(param, age_unit = age_unit,
                                       stock_size_1 = stock_size_1, plus_group = plus_group)
-                    pred_res_list[[x7]] <- resL$totals                    
+                    pred_res_list[[x7]] <- resL$totals
                 }
 
                 ## SSB0 for SPR
@@ -1400,7 +1420,7 @@ predict_mod <- function(
                 tmp <- stock_sim(param, age_unit = age_unit,
                                  stock_size_1 = stock_size_1, plus_group = plus_group)
                 SSB0 <- tmp$totals$meanSSB
-                
+
 
                 pred_res_df <- do.call(rbind, pred_res_list)
                 pred_res_df$SPR <- pred_res_df$meanSSB/SSB0
@@ -1414,7 +1434,7 @@ predict_mod <- function(
                 spr <- pred_res_df$SPR
                 ypr <- pred_res_df$totY
                 bpr <- pred_res_df$meanB
-                splSPR <- smooth.spline(x = FM_change, y = spr, spar = 0.4)                
+                splSPR <- smooth.spline(x = FM_change, y = spr, spar = 0.4)
                 splYPR <- smooth.spline(x = FM_change, y = ypr, spar = 0.4)
                 splBPR <- smooth.spline(x = FM_change, y = bpr, spar = 0.4)
                 newdat <- data.frame(F=seq(0,5,length.out = 500))
@@ -1427,7 +1447,7 @@ predict_mod <- function(
 ##                Emax <- Fmax/Z
                 N01 <- which.min(((newdat$YPR.d1/newdat$YPR.d1[1])-0.1)^2)
              ##   F01 <- newdat[N01,1]
-##                E01 <- F01/Z 
+##                E01 <- F01/Z
                 N05 <- which.min((newdat$BPR - newdat$BPR[1]/2)^2)
 ##                F05 <- newdat[N05,1]
 ##                E05 <- F05/Z
@@ -1453,13 +1473,13 @@ predict_mod <- function(
                 E01 <- ifelse(is.integer(N01),newdat$E[N01],NA)
                 Emax <- ifelse(is.integer(Nmax),newdat$E[Nmax],NA)
                 E05 <- ifelse(is.integer(N05),newdat$E[N05],NA)
-                E04 <- ifelse(is.integer(N04),newdat$E[N04],NA)                
+                E04 <- ifelse(is.integer(N04),newdat$E[N04],NA)
 
 
                 if(FALSE){
                     ## Fmax
                     Nmax <- which.max(pred_res_df$totY)
-                    ## F01 (proxy for Fmsy in ICES)                                    
+                    ## F01 (proxy for Fmsy in ICES)
                     slopeOrg <- (pred_res_df$totY[2] - pred_res_df$totY[1]) / (FM_change[2] - FM_change[1])
                     slope01 <- round(0.1*slopeOrg, 2)
                     slopes <- rep(NA, length(FM_change))
@@ -1483,9 +1503,9 @@ predict_mod <- function(
                     F01 = FM_change[N01]
                     Fmax = FM_change[Nmax]
                     F05 = FM_change[N05]
-                    E01 = E_change[N01]                                   
+                    E01 = E_change[N01]
                     Emax = E_change[Nmax]
-                    E05 = E_change[N05]                    
+                    E05 = E_change[N05]
                 }
 
                 if(!is.null(Lc[1]) & !is.null(tc[1])){
@@ -1528,7 +1548,7 @@ predict_mod <- function(
                             s_list <- list(selecType = "knife_edge", L50 = curr.Lc)
                             Lt <- res$midLengths
                             sel <- select_ogive(s_list, Lt = Lt, Lc = curr.Lc)
-                        }                        
+                        }
                     }
 
                     mati <- sel * curr.F
@@ -1542,7 +1562,7 @@ predict_mod <- function(
                     ## SPR
                     param.loop <- res
                     param.loop$FM <- sel * 0.0
-                    param.loop$Z <- param.loop$FM + nM                    
+                    param.loop$Z <- param.loop$FM + nM
                     res2 <- stock_sim(param = param.loop, age_unit = age_unit,
                                       stock_size_1 = stock_size_1, plus_group=plus_group)
                     SSB0 <- res2$totals$meanSSB
@@ -1602,7 +1622,7 @@ predict_mod <- function(
                 pred.FM_Lc_com_res_loopB_list <- vector("list",length(FM_Lc_com_mat.list))
                 pred.FM_Lc_com_res_loopV_list <- vector("list",length(FM_Lc_com_mat.list))
                 pred.FM_Lc_com_res_loopSSB_list <- vector("list",length(FM_Lc_com_mat.list))
-                pred.FM_Lc_com_res_loopSPR_list <- vector("list",length(FM_Lc_com_mat.list))   
+                pred.FM_Lc_com_res_loopSPR_list <- vector("list",length(FM_Lc_com_mat.list))
 
                 if (!hide.progressbar) {
                     nlk <- prod(length(FM_Lc_com_mat.list),dim(FM_Lc_com_mat.list[[1]])[2])
@@ -1636,19 +1656,19 @@ predict_mod <- function(
                     tmp <- stock_sim(param = param.loop, age_unit = age_unit,
                                      stock_size_1 = stock_size_1, plus_group=plus_group)
                     SSB0 <- tmp$totals$meanSSB
-                    
+
                     prev_mat <- do.call(rbind, pred.FM_Lc_com_res_loop1_list)
                     prev_matC <- prev_mat[,'totC']
                     prev_matY <- prev_mat[,'totY']
                     prev_matB <- prev_mat[,'meanB']
-                    prev_matSSB <- prev_mat[,'meanSSB']                                        
+                    prev_matSSB <- prev_mat[,'meanSSB']
                     prev_matV <- prev_mat[,'totV']
                     prev_matSPR <- prev_mat[,'meanSSB'] / SSB0
-                    
+
                     pred.FM_Lc_com_res_loopC_list[[x21]] <- prev_matC
                     pred.FM_Lc_com_res_loopY_list[[x21]] <- prev_matY
                     pred.FM_Lc_com_res_loopB_list[[x21]] <- prev_matB
-                    pred.FM_Lc_com_res_loopSSB_list[[x21]] <- prev_matSSB                      
+                    pred.FM_Lc_com_res_loopSSB_list[[x21]] <- prev_matSSB
                     pred.FM_Lc_com_res_loopV_list[[x21]] <- prev_matV
                     pred.FM_Lc_com_res_loopSPR_list[[x21]] <- prev_matSPR
                 }
@@ -1688,14 +1708,14 @@ predict_mod <- function(
                 mat_FM_Lc_com.Y <- t(mat_FM_Lc_com.Y)
                 mat_FM_Lc_com.B <- t(mat_FM_Lc_com.B)
                 mat_FM_Lc_com.SSB <- t(mat_FM_Lc_com.SSB)
-                mat_FM_Lc_com.SPR <- t(mat_FM_Lc_com.SPR)                                
+                mat_FM_Lc_com.SPR <- t(mat_FM_Lc_com.SPR)
                 mat_FM_Lc_com.V <- t(mat_FM_Lc_com.V)
 
 
                 ## reference points
                 ## Fmax
                 Nmax <- apply(mat_FM_Lc_com.Y, MARGIN = 2, FUN = which.max)
-                
+
                 ## F01 (proxy for Fmsy in ICES)
                 slopes <- matrix(NA,ncol=dim(mat_FM_Lc_com.Y)[2],
                                  nrow=dim(mat_FM_Lc_com.Y)[1])
@@ -1732,12 +1752,12 @@ predict_mod <- function(
                                         F01 = FM_change[N01],
                                         Fmax = FM_change[Nmax],
                                         F05 = FM_change[N05],
-                                        E01 = E_change[N01],                                    
+                                        E01 = E_change[N01],
                                         Emax = E_change[Nmax],
                                         E05 = E_change[N05])
                 }else{
                     df_Es <- data.frame(
-                        F01 = FM_change[N01],                      
+                        F01 = FM_change[N01],
                         Fmax = FM_change[Nmax],
                         F05 = FM_change[N05],
                         E01 = E_change[N01],
@@ -1794,7 +1814,7 @@ predict_mod <- function(
                     res2 <- stock_sim(param = param.loop, age_unit = age_unit,
                                       stock_size_1 = stock_size_1, plus_group=plus_group)
                     SSB0 <- res2$totals$meanSSB
-                    SPR <- mati2$meanSSB/SSB0                    
+                    SPR <- mati2$meanSSB/SSB0
 
                     df_currents <- data.frame(curr.Lc = curr.Lc,
                                               curr.tc = curr.tc,

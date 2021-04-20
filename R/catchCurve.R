@@ -230,7 +230,7 @@ catchCurve <- function(param,
         Zs <- vector("numeric",nrow(bootRaw))
         ints <- vector("numeric",nrow(bootRaw))
         cuts <- vector("list",nrow(bootRaw))
-        dats <- vector("list",nrow(bootRaw))        
+        dats <- vector("list",nrow(bootRaw))
         ## seZ <- vector("numeric",nrow(bootRaw))
         ## confZ <- vector("numeric",nrow(bootRaw))
         t50s <- vector("numeric", nrow(bootRaw))
@@ -260,9 +260,8 @@ catchCurve <- function(param,
                 lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE)
             }
 
+            if(yearCombine && inherits(lfqLoop$catch, "matrix")) lfqLoop$catch <- rowSums(lfqLoop$catch)
 
-            if(yearCombine) lfqLoop$catch <- rowSums(lfqLoop$catch)
-            
             ## error if lfq data spans several years!
             if(class(lfqLoop$catch) == "matrix") stop("The lfq data spans several years, please subset for one year at a time!")
 
@@ -408,7 +407,7 @@ catchCurve <- function(param,
             ## calculations + model
             df.CC <- as.data.frame(cbind(xvar,yvar))
             df.CC.cut <- df.CC[cutter[1]:cutter[2],]
-            
+
             lm1 <- try(lm(yvar ~ xvar, data = df.CC.cut), silent = TRUE)
 
             if(class(lm1) == "try-error" | nrow(df.CC.cut) < 3 | coefficients(lm1)[2] > 0){
@@ -443,7 +442,7 @@ catchCurve <- function(param,
                 Zs[bi] <- Z_lm1
                 ints[bi] <- intercept_lm1
                 cuts[[bi]] <- xvar[cutter]
-                dats[[bi]] <- data.frame(x=df.CC.cut$xvar, y=df.CC.cut$yvar) 
+                dats[[bi]] <- data.frame(x=df.CC.cut$xvar, y=df.CC.cut$yvar)
                 ## seZ[bi] <- SE_Z_lm1
                 ## confZ[bi] <- conf_Z_lm1
                 if(calc_ogive){
@@ -496,7 +495,7 @@ catchCurve <- function(param,
                           t0 <- 0
                           L50s[bi] <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t50s[bi]-t0)))
                           L75s[bi] <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t75s[bi]-t0)))
-        ##                  L95 <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t95-t0)))                          
+        ##                  L95 <- bootRaw$Linf[bi]*(1-exp(-bootRaw$K[bi]*(t95-t0)))
                       }
                   }
                 }
@@ -526,12 +525,12 @@ catchCurve <- function(param,
 
         ## max density and CIS
         resMaxDen <- vector("numeric", ncol(tmp))
-        resMed <- vector("numeric", ncol(tmp))        
+        resMed <- vector("numeric", ncol(tmp))
         ciList <- vector("list", ncol(tmp))
         for(i in seq(nx)){
             ## median
             resMed[i] <- median(tmp[,i], na.rm = TRUE)
-            
+
             ## confidence intervals
             citmp <- (100-CI)/2/100
             ciList[[i]] <- quantile(tmp[,i],  probs = c(citmp, 1-citmp), na.rm = TRUE)
@@ -555,7 +554,7 @@ catchCurve <- function(param,
                               colnames(bootRaw)[(ncol(bootRaw)-(nx)+1):ncol(bootRaw)])
         resCIs <- cbind(boot$CI,t(do.call(rbind,ciList)))
         colnames(resCIs) <- names(resMaxDen)
-        rownames(resCIs) <- c("lo","up")        
+        rownames(resCIs) <- c("lo","up")
         resMed <- c(boot$median, resMed)
         names(resMed) <- names(resMaxDen)
 
@@ -572,7 +571,7 @@ catchCurve <- function(param,
         ret$bootRaw <- bootRaw
         ret$seed <- boot$seed
         ret$maxDen <- resMaxDen
-        ret$median <- resMed        
+        ret$median <- resMed
         ret$CI <- resCIs
         if("multiCI" %in% names(boot)) ret$multiCI <- boot$multiCI
         ret$misc <- c(boot$misc, list(binSize = binSize, yearSel = yearSel,
@@ -581,7 +580,7 @@ catchCurve <- function(param,
                                       datcc = dats))
         class(ret) <- "lfqBoot"
         return(ret)
-        
+
     }else if(!is.null(boot) & class(boot) != "lfqBoot"){
         stop("You provided an object for boot, but it does not have class 'lfqBoot'. Please check.")
     }else{
@@ -638,12 +637,12 @@ catchCurve <- function(param,
                 tmp <- by(as.numeric(catch),as.numeric(res$cohort),sum, na.rm = TRUE)
                 catch <- as.numeric(tmp)
                 cohorts <- as.numeric(names(tmp))
-            } 
+            }
 
           #if(length(classes) != length(catch[,1])) stop(noquote(
           #  "Age/length classes and catch matrix do not have the same length!"))
 
-          
+
           # Aged based Catch curve
           if("age" %in% names(res) == TRUE){
               ## find cohort to analyse
@@ -718,7 +717,7 @@ catchCurve <- function(param,
             yvar = lnC
             yname = "lnC"
             ylabel = "ln(C)"
-          }            
+          }
 
           if(!cumulative & !constant_dt){
             xvar = t_midL
@@ -866,12 +865,12 @@ catchCurve <- function(param,
               }else if(ltest > 15){
                   cutter[2] <- cutter[2] - 7
               }else if(ltest > 10){
-                  cutter[2] <- cutter[2] - 5                  
+                  cutter[2] <- cutter[2] - 5
               }else if(ltest > 7){
                   cutter[2] <- cutter[2] - 3
               }else if(ltest > 5){
                   cutter[2] <- cutter[2] - 2
-              }              
+              }
               cutterList <- list()
               cutterList[[1]] <- cutter
           }

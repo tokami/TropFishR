@@ -304,10 +304,10 @@ ELEFAN_SA_boot <- function(
     }
 
     tmp0 <- as.data.frame(do.call("rbind", res))
-    tmp <- tmp0[,-c(ncol(tmp0)-1,ncol(tmp0))]    
+    tmp <- tmp0[,-c(ncol(tmp0)-1,ncol(tmp0))]
 
     seeds <- as.numeric(tmp0[,(ncol(tmp0)-1)])
-    scores <- as.numeric(tmp0[,ncol(tmp0)])    
+    scores <- as.numeric(tmp0[,ncol(tmp0)])
 
     ## lfqboot object
     bootRaw <- tmp
@@ -942,7 +942,7 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
     par(
                                         # mfcol = c(floor(sqrt(ncol(res))), ceiling(sqrt(ncol(res)))),
         mfcol = c(1, ncol(res)),
-        mar = mar, oma = oma, mfrow = mfrow, 
+        mar = mar, oma = oma, mfrow = mfrow,
         mgp = mgp, tcl = tcl, cex = cex, ...
     )
 
@@ -981,7 +981,8 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
         x <- try(kde(tmp),silent=TRUE)
         if(class(x) == "try-error"){
             plot(seq(0,1,0.2),
-                 seq(min(tmp)*0.9,max(tmp)*1.1,length.out = 6), t="n",
+                 seq(min(tmp)*0.9,max(tmp)*1.1,length.out = 6),
+                 t="n",
                  xlim = xlim,
                  xaxs = "i",
                  ylab="", xlab="", col=1, lty=1
@@ -1059,7 +1060,7 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
             if(display_val) text(y =c(limCI), x = mean(usr[1:2]),
                                  labels = paste(sprintf("%.2f", round(c(limCI),2))),
                                  pos = c(1,3), offset = 0.25, col = 1)
-            
+
             ## median
             if(display_median) abline(h=median(x$x), col=4, lty=2)
 
@@ -1077,7 +1078,7 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
         }
         varlab <- VARS[[match(names(res)[i], names(VARS))]]
         mtext(varlab, line=0.25, side=3, font = 2)
-        box(lwd=1.2)        
+        box(lwd=1.2)
     }
     mtext("Density", side = 1, line = 0, outer = TRUE)
 
@@ -1571,16 +1572,16 @@ plotBoot <- function(lfq,    ## lfq object
                      perm.col = adjustcolor("grey50",0.1), perm.lwd = 1,
                      ci.col = 1, ci.lty = 2, ci.lwd = 1,
                      maxd.col = 1, maxd.lty = 1, maxd.lwd = 2,
-                     ...){    
+                     ...){
 
     dates <- lfq$dates
     classes <- lfq$midLengths
 
     if(pType=="lfq"){
-        
+
         catch <- get(Fname, lfq)
 
-        
+
         xlabel=""
         ylabel="Length classes"
 
@@ -1737,7 +1738,7 @@ plotBoot <- function(lfq,    ## lfq object
             limCI$max[i] <- max(Lt[i, which(inCI) ], na.rm = TRUE)
         }
 
-        
+
         years <- as.numeric(as.character(unique(format(dates, "%Y"))))
         minyear <- min(years) - agemax
         maxyear <- max(years)
@@ -1747,8 +1748,8 @@ plotBoot <- function(lfq,    ## lfq object
             xvals <- TropFishR::yeardec2date(tmp)
 
             lines(xvals, limCI$max, col = ci.col, lwd = ci.lwd, lty = ci.lty)
-            lines(xvals, limCI$min, col = ci.col, lwd = ci.lwd, lty = ci.lty)            
-            
+            lines(xvals, limCI$min, col = ci.col, lwd = ci.lwd, lty = ci.lty)
+
             lines(xvals,
                   TropFishR::VBGF(param = as.list(max_dens), t = agenew),
                   col = maxd.col, lwd = maxd.lwd, lty = maxd.lty)
@@ -1757,19 +1758,19 @@ plotBoot <- function(lfq,    ## lfq object
         ## frame
         box(lwd=1.2)
 
-        
+
         ## catch curve plot
     }else if(pType == "cc"){
 
         binSize <- boot$misc$binSize
         yearSel <- boot$misc$yearSel
         yearCombine <- boot$misc$yearCombine
-        
-        
+
+
         ints <- boot$misc$intsCC
         zs <- boot$bootRaw$Z
         intMed <- median(ints, na.rm = TRUE)
-            
+
         ## confidence intervals
         citmp <- (100-95)/2/100
         intCI <- quantile(intMed,  probs = c(citmp, 1-citmp), na.rm = TRUE)
@@ -1781,7 +1782,7 @@ plotBoot <- function(lfq,    ## lfq object
             ind <- which(x$estimate > x$cont["99%"])
             intMaxDen <- mean(x$eval.points[ind])
         }else stop("Cannot estimate MaxDen of intercepts of the catch curve. Use median or single line display.")
-        
+
         if(best=="maxDen"){
             grPars <- boot$maxDen
             intX <- intMed
@@ -1789,13 +1790,13 @@ plotBoot <- function(lfq,    ## lfq object
         }else if(best=="median"){
             grPars <- boot$median
             intX <- intMaxDen
-            zX <- boot$median[which(names(boot$median)=="Z")]            
+            zX <- boot$median[which(names(boot$median)=="Z")]
         }
 
         midLengths <- lfq$midLengths
         interval <- midLengths[2] - midLengths[1]
         ## L and t of lower length classes
-        lowerLengths <- midLengths - (interval / 2)        
+        lowerLengths <- midLengths - (interval / 2)
         ## seasonalised
         if("C" %in% names(grPars)){
             t_midL <- VBGF(param = list(Linf = grPars[1], K = grPars[2],
@@ -1806,7 +1807,7 @@ plotBoot <- function(lfq,    ## lfq object
             t_midL <- VBGF(param = list(Linf = grPars[1], K = grPars[2],
                                         t0 = 0), L = midLengths)
             t_L1 <- VBGF(param = list(Linf = grPars[1], K = grPars[2],
-                                      t0 = 0), L = lowerLengths)            
+                                      t0 = 0), L = lowerLengths)
         }
 
         ## delta t
@@ -1834,16 +1835,16 @@ plotBoot <- function(lfq,    ## lfq object
         }else{
             lfq2 <- lfqModify(lfq, vectorise_catch = TRUE)
         }
-        if(yearCombine) lfq2$catch <- rowSums(lfq2$catch)
+        if(yearCombine && inherits(lfq2$catch, "matrix")) lfq2$catch <- rowSums(lfq2$catch)
         ## error if lfq data spans several years!
-        if(class(lfq2$catch) == "matrix") stop("The lfq data spans several years, please subset for one year at a time!")        
+        if(class(lfq2$catch) == "matrix") stop("The lfq data spans several years, please subset for one year at a time!")
         catch <- lfq2$catch
         lnC_dt <- log(catch / deti)
         lnC_dt[which(lnC_dt == -Inf)] <- NA   ### OR zero???
         yplot <- lnC_dt
         ylabel <- "ln(N / dt)"
 
-        
+
         ## remove all NAs and Infs
         temp <- cbind(xplot,yplot)
         temp <- as.matrix(na.exclude(temp))
@@ -1874,7 +1875,7 @@ plotBoot <- function(lfq,    ## lfq object
         xrang <- range(unlist(lapply(datcc, function(x) ifelse(!is.na(x),x$x,NA))),na.rm=TRUE)
         yrang <- range(unlist(lapply(datcc, function(x) ifelse(!is.na(x),x$y,NA))),na.rm=TRUE)
         maxa1 <- xrang[1]
-        maxa2 <- xrang[2]        
+        maxa2 <- xrang[2]
 
         step <- 0.01
 
@@ -1884,13 +1885,13 @@ plotBoot <- function(lfq,    ## lfq object
 ##            ylims <- c(minyplot,maxyplot)
             ylims <- c(0,max(yrang))
         }else ylims <- ylim
-        
+
 
         if(is.null(xlim)){
 ##            xlims <- c(min(xplot[which(yplot > 0 & is.finite(yplot))], na.rm = TRUE),
 ##                       max(xplot[which(yplot > 0 & is.finite(yplot))], na.rm = TRUE))
-            xlims <- xrang            
-        }else xlims <- xlim        
+            xlims <- xrang
+        }else xlims <- xlim
 
 
         ## final plot
@@ -1902,16 +1903,16 @@ plotBoot <- function(lfq,    ## lfq object
         if("bootRaw" %in% display){
             for(i in 1:length(ints)){
                 tmp <- range(datcc[[i]]$x)
-                seqi <- seq(tmp[1]-step,tmp[2]+step,step)                        
+                seqi <- seq(tmp[1]-step,tmp[2]+step,step)
                 lines(seqi, ints[i]-seqi*zs[i], col="grey80",lwd=2)
-            }                        
+            }
         }
         for(i in 1:length(datcc)){
             if(!all(is.na(datcc[[i]])))
                 points(datcc[[i]]$x,datcc[[i]]$y, pch=points.pch, col=points.col)
-        }        
+        }
         if("CI" %in% display){
-            seqi <- seq(maxa1-step,maxa2+step,step)                                    
+            seqi <- seq(maxa1-step,maxa2+step,step)
             polygon(x=c(seqi,rev(seqi)), y=c(intCI[1]-seqi*zCI[1],
                                              rev(intCI[2]-seqi*zCI[2])),
                     col=rgb(t(col2rgb("blue"))/255,alpha=0.3),border=NA)
@@ -1929,7 +1930,7 @@ plotBoot <- function(lfq,    ## lfq object
         ylabel1 <- "Yield per recruit"
         ylabel2 <- "Biomass"
         ylabel3 <- "Value"
-        
+
         py <- boot$misc$totY[[1]]
 
         ylims <- range(unlist(lapply(boot$misc$totY, range, na.rm=TRUE)))
@@ -1951,16 +1952,16 @@ plotBoot <- function(lfq,    ## lfq object
             fmaxR <- range(boot$bootRaw$Fmax, na.rm=TRUE)
             ## median
             medi <- median(nmax, na.rm = TRUE)
-            
+
             ## confidence intervals
             citmp <- (100-CI)/2/100
             ciList <- quantile(nmax,  probs = c(citmp, 1-citmp), na.rm = TRUE)
-            
+
             ## max densities
             x <- ks::kde(as.numeric(na.omit(nmax)))
             ind <- which(x$estimate > x$cont["99%"])
-            maxden <- mean(x$eval.points[ind])        
-            
+            maxden <- mean(x$eval.points[ind])
+
             ## determine which resamples are in the CI
             inCI <- x$estimate > quantile(x$estimate, probs = (100-CI)/100 )
             limCI <- data.frame(t = px, min = NaN, max = NaN)
@@ -1997,28 +1998,28 @@ plotBoot <- function(lfq,    ## lfq object
             }
 
             ##        lines(px, limCI$max, col = ci.col, lwd = ci.lwd, lty = ci.lty)
-            ##        lines(px, limCI$min, col = ci.col, lwd = ci.lwd, lty = ci.lty)            
-            
+            ##        lines(px, limCI$min, col = ci.col, lwd = ci.lwd, lty = ci.lty)
+
             lines(px, boot$misc$totY[[which.min(abs(nmax-maxden))]],
-                  col = maxd.col, lwd = maxd.lwd, lty = maxd.lty)        
-            box(lwd=1.2)                    
+                  col = maxd.col, lwd = maxd.lwd, lty = maxd.lty)
+            box(lwd=1.2)
         }else if(pRef=="f01"){
             n01 <- unlist(lapply(seq(length(boot$misc$nmax)),
                           function(x) boot$misc$totY[[x]][boot$misc$n01[x]]))
-            
+
             f01R <- range(boot$bootRaw$F01, na.rm=TRUE)
             ## median
             medi <- median(n01, na.rm = TRUE)
-            
+
             ## confidence intervals
             citmp <- (100-CI)/2/100
             ciList <- quantile(n01,  probs = c(citmp, 1-citmp), na.rm = TRUE)
-            
+
             ## max densities
             x <- ks::kde(as.numeric(na.omit(n01)))
             ind <- which(x$estimate > x$cont["99%"])
-            maxden <- mean(x$eval.points[ind])        
-            
+            maxden <- mean(x$eval.points[ind])
+
             ## determine which resamples are in the CI
             inCI <- x$estimate > quantile(x$estimate, probs = (100-CI)/100 )
             limCI <- data.frame(t = px, min = NaN, max = NaN)
@@ -2055,13 +2056,12 @@ plotBoot <- function(lfq,    ## lfq object
             }
 
             ##        lines(px, limCI$max, col = ci.col, lwd = ci.lwd, lty = ci.lty)
-            ##        lines(px, limCI$min, col = ci.col, lwd = ci.lwd, lty = ci.lty)            
-            
+            ##        lines(px, limCI$min, col = ci.col, lwd = ci.lwd, lty = ci.lty)
+
             lines(px, boot$misc$totY[[which.min(abs(n01-maxden))]],
-                  col = maxd.col, lwd = maxd.lwd, lty = maxd.lty)        
-            box(lwd=1.2)                                
+                  col = maxd.col, lwd = maxd.lwd, lty = maxd.lty)
+            box(lwd=1.2)
         }
-        
+
     }
 }
-
