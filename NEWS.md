@@ -16,11 +16,6 @@
 - Return `score_mat` in `ELEFAN` function
 
 
-#### Minor changes
-
-*
-
-
 <br><br>
 
 

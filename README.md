@@ -23,8 +23,7 @@ allow reproducing the examples from the FAO manual.
 
 ## News
 You can find detailed descriptions of new features, bug fixes, other changes of
-specific package versions
-[here](https://rawgit.com/tokami/TropFishR/master/inst/doc/news.html).
+specific package versions [here](NEWS.md).
 
 
 ## Installation
