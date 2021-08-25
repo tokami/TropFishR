@@ -150,6 +150,9 @@ recruitment <- function(
   }
   trecr <- NaN * lfq$catch
   Lincl <- which(lfq$midLengths < lfq$par$Linf & lfq$midLengths > Lrecr)
+  if(!inherits(trecr, "matrix")){
+      stop("Function requires a catch matrix with more than one sample (> 1 columns).")
+  }
   trecr <- trecr[Lincl,]
   counter_mat <- matrix(seq(length(trecr)), nrow = nrow(trecr), ncol = ncol(trecr), byrow = TRUE)
   if(!hide.progressbar){
