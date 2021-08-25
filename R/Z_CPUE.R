@@ -83,25 +83,22 @@ Z_CPUE <- function(param, method = "standard", omit_age1 = FALSE){
          },
 
          "Heincke" ={
-           CPUE[4] <- sum(CPUE[4:length(CPUE)])
+##           CPUE[4] <- sum(CPUE[4:length(CPUE)])
            if(omit_age1) CPUE <- CPUE[-1]
            CPUE.H.n <- CPUE[2:length(CPUE)]
            CPUE.H.d <- CPUE[1:length(CPUE)]
-           Z.H = - log( (sum(CPUE.H.n)) /
-                          (sum(CPUE.H.d)))
+           Z.H = - log((sum(CPUE.H.n)) / (sum(CPUE.H.d)))
            ret <- c(res,list(
              Z = Z.H
            ))
            return(ret)
          },
          "RobsonChapman" ={
-           CPUE[4] <- sum(CPUE[4:length(CPUE)])
-           if(omit_age1) CPUE <- CPUE[-1]
-           sum_CPUE.H.n <- sum(CPUE[2:length(CPUE)])
-           sum_CPUE.H.d <- sum(CPUE[1:length(CPUE)])
-
-           Z.H = - log((sum_CPUE.H.n) /
-                          (sum_CPUE.H.d + sum_CPUE.H.n - 1))
+##           CPUE[4] <- sum(CPUE[4:length(CPUE)])
+             if(omit_age1) CPUE <- CPUE[-1]
+             sum_CPUE.H.n <- sum(CPUE[2:length(CPUE)] * 1:(length(CPUE)-1))
+             sum_CPUE.H.d <- sum(CPUE[1:length(CPUE)])
+             Z.H = -log((sum_CPUE.H.n)/(sum_CPUE.H.d + sum_CPUE.H.n - 1))
 
            ret <- c(res,list(
              Z = Z.H
