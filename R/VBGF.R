@@ -18,6 +18,7 @@
 #'   \item \code{ts}: onset of the first oscillation relative to t0
 #'   \item \code{C}: intensity of (sinusoid) growth oscillations. Default is no oscillation (C = 0)
 #' }
+#' @param na.rm logical; should NA in input length or age vector be omitted? (default: FALSE)
 #'
 #' @keywords function growth VBGF
 #'
@@ -64,7 +65,13 @@
 #'
 #' @export
 
-VBGF <- function(param, t = NA, L = NA){
+VBGF <- function(param, t = NA, L = NA, na.rm=FALSE){
+
+    if(na.rm){
+        t <- as.vector(na.omit(t))
+        L <- as.vector(na.omit(L))
+    }
+
   res <- param
   if(is.na(t[1]) & is.na(L[1])) stop("Either length L or age t has to be provided to calculate the corresponding.")
   Linf <- ifelse("Linf" %in% names(res),res$Linf, NA)
@@ -134,4 +141,3 @@ VBGF <- function(param, t = NA, L = NA){
 
   return(res)
 }
-
