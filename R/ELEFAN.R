@@ -400,12 +400,13 @@ ELEFAN <- function(lfq, Linf_fix = NA, Linf_range = NA,
                             flagging.out = flagging.out,
                             agemax = agemax)
 
-  # Results
-  res$ncohort = final_res$ncohort
-  res$agemax = final_res$agemax
-  res$par <- pars
-  res$fESP <- Rn_max
-  res$Rn_max <- Rn_max
+    ## Results
+    res$score_mat <- score_mat
+    res$ncohort = final_res$ncohort
+    res$agemax = final_res$agemax
+    res$par <- pars
+    res$fESP <- Rn_max
+    res$Rn_max <- Rn_max
 
 
   class(res) <- "lfq"
