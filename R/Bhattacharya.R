@@ -416,21 +416,21 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
     colnames(a.b.df) <- c("Cohort","Intercept","Slope","Start_point","End_point")
   }else a.b.df = NA
 
-  # Lmean and SD
-  l.s.list <- l.s.list[!sapply(l.s.list,is.null)]
-  if(length(l.s.list) > 1){
-    l.s.df <- do.call(rbind,l.s.list)
-    l.s.df <- cbind(1:length(l.s.df[,1]),l.s.df)
-    # seperation index (SI)
-    SIs <- rep(NA,length(l.s.df[,1]))
-    for(i in 1:(length(l.s.df[,1])-1)){
-      SIs[i] <- abs(l.s.df[i+1,2]-l.s.df[i,2]) / abs(l.s.df[i+1,3]-l.s.df[i,3])
-    }
-    l.s.df <- cbind(l.s.df,SIs)
-    colnames(l.s.df) <- c("Cohort","Lmean","SD","SI")
-  }else l.s.df <- NA
+    ## Lmean, SD, and SI
+    l.s.list <- l.s.list[!sapply(l.s.list,is.null)]
+    if(length(l.s.list) > 1){
+        l.s.df <- do.call(rbind,l.s.list)
+        l.s.df <- cbind(1:length(l.s.df[,1]),l.s.df)
+        ## seperation index (SI)
+        SIs <- rep(NA,length(l.s.df[,1]))
+        for(i in 1:(length(l.s.df[,1])-1)){
+            SIs[i] <- abs(l.s.df[i+1,2]-l.s.df[i,2]) / abs((l.s.df[i+1,3]+l.s.df[i,3])/2)
+        }
+        l.s.df <- cbind(l.s.df,SIs)
+        colnames(l.s.df) <- c("Cohort","Lmean","SD","SI")
+    }else l.s.df <- NA
 
-  temp.list <- temp.list[!sapply(temp.list, is.null)]
+    temp.list <- temp.list[!sapply(temp.list, is.null)]
   coho_plot <- coho_plot[!sapply(coho_plot,is.null)]
 
   ret <- list(res,
