@@ -1,8 +1,8 @@
 Package: TropFishR
 Type: Package
 Title: Tropical Fisheries Analysis
-Version: 1.6.2
-Date: 2020-01-27
+Version: 1.6.3
+Date: 2021-08-25
 Author: Tobias K. Mildenberger, Marc H. Taylor, Matthias Wolff
 Maintainer: Tobias K. Mildenberger <t.k.mildenberger@gmail.com>
 Depends:
