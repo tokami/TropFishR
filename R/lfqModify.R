@@ -26,6 +26,8 @@
 #'
 #' @keywords function lfq length-frequency
 #'
+#' @importFrom Matrix colSums
+#'
 #' @examples
 #' data(synLFQ4)
 #'

@@ -4,13 +4,15 @@
 \name{synLFQ7}
 \alias{synLFQ7}
 \title{Synthetic length-frequency data VII with seasonal oscillation}
-\format{A list of class lfq consisting of:
+\format{
+A list of class lfq consisting of:
 \itemize{
   \item \strong{dates} dates of sampling times (class Date),
   \item \strong{midLengths} midpoints of the length classes,
   \item \strong{catch} matrix with catches/counts per length class (row) and
      sampling date (column).
-}}
+}
+}
 \source{
 Taylor, M (2016). fishdynr: Fisheries science related population dynamics
 models. R package version 0.2. https://github.com/marchtaylor/fishdynr

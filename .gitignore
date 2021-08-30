@@ -28,3 +28,5 @@ src/NLLgtg.o
 *.o
 .DS_Store
 .Rproj.user
+/doc/
+/Meta/

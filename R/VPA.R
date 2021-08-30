@@ -139,15 +139,46 @@ VPA <- function(param,
                 analysis_type = "VPA", algorithm = "new",
                 plus_group = TRUE, plot = FALSE){
 
-  res <- param
+    res <- param
 
-  if(is.na(catch_columns[1])) catch <- res$catch
-  if(!is.na(catch_columns[1])){
-    catchmat <- res$catch[,(catch_columns)]
-    if(length(catch_columns) > 1){
-      catch <- rowSums(catchmat, na.rm = TRUE)
-    }else catch <- catchmat
-  }
+    if(is.na(catch_columns[1])) catch <- res$catch
+    if(!is.na(catch_columns[1])){
+        catchmat <- res$catch[,(catch_columns)]
+        if(length(catch_columns) > 1){
+            catch <- rowSums(catchmat, na.rm = TRUE)
+        }else catch <- catchmat
+    }
+
+
+    ## PARAMETERS
+    if("par" %in% names(res)){
+        M <- res$par$M
+        Linf <- res$par$Linf
+        K <- res$par$K
+        t0 <- ifelse("t0" %in% names(res),res$par$t0,0)
+        C <- ifelse("C" %in% names(res$par), res$par$C, 0)
+        ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)
+        a <- res$par$a
+        b <- res$par$b
+    }else{
+        M <- res$M
+        Linf <- res$Linf
+        K <- res$K
+        t0 <- ifelse("t0" %in% names(res),res$t0,0)
+        C <- ifelse("C" %in% names(res), res$C, 0)
+        ts <- ifelse("ts" %in% names(res), res$ts, 0)
+        a <- res$a
+        b <- res$b
+    }
+    ## maybe growth parameters in par but not others...
+    if(is.null(a)) a <- res$a
+    if(is.null(b)) b <- res$b
+    if(is.null(M)) M <- res$M
+
+
+    ## CHECKS
+    if(is.null(a) || is.null(b)) stop("VPA requires information about the length-weight relationship. Please provide 'a' and 'b' estimates in res.")
+    if(is.null(M)) stop("Please provide a natural mortality estimate 'M' in res.")
 
 
   #HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH#
@@ -166,11 +197,6 @@ VPA <- function(param,
       if(length(classes) != length(catch)) stop("Age/length classes and catch do not have the same length!")
     }
 
-    if(!("a" %in% names(res)) | !("b" %in% names(res))) stop("VPA requires information about the length-weight relationship. Please provide 'a' and 'b' estimates in res.")
-    a <- res$a
-    b <- res$b
-    if(!("M" %in% names(res))) stop("Please provide a natural mortality estimate 'M' in res.")
-    M <- res$M
     if(length(M) == length(classes)){
       M_vec <- M
     }else if(length(M) > 1){
@@ -377,14 +403,6 @@ VPA <- function(param,
       if(length(classes) != length(catch)) stop("Midlengths and catch do not have the same length!")
     }
 
-    Linf <- res$Linf
-    K <- res$K
-    t0 <- ifelse(is.null(res$t0),0,res$t0)
-    if(!("a" %in% names(res)) | !("b" %in% names(res))) stop("VPA requires information about the length-weight relationship. Please provide 'a' and 'b' estimates in res.")
-    a <- res$a
-    b <- res$b
-    if(!("M" %in% names(res))) stop("Please provide a natural mortality estimate 'M' in res.")
-    M <- res$M
     if(length(M) == length(classes)){
       M_vec <- M
     }else if(length(M) > 1){

@@ -4,10 +4,12 @@
 \name{hake}
 \alias{hake}
 \title{Hake data}
-\format{A list consisting of: 1. a vector with midlengths of size classes,
+\format{
+A list consisting of: 1. a vector with midlengths of size classes,
  2. a vector with catch in numbers, 3. K value, 4. Linf value, 5. M value,
  6. a value, 7. b value, 8. a vector with fishing mortalities, and
- 9. a vector with average value of fish per kg}
+ 9. a vector with average value of fish per kg
+}
 \source{
 Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
 Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.

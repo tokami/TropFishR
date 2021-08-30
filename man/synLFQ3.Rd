@@ -4,14 +4,16 @@
 \name{synLFQ3}
 \alias{synLFQ3}
 \title{Synthetic length frequency data III}
-\format{A list consisting of:
+\format{
+A list consisting of:
 \itemize{
   \item \code{midLengths}: midpoints of the length classes,
   \item \code{Linf}: infinite length for investigated species in cm [cm],
   \item \code{K}: growth coefficent for investigated species per year [1/year],
   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
   \item \code{catch}: a vector with catches.
-}}
+}
+}
 \source{
 Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock
      assessment. Part 1. Manual. \emph{FAO Fisheries Technical Paper},

@@ -5,21 +5,19 @@ date: "`r Sys.Date()`"
 output:
     rmarkdown::html_vignette:
     fig_caption: yes
-    number_sections: true    
+    number_sections: true
     df_print: paged
     toc: true
     toc_depth: 2
     toc_float:
-      collapsed: false  
+      collapsed: false
 vignette: >
-  %\VignetteIndexEntry{lfqDataTutorial}
+  %\VignetteIndexEntry{tutorial_length_data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-bibliography: TropFishR.bib  
+bibliography: TropFishR.bib
 ---
 
-
-	
 ```{r ReaddataLoadLibraries, message=FALSE, include=FALSE, echo=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
                       cache = FALSE,
@@ -37,17 +35,20 @@ knitr::opts_chunk$set(echo = TRUE,
 
 
 
-#*Background*
-Length-frequency data (LFQ) is collected by measuring the length of focal fish species onboard of the fishing vessel, the landing site or the fish market. Concerning fish there are three different lengths which can be measured: standard length (SL), fork length (FL), and total length (TL), for more information see [**here**](http://www.fao.org/docrep/003/T0535E/T0535E02.htm#ch2). The big advantage of LFQ data is that only a representative subsample of the total catch is needed, meaning that not every fish in the catch has to be measured if the subsample is random but representative. The sample should be representative of the whole stock under investigation and for all seasons of a year. Furthermore, enough samples of a range of different fish lengths have to be measured in order for the methods of **`TropFishR`** to work - a reference value is around 50 fish measurements per month. Assuming that collected data are entered in some spreadsheet or text format, this document will illustrate how different arrangements of data can be read into R and converted to the LFQ list required by all methods within **`TropFishR`**. No manual data input in R is required, The data used in the examples below were generated randomly.
+# *Background*
 
-	 
-#*LFQ import*
-There are three main ways in which you can arrange your data in a spreadsheet or text file and easily import it into R an convert it to a LFQ list (Fig. 1-3). Each of these 3 methods works evenly well with a 'csv', 'xls', or 'txt' file. For simplification, I will present all three methods with 'csv' files and consequently demonstrate how to use a 'xlsx' and a 'txt' file. This vignette requires to load the **`TropFishR package`**, ` require(TropFishR)`.
-     
+Length-frequency data (LFQ) is collected by measuring the length of focal fish species onboard of the fishing vessel, the landing site or the fish market. Concerning fish there are three different lengths which can be measured: standard length (SL), fork length (FL), and total length (TL), for more information see [**here**](http://www.fao.org/3/T0535E/T0535E02.htm). The big advantage of LFQ data is that only a representative subsample of the total catch is needed, meaning that not every fish in the catch has to be measured if the subsample is random but representative. The sample should be representative of the whole stock under investigation and for all seasons of a year. Furthermore, enough samples of a range of different fish lengths have to be measured in order for the methods of TropFishR to work - a reference value is around 50 fish measurements per month. Assuming that collected data are entered in some spreadsheet or text format, this document will illustrate how different arrangements of data can be read into R and converted to the LFQ list required by all methods within TropFishR. No manual data input in R is required, The data used in the examples below were generated randomly.
 
 
-      
-##*Data arrangement 1*
+# *LFQ import*
+
+There are three main ways in which you can arrange your data in a spreadsheet or text file and easily import it into R an convert it to a LFQ list (Fig. 1-3). Each of these 3 methods works evenly well with a 'csv', 'xls', or 'txt' file. For simplification, I will present all three methods with 'csv' files and consequently demonstrate how to use a 'xlsx' and a 'txt' file. This vignette requires to load the TropFishR package, ` require(TropFishR)`.
+
+
+
+
+## *Data arrangement 1*
+
 The first data arrangement assumes that each measurement was inserted into a specific cell in the spreadsheet, together with associated date when this measurement was done.
 
 
@@ -70,8 +71,9 @@ It is awlays important to convert the date information into the R class 'Date' w
 
 
 
-      
-##*Data arrangement 2*
+
+## *Data arrangement 2*
+
 The second data arrangement represents the case with an additional column which contains the number of times the length was measured at respective date.
 
 
@@ -90,8 +92,9 @@ plot(lfq2new, Fname = "catch")
 ```
 Be aware of the different date format, the different column headers or names and the additional argument in the function `lfqCreate()` called 'Fname' displaying the name of the column with the frequency information.
 
-      
-##*Data arrangement 3*
+
+## *Data arrangement 3*
+
 The last data arragement presented here, assumes that the data was already sorted into length classes within your spreadsheet. The first column does now represent the length classes and the number of times each length class was observed at repsective sampling times is in the subsequent columns, where each column represent one sampling time (here aggregated per month). In this example, the information about the date is contained within the header of the not-length-class columns (cp Fig. 3). This is however not necessary and the date information can also be added manually in R.
 
 ![Data arrangement 3. A column with the length classes and subsequent columns with the frequency of observed lengths for several sampling times.](LFQdat3.png)
@@ -117,7 +120,7 @@ plot(lfq3new, Fname = "catch")
 In this case, the function `lfqCreate()` can not be used, instead the data is arranged into a list manually. Extracting the dates involves extra steps to separate the actual dates from the 'X'. Next, the dates, mid lengths and the catch matrix can be directly arranged together with the function `list()`. It is of crucial importance to use the exact names and spelling (incl. case sensitivity) in the list ('dates', 'midLengths', 'catch'). with the function `class()` the TropFishR internal class 'lfq' can be assigned to the created list. Missing values in the catch matrix (`NA`, `NaN`) should be put to 0.
 
 
-##*Other file formats*
+## *Other file formats*
 Of course, your data has not to be in the csv format, it can just as well be 'odt', 'xls', 'xlsx', 'txt' or any text file. Other formats require different functions to load the data into R (beside `read.csv2()`). The following code demonstrats this for a 'xlsx' and 'txt' file.
 
 
@@ -134,16 +137,11 @@ The function `read.table()` allows to read and load many different file formats 
 
 
 
-#*Conclusion*
-This vignette demonstrates the first step in the application of **`TropFishR`**, the arrangement of your length measurements in a spreadsheet (or text file) and the import into R. Nevertheless, this step is important and several requests motivated me to write this vignette. How you can use **`TropFishR`** for the further analysis of your data is demonstrated in the detailed [**tutorial**](https://rawgit.com/tokami/TropFishR/master/inst/doc/tutorial.html).
-
-
-
-#*Author's comment*
-I hope this short vignette is of help. Any comment or question can be addresed to me via [**email**](mailto:t.k.mildenberger@gmail.com) or you can post an issue at [**GitHub**](https://github.com/tokami/TropFishR/issues). You can follow the development of **`TropFishR`** on [**ResearchGate**](https://www.researchgate.net/project/TropFishR?_esc=homefeed&_viewIds%5B0%5D=hVPmo2RDCok60qGq2z0JOroN&_viewIds%5B1%5D=zyj0j6jnUgNvrPXMrG9rouAP). All bold words are links.
-
-
-
-
+# *Conclusion*
+This vignette demonstrates the first step in the application of TropFishR,
+the arrangement of your length measurements in a spreadsheet (or text file) and
+the import into R. Nevertheless, this step is important and several requests
+motivated me to write this vignette. How you can use TropFishR for the
+further analysis of your data is demonstrated in the detailed [**tutorial**](https://rawgit.com/tokami/TropFishR/master/inst/doc/tutorial.html).
 
 

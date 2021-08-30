@@ -191,74 +191,108 @@ stock_sim <- function(param, age_unit = "year",
     }
   }
 
-  # length based
-  if('midLengths' %in% names(res)){
+    ## length based
+    if('midLengths' %in% names(res)){
 
-    Linf <- res$Linf
-    K <- res$K
-    a <- res$a
-    b <- res$b
 
-    #calculate size class interval
-    int <- classes.num[2] - classes.num[1]
+        if("par" %in% names(res)){
+            Winf <- ifelse("Winf" %in% names(res$par), res$par$Winf, NA)
+            Linf <- ifelse("Linf" %in% names(res$par), res$par$Linf, NA)
+            K <- res$par$K
+            t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
+            C <- ifelse("C" %in% names(res$par), res$par$C, 0)
+            ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)
+            ## maturity parameters
+            Lmat <- ifelse("Lmat" %in% names(res$par), res$par$Lmat, NA)
+            wmat <- ifelse("wmat" %in% names(res$par), res$par$wmat, NA)
+            a <- res$par$a
+            b <- res$par$b
+        }else{
+            Winf <- ifelse("Winf" %in% names(res), res$Winf, NA)
+            Linf <- ifelse("Linf" %in% names(res), res$Linf, NA)
+            K <- res$K
+            t0 <- ifelse("t0" %in% names(res), res$t0, 0)
+            C <- ifelse("C" %in% names(res), res$C, 0)
+            ts <- ifelse("ts" %in% names(res), res$ts, 0)
+            ## maturity parameters
+            Lmat <- ifelse("Lmat" %in% names(res), res$Lmat, NA)
+            wmat <- ifelse("wmat" %in% names(res), res$wmat, NA)
+            a <- res$a
+            b <- res$b
+        }
 
-    # t of lower and upper length classes
-    lowL <- classes.num - (int / 2)
-    upL <- classes.num + (int/2)
 
-    # H
-    H <- ((Linf - lowL)/(Linf - upL)) ^ (nM/(2*K))
+        ## mature individuals
+        mids <- classes.num
+        matP <- 1 / (1 + exp(-(mids - Lmat) /
+                             (wmat / ( log(0.75/(1-0.75)) - log(0.25/(1-0.25))))))
 
-    #population
-    N <- rep(NA,length(classes.num))
-    N[1] <- ifelse(is.na(stock_size_1), 1000, stock_size_1)
-    for(x1 in 2:length(classes.num)){
-      N[x1] <- N[x1-1] * ((1/H[x1-1]) - (FM[x1-1]/Z[x1-1])) /
-        (H[x1-1] - (FM[x1-1]/Z[x1-1]))
+        ## calculate size class interval
+        int <- classes.num[2] - classes.num[1]
+
+        ## t of lower and upper length classes
+        lowL <- classes.num - (int / 2)
+        upL <- classes.num + (int/2)
+
+        ## H
+        H <- ((Linf - lowL)/(Linf - upL)) ^ (nM/(2*K))
+
+        ## population
+        N <- rep(NA,length(classes.num))
+        N[1] <- ifelse(is.na(stock_size_1), 1000, stock_size_1)
+        for(x1 in 2:length(classes.num)){
+            N[x1] <- N[x1-1] * ((1/H[x1-1]) - (FM[x1-1]/Z[x1-1])) /
+                (H[x1-1] - (FM[x1-1]/Z[x1-1]))
+        }
+
+        ## number of deaths per time step month or year
+        dead <- c(abs(diff(N)),NA)
+
+        ## catch
+        C <- dead * (FM/Z)
+
+        ## average weight
+        W <- a * ((lowL + upL)/2 ) ^ b
+
+        ## yield
+        Y <- C * W
+
+        ## Value
+        V <- Y * meanValue
+
+        ## biomass
+        B <- (dead / Z ) * W
+
+
+        ## SSB
+        SSB <- B * matP
+
+        ## last length group
+        x2 <- length(classes.num)
+        C[x2] <- N[x2] * FM[x2]/Z[x2]
+        W[x2] <- a * ((lowL[x2] + Linf)/2 ) ^ b
+        Y[x2] <- C[x2] * W[x2]
+        B[x2] <- N[x2] / Z[x2] * W[x2]
+        V[x2] <- Y[x2] * meanValue[x2]
+        SSB[x2] <- B[x2] * matP[x2]
+
+        ## total catch, yield, value and average biomass
+        totals <- data.frame(totC = sum(C, na.rm=TRUE),
+                             totY = sum(Y, na.rm=TRUE),
+                             totV = sum(V, na.rm=TRUE),
+                             meanB = sum((B), na.rm=TRUE),
+                             meanSSB = sum(SSB, na.rm=TRUE))
+
+        res2 <- list(N = N,
+                     dead = dead,
+                     C = C,
+                     Y = Y,
+                     B = B,
+                     SSB = SSB,
+                     V = V,
+                     totals = totals)
     }
 
-    #number of deaths per time step month or year
-    dead <- c(abs(diff(N)),NA)
-
-    #catch
-    C <- dead * (FM/Z)
-
-    #average weight
-    W <- a * ((lowL + upL)/2 ) ^ b
-
-    #yield
-    Y <- C * W
-
-    #Value
-    V <- Y * meanValue
-
-    #biomass
-    B <- (dead / Z ) * W
-
-    #last length group
-    x2 <- length(classes.num)
-    C[x2] <- N[x2] * FM[x2]/Z[x2]
-    W[x2] <- a * ((lowL[x2] + Linf)/2 ) ^ b
-    Y[x2] <- C[x2] * W[x2]
-    B[x2] <- N[x2] / Z[x2] * W[x2]
-    V[x2] <- Y[x2] * meanValue[x2]
-
-    #total catch, yield, value and average biomass
-    totals <- data.frame(totC = sum(C, na.rm=TRUE),
-                         totY = sum(Y, na.rm=TRUE),
-                         totV = sum(V, na.rm=TRUE),
-                         meanB = sum((B), na.rm=TRUE))
-
-    res2 <- list(N = N,
-                 dead = dead,
-                 C = C,
-                 Y = Y,
-                 B = B,
-                 V = V,
-                 totals = totals)
-  }
-
-  ret <- c(res,res2)
-  return(ret)
+    ret <- c(res,res2)
+    return(ret)
 }
-

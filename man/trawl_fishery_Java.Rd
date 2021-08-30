@@ -4,8 +4,10 @@
 \name{trawl_fishery_Java}
 \alias{trawl_fishery_Java}
 \title{Data from the trawl fishery off the North coast of Java}
-\format{A dataframe consisting of: 1. \strong{year} a vector with years, 2. \strong{Y}
- yield [1000 tons], and 3. \strong{f} fishing effort [number of standard vessels].}
+\format{
+A dataframe consisting of: 1. \strong{year} a vector with years, 2. \strong{Y}
+ yield [1000 tons], and 3. \strong{f} fishing effort [number of standard vessels].
+}
 \source{
 Dwiponggo, A., 1979. Review of the demersal resources and fisheries in the
  Java Sea. IPFC:RRD/II/79/Inf.12. Paper presented at the SCORRAD Meeting, 1979,

@@ -238,8 +238,8 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
       sum.m.co1 <- summary(m.co1)
       a.co1 <- sum.m.co1$coefficients[1]
       b.co1 <- sum.m.co1$coefficients[2]
-      l.mean.co1 <- -a.co1/b.co1   #mean length: L(mean)(N1) = -a/b
-      s.co1 <- sqrt(-1/b.co1)      #standard deviation: s(N1) = sqrt(-1/b)
+        l.mean.co1 <- -a.co1/b.co1        ## mean length: L(mean)(N1) = -a/b p.83
+        s.co1 <- sqrt(-interval/b.co1)    ## standard deviation: s(N1) = sqrt(-dL/b) p.83
 
       a.b.list[[xy]] <- c(a.co1,b.co1)
       l.s.list[[xy]] <- c(l.mean.co1,s.co1)

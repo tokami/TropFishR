@@ -101,6 +101,7 @@
 #' @importFrom grDevices colorRampPalette dev.new dev.off recordPlot rgb
 #' @importFrom graphics abline axis box lines mtext par plot rect polygon axis.Date
 #' @importFrom stats update
+#' @importFrom Matrix colSums
 #'
 #' @references
 #' Brey, T., Soriano, M., and Pauly, D. 1988. Electronic length frequency analysis: a revised and expanded

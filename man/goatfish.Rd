@@ -4,13 +4,15 @@
 \name{goatfish}
 \alias{goatfish}
 \title{Yellowstriped goatfish data}
-\format{A list consisting of:
+\format{
+A list consisting of:
 \itemize{
   \item \code{midLengths}: mid points of length classes,
   \item \code{catch}: a vector with catches in numbers,
   \item \code{Linf}: infinite length in cm [cm],
   \item \code{K}: growth coefficent per year [1/year].
-}}
+}
+}
 \source{
 Ziegler, B., 1979. Growth and mortality rates of some fishes of
   Manila Bay, Philippines, as estimated from analysis of length-frequencies.

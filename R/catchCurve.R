@@ -70,6 +70,7 @@
 #'  }
 #'
 #' # the same with predefined selection for regression line:
+#' data(synLFQ3)
 #' output <- catchCurve(synLFQ3, calc_ogive = TRUE, reg_int = c(9,21))
 #' plot(output, plot_selec = TRUE)
 #'
@@ -551,8 +552,8 @@ catchCurve <- function(param,
         t50 <- T1/T2
         t75 <- (T1 + log(3))/T2
         t95 <-  (T1 - log((1 / 0.95) - 1)) / T2
-        if(!is.null(res$Linf) & !is.null(res$K)){
-          if(is.null(res$t0)) t0 = 0
+        if(!is.null(Linf) & !is.null(K)){
+          if(is.null(t0)) t0 = 0
           L50 <- Linf*(1-exp(-K*(t50-t0)))
           L75 <- Linf*(1-exp(-K*(t75-t0)))
           L95 <- Linf*(1-exp(-K*(t95-t0)))

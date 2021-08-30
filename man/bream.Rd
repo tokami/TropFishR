@@ -4,13 +4,15 @@
 \name{bream}
 \alias{bream}
 \title{bream data}
-\format{A list consiting of:
+\format{
+A list consiting of:
 \itemize{
   \item \code{midLengths}  the midlengths of size classes,
   \item \code{numCodend}  the number of fish retained in codend,
   \item \code{numCover}  the number of fish retained in cover,
   \item \code{msCodend}  the meshsize of codend.
-}}
+}
+}
 \source{
 Jones, R., 1976. Mesh regulation in the demersal fisheries of the South
 China Sea area. Manila, South China Sea Fisheries Development and Coordinating

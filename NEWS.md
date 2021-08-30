@@ -1,19 +1,35 @@
 
-### TropFishR 1.6.3 (2021-08-25)
+### TropFishR 1.6.3 (2021-08-27)
 
 ---
 
 #### New features
 
-- Exclude NA in `VBGF` function with argument `na.rm = TRUE` (default is `FALSE`)
+- Exclude NA in `VBGF` function with argument `na.rm = TRUE` (default is
+  `FALSE`)
+- SPR calculation in Thompson and Bell yield per recruit model + SPR-based
+reference points
 
 
 ##### Bug fixes
 
 - Correct separation index calculation in Bhattacharya's method (correct = `(L1 - L2) /
   (sd1 + sd2)/2`)
+- Correct standard deviation calculation in Bhattacharya's method (correct = `sqrt(-dL/b`)
 - Correct equations of Heincke and Robson & Chapman methods in the `Z_CPUE` function
 - Return `score_mat` in `ELEFAN` function
+
+##### Minor changes
+
+- Updated vignettes
+- `LazyData = false` which implies that `data("...")` has to be used to load a
+  package into the R environment, e.g. `data("snyLFQ7")`
+- Argument `plots_refs` in `plot.predict_mod` function to select which reference
+points in the prediction models should be plotted. By default all reference
+points are plotted: `plot_refs = c("F01","Fmax","F05","F04")`.
+- Argument `cols_refs` in `plot.predict_mod` function to select the colour for
+the reference points in the prediction models. Default colours are `cols_refs = c("goldenrod2","darkred","darkgreen","darkorange")`.
+- Change naming from 'Fmsy' in prediction models to 'Fmax'.
 
 
 <br><br>

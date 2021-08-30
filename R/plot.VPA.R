@@ -30,6 +30,7 @@
 #'
 #' @importFrom grDevices dev.new
 #' @importFrom graphics axis barplot legend lines par plot mtext
+#' @importFrom Matrix colSums
 #'
 #' @references
 #' Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
@@ -149,4 +150,3 @@ plot.VPA <- function(x,
     par(op)
   }
 }
-

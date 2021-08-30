@@ -4,36 +4,43 @@
 #'    of the function \code{\link{predict_mod}}.
 #'
 #' @param x a object of the class 'predict_mod'
-#' @param type a character indicating, which type of plot should be displayed in case of
-#'    Beverton and Holt's yield per recurit model. Options are either "ypr" (default) for
-#'    line plot or "Isopleth" for isopleth plot.
-#' @param xaxis1  which x-axis should be plotted? Either "FM" (fishing mortality; default) or "E"
-#'    (exploitation rate).
-#' @param yaxis1  which (first) y-axis should be plotted? "Y_R" (yield per recruit; default) or
-#'    "Y_R.rel" (relative yield per recruit) for type = "ypr". For "Isopleth" in addition: "B_R"
-#'    (biomass per recruit) and "B_R.rel" (relative yield per recruit). For Thompson and Bell model
-#'    in addition also "value" or "catch" possible.
-#' @param yaxis2 which second y-axis should be plotted for type = "ypr"? Either "B_R" (biomass
-#'    per recruit; default), "B_R.rel" (relative biomass per recruit), or "B_R.percent"
-#'    (percentage biomass per recruit)
-#' @param yaxis_iso determines label and scale of y axis of Isopleth graph. Either "Lc"
-#'    (default) for length at first capture or "Lc/Linf" for the relation of length
-#'    at first capture to the infinite length
-#' @param identify logical; indicating whether points in the graph are supposed to be identified by
-#'    clicking on them (uses \code{\link{locator}} function). To stop press right mouse click.
-#'    (default: TRUE).
-#' @param mark logical; if value of choosen points should be displayed in graph (default: TRUE)
-#' @param contour used in combination with the Isopleth graph. Usage
-#'    can be logical (e.g. TRUE) or providing a numeric which indicates the
-#'    number of levels (\code{nlevels} in \code{\link{contour}}). By default TRUE.
-#' @param xlab Label of x-axis. If set to NA, then default "Fishing mortality", or
-#'    "Exploitation rate" is used.
-#' @param ylab1 Label of y-axis. If set to NA, then default "Yield" is used for the
-#'     Thompson and Bell model, "Lc" is used for the Isopleth graph, and "Y/R" is used for ypr.
-#' @param ylab2 Label of second y-axis. If set to NA, then default "Biomass" is used for
-#'    the Thompson and Bell model and "B/R" for ypr.
-#' @param ylab3 Label of third y-axis. If set to NA, then default "Value" is used
-#'    for the Thompson and Bell model.
+#' @param type a character indicating, which type of plot should be displayed in
+#'     case of Beverton and Holt's yield per recurit model. Options are either
+#'     "ypr" (default) for line plot or "Isopleth" for isopleth plot.
+#' @param xaxis1 which x-axis should be plotted? Either "FM" (fishing mortality;
+#'     default) or "E" (exploitation rate).
+#' @param yaxis1 which (first) y-axis should be plotted? "Y_R" (yield per
+#'     recruit; default) or "Y_R.rel" (relative yield per recruit) for type =
+#'     "ypr". For "Isopleth" in addition: "B_R" (biomass per recruit) and
+#'     "B_R.rel" (relative yield per recruit). For Thompson and Bell model in
+#'     addition also "value" or "catch" possible.
+#' @param yaxis2 which second y-axis should be plotted for type = "ypr"? Either
+#'     "B_R" (biomass per recruit; default), "B_R.rel" (relative biomass per
+#'     recruit), or "B_R.percent" (percentage biomass per recruit)
+#' @param yaxis_iso determines label and scale of y axis of Isopleth graph.
+#'     Either "Lc" (default) for length at first capture or "Lc/Linf" for the
+#'     relation of length at first capture to the infinite length
+#' @param identify logical; indicating whether points in the graph are supposed
+#'     to be identified by clicking on them (uses \code{\link{locator}}
+#'     function). To stop press right mouse click. (default: TRUE).
+#' @param mark logical; if value of choosen points should be displayed in graph
+#'     (default: TRUE)
+#' @param contour used in combination with the Isopleth graph. Usage can be
+#'     logical (e.g. TRUE) or providing a numeric which indicates the number of
+#'     levels (\code{nlevels} in \code{\link{contour}}). By default TRUE.
+#' @param xlab Label of x-axis. If set to NA, then default "Fishing mortality",
+#'     or "Exploitation rate" is used.
+#' @param ylab1 Label of y-axis. If set to NA, then default "Yield" is used for
+#'     the Thompson and Bell model, "Lc" is used for the Isopleth graph, and
+#'     "Y/R" is used for ypr.
+#' @param ylab2 Label of second y-axis. If set to NA, then default "Biomass" is
+#'     used for the Thompson and Bell model and "B/R" for ypr.
+#' @param ylab3 Label of third y-axis. If set to NA, then default "Value" is
+#'     used for the Thompson and Bell model.
+#' @param plot_refs Define reference points to be plotted. Default:
+#'     c("F01","Fmax","F05","F04")
+#' @param cols_refs Define colours for reference points. Default:
+#'     c("goldenrod2","darkred","darkgreen","darkorange")
 #' @param ... optional parameters of plot function
 #'
 #' @examples
@@ -42,7 +49,7 @@
 #' threadfin <- list(Winf = 286,K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4)
 #'
 #' output <- predict_mod(threadfin, FM_change = seq(0,6,0.1),
-#'    tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
+#'    tc_change = seq(0.2,1,0.2), type = 'ypr')
 #' plot(output)
 #'
 #' # hake - length structured data
@@ -72,6 +79,8 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
                              yaxis_iso = "Lc",
                              identify = FALSE, mark = FALSE, contour = TRUE,
                              xlab = NA, ylab1 = NA, ylab2 = NA, ylab3 = NA,
+                             plot_refs = c("F01","Fmax","F05","F04"),
+                             cols_refs = c("goldenrod2","darkred","darkgreen","darkorange"),
                              ...){
   pes <- x
 
@@ -108,6 +117,7 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
 
   #THOMPBELL
   if("totY" %in% names(pes)){
+
     df_Es <- pes$df_Es
 
     if(xaxis1 == "FM"){
@@ -118,10 +128,13 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
       }
 
       N05 <- df_Es$F05
-      Nmax <- df_Es$Fmsy
-      if(length(N05) == 1){
-        legend.lab <- c("F0.5","Fmsy")
-      }else legend.lab <- c("Fmsy")
+      Nmax <- df_Es$Fmax
+      N01 <- df_Es$F01
+      N04 <- df_Es$F04
+
+      refs <- c("F01","Fmax","F05","F04")
+      ind <- which(refs %in% plot_refs & !is.na(df_Es[names(df_Es) %in% refs]))
+      legend.lab <- refs[ind]
       if("currents" %in% names(pes)) curr_markX <- pes$currents$curr.F
     }else{
       px <- pes$E_change
@@ -131,10 +144,13 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
       }
 
       N05 <- df_Es$E05
-      Nmax <- df_Es$Emsy
-      if(length(N05) == 1){
-        legend.lab <- c("E0.5","Emsy")
-      }else legend.lab <- c("Emsy")
+      Nmax <- df_Es$Emax
+      N01 <- df_Es$E01
+      N04 <- df_Es$E04
+
+      refs <- c("E01","Emax","E05","E04")
+      ind <- which(refs %in% plot_refs & !is.na(df_Es[names(df_Es) %in% refs]))
+      legend.lab <- refs[ind]
       if("currents" %in% names(pes)) curr_markX <- pes$currents$curr.E
     }
     if(!is.na(xlab[1])){
@@ -160,7 +176,6 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     }
 
 
-
     #save x axis positions
     max_val <- round(max(pes$totV,na.rm=TRUE),digits=0)
     dim_val <- 10 ^ (nchar(max_val)-1)
@@ -173,19 +188,46 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     #   dim_val <- 10 ^ (nchar(max_val)-1)
 
 
-    py <- pes$totY[1:length(px)]
-    py2 <- pes$meanB[1:length(px)]
+      py <- pes$totY[1:length(px)]
+      py2 <- pes$meanB[1:length(px)]
+
+      ## NEW:
+      yprFmax <- df_Es$YPR_Fmax
+      yprF01 <- df_Es$YPR_F01
+      yprF04 <- df_Es$YPR_F04
+      bprF05 <- df_Es$BPR_F05
+      cols <- cols_refs
 
     #op <- par(oma = c(1, 1, 1.5, 1),new=FALSE,mar = c(5, 4, 4, 6) + 0.3)
     plot(px,py, type ='l',ylab=ylabel1,xlab= xlabel1,
          col ='black', ylim = c(0,ceiling(max_yiel/dim_yiel)*dim_yiel),
          lwd=1.6)
-    # F or E max
-    segments(x0 = -1, x1 = Nmax, y0 = py[which(px == Nmax)],
-             y1 = py[which(px == Nmax)],
-             col= 'goldenrod1',lty = 2, lwd=1.6)
-    segments(x0 = Nmax, x1 = Nmax, y0 = -1, y1 = py[which(px == Nmax)],
-             col= 'goldenrod1',lty = 2, lwd=1.6)
+
+      ## F or E max
+      if(any(plot_refs == "F01")){
+          points(N01,yprF01, pch = 21, col=cols[1], bg=cols[1])
+          segments(x0 = N01, x1 = N01, y0 = -1000, y1 = yprF01,
+                   col= cols[1],lty = 3, lwd=1.6)
+          ## abline(h = yprF01,
+          ##        col= 'goldenrod1',lty = 2, lwd=1.6)
+      }
+      if(any(plot_refs == "Fmax")){
+          ## segments(x0 = -1, x1 = Nmax, y0 = yprFmax,
+          ##          y1 = yprFmax,
+          ##          col= 'goldenrod1',lty = 2, lwd=1.6)
+          points(Nmax,yprFmax, pch = 22, col=cols[2], bg=cols[2])
+          segments(x0 = Nmax, x1 = Nmax, y0 = -1000, y1 = yprFmax,
+                   col= cols[2],lty = 3, lwd=1.6)
+          ## abline(h = yprFmax,
+          ##        col= 'goldenrod1',lty = 2, lwd=1.6)
+      }
+      if(any(plot_refs == "F04")){
+          points(N04,yprF04, pch = 24, col=cols[4], bg=cols[4])
+          segments(x0 = N04, x1 = N04, y0 = -1000, y1 = yprF04,
+                   col= cols[4],lty = 3, lwd=1.6)
+          ## abline(h = yprF04,
+          ##        col= 'goldenrod1',lty = 2, lwd=1.6)
+      }
 
     # current Exploitation rate or fishing mortality
     if(!is.null(pes$currents) & mark){
@@ -193,37 +235,51 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
       if(!is.na(currents$curr.E) & yaxis1 == "Y_R" | yaxis1 == "Y_R.rel"){
         px1 <- ifelse(xaxis1 == "FM",currents$curr.F, currents$curr.E)
         py1 <- currents$curr.Y
-        points(px1,py1, pch = 16, col="grey30")
-        abline(v=px1, col="grey30",lty=2)
+        points(px1,py1, pch = 4, col="grey30")
+        segments(x0=px1, x1=px1, y0 = -1000, y1 = py1,
+                 col="grey30",lty=3, lwd=1.6)
       }
     }
 
-    # Biomass
-    par(new=TRUE)
-    plot(px,py2,type ='l',ylab='',xlab='',
-         col='blue',lwd=1.6,axes=FALSE)
-    axis(4,at=pretty(c(0,max(pes$meanB))),col = "blue", col.axis="blue")
-    mtext(ylabel2, side=4, line=2.5, col = "blue", cex=1)
-    # F or E 05
-    segments(x0 = -1, x1 = N05, y0 = py2[which(px == N05)], y1 = py2[which(px == N05)],
-             col= 'red',lty = 3, lwd=1.5)
-    segments(x0 = N05, x1 = N05, y0 = -1, y1 = py2[which(px == N05)],
-             col= 'red',lty = 3, lwd=1.5)
+      ## Biomass
+      par(new=TRUE)
+      plot(px,py2,type ='l',ylab='',xlab='',
+           col='darkblue',lwd=1.6,axes=FALSE)
+      axis(4,at=pretty(c(0,max(pes$meanB))),
+           col = "darkblue", col.axis="darkblue")
+      mtext(ylabel2, side=4, line=2.5, col = "darkblue", cex=1)
+
+      ## F or E 05
+      if(any(plot_refs == "F05")){
+          ## segments(x0 = 1000, x1 = N05, y0 = bprF05, y1 = bprF05,
+          ##        col= 'red',lty = 3, lwd=1.5)
+          points(N05,bprF05, pch = 25, col=cols[3], bg=cols[3])
+          segments(x0 = N05, x1 = N05, y0 = -1000, y1 = bprF05,
+                   col= cols[3],lty = 3, lwd=1.5)
+      }
+
     # current Exploitation rate or fishing mortality
     if(!is.null(pes$currents) & mark){
       currents <- pes$currents
       if(!is.na(currents$curr.E) & yaxis1 == "B_R" | yaxis1 == "B_R.rel"){
         px1 <- ifelse(xaxis1 == "FM",currents$curr.F, currents$curr.E)
         py1 <- currents$curr.B
-        points(px1,py1, pch = 16, col="grey30")
-        abline(v=px1, col="grey30",lty=2)
+        points(px1,py1, pch = 4, col="grey30")
+        segments(x0=px1, x1=px1, y0 = -1000, y1 = py1,
+                 col="grey30",lty=3, lwd=1.6)
       }
     }
-    # Legend
-    legend("top", legend = legend.lab, xpd = TRUE, horiz = TRUE,
-           inset = c(0,0), bty = "n", lty = c(1,2), col = c("red","goldenrod1"),
-           seg.len = 1,pt.cex = 2, x.intersp = c(0.7,0.7),merge=TRUE,
-           y.intersp = -2, box.lty=0,cex=0.8, lwd =2)
+
+      ## Legend
+      if(any(!is.na(plot_refs)) && plot_refs[1] != FALSE){
+
+          legend("top", legend = legend.lab, xpd = TRUE, horiz = TRUE,
+                 bty = "n", lty = 3,
+                 col = cols[ind], pt.bg = cols[ind],
+                 pch = c(21,22,25,24)[ind],
+                 seg.len = 2.5, x.intersp = 0.3, merge=TRUE,
+                 y.intersp = -2.5, box.lty=0, cex=0.9, lwd =2)
+      }
 
     # Value if present
     if(any(pes$totV != 0)){
@@ -242,6 +298,8 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     #        col = c('darkorange','dodgerblue','darkgreen'), cex = 0.8,lwd=2,
     #        text.width=0.3,x.intersp=0.3)
     # #par(op)
+
+      box(lwd=1.2)
   }
 
   # THOMP BELL WITH LC change - ISOPLETHS
@@ -365,18 +423,18 @@ plot.predict_mod <- function(x, type = 'ypr', xaxis1 = "FM",
     if(xaxis1 == "FM"){
       N01 <- df_Es$F01
       N05 <- df_Es$F05
-      Nmax <- df_Es$Fmsy
+      Nmax <- df_Es$Fmax
       if(length(N05) == 1){
-        legend.lab <- c("F0.1","F0.5","Fmsy")
-      }else legend.lab <- c("F0.1","Fmsy")
+        legend.lab <- c("F0.1","F0.5","Fmax")
+      }else legend.lab <- c("F0.1","Fmax")
       if("currents" %in% names(pes)) curr_markX <- pes$currents$curr.F
     }else{
       N01 <- df_Es$E01
       N05 <- df_Es$E05
-      Nmax <- df_Es$Emsy
+      Nmax <- df_Es$Emax
       if(length(N05) == 1){
-        legend.lab <- c("E0.1","E0.5","Emsy")
-      }else legend.lab <- c("E0.1","Emsy")
+        legend.lab <- c("E0.1","E0.5","Emax")
+      }else legend.lab <- c("E0.1","Emax")
       if("currents" %in% names(pes)) curr_markX <- pes$currents$curr.E
     }
 

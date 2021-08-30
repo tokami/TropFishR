@@ -191,7 +191,7 @@ The Thompson and Bell model incorporates an iteration step simulating the
 threadfin <- list(Winf = 286, K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4)
 
 predict_mod(threadfin, FM_change = seq(0,6,0.1),
-   tc_change = seq(0.2,1,0.2), type = 'ypr')  #where it is maximal  = MSY
+   tc_change = seq(0.2,1,0.2), type = 'ypr')
 
 # Leiognathus spendens (Pauly, 1980)
 ponyfish <- list(Winf = 64, K = 1, t0 = -0.2, M = 1.8, tr = 0.2)
