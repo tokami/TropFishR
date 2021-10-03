@@ -142,6 +142,7 @@ summary(output$linear_mod_sel)
  }
 
 # the same with predefined selection for regression line:
+data(synLFQ3)
 output <- catchCurve(synLFQ3, calc_ogive = TRUE, reg_int = c(9,21))
 plot(output, plot_selec = TRUE)
 

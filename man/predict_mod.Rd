@@ -119,7 +119,7 @@ A list with the input parameters and dependent on the model type following
          and biomass values of current exploitation or selectivity (if E_curr or
          Lc_tc_curr provided).
   }
-  \item \code{type = 'ThomBell'}
+  \item \code{type = 'ThompBell'}
   \itemize{
      \item \strong{dt}: delta t,
      \item \strong{N}: population number,
@@ -135,7 +135,7 @@ A list with the input parameters and dependent on the model type following
      \item \strong{meanB}: average biomasses for different x factors,
      \item \strong{F_change}: fishing mortality changes;
   }
-  \item \code{type = 'ThomBell'} and \code{Lc_change} provided
+  \item \code{type = 'ThompBell'} and \code{Lc_change} provided
   \itemize{
      \item \strong{FM_change}: fishing mortality changes,
      \item \strong{Lc_change}: changes in length at first capture,

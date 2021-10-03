@@ -26,47 +26,56 @@
 \arguments{
 \item{x}{a object of the class 'predict_mod'}
 
-\item{type}{a character indicating, which type of plot should be displayed in case of
-Beverton and Holt's yield per recurit model. Options are either "ypr" (default) for
-line plot or "Isopleth" for isopleth plot.}
+\item{type}{a character indicating, which type of plot should be displayed in
+case of Beverton and Holt's yield per recurit model. Options are either
+"ypr" (default) for line plot or "Isopleth" for isopleth plot.}
 
-\item{xaxis1}{which x-axis should be plotted? Either "FM" (fishing mortality; default) or "E"
-(exploitation rate).}
+\item{xaxis1}{which x-axis should be plotted? Either "FM" (fishing mortality;
+default) or "E" (exploitation rate).}
 
-\item{yaxis1}{which (first) y-axis should be plotted? "Y_R" (yield per recruit; default) or
-"Y_R.rel" (relative yield per recruit) for type = "ypr". For "Isopleth" in addition: "B_R"
-(biomass per recruit) and "B_R.rel" (relative yield per recruit). For Thompson and Bell model
-in addition also "value" or "catch" possible.}
+\item{yaxis1}{which (first) y-axis should be plotted? "Y_R" (yield per
+recruit; default) or "Y_R.rel" (relative yield per recruit) for type =
+"ypr". For "Isopleth" in addition: "B_R" (biomass per recruit) and
+"B_R.rel" (relative yield per recruit). For Thompson and Bell model in
+addition also "value" or "catch" possible.}
 
-\item{yaxis2}{which second y-axis should be plotted for type = "ypr"? Either "B_R" (biomass
-per recruit; default), "B_R.rel" (relative biomass per recruit), or "B_R.percent"
-(percentage biomass per recruit)}
+\item{yaxis2}{which second y-axis should be plotted for type = "ypr"? Either
+"B_R" (biomass per recruit; default), "B_R.rel" (relative biomass per
+recruit), or "B_R.percent" (percentage biomass per recruit)}
 
-\item{yaxis_iso}{determines label and scale of y axis of Isopleth graph. Either "Lc"
-(default) for length at first capture or "Lc/Linf" for the relation of length
-at first capture to the infinite length}
+\item{yaxis_iso}{determines label and scale of y axis of Isopleth graph.
+Either "Lc" (default) for length at first capture or "Lc/Linf" for the
+relation of length at first capture to the infinite length}
 
-\item{identify}{logical; indicating whether points in the graph are supposed to be identified by
-clicking on them (uses \code{\link{locator}} function). To stop press right mouse click.
-(default: TRUE).}
+\item{identify}{logical; indicating whether points in the graph are supposed
+to be identified by clicking on them (uses \code{\link{locator}}
+function). To stop press right mouse click. (default: TRUE).}
 
-\item{mark}{logical; if value of choosen points should be displayed in graph (default: TRUE)}
+\item{mark}{logical; if value of choosen points should be displayed in graph
+(default: TRUE)}
 
-\item{contour}{used in combination with the Isopleth graph. Usage
-can be logical (e.g. TRUE) or providing a numeric which indicates the
-number of levels (\code{nlevels} in \code{\link{contour}}). By default TRUE.}
+\item{contour}{used in combination with the Isopleth graph. Usage can be
+logical (e.g. TRUE) or providing a numeric which indicates the number of
+levels (\code{nlevels} in \code{\link{contour}}). By default TRUE.}
 
-\item{xlab}{Label of x-axis. If set to NA, then default "Fishing mortality", or
-"Exploitation rate" is used.}
+\item{xlab}{Label of x-axis. If set to NA, then default "Fishing mortality",
+or "Exploitation rate" is used.}
 
-\item{ylab1}{Label of y-axis. If set to NA, then default "Yield" is used for the
-Thompson and Bell model, "Lc" is used for the Isopleth graph, and "Y/R" is used for ypr.}
+\item{ylab1}{Label of y-axis. If set to NA, then default "Yield" is used for
+the Thompson and Bell model, "Lc" is used for the Isopleth graph, and
+"Y/R" is used for ypr.}
 
-\item{ylab2}{Label of second y-axis. If set to NA, then default "Biomass" is used for
-the Thompson and Bell model and "B/R" for ypr.}
+\item{ylab2}{Label of second y-axis. If set to NA, then default "Biomass" is
+used for the Thompson and Bell model and "B/R" for ypr.}
 
-\item{ylab3}{Label of third y-axis. If set to NA, then default "Value" is used
-for the Thompson and Bell model.}
+\item{ylab3}{Label of third y-axis. If set to NA, then default "Value" is
+used for the Thompson and Bell model.}
+
+\item{plot_refs}{Define reference points to be plotted. Default:
+c("F01","Fmax","F05","F04")}
+
+\item{cols_refs}{Define colours for reference points. Default:
+c("goldenrod2","darkred","darkgreen","darkorange")}
 
 \item{...}{optional parameters of plot function}
 }
