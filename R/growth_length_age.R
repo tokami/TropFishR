@@ -39,9 +39,11 @@
 #' growth_length_age(dat, method = "BertalanffyPlot", Linf_est = 50)
 #'
 #' # non linear least squares method
+#' \donttest{
 #' output <- growth_length_age(param = dat, method = "LSM",
 #'      Linf_init = 30, CI = TRUE, age_plot=NULL)
 #' summary(output$mod)
+#' }
 #'
 #' @details
 #' Gulland and Holt plot assumes
@@ -275,7 +277,11 @@ growth_length_age <- function(param, method, Linf_est = NA,
              if(is.null(age_plot)){
                age_plot <- seq(min(floor(t)),max(ceiling(t)),0.1)
              }else age_plot <- age_plot
-             # Taylor error propagation and Monte Carlo simulation for confidence interval
+             ## Taylor error propagation and Monte Carlo simulation for confidence interval
+             ## if (!requireNamespace("propagate", quietly = TRUE)) {
+             ##     stop("Package \"propagate\" needed for this function to work. Please install it.",
+             ##          call. = FALSE)
+             ## }
              sink(tempfile())
              pred_L <- suppressMessages(propagate::predictNLS(nls_mod,
                                                               do.sim = do.sim,
@@ -321,4 +327,3 @@ growth_length_age <- function(param, method, Linf_est = NA,
 
   return(ret)
 }
-
