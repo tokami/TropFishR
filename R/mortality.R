@@ -464,8 +464,8 @@ catchCurve <- function(lfq,
     classes.num <- as.numeric(classes.num[,1])
 
     constant_dt <- FALSE
-    if(is.na(catch_columns[1]) & (class(res$catch) == 'matrix' |
-                                  class(res$catch) == 'data.frame')){
+    if(is.na(catch_columns[1]) & (inherits(res$catch, 'matrix') |
+                                  inherits(res$catch, 'data.frame'))){
         writeLines("Please be aware that you provided the catch as a matrix without specifiying any columns for \n the analysis. In this case the methods applies by default the catch curve with constant \n parameter system (refer to the help file for more information).")
         flush.console()
         constant_dt <- TRUE

@@ -506,7 +506,7 @@ lfqModify <- function(lfq, par = NULL,
         }
 
         ## correct if catch was numeric already
-        if(class(lfq$catch) == "numeric"){
+        if(inherits(lfq$catch, "numeric")){
             catch <- as.numeric(catch)
         }
 
@@ -1070,6 +1070,3 @@ ta2t0 <- function(par = NULL, L0 = 0, plot = TRUE){
   }
   return(par_age)
 }
-
-
-
