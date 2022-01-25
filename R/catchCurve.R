@@ -505,7 +505,7 @@ catchCurve <- function(param,
         colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)],"Z")
 
         ## estimate FM if M in data frame
-        if(!is.null(natMort) & natMort %in% colnames(bootRaw)){
+        if(!is.null(natMort) & natMort %in% colnames(bootRaw)){ ## TODO: FIX: BUG: if NULL does not go to second if clause
             bootRaw[,(ncol(bootRaw)+1)] <- bootRaw$Z - bootRaw[,(colnames(bootRaw) == natMort)]
             colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)],"FM")
             tmp <- as.data.frame(bootRaw[,(ncol(boot$bootRaw)+(1:2))])

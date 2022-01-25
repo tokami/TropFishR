@@ -382,14 +382,14 @@ predict_mod <- function(
             C <- ifelse("C" %in% names(bootRaw),bootRaw$C[bi],0)
             ts <- ifelse("ts" %in% names(bootRaw),bootRaw$ts[bi],0)
             t0 <- 0
-            if("Lmat" %in% names(lfq$par)){
+            if("Lmat" %in% names(param$par)){
                 Lmat <- lfq$par$Lmat
-            }else if("Lmat" %in% names(lfq)){
+            }else if("Lmat" %in% names(param)){
                 Lmat <- lfq$Lmat
             }else Lmat <- NA
-            if("wmat" %in% names(lfq$par)){
+            if("wmat" %in% names(param$par)){
                 wmat <- lfq$par$wmat
-            }else if("wmat" %in% names(lfq)){
+            }else if("wmat" %in% names(param)){
                 wmat <- lfq$wmat
             }else wmat <- NA
             if(!(natMort %in% names(bootRaw))) stop("Please provide a natural mortality estimate 'M' in the boot object.")
