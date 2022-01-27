@@ -1,5 +1,5 @@
 #' @title Stock simulation
-#' 
+#'
 #' @description  This function estimates stock size, biomass and yield of a stock from
 #'    fishing mortality per age class or length group. This function is embedded in the
 #'    Thompson and Bell model (prediction model: \code{\link{predict_mod}}).
@@ -103,7 +103,7 @@ stock_sim <- function(param, age_unit = "year",
 
         ## length at maturity
         Lmat <- ifelse(is.null(res$Lmat), NA, res$Lmat)
-        wmat <- ifelse(is.null(res$wmat), NA, res$wmat)        
+        wmat <- ifelse(is.null(res$wmat), NA, res$wmat)
         ## mature individuals
         if(all(c("Linf","K") %in% names(param))){
             mids <- VBGF(param, t = classes.num)
@@ -112,11 +112,11 @@ stock_sim <- function(param, age_unit = "year",
         }else{
             ## writeLines("For estimation of SSB please provide Lmat, wmat and VBGF parameters.")
             matP <- NA
-        }        
+        }
 
         ## mean weight
         meanWeight <- res$meanWeight
-        
+
         ## delta t
         dt <- c(diff(classes.num),NA)
         if(age_unit == 'month'){
@@ -196,7 +196,7 @@ stock_sim <- function(param, age_unit = "year",
                 df[plus_group, "Y"] / (FM[plus_group] * df[plus_group, "dt"])
 
             df[plus_group, "SSB"] <- df[plus_group, "B"] * matP[plus_group]
-            
+
 
             res2 <- as.list(as.data.frame(df))
 
@@ -227,9 +227,9 @@ stock_sim <- function(param, age_unit = "year",
             t0 <- ifelse("t0" %in% names(res$par), res$par$t0, 0)
             C <- ifelse("C" %in% names(res$par), res$par$C, 0)
             ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)
-            ## maturity parameters            
+            ## maturity parameters
             Lmat <- ifelse("Lmat" %in% names(res$par), res$par$Lmat, NA)
-            wmat <- ifelse("wmat" %in% names(res$par), res$par$wmat, NA)     
+            wmat <- ifelse("wmat" %in% names(res$par), res$par$wmat, NA)
         }else{
             Winf <- ifelse("Winf" %in% names(res), res$Winf, NA)
             Linf <- ifelse("Linf" %in% names(res), res$Linf, NA)
@@ -239,7 +239,7 @@ stock_sim <- function(param, age_unit = "year",
             ts <- ifelse("ts" %in% names(res), res$ts, 0)
             ## maturity parameters
             Lmat <- ifelse("Lmat" %in% names(res), res$Lmat, NA)
-            wmat <- ifelse("wmat" %in% names(res), res$wmat, NA)            
+            wmat <- ifelse("wmat" %in% names(res), res$wmat, NA)
         }
 
         a <- res$a
@@ -319,4 +319,3 @@ stock_sim <- function(param, age_unit = "year",
     ret <- c(res,res2)
     return(ret)
 }
-

@@ -4,7 +4,7 @@
 \alias{VBGF}
 \title{Von Bertalanffy Growth function (VBGF)}
 \usage{
-VBGF(param, t = NA, L = NA)
+VBGF(param, t = NA, L = NA, na.rm = FALSE)
 }
 \arguments{
 \item{param}{a list with following potential objects:
@@ -23,6 +23,8 @@ VBGF(param, t = NA, L = NA)
 \item{t}{ages for which to calculate corresponding lengths, or}
 
 \item{L}{lengths for which to calculate corresponding ages}
+
+\item{na.rm}{logical; should NA in input length or age vector be omitted? (default: FALSE)}
 }
 \value{
 A vector with estimated lengths corresponding to provided ages.

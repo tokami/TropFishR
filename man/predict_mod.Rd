@@ -4,13 +4,33 @@
 \alias{predict_mod}
 \title{Prediction models}
 \usage{
-predict_mod(param, type, FM_change = NA, E_change = NA,
-  FM_relative = FALSE, Lc_change = NULL, tc_change = NULL, s_list = NA,
-  stock_size_1 = NA, age_unit = "year", curr.E = NA, curr.Lc = NA,
-  plus_group = FALSE, Lmin = NA, Lincr = NA, LW_unit = "g",
-  plot = FALSE, mark = TRUE, hide.progressbar = FALSE, boot = NULL,
-  natMort = NULL, yearSel = NA, yearCombine = FALSE, binSize = NA,
-  CI = 95)
+predict_mod(
+  param,
+  type,
+  FM_change = NA,
+  E_change = NA,
+  FM_relative = FALSE,
+  Lc_change = NULL,
+  tc_change = NULL,
+  s_list = NA,
+  stock_size_1 = NA,
+  age_unit = "year",
+  curr.E = NA,
+  curr.Lc = NA,
+  plus_group = FALSE,
+  Lmin = NA,
+  Lincr = NA,
+  LW_unit = "g",
+  plot = FALSE,
+  mark = TRUE,
+  hide.progressbar = FALSE,
+  boot = NULL,
+  natMort = NULL,
+  yearSel = NA,
+  yearCombine = FALSE,
+  binSize = NA,
+  CI = 95
+)
 }
 \arguments{
 \item{param}{a list consisting of following parameters (not all are required):

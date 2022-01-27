@@ -4,8 +4,10 @@
 \name{shrimps}
 \alias{shrimps}
 \title{Shrimp data}
-\format{A list consisting of: 1. age groups [months], 2. meanWeight, 3. meanValue,
-   4.FM, and 5.M}
+\format{
+A list consisting of: 1. age groups [months], 2. meanWeight, 3. meanValue,
+   4.FM, and 5.M
+}
 \source{
 Garcia, S. and N.P. van Zalinge, 1982. Shrimp fishing in Kuwait: methodology
    for a joint analysis of the artisanal and industrial fisheries. pp. 119-142 In:

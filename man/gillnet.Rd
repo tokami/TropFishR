@@ -4,13 +4,15 @@
 \name{gillnet}
 \alias{gillnet}
 \title{Gillnet data}
-\format{A list consiting of:
+\format{
+A list consiting of:
 \itemize{
   \item \code{midLengths}  the midlengths of size classes,
   \item \code{meshSizes}  the meshsizes,
   \item \code{catchPerNet_mat}  a matrix with the numbers in catch of the
     corresponding mesh sizes (same order),
-}}
+}
+}
 \source{
 Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
  using log-linear models. \emph{ICES Journal of Marine Science: Journal du Conseil},

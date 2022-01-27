@@ -4,12 +4,14 @@
 \name{synLFQ1}
 \alias{synLFQ1}
 \title{Synthetic length-frequency data I}
-\format{A list consisting of:
+\format{
+A list consisting of:
 \itemize{
   \item \strong{dates} dates of sampling times (class Date),
   \item \strong{midLengths} midpoints of the length classes,
   \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column).
-}}
+}
+}
 \source{
 Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock assessment.
    Part 1. Manual. \emph{FAO Fisheries Technical Paper}, (306.1, Rev. 2). 407 p.

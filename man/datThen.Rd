@@ -4,12 +4,14 @@
 \name{datThen}
 \alias{datThen}
 \title{Data of Then's study}
-\format{A data frame of class lfq consisting of:
+\format{
+A data frame of class lfq consisting of:
 \itemize{
   \item \strong{M} natural mortality,
   \item \strong{Linf} asymptotic length of VBGF,
   \item \strong{K} growth coefficient of VBGF
-}}
+}
+}
 \source{
 Then, A. Y., J. M. Hoenig, N. G. Hall, D. A. Hewitt. 2015. Evaluating the predictive
 performance of empirical estimators of natural mortality rate using information on over

@@ -4,7 +4,9 @@
 \name{alba_boot}
 \alias{alba_boot}
 \title{Bootstrapped VBGF estimates for the alba lfq dataset}
-\format{A list of class `lfqBoot`}
+\format{
+A list of class `lfqBoot`
+}
 \usage{
 data(alba_boot)
 }

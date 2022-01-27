@@ -4,10 +4,23 @@
 \alias{vbgfCI_time}
 \title{VBGF plot and CI}
 \usage{
-vbgfCI_time(res, CI = 95, agemax = NULL, add_legend = TRUE,
-  add_max_dens_legend = TRUE, xlab = "Relative time", ylab = "Length",
-  perm.col = adjustcolor("grey50", 0.1), perm.lwd = 1, ci.col = 1,
-  ci.lty = 2, ci.lwd = 1, maxd.col = 1, maxd.lty = 1, maxd.lwd = 2)
+vbgfCI_time(
+  res,
+  CI = 95,
+  agemax = NULL,
+  add_legend = TRUE,
+  add_max_dens_legend = TRUE,
+  xlab = "Relative time",
+  ylab = "Length",
+  perm.col = adjustcolor("grey50", 0.1),
+  perm.lwd = 1,
+  ci.col = 1,
+  ci.lty = 2,
+  ci.lwd = 1,
+  maxd.col = 1,
+  maxd.lty = 1,
+  maxd.lwd = 2
+)
 }
 \arguments{
 \item{res}{list of class `lfqBoot`}

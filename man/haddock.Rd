@@ -4,12 +4,14 @@
 \name{haddock}
 \alias{haddock}
 \title{Haddock data}
-\format{A list consisting of:
+\format{
+A list consisting of:
 \itemize{
   \item \code{midLengths}  the midlengths of size classes,
   \item \code{numCodend}  the number of fish retained in codend,
   \item \code{numCover}  the number of fish retained in cover,
-}}
+}
+}
 \source{
 Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
  using log-linear models. \emph{ICES Journal of Marine Science: Journal du Conseil},

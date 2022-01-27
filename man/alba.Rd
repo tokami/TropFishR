@@ -4,12 +4,14 @@
 \name{alba}
 \alias{alba}
 \title{Length-frequency data of the clam Abra alba}
-\format{A list of class lfq consisting of:
+\format{
+A list of class lfq consisting of:
 \itemize{
   \item \strong{dates} dates of sampling times (class Date),
   \item \strong{midLengths} midpoints of the length classes,
   \item \strong{catch} matrix with catches/counts per length class (row) and sampling date (column).
-}}
+}
+}
 \source{
 Brey, T., Soriano, M., and Pauly, D. 1988.
 Electronic length frequency analysis: a revised and

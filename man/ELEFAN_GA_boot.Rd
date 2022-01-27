@@ -4,13 +4,29 @@
 \alias{ELEFAN_GA_boot}
 \title{Bootstrapped ELEFAN_GA}
 \usage{
-ELEFAN_GA_boot(lfq, seasonalised = FALSE, low_par = NULL, up_par = NULL,
-  parallel = TRUE, nresamp = 200, no_cores = detectCores() - 1,
-  clusterType = "PSOCK", outfile = "output.txt", popSize = 60,
-  maxiter = 50, run = 10, pmutation = 0.2, pcrossover = 0.8,
-  elitism = base::max(1, round(popSize * 0.05)), MA = 5,
-  addl.sqrt = FALSE, agemax = NULL, flagging.out = TRUE, seed = NULL,
-  CI = 95)
+ELEFAN_GA_boot(
+  lfq,
+  seasonalised = FALSE,
+  low_par = NULL,
+  up_par = NULL,
+  parallel = TRUE,
+  nresamp = 200,
+  no_cores = detectCores() - 1,
+  clusterType = "PSOCK",
+  outfile = "output.txt",
+  popSize = 60,
+  maxiter = 50,
+  run = 10,
+  pmutation = 0.2,
+  pcrossover = 0.8,
+  elitism = base::max(1, round(popSize * 0.05)),
+  MA = 5,
+  addl.sqrt = FALSE,
+  agemax = NULL,
+  flagging.out = TRUE,
+  seed = NULL,
+  CI = 95
+)
 }
 \arguments{
 \item{lfq}{a length frequency object of the class `lfq`}

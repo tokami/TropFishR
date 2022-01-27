@@ -4,14 +4,16 @@
 \name{tilapia}
 \alias{tilapia}
 \title{Tilapia data}
-\format{A list consiting of:
+\format{
+A list consiting of:
 \itemize{
   \item \code{midLengths}  the midlengths of size classes,
   \item \code{numNet1}  the number of fish caught with net 1,
   \item \code{numNet2}  the number of fish caught with net 2,
   \item \code{msNet1}  the meshsize of net 1,
   \item \code{msNet2}  and the meshsize of net 2.
-}}
+}
+}
 \source{
 Garrod, D.J., 1961. The selection characteristics of nylon gill nets for
    \emph{Tilapia esculenta} Graham. J.Cons.CIEM, 26(2):191-203

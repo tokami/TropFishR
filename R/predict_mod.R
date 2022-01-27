@@ -364,16 +364,19 @@ predict_mod <- function(
 
             ## vectorise
             if(!is.na(binSize)){
-                lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE, bin_size = binSize)
+                lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE, bin_size = binSize,
+                                     keep_midlengths = TRUE)
             }else{
-                lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE)
+                lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE, keep_midlengths = TRUE)
             }
 
 
             if(yearCombine && inherits(lfqLoop$catch, "matrix")) lfqLoop$catch <- rowSums(lfqLoop$catch)
 
             ## error if lfq data spans several years!
-            if(class(lfqLoop$catch) == "matrix") stop("The lfq data spans several years, please subset for one year at a time!")
+            if(inherits(lfqLoop$catch, "matrix") && ncol(lfqLoop$catch) == 1){
+                lfqLoop$catch <- as.numeric(lfqLoop$catch)
+            }else if(inherits(lfqLoop$catch, "matrix")) stop("The lfq data spans several years, please subset for one year at a time!")
 
 
             Linf <- bootRaw$Linf[bi]
@@ -525,6 +528,7 @@ predict_mod <- function(
                 lfqLoop$par$Lmat <- Lmat
                 lfqLoop$par$wmat <- wmat
 
+
                 ## prediction based on f_change
                 pred_mat <- as.matrix(FMvec/max(FMvec, na.rm = TRUE)) %*% FM_change
                 pred_res_list <- vector("list", length(FM_change))
@@ -561,7 +565,8 @@ predict_mod <- function(
                 }
                 splYPR <- smooth.spline(x = FM_change, y = ypr, spar = 0.4)
                 splBPR <- smooth.spline(x = FM_change, y = bpr, spar = 0.4)
-                newdat <- data.frame(F=seq(0,5,length.out = 500))
+                newdat <- data.frame(F=seq(min(FM_change), max(FM_change),
+                                           length.out = 500))
                 newdat$YPR <- predict(splYPR, x=newdat$F)$y
                 newdat$YPR.d1 <- predict(splYPR, x=newdat$F, deriv = 1)$y
                 newdat$BPR <- predict(splBPR, x=newdat$F)$y

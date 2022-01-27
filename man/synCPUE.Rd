@@ -4,12 +4,14 @@
 \name{synCPUE}
 \alias{synCPUE}
 \title{Synthetical catch per unit of effort (CPUE) dataset}
-\format{A dataframe consisting of following columns:
+\format{
+A dataframe consisting of following columns:
 \itemize{
   \item \code{cohort}: name of cohort, e.g. 1982 S, meaning summer cohort of 1982,
   \item \code{age}: age of cohorts,
   \item \code{CPUE}: catch per unit of effort of cohorts.
-}}
+}
+}
 \source{
 Sparre, P., Venema, S.C., 1999. Introduction to tropical fish stock
    assessment. Part 2. Excercises. \emph{FAO Fisheries Technical Paper}, (306.2, Rev. 2).

@@ -4,7 +4,8 @@
 \name{synLFQ8}
 \alias{synLFQ8}
 \title{Synthetic length-frequency data VIII with variable harvest rate}
-\format{A list of class lfq consisting of:
+\format{
+A list of class lfq consisting of:
 \itemize{
  \item \strong{stock} Stock ID or name,
   \item \strong{dates} dates of sampling times (class Date),
@@ -12,7 +13,8 @@
   \item \strong{catch} matrix with catches/counts per length class (row) and
      sampling date (column),
   \item \strong{comment} additional comments to this data set.
-}}
+}
+}
 \source{
 Taylor, M & T. K. Mildenberger  (2018). fishdynr: Fisheries science related population dynamics
 models. R package version 0.5. https://github.com/tokami/fishdynr

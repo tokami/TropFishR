@@ -4,8 +4,10 @@
 \name{emperor}
 \alias{emperor}
 \title{Emperor data}
-\format{A dataframe containing: 1. \strong{year} years, 2. \strong{Y} yield,
-   3. \strong{CPUE} CPUE or abundance index}
+\format{
+A dataframe containing: 1. \strong{year} years, 2. \strong{Y} yield,
+   3. \strong{CPUE} CPUE or abundance index
+}
 \source{
 Dharmendra, D., Solmundsson, J., 2005. Stock assessment of the offshore Mauritian banks
 using dynamic biomass models and analysis of length frequency of the Sky Emperor

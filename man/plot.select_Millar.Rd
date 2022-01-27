@@ -4,11 +4,20 @@
 \alias{plot.select_Millar}
 \title{Millar's selectivity plot}
 \usage{
-\method{plot}{select_Millar}(x, plotlens = NULL, standardise = TRUE,
-  deviance_plot = TRUE, selectivity_plot = TRUE, xlab_dev = "Length [cm]",
-  xlab_sel = "Length [cm]", ylab_dev = "Mesh size [cm]",
-  ylab_sel = "Relative retention", title_dev = "Deviance residuals",
-  title_sel = NULL, ...)
+\method{plot}{select_Millar}(
+  x,
+  plotlens = NULL,
+  standardise = TRUE,
+  deviance_plot = TRUE,
+  selectivity_plot = TRUE,
+  xlab_dev = "Length [cm]",
+  xlab_sel = "Length [cm]",
+  ylab_dev = "Mesh size [cm]",
+  ylab_sel = "Relative retention",
+  title_dev = "Deviance residuals",
+  title_sel = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{a list of the class \code{"select_Millar"} containing the results of
