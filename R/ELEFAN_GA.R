@@ -186,6 +186,7 @@ ELEFAN_GA <- function(
   monitor = FALSE,
   plot = FALSE,
   plot.score = TRUE,
+  weight.by.sample.size = FALSE,
   ...
 ){
 
@@ -242,16 +243,16 @@ ELEFAN_GA <- function(
     ## two spawning times per year
     if(spawningTimes == 2){
         if(length(low_tanc) <= 1) low_tanc <- c(low_tanc, low_tanc)
-        if(length(up_tanc) <= 1) up_tanc <- c(up_tanc, up_tanc)        
+        if(length(up_tanc) <= 1) up_tanc <- c(up_tanc, up_tanc)
     }
-    
+
     # ELEFAN 0
-    lfq <- lfqRestructure(lfq, MA = MA, addl.sqrt = addl.sqrt)
+    lfq <- lfqRestructure(lfq, MA = MA, addl.sqrt = addl.sqrt, weight.by.sample.size = weight.by.sample.size)
 
     # seasonalised fitness function
     sofun <- function(lfq, par, agemax, flagging.out, spawningTimes){
         if(spawningTimes == 1){
-            parList <- list(Linf=par[1], K=par[2], t_anchor=par[3], C=par[4], ts=par[5])            
+            parList <- list(Linf=par[1], K=par[2], t_anchor=par[3], C=par[4], ts=par[5])
         }else if(spawningTimes == 2){
             parList <- list(Linf=par[1], K=par[2], t_anchor=c(par[3], par[4]),
                             C=par[5], ts=par[6])
@@ -286,14 +287,14 @@ ELEFAN_GA <- function(
         upper = max,
         agemax = agemax,
         flagging.out = flagging.out,
-        spawningTimes = spawningTimes,        
+        spawningTimes = spawningTimes,
         popSize = popSize, maxiter = maxiter, run = run, parallel = parallel,
         pmutation = pmutation, pcrossover = pcrossover, elitism = elitism,
         seed = seed, monitor = monitor,
         ...
       )
       if(spawningTimes == 1){
-          pars <- as.list(fit@solution[1,])          
+          pars <- as.list(fit@solution[1,])
           names(pars) <- c("Linf", "K", "t_anchor", "C", "ts")
       }else if(spawningTimes == 2){
           tmp <- as.numeric(fit@solution[1,])
@@ -324,14 +325,14 @@ ELEFAN_GA <- function(
         ...
         )
       if(spawningTimes == 1){
-          pars <- as.list(fit@solution[1,])          
+          pars <- as.list(fit@solution[1,])
           names(pars) <- c("Linf", "K", "t_anchor")
       }else if(spawningTimes == 2){
           tmp <- as.numeric(fit@solution[1,])
           pars <- list(Linf = tmp[1],
                        K = tmp[2],
                        t_anchor = c(tmp[3], tmp[4]))
-      }                  
+      }
     }
 
     # Fitness graph
@@ -353,7 +354,7 @@ ELEFAN_GA <- function(
     ## Results
     lfq$low_par <- list(Linf = low_Linf, K = low_K, t_anchor=low_tanc, C=low_C, ts=low_ts)
     lfq$up_par <- list(Linf=up_Linf, K=up_K, t_anchor=up_tanc, C=up_C, ts=up_ts)
-    lfq$seasonalised <- seasonalised    
+    lfq$seasonalised <- seasonalised
     lfq$addl.sqrt <- addl.sqrt
     lfq$popSize <- popSize
     lfq$maxiter <- maxiter

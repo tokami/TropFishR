@@ -522,7 +522,8 @@ ELEFAN_GA_boot <- function(
                            pmutation = 0.2, pcrossover = 0.8,
                            elitism = base::max(1, round(popSize * 0.05)),
                            MA = 5, addl.sqrt = FALSE, agemax = NULL,
-                           flagging.out = TRUE, seed = NULL, CI = 95
+                           flagging.out = TRUE, seed = NULL, CI = 95,
+                           weight.by.sample.size = FALSE
                            ){
 
     if(!is.null(outfile)){unlink(outfile)} # delete old outfile
@@ -560,7 +561,8 @@ ELEFAN_GA_boot <- function(
                 pmutation = pmutation, pcrossover = pcrossover, elitism = elitism,
                 MA = MA, parallel = FALSE, addl.sqrt = addl.sqrt,
                 agemax = agemax, flagging.out = flagging.out,
-                plot.score = FALSE, seed = NULL
+                plot.score = FALSE, seed = NULL,
+                weight.by.sample.size = weight.by.sample.size
             )
 
                                         # print output (for checking progress in output.txt)
@@ -600,7 +602,8 @@ ELEFAN_GA_boot <- function(
                 pmutation = pmutation, pcrossover = pcrossover, elitism = elitism,
                 MA = MA, parallel = FALSE, addl.sqrt = addl.sqrt,
                 agemax = agemax, flagging.out = flagging.out,
-                plot.score = FALSE, seed = NULL
+                plot.score = FALSE, seed = NULL,
+                weight.by.sample.size = weight.by.sample.size
             )
 
             if(!is.null(outfile)){
