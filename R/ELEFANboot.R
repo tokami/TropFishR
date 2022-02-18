@@ -53,7 +53,7 @@ lfqResample <- function(lfq, sampSize = NA, boot = NULL){
             }else{
                 sampSizi <- sampSize
             }
-            inds <- sample(x = lfq$midLengths, size = sampSizi,
+            inds <- sample(x = lfq$midLengths, size = round(sampSizi),
                            prob = lfq$catch[,i], replace = TRUE)
             bin.width <- diff(lfq$midLengths) # bin width (should allow for uneven bin sizes)
             bin.lower <- lfq$midLengths - (c(bin.width[1], bin.width)/2) # upper bin limit
@@ -523,7 +523,7 @@ ELEFAN_GA_boot <- function(
                            elitism = base::max(1, round(popSize * 0.05)),
                            MA = 5, addl.sqrt = FALSE, agemax = NULL,
                            flagging.out = TRUE, seed = NULL, CI = 95,
-                           weight.by.sample.size = FALSE
+                           weight.by.sample.size = FALSE, bin_size = NA
                            ){
 
     if(!is.null(outfile)){unlink(outfile)} # delete old outfile
@@ -539,7 +539,7 @@ ELEFAN_GA_boot <- function(
             "popSize", "maxiter", "run", "seed",
             "pmutation", "pcrossover", "elitism",
             "MA", "addl.sqrt", "agemax", "flagging.out",
-            "outfile"
+            "outfile","bin_size"
         )
 
 
@@ -551,6 +551,10 @@ ELEFAN_GA_boot <- function(
 
                                         # permutate data
             lfqb <- lfqResample(lfq)
+
+            if(!is.na(bin_size) && is.numeric(bin_size)){
+                lfqb <- lfqModify(lfqb, bin_size = bin_size)
+            }
 
                                         # call ELEFAN_GA
             fitboot <- ELEFAN_GA(
@@ -591,6 +595,10 @@ ELEFAN_GA_boot <- function(
 
             ## resample data
             lfqb <- lfqResample(lfq)
+
+            if(!is.na(bin_size) && is.numeric(bin_size)){
+                lfqb <- lfqModify(lfqb, bin_size = bin_size)
+            }
 
 
                                         # call ELEFAN_GA
