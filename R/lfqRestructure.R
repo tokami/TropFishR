@@ -110,10 +110,12 @@ lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE){
 
   # Steps refer to Gayanilo (1997) FAO-ICLARM stock assessment tools: reference manual
   rcounts <- 0*lfq$catch
-  for(i in seq(ncol(lfq$catch))){
-    pm <- (MA-1)/2 # plus minus
+    for(i in seq(ncol(lfq$catch))){
 
-    # positions of first and last non-zero valules
+      pm <- (MA-1)/2 # plus minus
+
+        # positions of first and last non-zero valules
+        if(all(lfq$catch[,i] == 0)) stop(paste0("Sample ", i, " (Date: ",lfq$dates[i],") contains only zeros! Please remove this sample and run again!"))
     val_first <- min(which(lfq$catch[,i] != 0))
     val_last <- max(which(lfq$catch[,i] != 0))
     val_pos <- seq(val_first, val_last)
@@ -195,7 +197,7 @@ lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE){
 
     # ASP calc
     sampASP <- NaN*seq(ncol(rcounts))
-    
+
     for(i in seq(ncol(rcounts))){
         ## lfq.i <- lfq[i,]
         tmp <- rle(sign(rcounts[,i]))
@@ -207,17 +209,17 @@ lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE){
             for(p in seq(length(posrun))){
                 peakval[p] <- max(rcounts[start.idx[posrun[p]]:end.idx[posrun[p]], i ])
             }
-            sampASP[i] <- sum(peakval)            
+            sampASP[i] <- sum(peakval)
         }else{
             sampASP[i] <- 0
         }
-    
+
     }
-    
+
     ASP <- sum(sampASP)
     lfq$ASP <- ASP
     lfq$MA <- MA
-    
+
     class(lfq) <- "lfq"
     return(lfq)
 }
