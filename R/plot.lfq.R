@@ -162,7 +162,7 @@ plot.lfq <- function(x,
   date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by="months"),
   date.format = "'%y-%b", xlab = "", ylab = "Length classes",
   draw = TRUE, border = "grey20", cex.axis=1, yaxt = "t",
-  ylim = NULL,
+  xlim = NULL, ylim = NULL,
   ...){
 
 
@@ -265,7 +265,9 @@ plot.lfq <- function(x,
     if(is.null(ylim) || is.na(ylim)){
         ylim <- c(0.9,1.1) * range(bin.upper,bin.lower)
     }
-
+    if(is.null(xlim) || is.na(xlim)){
+        xlim <- range(as.numeric(dates)) + c(-0.5,0.5)
+    }
 
     # image colour
     if(is.null(image.col)){
@@ -289,20 +291,12 @@ plot.lfq <- function(x,
         catchComb <- catch + catchY
         image(
             x=mergi$dates, y=mergi2$classes, z=t(catchComb), col=image.col, zlim=zlim,
-            ylim = ylim,
+            ylim = ylim, xlim = xlim,
             xaxt="n", xlab = xlab, ylab = ylab, yaxt="n",...)
     }else{
-        if(length(dates) > 1){
-        image(
-            x=dates, y=classes, z=t(catch), col=image.col, zlim=zlim,
-            ylim = ylim,
-            xaxt="n", xlab = xlab, ylab = ylab, yaxt="n",...)
-        }else{
-            image(
-                x=dates, y=classes, z=t(catch), col=image.col, zlim=zlim,
-                xlim = as.numeric(dates) + c(-1,1), ylim = ylim,
-                xaxt="n", xlab = xlab, ylab = ylab, yaxt="n",...)
-        }
+        image(x=as.numeric(dates), y=classes, z=t(catch), col=image.col, zlim=zlim,
+              xlim = xlim, ylim = ylim,
+              xaxt="n", xlab = xlab, ylab = ylab, yaxt="n",...)
     }
     if(yaxt != "n") axis(2, cex.axis=cex.axis)
 
@@ -314,26 +308,24 @@ plot.lfq <- function(x,
     }
 
     # add time axis
-    if(date.axis == "modern"){
-      axis.Date(side = 1, x=dates, at=date.at, format = date.format, cex.axis=cex.axis)
-    }
-    if(date.axis == "traditional"){
-        if(length(dates) > 1){
-            axis.Date(side = 1, x = dates, at = date.at, format = "%b", cex.axis=cex.axis)
-        }else{
-            axis.Date(side = 1, x = dates, at = dates,
-                      format = "%b", cex.axis=cex.axis)
+    if(length(unique(format(dates, "%Y-%b"))) ==  1){
+        axis.Date(side = 1, x = dates, at = dates, format = "%d-%b", cex.axis=cex.axis)
+    }else{
+        if(date.axis == "modern"){
+            axis.Date(side = 1, x=dates, at=date.at, format = date.format, cex.axis=cex.axis)
         }
-        year <- seq(min(as.numeric(format(dates, "%Y"))), max(as.numeric(format(dates, "%Y"))), 1)
-        date_seq <- seq.Date(dates[1],dates[length(dates)], by = "month")
-        date_label <- format(date_seq, "%m")
-        year_pre <- which(date_label %in% "01")
-        if(!(1 %in% year_pre)) year_pre <- c(1,which(date_label %in% "01"))
-        dates_for_years <- as.Date(paste(format(date_seq,"%Y"),date_label,"01",sep="-"))
-        year_ticks <- dates_for_years[year_pre]
-        mtext(side = 1, at = year_ticks, text = year, line = 2.5)
+        if(date.axis == "traditional"){
+            axis.Date(side = 1, x = dates, at = date.at, format = "%b", cex.axis=cex.axis)
+            year <- seq(min(as.numeric(format(dates, "%Y"))), max(as.numeric(format(dates, "%Y"))), 1)
+            date_seq <- seq.Date(dates[1],dates[length(dates)], by = "month")
+            date_label <- format(date_seq, "%m")
+            year_pre <- which(date_label %in% "01")
+            if(!(1 %in% year_pre)) year_pre <- c(1,which(date_label %in% "01"))
+            dates_for_years <- as.Date(paste(format(date_seq,"%Y"),date_label,"01",sep="-"))
+            year_ticks <- dates_for_years[year_pre]
+            mtext(side = 1, at = year_ticks, text = year, line = 2.5)
+        }
     }
-
 
     ## Histograms
     if(any(!is.na(y))){
@@ -359,7 +351,7 @@ plot.lfq <- function(x,
         }
     }else{
         for(i in seq(length(dates))){
-            abline(v=dates[i], lty=1, col="grey20")
+            abline(v=as.numeric(dates[i]), lty=1, col="grey20")
             score.sc <- catch[,i] * sc
             for(j in seq(classes)){
                 # if(score.sc[j] != 0){
@@ -386,5 +378,5 @@ plot.lfq <- function(x,
     }
 
     # frame
-    box()
+    box(lwd = 1.5)
 }
