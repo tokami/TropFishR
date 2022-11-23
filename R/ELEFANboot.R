@@ -635,7 +635,7 @@ ELEFAN_GA_boot <- function(
 
     ## Conduct multivariate kernel smoothing
     phiLcol <- which(names(bootRaw) == "phiL")
-    if(length(phiLcol > 0)){
+    if(length(phiLcol) > 0){
         x <- bootRaw[,-phiLcol]
     } else {
         x <- bootRaw
