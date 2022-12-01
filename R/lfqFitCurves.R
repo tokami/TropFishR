@@ -158,7 +158,12 @@ lfqFitCurves <- function(lfq,
     }
 
     par2 <- par
-    t <- c(yeardec,max(yeardec)+0.2)  # for plotting, otherwise growth curves are cut at last sampling time
+    if(draw){
+        t <- seq(min(floor(yeardec)), max(ceiling(yeardec)), length.out = 1e3)
+    }else{
+        t <- c(yeardec,max(yeardec)+0.2)  # for plotting, otherwise growth curves are cut at last sampling time
+    }
+
     Lt <- vector(mode="list", ncohort)
     ctlab <- rev(seq(ncohort))
     for(ct in seq(ncohort)){
