@@ -99,7 +99,7 @@
 #'
 #' @export
 
-lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE, weight.by.sample.size = FALSE){
+lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE, weighted = FALSE){
 
   lfq <- param
 
@@ -176,7 +176,8 @@ lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE, weight.by.sample.size =
     rcounts[val_pos,i] <- Fs
   }
 
-    if(weight.by.sample.size){
+
+    if(weighted){
         rcounts <- rcounts * rep(colSums(lfq$catch) / sum(lfq$catch), each = nrow(lfq$catch))
     }
 

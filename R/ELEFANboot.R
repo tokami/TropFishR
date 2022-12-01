@@ -523,7 +523,7 @@ ELEFAN_GA_boot <- function(
                            elitism = base::max(1, round(popSize * 0.05)),
                            MA = 5, addl.sqrt = FALSE, agemax = NULL,
                            flagging.out = TRUE, seed = NULL, CI = 95,
-                           weight.by.sample.size = FALSE, bin_size = NA
+                           weighted = FALSE, bin_size = NA
                            ){
 
     if(!is.null(outfile)){unlink(outfile)} # delete old outfile
@@ -566,7 +566,7 @@ ELEFAN_GA_boot <- function(
                 MA = MA, parallel = FALSE, addl.sqrt = addl.sqrt,
                 agemax = agemax, flagging.out = flagging.out,
                 plot.score = FALSE, seed = NULL,
-                weight.by.sample.size = weight.by.sample.size
+                weighted = weighted
             )
 
                                         # print output (for checking progress in output.txt)
@@ -611,7 +611,7 @@ ELEFAN_GA_boot <- function(
                 MA = MA, parallel = FALSE, addl.sqrt = addl.sqrt,
                 agemax = agemax, flagging.out = flagging.out,
                 plot.score = FALSE, seed = NULL,
-                weight.by.sample.size = weight.by.sample.size
+                weighted = weighted
             )
 
             if(!is.null(outfile)){

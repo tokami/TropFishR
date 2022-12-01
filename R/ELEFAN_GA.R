@@ -182,11 +182,11 @@ ELEFAN_GA <- function(
   agemax = NULL,
   flagging.out = TRUE,
   spawningTimes = 1,
+  weighted = FALSE,
   seed = NULL,
   monitor = FALSE,
   plot = FALSE,
   plot.score = TRUE,
-  weight.by.sample.size = FALSE,
   ...
 ){
 
@@ -247,7 +247,7 @@ ELEFAN_GA <- function(
     }
 
     # ELEFAN 0
-    lfq <- lfqRestructure(lfq, MA = MA, addl.sqrt = addl.sqrt, weight.by.sample.size = weight.by.sample.size)
+    lfq <- lfqRestructure(lfq, MA = MA, addl.sqrt = addl.sqrt, weighted = weighted)
 
     # seasonalised fitness function
     sofun <- function(lfq, par, agemax, flagging.out, spawningTimes){
