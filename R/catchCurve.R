@@ -406,11 +406,17 @@ catchCurve <- function(param,
 
             ## calculations + model
             df.CC <- as.data.frame(cbind(xvar,yvar))
-            df.CC.cut <- df.CC[cutter[1]:cutter[2],]
 
-            lm1 <- try(lm(yvar ~ xvar, data = df.CC.cut), silent = TRUE)
-
-            if(class(lm1) == "try-error" | nrow(df.CC.cut) < 3 | coefficients(lm1)[2] > 0){
+            if(!any(is.na(cutter)) && length(cutter) == 2){
+                df.CC.cut <- df.CC[cutter[1]:cutter[2],]
+                lm1 <- try(lm(yvar ~ xvar, data = df.CC.cut), silent = TRUE)
+                err.flag <- FALSE
+            }else{
+                df.CC.cut <- NA
+                lm1 <- NA
+                err.flag <- TRUE
+            }
+            if(err.flag || class(lm1) == "try-error" || nrow(df.CC.cut) < 3 || coefficients(lm1)[2] > 0){
                 Zs[bi] <- NA
                 ints[bi] <- NA
                 cuts[[bi]] <- NA
@@ -857,23 +863,24 @@ catchCurve <- function(param,
               xvar2 <- xvar[which(yvar2 > 0.5)]
               cutter <- c(which(yvar2 == max(as.numeric(yvar2),na.rm=TRUE))+1,
                           which(xvar2 == max(xvar2,na.rm=TRUE)))
-              ltest <- cutter[2] - cutter[1]
-              if(ltest > 30){
-                  cutter[2] <- cutter[2] - 15
-              }else if(ltest > 20){
-                  cutter[2] <- cutter[2] - 12
-              }else if(ltest > 15){
-                  cutter[2] <- cutter[2] - 7
-              }else if(ltest > 10){
-                  cutter[2] <- cutter[2] - 5
-              }else if(ltest > 7){
-                  cutter[2] <- cutter[2] - 3
-              }else if(ltest > 5){
-                  cutter[2] <- cutter[2] - 2
-              }
+              ## ltest <- cutter[2] - cutter[1]
+              ## if(ltest > 30){
+              ##     cutter[2] <- cutter[2] - 15
+              ## }else if(ltest > 20){
+              ##     cutter[2] <- cutter[2] - 12
+              ## }else if(ltest > 15){
+              ##     cutter[2] <- cutter[2] - 7
+              ## }else if(ltest > 10){
+              ##     cutter[2] <- cutter[2] - 5
+              ## }else if(ltest > 7){
+              ##     cutter[2] <- cutter[2] - 3
+              ## }else if(ltest > 5){
+              ##     cutter[2] <- cutter[2] - 2
+              ## }
               cutterList <- list()
               cutterList[[1]] <- cutter
           }
+
 
           ## define result lists
           lm1List <- vector("list",reg_num)
