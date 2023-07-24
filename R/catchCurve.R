@@ -247,9 +247,11 @@ catchCurve <- function(param,
                 yearSel <- as.character(yearSel)
                 ## warning if year not in dates
                 dateYears <- format(lfqTemp$dates, "%Y")
-                if(all(yearSel %in% dateYears == FALSE)) stop(paste0("The selected year ", yearSel, " is not in the LFQ data!"))
+                if(all(yearSel %in% dateYears == FALSE))
+                    stop(paste0("The selected year ", yearSel,
+                                " is not in the LFQ data!"))
 
-                lfqTemp$catch <- lfqTemp$catch[,which(format(lfqTemp$dates,"%Y") %in% yearSel)]
+                lfqTemp$catch <- as.matrix(lfqTemp$catch[,which(format(lfqTemp$dates,"%Y") %in% yearSel)])
                 lfqTemp$dates <- lfqTemp$dates[format(lfqTemp$dates,"%Y") %in% yearSel]
             }
 
@@ -263,7 +265,7 @@ catchCurve <- function(param,
             if(yearCombine && inherits(lfqLoop$catch, "matrix")) lfqLoop$catch <- rowSums(lfqLoop$catch)
 
             ## error if lfq data spans several years!
-            if(class(lfqLoop$catch) == "matrix") stop("The lfq data spans several years, please subset for one year at a time!")
+            if(inherits(lfqLoop$catch,"matrix")) stop("The lfq data spans several years, please subset for one year at a time!")
 
             catch <- lfqLoop$catch
 
@@ -376,6 +378,15 @@ catchCurve <- function(param,
                 yvar <- temp[,2]
             }
 
+            ## HERE:
+            ## remove all NAs and Infs
+            temp <- cbind(xvar,yvar)
+            temp <- as.matrix(na.exclude(temp))
+            temp <- temp[(!(temp[,1] == Inf | temp[,1] == -Inf)),]
+            temp <- temp[(!(temp[,2] == Inf | temp[,2] == -Inf)),]
+            xvar <- temp[,1]
+            yvar <- temp[,2]
+
 
             ## cut
             yvar2 <- as.numeric(yvar)
@@ -389,12 +400,11 @@ catchCurve <- function(param,
             if(length(indexX) < 1){
                 indexX <- max(xvar,na.rm=TRUE)
             }else{
-                indexX <- indexX-1
+                ## indexX <- indexX-1 ## HERE:
             }
 
             xvar2 <- xvar[indexX]
             cutter <- c(maxY+1, which(xvar == max(xvar2,na.rm=TRUE)))
-
 
 
             if(!is.null(agerange)){  ## limit range of regression line within given interval
@@ -511,7 +521,7 @@ catchCurve <- function(param,
         colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)],"Z")
 
         ## estimate FM if M in data frame
-        if(!is.null(natMort) & natMort %in% colnames(bootRaw)){ ## TODO: FIX: BUG: if NULL does not go to second if clause
+        if(!is.null(natMort) && natMort %in% colnames(bootRaw)){ ## TODO: FIX: BUG: if NULL does not go to second if clause
             bootRaw[,(ncol(bootRaw)+1)] <- bootRaw$Z - bootRaw[,(colnames(bootRaw) == natMort)]
             colnames(bootRaw) <- c(colnames(bootRaw)[-ncol(bootRaw)],"FM")
             tmp <- as.data.frame(bootRaw[,(ncol(boot$bootRaw)+(1:2))])

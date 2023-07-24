@@ -523,8 +523,10 @@ ELEFAN_GA_boot <- function(
                            elitism = base::max(1, round(popSize * 0.05)),
                            MA = 5, addl.sqrt = FALSE, agemax = NULL,
                            flagging.out = TRUE, seed = NULL, CI = 95,
-                           weighted = FALSE, bin_size = NA
+                           weighted = FALSE, bin_size = NA,
+                           spawningTimes = 1
                            ){
+
 
     if(!is.null(outfile)){unlink(outfile)} # delete old outfile
 
@@ -539,7 +541,7 @@ ELEFAN_GA_boot <- function(
             "popSize", "maxiter", "run", "seed",
             "pmutation", "pcrossover", "elitism",
             "MA", "addl.sqrt", "agemax", "flagging.out",
-            "outfile","bin_size"
+            "outfile","bin_size", "spawningTimes"
         )
 
 
@@ -566,7 +568,8 @@ ELEFAN_GA_boot <- function(
                 MA = MA, parallel = FALSE, addl.sqrt = addl.sqrt,
                 agemax = agemax, flagging.out = flagging.out,
                 plot.score = FALSE, seed = NULL,
-                weighted = weighted
+                weighted = weighted,
+                spawningTimes = spawningTimes
             )
 
                                         # print output (for checking progress in output.txt)
@@ -611,7 +614,8 @@ ELEFAN_GA_boot <- function(
                 MA = MA, parallel = FALSE, addl.sqrt = addl.sqrt,
                 agemax = agemax, flagging.out = flagging.out,
                 plot.score = FALSE, seed = NULL,
-                weighted = weighted
+                weighted = weighted,
+                spawningTimes = spawningTimes
             )
 
             if(!is.null(outfile)){
@@ -644,7 +648,7 @@ ELEFAN_GA_boot <- function(
     H <- ks::Hpi(x, nstage = 1)
     fhat <- ks::kde(x = x, H = H, eval.points = x)
 
-                                        # maximum density
+    ## maximum density
     maxDens <- fhat$eval.points[which.max(fhat$estimate),]
     nami <- names(maxDens)
     maxDens <- as.numeric(maxDens)

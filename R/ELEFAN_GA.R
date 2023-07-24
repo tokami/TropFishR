@@ -254,7 +254,7 @@ ELEFAN_GA <- function(
         if(spawningTimes == 1){
             parList <- list(Linf=par[1], K=par[2], t_anchor=par[3], C=par[4], ts=par[5])
         }else if(spawningTimes == 2){
-            parList <- list(Linf=par[1], K=par[2], t_anchor=c(par[3], par[4]),
+            parList <- list(Linf=par[1], K=par[2], t_anchor=c(par[3],par[4]),
                             C=par[5], ts=par[6])
         }
         Lt <- lfqFitCurves(lfq, par=parList,
@@ -331,7 +331,7 @@ ELEFAN_GA <- function(
           tmp <- as.numeric(fit@solution[1,])
           pars <- list(Linf = tmp[1],
                        K = tmp[2],
-                       t_anchor = c(tmp[3], tmp[4]))
+                       t_anchor = c(tmp[3],tmp[4]))
       }
     }
 
