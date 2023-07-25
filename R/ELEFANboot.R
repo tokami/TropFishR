@@ -579,8 +579,9 @@ ELEFAN_GA_boot <- function(
                 sink()
             }
 
-                                        # return result
-            return(c(unlist(fitboot$par), seed + x, fitboot$Rn_max))
+            ## return result
+            return(c(unlist(fitboot$par), agemax = fitboot$agemax,
+                     seed + x, fitboot$Rn_max))
         }
 
         cl <- parallel::makeCluster(no_cores, type=clusterType)
@@ -624,10 +625,12 @@ ELEFAN_GA_boot <- function(
                 sink()
             }
 
-                                        # return result
-            res[[x]] <- c(unlist(fitboot$par), seed + x, fitboot$Rn_max)
+            ## return result
+            res[[x]] <- c(unlist(fitboot$par), agemax = fitboot$agemax,
+                          seed + x, fitboot$Rn_max)
         }
     }
+
     tmp0 <- as.data.frame(do.call("rbind", res))
     tmp <- tmp0[,-c(ncol(tmp0)-1,ncol(tmp0))]
 
@@ -638,7 +641,8 @@ ELEFAN_GA_boot <- function(
     bootRaw <- tmp
 
     ## Conduct multivariate kernel smoothing
-    phiLcol <- which(names(bootRaw) == "phiL")
+    phiLcol <- c(grep("phi",names(bootRaw)),
+                 grep("agemax",names(bootRaw)))
     if(length(phiLcol) > 0){
         x <- bootRaw[,-phiLcol]
     } else {
@@ -680,6 +684,36 @@ ELEFAN_GA_boot <- function(
     limCI <- cbind(limCI,log10(limCI[,which(names(maxDens) == "K")]) +
                          2 * log10(limCI[,which(names(maxDens) == "Linf")]))
     colnames(limCI) <- c(colnames(limCI)[-ncol(limCI)],"phiL")
+
+    ## adding agemax to maxDen and CI assuming univariate density
+    if(is.null(agemax)){
+    maxDens[length(maxDens)+1] <- ceiling((1/-maxDens[which(names(maxDens) == "K")])*
+                                          log(1-((maxDens[which(names(maxDens) == "Linf")]*0.95)/maxDens[which(names(maxDens) == "Linf")])))
+    }else{
+        maxDens[length(maxDens)+1] <- agemax
+    }
+    names(maxDens) <- c(names(maxDens)[-length(maxDens)],"agemax")
+        if(is.null(agemax)){
+    medians[length(medians)+1] <- ceiling((1/-medians[which(names(medians) == "K")])*
+                                          log(1-((medians[which(names(medians) == "Linf")]*0.95)/medians[which(names(medians) == "Linf")])))
+    }else{
+        medians[length(medians)+1] <- agemax
+    }
+    names(medians) <- c(names(medians)[-length(medians)],"agemax")
+        if(is.null(agemax)){
+    limCIuni <- cbind(limCIuni, ceiling((1/-limCIuni[,which(names(maxDens) == "K")])*
+                                        log(1-((limCIuni[,which(names(maxDens) == "Linf")]*0.95)/limCIuni[,which(names(maxDens) == "Linf")]))))
+    }else{
+        limCIuni <- cbind(limCIuni, c(agemax,agemax))
+    }
+    colnames(limCIuni) <- c(colnames(limCIuni)[-ncol(limCIuni)],"agemax")
+        if(is.null(agemax)){
+    limCI <- cbind(limCI, ceiling((1/-limCI[,which(names(maxDens) == "K")])*
+                                  log(1-((limCI[,which(names(maxDens) == "Linf")]*0.95)/limCI[,which(names(maxDens) == "Linf")]))))
+    }else{
+        limCI <- cbind(limCI, c(agemax,agemax))
+    }
+    colnames(limCI) <- c(colnames(limCI)[-ncol(limCI)],"agemax")
 
     ## save and return results
     ret <- list()
