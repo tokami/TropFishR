@@ -450,9 +450,16 @@ lfqModify <- function(lfq, par = NULL,
 
 
     ## combine results
-    if(is.vector(catch)){
-        catches <- as.vector(catch)
-    }else catches <- as.matrix(catch)
+    ## if(is.vector(catch)){
+    ##     catches <- as.vector(catch)
+    ## }else catches <- as.matrix(catch)
+    ## NEW:
+    if(!vectorise_catch && !inherits(lfq$catch,"vector")){
+        catches <- as.matrix(catch)
+    }else{
+        catches <- catch
+    }
+
 
     res <- list()
     if("species" %in% names(lfq)) res$species <- lfq$species
@@ -482,6 +489,7 @@ lfqModify <- function(lfq, par = NULL,
     idx <- names(lfq)[which(!(names(lfq) %in% names(res)))]
     tmpList <- lfq[which(names(lfq) %in% idx)]
     res <- c(res, tmpList)
+
 
     if(class(res) != "lfq"){
         class(res) <- "lfq"
