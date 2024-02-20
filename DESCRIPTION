@@ -1,8 +1,8 @@
 Package: TropFishR
 Type: Package
 Title: Tropical Fisheries Analysis
-Version: 1.6.3
-Date: 2021-09-02
+Version: 1.6.4
+Date: 2024-01-29
 Author: Tobias K. Mildenberger, Marc H. Taylor, Matthias Wolff
 Maintainer: Tobias K. Mildenberger <t.k.mildenberger@gmail.com>
 Depends:
@@ -18,8 +18,7 @@ Imports:
     utils,
     propagate,
     parallel,
-    doParallel,
-    Hmisc
+    doParallel
 LazyData: true
 Description: A compilation of fish stock assessment methods for the
     analysis of length-frequency data in the context of data-poor
@@ -31,6 +30,7 @@ License: GPL-3
 NeedsCompilation: no
 BugReports: https://github.com/tokami/TropFishR/issues
 URL: https://github.com/tokami/TropFishR
+Encoding: UTF-8
 RoxygenNote: 7.1.1
 Suggests:
     graphics,
