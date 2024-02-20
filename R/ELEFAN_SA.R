@@ -230,7 +230,6 @@ ELEFAN_SA <- function(lfq,
                     get("ts", up_par),
                     get("ts", up_par_ALL))
 
-
     # ELEFAN 0
     res <- lfqRestructure(res, MA = MA, addl.sqrt = addl.sqrt)
     catch_aAF_F <- res$rcounts
@@ -308,34 +307,38 @@ ELEFAN_SA <- function(lfq,
         names(pars) <- c("Linf","K","t_anchor")
     }
 
+
     # Score graph in GA style
-    tmp <- as.data.frame(SAfit$trace.mat)
-    meani <- aggregate(tmp$function.value, list(step = tmp$nb.steps),mean, na.rm = TRUE)
-    exe <- aggregate(tmp$current.minimum, list(step = tmp$nb.steps),mean, na.rm = TRUE)
-    medi <- aggregate(tmp$function.value, list(step = tmp$nb.steps),median, na.rm = TRUE)
-    ylim <- c(min(range(exe$x,na.rm = TRUE, finite = TRUE)),
-              max(range(meani$x, na.rm = TRUE, finite = TRUE)))
-    if(plot.score){
-        op <- par(mar=c(5.1, 4.1, 1, 4.1))
-        plot(tmp$nb.steps, tmp$function.value, type = "n", ylim = ylim, xlab = "Iteration",
-             ylab = "Cost value")
-        graphics::grid(equilogs = FALSE)
-        points(tmp$nb.steps, tmp$current.minimum, type = "o", pch = 16, lty = 1,
-               col = "green3", cex = 0.7)
-        points(meani$step, meani$x, type = "o", pch = 1, lty = 2,
-               col = "dodgerblue3", cex = 0.7)
-        polygon(c(meani$step, rev(meani$step)),
-                c(exe$x, rev(medi$x)),
-                border = FALSE, col = adjustcolor("green3", alpha.f = 0.1))
-        par(new=TRUE)
-        plot(tmp$nb.steps, tmp$temperature, t="l", col=2, lty=2, log="y", axes = FALSE, xlab = "", ylab = "")
-        axis(4, col=2, col.axis=2); mtext(text = "Temperature", side = 4, line = par()$mgp[1], col=2)
-        legend("topright", legend = c("Best", "Mean", "Median", "Temperature"),
-               col = c("green3", "dodgerblue3", adjustcolor("green3", alpha.f = 0.1), 2),
-               pch = c(16, 1, NA, NA), lty = c(1,2,1,2),
-               lwd = c(1, 1, 10, 1), pt.cex = c(rep(0.7,2), 2, NA),
-               inset = 0.02)
-        par(op)
+    ## CHECK: trace.mat not reported any longer from GenSA, written to file but nr == 0 ...
+    if(FALSE){
+        tmp <- as.data.frame(SAfit$trace.mat)
+        meani <- aggregate(tmp$function.value, list(step = tmp$nb.steps),mean, na.rm = TRUE)
+        exe <- aggregate(tmp$current.minimum, list(step = tmp$nb.steps),mean, na.rm = TRUE)
+        medi <- aggregate(tmp$function.value, list(step = tmp$nb.steps),median, na.rm = TRUE)
+        ylim <- c(min(range(exe$x,na.rm = TRUE, finite = TRUE)),
+                  max(range(meani$x, na.rm = TRUE, finite = TRUE)))
+        if(plot.score){
+            op <- par(mar=c(5.1, 4.1, 1, 4.1))
+            plot(tmp$nb.steps, tmp$function.value, type = "n", ylim = ylim, xlab = "Iteration",
+                 ylab = "Cost value")
+            graphics::grid(equilogs = FALSE)
+            points(tmp$nb.steps, tmp$current.minimum, type = "o", pch = 16, lty = 1,
+                   col = "green3", cex = 0.7)
+            points(meani$step, meani$x, type = "o", pch = 1, lty = 2,
+                   col = "dodgerblue3", cex = 0.7)
+            polygon(c(meani$step, rev(meani$step)),
+                    c(exe$x, rev(medi$x)),
+                    border = FALSE, col = adjustcolor("green3", alpha.f = 0.1))
+            par(new=TRUE)
+            plot(tmp$nb.steps, tmp$temperature, t="l", col=2, lty=2, log="y", axes = FALSE, xlab = "", ylab = "")
+            axis(4, col=2, col.axis=2); mtext(text = "Temperature", side = 4, line = par()$mgp[1], col=2)
+            legend("topright", legend = c("Best", "Mean", "Median", "Temperature"),
+                   col = c("green3", "dodgerblue3", adjustcolor("green3", alpha.f = 0.1), 2),
+                   pch = c(16, 1, NA, NA), lty = c(1,2,1,2),
+                   lwd = c(1, 1, 10, 1), pt.cex = c(rep(0.7,2), 2, NA),
+                   inset = 0.02)
+            par(op)
+        }
     }
 
     final_res <- lfqFitCurves(lfq = res,par=pars,flagging.out = flagging.out,
