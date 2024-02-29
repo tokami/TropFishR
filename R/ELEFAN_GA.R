@@ -313,7 +313,7 @@ ELEFAN_GA <- function(lfq,
 
     if(plot){
         plot(lfq, Fname = "rcounts")
-        Lt <- lfqFitCurves(lfq, par = lfq$pars, draw=TRUE)
+        Lt <- lfqFitCurves(lfq, par = lfq$par, draw=TRUE)
     }
     return(lfq)
 }

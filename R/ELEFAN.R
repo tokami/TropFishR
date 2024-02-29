@@ -95,7 +95,8 @@
 #'    lfq = alba, method = "cross",
 #'    Linf_fix = 10,
 #'    K_range = round(exp(seq(from = log(0.1), to = log(2), length.out = 50)),2),
-#'    cross.date = alba$dates[3], cross.midLength = alba$midLengths[4]
+#'    cross.date = alba$dates[3], cross.midLength = alba$midLengths[4],
+#'    plot = FALSE
 #' )
 #' fit4$Rn_max; unlist(fit4$par)
 #' plot(fit4); points(alba$dates[3], alba$midLengths[4], col=2, cex=2, lwd=2)
@@ -261,7 +262,7 @@ ELEFAN <- function(lfq, Linf_fix = NA, Linf_range = NA,
   }
 
 
-  if(!hide.progressbar){
+  if(!hide.progressbar && interactive()){
     nlk <- prod(dim(ESP_list_L))
     pb <- txtProgressBar(min=1, max=nlk, style=3)
     counter <- 1
@@ -316,7 +317,7 @@ ELEFAN <- function(lfq, Linf_fix = NA, Linf_range = NA,
       }
 
       # update counter and progress bar
-      if(!hide.progressbar){
+      if(!hide.progressbar && interactive()){
         setTxtProgressBar(pb, counter)
         counter <- counter + 1
       }

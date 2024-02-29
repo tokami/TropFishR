@@ -135,6 +135,7 @@ powell_wetherall <- function(param, catch_columns = NA,
 
         #identify plot
         if(is.null(reg_int)){
+           if(interactive()){
             repeat{
                 writeLines("Please choose the minimum and maximum point in the \ngraph to include for the regression line!")
                 flush.console()
@@ -162,6 +163,11 @@ powell_wetherall <- function(param, catch_columns = NA,
                     break
                 }
             }
+
+        }else{
+            writeLines("Please specify reg_int or choose points for the regression analysis in an interactive session.")
+            return(NULL)
+        }
         }
         if(!is.null(reg_int)){
             cutter <- reg_int

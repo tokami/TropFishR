@@ -10,7 +10,7 @@
 #'      lines should be created
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'  data(synLFQ1)
 #'  output <- Bhattacharya(param = synLFQ1)
 #'  plot(output)

@@ -69,6 +69,8 @@
 
 Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
 
+    if(interactive()){
+
   res <- param
   if("midLengths" %in% names(res) == TRUE){
     midLengths <- as.character(res$midLengths)
@@ -444,4 +446,9 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
     plot(ret)
     return(ret)
   }
+
+    }else{
+        writeLines("Interactive session needed for Bhattacharya.")
+        return(NULL)
+    }
 }

@@ -359,7 +359,7 @@ predict_mod <- function(param, type, FM_change = NA,
     list_Es <- vector("list", length(Lc))
 
     # show progress bar only if the loop has more than 1 runs
-    if (!hide.progressbar) {
+    if (!hide.progressbar && interactive()) {
      nlk <- length(Lc)
      if(nlk > 1){
        pb <- txtProgressBar(min=1, max=nlk, style=3)
@@ -501,7 +501,7 @@ predict_mod <- function(param, type, FM_change = NA,
       list_Es[[i]] <- df_loop_Es
 
       # update counter and progress bar
-      if (!hide.progressbar) {
+      if (!hide.progressbar && interactive()) {
        if(nlk > 1){
         setTxtProgressBar(pb, counter)
         counter <- counter + 1
@@ -920,7 +920,7 @@ predict_mod <- function(param, type, FM_change = NA,
         pred.FM_Lc_com_res_loopSSB_list <- vector("list",length(FM_Lc_com_mat.list))
         pred.FM_Lc_com_res_loopSPR_list <- vector("list",length(FM_Lc_com_mat.list))
 
-      if (!hide.progressbar) {
+      if (!hide.progressbar && interactive()) {
         nlk <- prod(length(FM_Lc_com_mat.list),dim(FM_Lc_com_mat.list[[1]])[2])
         pb <- txtProgressBar(min=1, max=nlk, style=3)
         counter <- 1
@@ -939,7 +939,7 @@ predict_mod <- function(param, type, FM_change = NA,
           pred.FM_Lc_com_res_loop1_list[[x22]] <- res2$totals
 
           # update counter and progress bar
-          if (!hide.progressbar) {
+          if (!hide.progressbar && interactive()) {
           setTxtProgressBar(pb, counter)
           counter <- counter + 1
           }

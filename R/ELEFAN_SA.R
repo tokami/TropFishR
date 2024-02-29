@@ -357,7 +357,7 @@ ELEFAN_SA <- function(lfq,
 
     if(plot){
         plot(res, Fname = "rcounts")
-        Lt <- lfqFitCurves(res, par = res$pars, draw=TRUE)
+        Lt <- lfqFitCurves(res, par = res$par, draw=TRUE)
     }
     return(res)
 }

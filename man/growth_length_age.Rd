@@ -99,9 +99,11 @@ growth_length_age(dat, method = "GullandHolt")
 growth_length_age(dat, method = "BertalanffyPlot", Linf_est = 50)
 
 # non linear least squares method
+\donttest{
 output <- growth_length_age(param = dat, method = "LSM",
      Linf_init = 30, CI = TRUE, age_plot=NULL)
 summary(output$mod)
+}
 
 }
 \references{

@@ -23,7 +23,7 @@ This function plots the seperated frequency distributions
 This function plots the results of the Bhattacharya method.
 }
 \examples{
-\donttest{
+\dontrun{
  data(synLFQ1)
  output <- Bhattacharya(param = synLFQ1)
  plot(output)

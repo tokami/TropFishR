@@ -2,7 +2,6 @@
 #'
 #' @title Synthetic length frequency data II
 #'
-#'
 #' @description Synthetic length frequency data from Sparre & Venema (1998). Can be used
 #'    for the estimation of the instantaneous total mortality rate (Z) by means
 #'    of \code{\link{Z_BevertonHolt}}.

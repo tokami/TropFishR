@@ -31,7 +31,7 @@ NeedsCompilation: no
 BugReports: https://github.com/tokami/TropFishR/issues
 URL: https://github.com/tokami/TropFishR
 Encoding: UTF-8
-RoxygenNote: 7.1.1
+RoxygenNote: 7.3.1
 Suggests:
     graphics,
     grDevices,
