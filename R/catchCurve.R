@@ -262,10 +262,10 @@ catchCurve <- function(param,
                 lfqLoop <- lfqModify(lfqTemp, vectorise_catch = TRUE)
             }
 
-            if(yearCombine && inherits(lfqLoop$catch, "matrix")) lfqLoop$catch <- rowSums(lfqLoop$catch)
+            if(yearCombine && (inherits(lfqLoop$catch, "matrix") || inherits(lfqLoop$catch, "data.frame"))) lfqLoop$catch <- rowSums(lfqLoop$catch)
 
             ## error if lfq data spans several years!
-            if(inherits(lfqLoop$catch,"matrix")) stop("The lfq data spans several years, please subset for one year at a time!")
+            if(inherits(lfqLoop$catch,"matrix") || inherits(lfqLoop$catch,"data.frame")) stop("The lfq data spans several years, please subset for one year (yearSel) at a time or use yearCombine = TRUE!")
 
             catch <- lfqLoop$catch
 
