@@ -25,38 +25,30 @@ ypr_sel(param, FM_change, Lt, P)
 \item{P}{population size}
 }
 \value{
-A list with the input parameters and dependent on the model type following
-   list objects:
-\itemize{
-  \item
-}
+A list with the input parameters and dependent on the model type.
 }
 \description{
 Estimates relative yield and biomass, and the first order derivative.
 }
 \details{
-The Thompson and Bell model incorporates an iteration step simulating the
-   stock by means
-   of the \code{\link{stock_sim}} function. In case changes in gear
-   characteristics -
-   here measured in terms of Lc or tc, the length or age at first capture,
-   respectively -
-   should be explored, a list with selectivity information about the gear has
-   to be provided and
-   the prediction models make use of the selectivity \code{\link{select_ogive}}
-   function.
-   Sparre and Venema (1998) recommend to treat the last length class always as plus group.
-   This model is very sensitive to zero observations in the ultimate length
-   classes. If unrealistic results are returned,
-   it is recommended to cut length classes with zero observations, group
-   them in a plus group or to change the interval between
-   length classes.
-   Equations which are used in this function assume isometric growth, an
-   assumption often not met. Further, the assumption that there is no relationship
-   between the parental stock size and progeny
-   over a wide range of fishing mortalities or exploitation values,
-   respectively, is also said to be untrue. By default, the functions assume
-   knife-edge recruitment and selection of gears (Sparre and Venema, 1998).
+The Thompson and Bell model incorporates an iteration step
+    simulating the stock by means of the \code{\link{stock_sim}} function. In
+    case changes in gear characteristics - here measured in terms of Lc or
+    tc, the length or age at first capture, respectively - should be
+    explored, a list with selectivity information about the gear has to be
+    provided and the prediction models make use of the selectivity
+    \code{\link{select_ogive}} function. Sparre and Venema (1998) recommend
+    to treat the last length class always as plus group. This model is very
+    sensitive to zero observations in the ultimate length classes. If
+    unrealistic results are returned, it is recommended to cut length classes
+    with zero observations, group them in a plus group or to change the
+    interval between length classes. Equations which are used in this
+    function assume isometric growth, an assumption often not met. Further,
+    the assumption that there is no relationship between the parental stock
+    size and progeny over a wide range of fishing mortalities or exploitation
+    values, respectively, is also said to be untrue. By default, the
+    functions assume knife-edge recruitment and selection of gears (Sparre
+    and Venema, 1998).
 }
 \references{
 Berkeley, S.A., and Houde, E.D., 1980. Swordfish, Xiphias gladius, dynamics in

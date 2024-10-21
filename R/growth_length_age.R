@@ -58,7 +58,7 @@
 #' to be omitted. Non-linear least squares fitting is the preferred method to estimate
 #' growth parameters according to Sparre and Venema (1998). If \code{CI = TRUE} the
 #' confidence interval of parameters is calculated and plotted. For plotting the
-#' confidence interval the \code{\link{predictNLS}} from the \link{propagate} package
+#' confidence interval the \code{\link[propagate]{predictNLS}} from the propagate package
 #' is applied.
 #'
 #' @return A list with the input parameters and following parameters:
