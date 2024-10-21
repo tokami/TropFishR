@@ -243,7 +243,7 @@ ELEFAN <- function(lfq, Linf_fix = NA, Linf_range = NA,
 
   ESP_tanch_L <- matrix(NA,nrow=length(Ks),ncol=length(Linfs))
   ESP_list_L <- matrix(NA,nrow=length(Ks),ncol=length(Linfs))
-  writeLines(paste("Optimisation procuedure of ELEFAN is running. \nThis will take some time. \nThe process bar will inform you about the process of the calculations.",sep=" "))
+  writeLines(paste("Optimisation procedure of ELEFAN is running. \nThis will take some time. \nThe process bar will inform you about the process of the calculations.",sep=" "))
   flush.console()
 
 
