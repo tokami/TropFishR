@@ -24,9 +24,6 @@
 #' @param ci.level required confidence level (for LSM method only)
 #' @param age_plot sequence with ages used for plotting (LSM method only). By default
 #'      age_plot = seq(min(param$age),max(param$age),0.1)
-#' @param do.sim logical. Should Monte Carlo simulation be applied? Default = FALSE
-#' @param nsim the number of Monte Carlo simulations to be performed,
-#'    minimum is 10000 (default).
 #'
 #' @examples
 #' # synthetical length at age data
@@ -57,9 +54,7 @@
 #' Linf as otherwise the logarithm is not defined. Oldest fish (if larger than Linf) have
 #' to be omitted. Non-linear least squares fitting is the preferred method to estimate
 #' growth parameters according to Sparre and Venema (1998). If \code{CI = TRUE} the
-#' confidence interval of parameters is calculated and plotted. For plotting the
-#' confidence interval the \code{\link[propagate]{predictNLS}} from the propagate package
-#' is applied.
+#' confidence interval of parameters is calculated and plotted.
 #'
 #' @return A list with the input parameters and following parameters:
 #' \itemize{
@@ -74,7 +69,6 @@
 #'      (only if LSM method was applied).
 #' }
 #'
-#' @importFrom propagate predictNLS
 #' @importFrom graphics abline lines plot segments
 #' @importFrom stats lm nls predict aggregate confint
 #' @importFrom grDevices adjustcolor
@@ -90,7 +84,6 @@ growth_length_age <- function(param, method, Linf_est = NA,
                               Linf_init = 10, K_init = 0.1, t0_init = 0,
                               CI = FALSE, ci.level = 0.95,
                               age_plot = NULL,
-                              do.sim = FALSE,
                               nsim = 10000){
 
   res <- param
@@ -283,19 +276,32 @@ growth_length_age <- function(param, method, Linf_est = NA,
              ##          call. = FALSE)
              ## }
              sink(tempfile())
-             pred_L <- suppressMessages(propagate::predictNLS(nls_mod,
-                                                              do.sim = do.sim,
-                                                              nsim = nsim,
-                                             newdata = data.frame(t = age_plot)))
+             ## NEW: Delta method without predictNLS (propagate archived)
+             newdata <- data.frame(t = age_plot)
+             pred_L <- predict(nls_mod, newdata = newdata)
+             dL_dLinf <- 1 - exp(-K * (newdata$t - t0))
+             dL_dK    <- Linf * (newdata$t - t0) * exp(-K * (newdata$t - t0))
+             dL_dt0   <- -Linf * K * exp(-K * (newdata$t - t0))
+             gradient <- cbind(dL_dLinf, dL_dK, dL_dt0)
+             vcov_mat <- vcov(nls_mod)
+             se <- sqrt(rowSums((gradient %*% vcov_mat) * gradient))
+             predVals <- data.frame(age_plot = age_plot,
+                                    fit = pred_L,
+                                    lower = pred_L - 1.96 * se,
+                                    upper = pred_L + 1.96 * se)
+             ## pred_L <- suppressMessages(propagate::predictNLS(nls_mod,
+             ##                                                  do.sim = FALSE,
+             ##                                                  nsim = nsim,
+             ##                                 newdata = data.frame(t = age_plot)))
              sink()
-             # Taylor propagation
-             if(!do.sim){
+             ## # Taylor propagation
+             ## if(!do.sim){
                predVals <- cbind(age_plot,as.data.frame(pred_L$summary[,c(1,5,6)]))
-             }
-             # Monte Carlo simulation
-             if(do.sim){
-               predVals <- cbind(age_plot,as.data.frame(pred_L$summary[,c(7,11,12)]))
-             }
+             ## }
+             ## # Monte Carlo simulation
+             ## if(do.sim){
+             ##   predVals <- cbind(age_plot,as.data.frame(pred_L$summary[,c(7,11,12)]))
+             ## }
              names(predVals) <- c("age_plot","fit","lower","upper")
              plot(Lt ~ t, type = "n", ylab = "L(t)", xlab = "t(age)", xlim=c(min(age_plot),max(age_plot)),
                   main = "Non-linear least squares method")

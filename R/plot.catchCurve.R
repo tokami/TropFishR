@@ -21,7 +21,7 @@
 #' @examples
 #' \donttest{
 #' data(synLFQ3)
-#' output <- catchCurve(synLFQ3, calc_ogive = TRUE)
+#' output <- catchCurve(synLFQ3, calc_ogive = TRUE, reg_int = c(9,21))
 #' plot(output, plot_selec = TRUE)
 #' }
 #'

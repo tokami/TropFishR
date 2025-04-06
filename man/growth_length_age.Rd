@@ -14,7 +14,6 @@ growth_length_age(
   CI = FALSE,
   ci.level = 0.95,
   age_plot = NULL,
-  do.sim = FALSE,
   nsim = 10000
 )
 }
@@ -46,11 +45,6 @@ works for the LSM method. Default is FALSE.}
 
 \item{age_plot}{sequence with ages used for plotting (LSM method only). By default
 age_plot = seq(min(param$age),max(param$age),0.1)}
-
-\item{do.sim}{logical. Should Monte Carlo simulation be applied? Default = FALSE}
-
-\item{nsim}{the number of Monte Carlo simulations to be performed,
-minimum is 10000 (default).}
 }
 \value{
 A list with the input parameters and following parameters:
@@ -84,9 +78,7 @@ used for a small or large sample, respectively. All lengths have to be smaller t
 Linf as otherwise the logarithm is not defined. Oldest fish (if larger than Linf) have
 to be omitted. Non-linear least squares fitting is the preferred method to estimate
 growth parameters according to Sparre and Venema (1998). If \code{CI = TRUE} the
-confidence interval of parameters is calculated and plotted. For plotting the
-confidence interval the \code{\link[propagate]{predictNLS}} from the propagate package
-is applied.
+confidence interval of parameters is calculated and plotted.
 }
 \examples{
 # synthetical length at age data
