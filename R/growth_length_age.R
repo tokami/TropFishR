@@ -24,6 +24,7 @@
 #' @param ci.level required confidence level (for LSM method only)
 #' @param age_plot sequence with ages used for plotting (LSM method only). By default
 #'      age_plot = seq(min(param$age),max(param$age),0.1)
+#' @param do.sim Deprecated.
 #'
 #' @examples
 #' # synthetical length at age data
@@ -70,7 +71,7 @@
 #' }
 #'
 #' @importFrom graphics abline lines plot segments
-#' @importFrom stats lm nls predict aggregate confint
+#' @importFrom stats lm nls predict aggregate confint vcov
 #' @importFrom grDevices adjustcolor
 #' @import MASS
 #'
@@ -83,8 +84,12 @@
 growth_length_age <- function(param, method, Linf_est = NA,
                               Linf_init = 10, K_init = 0.1, t0_init = 0,
                               CI = FALSE, ci.level = 0.95,
-                              age_plot = NULL,
-                              nsim = 10000){
+                              age_plot = NULL, do.sim = FALSE){
+
+    if(do.sim){
+        warning("The argument do.sim has no effect! The package 'propagate' that was used was removed from cran and we are working on an alternative.")
+    }
+
 
   res <- param
   t <- res$age
@@ -296,7 +301,7 @@ growth_length_age <- function(param, method, Linf_est = NA,
              sink()
              ## # Taylor propagation
              ## if(!do.sim){
-               predVals <- cbind(age_plot,as.data.frame(pred_L$summary[,c(1,5,6)]))
+             ##   predVals <- cbind(age_plot,as.data.frame(pred_L$summary[,c(1,5,6)]))
              ## }
              ## # Monte Carlo simulation
              ## if(do.sim){
