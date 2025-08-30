@@ -13,7 +13,6 @@ Imports:
     MASS,
     GenSA,
     GA,
-    propagate,
     parallel,
     doParallel,
     Hmisc

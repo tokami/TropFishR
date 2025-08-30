@@ -2384,7 +2384,6 @@ growth_tagging <- function(tag, method,
 #'      (only if LSM method was applied).
 #' }
 #'
-#' @importFrom propagate predictNLS
 #' @importFrom graphics abline lines plot segments
 #' @importFrom stats lm nls predict aggregate confint
 #' @importFrom grDevices adjustcolor
@@ -2589,10 +2588,11 @@ growth_length_age <- function(laa, method, Linf_est = NA,
                    }else age_plot <- age_plot
                    ## Taylor error propagation and Monte Carlo simulation for confidence interval
                    sink(tempfile())
-                   pred_L <- suppressMessages(propagate::predictNLS(nls_mod,
-                                                                    do.sim = do.sim,
-                                                                    nsim = nsim,
-                                                                    newdata = data.frame(t = age_plot)))
+                   ## pred_L <- suppressMessages(propagate::predictNLS(nls_mod,
+                   ##                                                  do.sim = do.sim,
+                   ##                                                  nsim = nsim,
+                   ##                                                  newdata = data.frame(t = age_plot)))
+                   pred_L <- 1 ## TODO propagate deprecated
                    sink()
                    ## Taylor propagation
                    if(!do.sim){
