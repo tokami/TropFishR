@@ -707,7 +707,8 @@ catchCurve <- function(lfq,
     if(auto){
         yvar2 <- as.numeric(yvar)
         xvar2 <- xvar[which(yvar2 > 0.2)]
-        cutter <- c(which(yvar2 == max(as.numeric(yvar2),na.rm=TRUE))+1, which(xvar2 == max(xvar2,na.rm=TRUE)))
+        cutter <- c(which(yvar2 == max(as.numeric(yvar2),na.rm=TRUE))+1,
+                    which(xvar == max(xvar2,na.rm=TRUE)))
         cutterList <- list()
         cutterList[[1]] <- cutter
     }
