@@ -2,7 +2,7 @@ Package: TropFishR
 Type: Package
 Title: Tropical Fisheries Analysis
 Version: 1.7.0
-Date: 2025-04-06
+Date: 2026-11-12
 Authors@R: c(person(given = c("Tobias", "K."),
                     family = "Mildenberger",
                     role = c("aut", "cre"),
@@ -47,6 +47,7 @@ Suggests:
     knitr,
     rmarkdown,
     plyr,
+    withr,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
 Config/testthat/edition: 3

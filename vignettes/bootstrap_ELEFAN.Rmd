@@ -1,0 +1,288 @@
+---
+title: "Uncertainty of growth parameters with bootstrapped ELEFAN"
+author: "Tobias K. Mildenberger"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    fig_caption: yes
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{tutorial_bootstrap}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: TropFishR.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  collapse = TRUE,
+  fig.width = 6, fig.height = 5
+)
+```
+
+
+# Introduction
+
+The ELEFAN functions of TropFishR (`ELEFAN`, `ELEFAN_SA` and `ELEFAN_GA`)
+estimate the parameters of the von Bertalanffy growth function (VBGF) from
+length-frequency (lfq) data [@taylor_extending_2017]. They return a single best
+set of parameters, but no information about how certain these estimates are.
+Uncertainty arises from the sampling of the lfq data (which fish were measured)
+and from the optimisation itself (different runs can end in different local
+optima).
+
+Bootstrapped ELEFAN [@Schwamborn2019] quantifies this uncertainty: the lfq data
+is resampled many times, ELEFAN is fitted to each resampled data set, and the
+distribution of the resulting estimates is used to derive the most likely
+parameters and their confidence intervals. This vignette shows how to
+
+1. resample lfq data (`lfqResample`),
+2. run bootstrapped ELEFAN (`ELEFAN_GA_boot`, `ELEFAN_SA_boot`),
+3. summarise and plot the results (`univariate_density`, `LinfK_scatterhist`,
+   `vbgfCI_time`, `plotBoot`).
+
+The [ELEFAN tutorial](https://cran.r-project.org/package=TropFishR/vignettes/Using_TropFishR_ELEFAN_functions.html)
+explains the ELEFAN functions and their settings in more detail.
+
+
+# Data
+
+We use the synthetic data set `synLFQ7`, which was simulated with known growth
+parameters (see `?synLFQ7`): $L_\infty$ = 123 cm, $K$ = 0.2 year$^{-1}$,
+$C$ = 0.3, $t_s$ = 0, and recruitment around April ($t_{anchor}$ between 0.16
+and 0.34). Knowing the true values allows us to judge the bootstrapped
+estimates.
+
+```{r data, fig.height = 7, fig.cap = "Length-frequency data of synLFQ7: (a) catches and (b) restructured data with a moving average over 9 length classes (MA = 9)."}
+library(TropFishR)
+data(synLFQ7)
+lfq <- synLFQ7
+
+## true parameters of the simulation
+true_par <- c(Linf = 123, K = 0.2, C = 0.3, ts = 0,
+              phiL = log10(0.2) + 2 * log10(123))
+
+MA <- 9
+op <- par(mfrow = c(2, 1), mar = c(4, 4, 1, 1))
+plot(lfq, Fname = "catch")
+plot(lfqRestructure(lfq, MA = MA), Fname = "rcounts")
+par(op)
+```
+
+The moving average (`MA`) can significantly affect the results
+[@taylor_extending_2017]. As a rule of thumb, it should approximate the number
+of length classes spanned by the smallest (youngest) cohort and has to be an
+odd number (see the ELEFAN tutorial). Here, `MA = 9` separates the cohorts well.
+
+
+# Resampling of length-frequency data
+
+`lfqResample` draws, for each sample (date), as many fish as were measured,
+with replacement and with probabilities proportional to the observed
+frequencies. A resampled data set therefore has the same number of fish per
+sample, but different frequencies by length class:
+
+```{r resample, fig.height = 7, fig.cap = "Restructured length-frequency data: (a) original and (b) resampled data."}
+set.seed(1)
+lfq_resampled <- lfqResample(lfq)
+
+## same number of fish per sample
+totals <- rbind(original = colSums(lfq$catch), resampled = colSums(lfq_resampled$catch))
+colnames(totals) <- format(lfq$dates, "%d %b")
+totals
+
+op <- par(mfrow = c(2, 1), mar = c(4, 4, 1, 1))
+plot(lfqRestructure(lfq, MA = MA), Fname = "rcounts")
+plot(lfqRestructure(lfq_resampled, MA = MA), Fname = "rcounts")
+par(op)
+```
+
+The differences between the original and the resampled data reflect how
+different the data could have been if other fish of the same population had
+been measured.
+
+
+# Bootstrapped ELEFAN
+
+`ELEFAN_GA_boot` resamples the data `nresamp` times and fits `ELEFAN_GA` to
+each resampled data set; `ELEFAN_SA_boot` does the same with `ELEFAN_SA`. Most
+arguments are passed on to `ELEFAN_GA` or `ELEFAN_SA`. As for single ELEFAN
+fits, the search space (`low_par`, `up_par`) and the moving average (`MA`)
+have to be adjusted to the data:
+
+```{r settings}
+## lower and upper limits of the search space
+low_par <- list(Linf = 100, K = 0.01, t_anchor = 0, C = 0, ts = 0)
+up_par <- list(Linf = 160, K = 3, t_anchor = 1, C = 1, ts = 1)
+## genetic algorithm: population size, maximum number of generations, number of
+## generations without improvement before stopping, probability of mutation
+popSize <- 60
+maxiter <- 50
+run <- 10
+pmutation <- 0.2
+## number of resamples
+nresamp <- 200
+```
+
+Each resample takes as long as a single ELEFAN fit, so the bootstrap takes a
+while: with the settings above, about 20 minutes on a single core. The
+resamples are independent and can be fitted in parallel (`parallel = TRUE`)
+on `no_cores` cores. For the parallel version, TropFishR has to be installed,
+because each core loads it. The argument `outfile` allows following the
+progress in a text file. The `seed` makes the results reproducible:
+
+```{r bootstrap, eval = FALSE}
+res <- ELEFAN_GA_boot(lfq, MA = MA, seasonalised = TRUE,
+                      low_par = low_par, up_par = up_par,
+                      popSize = popSize, maxiter = maxiter, run = run,
+                      pmutation = pmutation,
+                      nresamp = nresamp, seed = 1,
+                      parallel = TRUE, no_cores = 7)
+```
+
+```{r load_bootstrap, include = FALSE}
+## The bootstrap above is not run when building the vignette (it takes too
+## long); the results were precomputed with the same code.
+res <- readRDS("synLFQ7_boot.rds")
+```
+
+To keep this vignette short to build, the results were precomputed with the
+code above. We used 200 resamples here; for real assessments, more resamples
+(e.g. 500 or more) give more stable confidence intervals.
+
+
+# Results
+
+The result is an object of class `lfqBoot`. Its element `bootRaw` contains the
+estimates of each resample:
+
+```{r bootRaw}
+head(res$bootRaw)
+```
+
+The growth performance index $\phi' = \log_{10}(K) + 2 \log_{10}(L_\infty)$
+(`phiL`) and the maximum age (`agemax`) are derived from $L_\infty$ and $K$.
+Each resample is identified by its seed (`res$seed`) and has a score
+(`res$Rn_max`).
+
+The estimates are summarised by a multivariate kernel density estimate:
+`maxDen` is the parameter combination with the highest density, i.e. the
+most likely combination, `median` the median of each parameter, `CI` the
+univariate (here 95 %) confidence intervals and `multiCI` the range of each
+parameter within the multivariate 95 % confidence region:
+
+```{r summary}
+res$maxDen
+res$CI
+```
+
+Compared to the true parameters:
+
+```{r comparison}
+pars <- c("Linf", "K", "C", "ts", "phiL")
+round(data.frame(true = true_par[pars],
+                 max_density = res$maxDen[pars],
+                 median = res$median[pars],
+                 CI_lower = res$CI["lo", pars],
+                 CI_upper = res$CI["up", pars]), 3)
+```
+
+The confidence intervals of $L_\infty$ and $K$ include the true values, and the
+growth performance index $\phi'$ is estimated very precisely. The seasonal
+parameters $C$ and $t_s$, on the other hand, are very uncertain: their
+confidence intervals span almost the whole search space. Note that $t_s$ is
+periodic ($t_s$ = 0 is equivalent to $t_s$ = 1). Such wide intervals are
+exactly the information that a single ELEFAN fit does not provide.
+
+
+# Graphs
+
+## Distributions of the parameters
+
+`univariate_density` shows the distribution (kernel density) of each
+parameter with the confidence interval (dashed lines) and the value with the
+maximum density (solid line). Known true values can be added with the argument
+`truePar` (red dashed lines). The values in this plot are based on the
+univariate density of each parameter; they can therefore differ slightly from
+`res$maxDen` (multivariate density) and `res$CI` (quantiles):
+
+```{r univariate, fig.width = 7, fig.height = 5.5, fig.cap = "Distributions of the bootstrapped estimates with 95 % confidence intervals (dashed black lines), maximum density (solid lines) and the true values (dashed red lines)."}
+univariate_density(res, truePar = true_par, mfrow = c(2, 4))
+```
+
+## Correlation of Linf and K
+
+Estimates of $L_\infty$ and $K$ are typically negatively correlated, i.e.
+similar growth curves can be described by a large $L_\infty$ with a small $K$
+and vice versa. `LinfK_scatterhist` shows the joint distribution of both
+parameters. Isolines of the growth performance index $\phi'$ can be added
+with `phi.contour = TRUE` (or to any $L_\infty$-$K$ plot with `add_phiprime`).
+A few resamples ended with much larger values of $K$ (up to
+`r round(max(res$bootRaw$K), 1)`); the plot is limited to $K \le 1$ with
+`ylim`:
+
+```{r scatterhist, fig.width = 6, fig.height = 6, fig.cap = "Bootstrapped estimates of Linf and K (points), their bivariate kernel density (shading and contours) and isolines of the growth performance index (dashed grey lines)."}
+LinfK_scatterhist(res, phi.contour = TRUE, ylim = c(0, 1))
+```
+
+## Growth curves
+
+`vbgfCI_time` shows the growth curves of all resamples (grey lines) over
+relative time together with the confidence intervals of the curves and the
+growth curve with maximum density:
+
+```{r vbgfCI, fig.cap = "Growth curves of the bootstrapped estimates (grey), the 95 % confidence interval (dashed lines) and the growth curve with maximum density (solid line)."}
+ci <- vbgfCI_time(res, agemax = 15, perm.col = adjustcolor("grey50", 0.2))
+```
+
+`plotBoot` shows the same growth curves with confidence intervals in the
+length-frequency data, one cohort per year (here limited to an age of 6
+years with `agemax`):
+
+```{r plotBoot, fig.width = 7, fig.cap = "Length-frequency data with the growth curves with maximum density (solid lines) and their 95 % confidence intervals (dashed lines)."}
+plotBoot(lfq, res, agemax = 6)
+```
+
+The estimates with maximum density can also be used like the results of a
+single ELEFAN fit, e.g. with `lfqFitCurves`:
+
+```{r fitcurves, fig.width = 7, fig.cap = "Restructured length-frequency data with the growth curves with maximum density."}
+lfq_rest <- lfqRestructure(lfq, MA = MA)
+plot(lfq_rest, Fname = "rcounts")
+tmp <- lfqFitCurves(lfq_rest, par = as.list(res$maxDen[c("Linf", "K", "t_anchor", "C", "ts")]),
+                    draw = TRUE, col = 4, lty = 1, lwd = 2)
+```
+
+
+# Reproducing resamples
+
+Resample `x` uses the seed `seed + x` (stored in `res$seed`). `lfqResample`
+with the argument `boot` re-creates the resampled data sets, e.g. to inspect
+the data of a resample with an unusual estimate:
+
+```{r reproduce}
+lfq_resamples <- lfqResample(lfq, boot = res)
+length(lfq_resamples)
+
+## resample with the smallest Linf
+i <- which.min(res$bootRaw$Linf)
+res$bootRaw[i, ]
+```
+
+The fit of a single resample can be reproduced by setting its seed, resampling
+the data and fitting `ELEFAN_GA` with the same settings (the random numbers of
+the genetic algorithm follow those of the resampling):
+
+```{r reproduce_fit, eval = FALSE}
+set.seed(res$seed[i])
+lfq_i <- lfqResample(lfq)
+fit_i <- ELEFAN_GA(lfq_i, MA = MA, seasonalised = TRUE,
+                   low_par = low_par, up_par = up_par,
+                   popSize = popSize, maxiter = maxiter, run = run,
+                   pmutation = pmutation, plot.score = FALSE)
+unlist(fit_i$par)
+```
+
+
+# References

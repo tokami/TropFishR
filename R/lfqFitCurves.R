@@ -145,7 +145,7 @@ lfqFitCurves <- function(lfq,
     rel.age <- rel.age[t.use]
     if(length(t.ct) > 0){
       Lt.ct <- VBGF(param = par2, t = t.ct) ## do.call(what = VBGF,  par2)    # Lt.ct <- VBGF(lfq = par2, t = yeardec)   #
-      Lt[[ct]] <- data.frame(t=t.ct, Lt=Lt.ct, ct=ct, rel.age=rel.age)
+      Lt[[ct]] <- list(t=t.ct, Lt=Lt.ct, ct=rep(ct, length(t.ct)), rel.age=rel.age)
       if(draw){
         tmp <- par2
         t_tmp <- seq(tAs[ct], max(t.ct)+tincr, by=tincr)
@@ -155,51 +155,55 @@ lfqFitCurves <- function(lfq,
       }
     }
   }
-  Lt <- do.call(rbind, Lt)
+  ## one data.frame with the growth curves of all cohorts
+  Lt <- Lt[lengths(Lt) > 0]
+  Lt <- data.frame(t = unlist(lapply(Lt, "[[", "t")),
+                   Lt = unlist(lapply(Lt, "[[", "Lt")),
+                   ct = unlist(lapply(Lt, "[[", "ct")),
+                   rel.age = unlist(lapply(Lt, "[[", "rel.age")))
   Lt <- Lt[which(Lt$Lt>=0),]# trim negative lengths
 
 
   # calc scores
-  grd <- expand.grid(Lt=lfq$midLengths, t=date2yeardec(lfq$dates))
-  grd$Fs <- c(lfq$rcounts)  # turn matrix into 1-D vector
-  grd$cohort_peaks <- c(lfq$peaks_mat) # turn matrix into 1-D vector
-  grd$hit <- 0 # empty vector to record bins that are "hit" by a growth curve
+  Fs <- c(lfq$rcounts)  # turn matrix into 1-D vector
+  cohort_peaks <- c(lfq$peaks_mat) # turn matrix into 1-D vector
+  nbin <- length(lfq$midLengths)
   bin.width <- diff(lfq$midLengths) # bin width (should allow for uneven bin sizes)
-  grd$bin.lower <- lfq$midLengths - (c(bin.width[1], bin.width)/2) # upper bin limit
-  grd$bin.upper <- lfq$midLengths + (c(bin.width, bin.width[length(bin.width)])/2) # lower bin limit
+  bin.lower <- lfq$midLengths - (c(bin.width[1], bin.width)/2) # lower bin limit
+  bin.upper <- lfq$midLengths + (c(bin.width, bin.width[length(bin.width)])/2) # upper bin limit
+  breaks <- c(bin.lower, bin.upper[nbin])
 
-  # mark all length classes (in all sampling times) which are hit
-  tmp <-
-    outer(X = c(grd$t), Y = Lt$t, FUN = "==") &
-    outer(X = c(grd$bin.lower), Y = Lt$Lt, FUN = "<=") &
-    outer(X = c(grd$bin.upper), Y = Lt$Lt, FUN = ">"
-  )
-
-  tmp2 <- apply(X = tmp, MARGIN = 1, FUN = sum, na.rm = TRUE)
-  if(flagging.out){
-    grd$hit <- tmp2
-  } else {
-    grd$hit <- as.numeric(tmp2 > 0)
+  # mark all length classes (in all sampling times) which are hit: number of
+  # growth curve points per sample (same time) and length class
+  # (bin.lower <= Lt < bin.upper); the bins are contiguous, so each point
+  # falls into at most one length class
+  hit <- matrix(0, nrow = nbin, ncol = length(yeardec))
+  for(j in seq_along(yeardec)){
+    bins <- findInterval(Lt$Lt[which(Lt$t == yeardec[j])], breaks)
+    bins <- bins[bins >= 1 & bins <= nbin]
+    hit[,j] <- tabulate(bins, nbins = nbin)
   }
+  hit <- c(hit)
+  if(!flagging.out) hit <- as.numeric(hit > 0)
 
   # Count only one crossing of positive peaks within a cohort peak
+  # (cohort_peaks = 0 marks cells outside of positive peaks)
+  # (only peaks that are hit at all can be hit more than once)
   if(flagging.out){
-    ch <- unique(grd$cohort_peaks)
-    if(0 %in% ch) ch <- ch[-which(0 %in% ch)]
-    for(ci in seq(length(ch))){
-      chi <- ch[ci]
-      peaki <- which(grd$cohort_peaks == chi)
-      dpch <- grd$hit[peaki]
-      if(sum(dpch, na.rm = TRUE) > 1){
-        grd$hit[peaki] <- 0
-        maxi <- which.max(grd$Fs[peaki])
-        grd$hit[peaki[maxi]] <- 1
+    hitpeaks <- unique(cohort_peaks[hit > 0])
+    hitpeaks <- hitpeaks[!is.na(hitpeaks) & hitpeaks != 0]
+    for(chi in hitpeaks){
+      peaki <- which(cohort_peaks == chi)
+      if(sum(hit[peaki], na.rm = TRUE) > 1){
+        maxi <- which.max(Fs[peaki])
+        hit[peaki] <- 0
+        hit[peaki[maxi]] <- 1
       }
     }
   }
 
 
-  ESP <- sum(grd$Fs * grd$hit, na.rm = TRUE)
+  ESP <- sum(Fs * hit, na.rm = TRUE)
   fASP <- ESP/lfq$ASP
   fESP <- (10^(ESP/lfq$ASP)) /10
 

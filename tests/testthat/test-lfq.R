@@ -111,6 +111,55 @@ test_that("lfqRestructure treats NA catches as zero", {
                  lfqRestructure(synLFQ5, MA = 11)$rcounts)
 })
 
+## Straightforward (slow) implementation of the ELEFAN score for the growth
+## curve points `fit$Lt` returned by lfqFitCurves
+reference_ESP <- function(rs, fit, flagging.out = TRUE) {
+    mid <- rs$midLengths
+    w <- diff(mid)
+    lower <- mid - c(w[1], w) / 2
+    upper <- mid + c(w, w[length(w)]) / 2
+    yd <- date2yeardec(rs$dates)
+    hits <- matrix(0, length(mid), length(yd))
+    for (k in seq_len(nrow(fit$Lt))) {
+        j <- which(yd == fit$Lt$t[k])
+        i <- which(lower <= fit$Lt$Lt[k] & upper > fit$Lt$Lt[k])
+        hits[i, j] <- hits[i, j] + 1
+    }
+    if (!flagging.out) hits <- (hits > 0) * 1
+    if (flagging.out) {
+        ## each positive peak (id != 0) counts at most once, at its maximum
+        for (id in setdiff(unique(c(rs$peaks_mat)), 0)) {
+            cells <- which(rs$peaks_mat == id)
+            if (sum(hits[cells]) > 1) {
+                hits[cells] <- 0
+                hits[cells[which.max(rs$rcounts[cells])]] <- 1
+            }
+        }
+    }
+    sum(rs$rcounts * hits)
+}
+
+test_that("lfqFitCurves score equals a straightforward implementation", {
+    set.seed(3)
+    ## truncated data: the first cell belongs to a positive peak
+    trunc <- lfqRestructure(lfqModify(synLFQ5, Lmin = 23.5), MA = 11)
+    expect_true(trunc$peaks_mat[1, 1] != 0)
+    for (rs in list(lfqRestructure(synLFQ5, MA = 11),
+                    lfqRestructure(synLFQ4, MA = 11),
+                    lfqRestructure(alba, MA = 7),
+                    trunc)) {
+        Lmax <- max(rs$midLengths)
+        for (i in 1:5) {
+            p <- list(Linf = runif(1, 0.8, 1.4) * Lmax, K = runif(1, 0.2, 1.5),
+                      t_anchor = runif(1), C = runif(1), ts = runif(1))
+            for (fo in c(TRUE, FALSE)) {
+                fit <- lfqFitCurves(rs, par = p, flagging.out = fo)
+                expect_equal(fit$ESP, reference_ESP(rs, fit, flagging.out = fo))
+            }
+        }
+    }
+})
+
 test_that("lfqFitCurves scores the true growth curve above a wrong one", {
     ## synLFQ5 was simulated with Linf = 80, K = 0.5, t_anchor = 0.25
     rs <- lfqRestructure(synLFQ5, MA = 11)

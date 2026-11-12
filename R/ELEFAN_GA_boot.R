@@ -98,6 +98,7 @@
 #' \emph{Ecological Modelling}, 393, 37-51
 #'
 #' @importFrom parallel detectCores
+#' @importFrom stats runif
 #'
 #' @examples
 #' \donttest{

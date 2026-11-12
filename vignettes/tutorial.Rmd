@@ -145,7 +145,7 @@ Then `ELEFAN_SA` can be applied as follows.
 
 ```{r Figure 4, fig.height=5, fig.width=5, echo=TRUE, eval=TRUE, results="hide", fig.cap="Score graph of the ELEFAN method with simulated annealing. Green dots indicate the runnning minimum value of the cost function, while blue dots indicate the mean score of each iteration. The red line shows the decline of the 'temperature' value, which describes the probability of accepting worse solutions as the parameter space is explored."}
 ## run ELEFAN with simulated annealing
-res_SA <- ELEFAN_SA(lfq_bin2, SA_time = 60*0.5, SA_temp = 6e5,
+res_SA <- ELEFAN_SA(lfq_bin2, SA_time = 10, SA_temp = 6e5,
                    MA = ma, seasonalised = TRUE, addl.sqrt = FALSE,
                    init_par = list(Linf = linf_guess,
                                    K = 0.5,
@@ -163,7 +163,7 @@ res_SA$Rn_max
 Note that the computing time can be controlled with the argument `SA_time` and
 the results might change when increasing the time, in case the stable optimum of
 the objective function was not yet reached (stable optimum is indicated by overlapping blue and green dots in the score graph).
-Due to the limitations of the vignette format the computation time was set to 0.5 minutes, which results
+Due to the limitations of the vignette format the computation time was set to 10 seconds, which results
 already in acceptable results of $L_{\infty}$ = `r round(res_SA$par$Linf,2)`, K =
   `r round(res_SA$par$K,2)`, $t_{anchor}$ = `r round(res_SA$par$t_anchor,2)`,
 C = `r round(res_SA$par$C,2)`, and $t_s$ = `r round(res_SA$par$ts,2)` with a

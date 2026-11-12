@@ -15,6 +15,7 @@
   - Plots of the results: `univariate_density`, `LinfK_scatterhist` (with
     `add_phiprime` for phi' isolines), `vbgfCI_time` and `plotBoot`.
   - Example data set `alba_boot`.
+  - New vignette "Uncertainty of growth parameters with bootstrapped ELEFAN".
   - New dependency: `ks`.
 - `ELEFAN`: new argument `plot.score` (default `TRUE`), as in `ELEFAN_GA` and
   `ELEFAN_SA`, to switch off the score graph (response surface or K-scan).
@@ -23,6 +24,12 @@
 
 ##### Bug fixes
 
+- ELEFAN score (`lfqFitCurves`, used by `ELEFAN`, `ELEFAN_SA` and
+  `ELEFAN_GA`): if the first cell of the data (smallest length class of the
+  first sample) was part of a positive peak, the cells outside of positive
+  peaks were treated as one peak, so that their (negative) scores were mostly
+  ignored and scores were too high. This could happen e.g. after removing
+  small length classes with `lfqModify(Lmin = ...)`.
 - `lfqCreate` with `plus_group`: the plus group no longer counts the fish in
   its own length class twice.
 - `growth_tagging` with `method = "Munro"`: `K` is now the mean of the
@@ -55,6 +62,10 @@
 
 ##### Minor changes
 
+- Faster ELEFAN: the score calculation in `lfqFitCurves` and `date2yeardec`
+  are faster (same results), which speeds up `ELEFAN`, `ELEFAN_SA` (more
+  iterations within `SA_time`) and `ELEFAN_GA` several times.
+- Faster vignettes.
 - Added unit tests (`testthat`).
 
 
