@@ -1,4 +1,126 @@
 
+### TropFishR (development version)
+
+---
+
+##### New features
+
+- `ELEFAN`: new argument `plot.score` (default `TRUE`), as in `ELEFAN_GA` and
+  `ELEFAN_SA`, to switch off the score graph (response surface or K-scan).
+  The argument `plot` only controls the plot of the restructured data with
+  the growth curves.
+
+##### Bug fixes
+
+- `lfqCreate` with `plus_group`: the plus group no longer counts the fish in
+  its own length class twice.
+- `growth_tagging` with `method = "Munro"`: `K` is now the mean of the
+  individual growth rates at the optimal `Linf`. Previously the coefficient
+  of variation of the individual growth rates was returned as `K`.
+- `stock_sim` (age-based):
+  - Mean biomass is now also correct without fishing (`FM = 0`); previously
+    it was 0.
+  - The yield and value of the plus group now include all of its catch.
+    Previously only the catch beyond the first time step of the plus group
+    was used, so yield and value were too low.
+  - With a plus group, `meanB` no longer depends on age classes that are
+    older than the plus group.
+- `predict_mod` with `type = "ThompBell"`:
+  - The exploitation rates of the reference points (`E01`, `Emax`, `E05`,
+    `E04`) are now calculated as `E = F / (F + M)`. Previously they could
+    be greater than 1.
+  - The reference points are searched over the full range of `FM_change`.
+    Previously the search was limited to `F` between 0 and 5.
+  - The biomass per recruit at F0.1 is now returned as `BPR_F01`. Previously
+    it was returned under the duplicate name `YPR_F01` (showing up as
+    `YPR_F01.1`).
+  - Because of the fixes in `stock_sim`, the biomass at `F = 0` and the
+    reference point F0.5 are now correct for age-based data.
+- `prod_mod`: the Fox virgin biomass (`Fox_Bv`) is now `exp(c)`, the CPUE at
+  zero effort of the Fox model `ln(CPUE) = c + d * f`. Previously the
+  intercept `c` itself was returned.
+- `yeardec2date` no longer returns the previous day for some dates because
+  of floating point error (e.g. 2019-07-15 was returned as 2019-07-14).
+
+##### Minor changes
+
+- Added unit tests (`testthat`).
+
+
+<br><br>
+
+
+
+### TropFishR 1.6.6 (2025-04-06)
+
+---
+
+##### Minor changes
+
+- Removed the dependency on the package `propagate`, which was archived on
+  CRAN. The confidence band of the fitted growth curve in `growth_length_age`
+  (`method = "LSM"`, `CI = TRUE`) is now calculated with the delta method.
+- `growth_length_age`: the argument `do.sim` is deprecated and has no effect
+  (a warning is given if `do.sim = TRUE`); the argument `nsim` was removed.
+
+
+<br><br>
+
+
+
+### TropFishR 1.6.5 (2024-10-21)
+
+---
+
+##### Minor changes
+
+- Fixed CRAN notes: package authors are given as `Authors@R` (incl. ORCID),
+  updated link to the FAO manual, and corrected documentation links.
+- Links between the vignettes were restored.
+- Shorter vignette building time: fewer iterations in the ELEFAN vignette and
+  shorter `SA_time` in the `ELEFAN_SA` example.
+
+
+<br><br>
+
+
+
+### TropFishR 1.6.4 (2024-01-29)
+
+---
+
+##### Bug fixes
+
+- `ELEFAN_GA` and `ELEFAN_SA` with `plot = TRUE`: the growth curves are drawn
+  with the estimated parameters (`par`); previously the non-existing element
+  `pars` was used.
+
+##### Minor changes
+
+- `Bhattacharya` requires an interactive session and returns `NULL` with a
+  message otherwise.
+- `catchCurve` and `powell_wetherall`: if `reg_int` is not provided (and
+  `auto = FALSE` in `catchCurve`), the points for the regression line can
+  only be chosen in an interactive session; otherwise `NULL` is returned with
+  a message.
+- Progress bars in `ELEFAN` and `predict_mod` are only shown in interactive
+  sessions.
+- `lfqRestructure` (and thus all ELEFAN functions) gives an informative error
+  if a sample contains only zeros.
+- `ELEFAN`: the score graph is only drawn if `plot = TRUE`.
+- `ELEFAN_SA`: the score graph (`plot.score`) is currently not drawn, because
+  the trace of the optimisation is not available from `GenSA` any more.
+- `growth_length_age` (`method = "LSM"`, `CI = TRUE`) plots the confidence
+  band of the growth curve again, using `propagate::predictNLS`.
+- `Matrix` moved from `Depends` to `Imports`; `stats` and `utils` moved from
+  `Suggests` to `Imports`.
+- Updated URLs; links between vignettes were removed for CRAN.
+
+
+<br><br>
+
+
+
 ### TropFishR 1.6.3 (2021-09-02)
 
 ---

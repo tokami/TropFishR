@@ -709,7 +709,7 @@ predict_mod <- function(param, type, FM_change = NA,
         splSPR <- try(smooth.spline(x = FM_change, y = spr, spar = 0.4), silent = TRUE)
         splYPR <- smooth.spline(x = FM_change, y = ypr, spar = 0.4)
         splBPR <- smooth.spline(x = FM_change, y = bpr, spar = 0.4)
-        newdat <- data.frame(F=seq(0,5,length.out = 500))
+        newdat <- data.frame(F=seq(0,max(FM_change, na.rm = TRUE),length.out = 500))
         newdat$YPR <- predict(splYPR, x=newdat$F)$y
         newdat$YPR.d1 <- predict(splYPR, x=newdat$F, deriv = 1)$y
         newdat$BPR <- predict(splBPR, x=newdat$F)$y
@@ -741,7 +741,7 @@ predict_mod <- function(param, type, FM_change = NA,
         F05 <- ifelse(is.integer(N05),newdat[N05,1],NA)
         F04 <- ifelse(is.integer(N04),newdat[N04,1],NA)
         ## E
-        newdat$E <- newdat$F/mean(Z, na.rm = TRUE)
+        newdat$E <- newdat$F/(newdat$F + mean(nM, na.rm = TRUE))
         E01 <- ifelse(is.integer(N01),newdat$E[N01],NA)
         Emax <- ifelse(is.integer(Nmax),newdat$E[Nmax],NA)
         E05 <- ifelse(is.integer(N05),newdat$E[N05],NA)
@@ -792,7 +792,7 @@ predict_mod <- function(param, type, FM_change = NA,
                                 YPR_Fmax = Fmax_ypr,
                                 YPR_F05 = F05_ypr,
                                 YPR_F04 = F04_ypr,
-                                YPR_F01 = F01_bpr,
+                                BPR_F01 = F01_bpr,
                                 BPR_Fmax = Fmax_bpr,
                                 BPR_F05 = F05_bpr,
                                 BPR_F04 = F04_bpr,
@@ -814,7 +814,7 @@ predict_mod <- function(param, type, FM_change = NA,
                                 YPR_Fmax = Fmax_ypr,
                                 YPR_F05 = F05_ypr,
                                 YPR_F04 = F04_ypr,
-                                YPR_F01 = F01_bpr,
+                                BPR_F01 = F01_bpr,
                                 BPR_Fmax = Fmax_bpr,
                                 BPR_F05 = F05_bpr,
                                 BPR_F04 = F04_bpr,

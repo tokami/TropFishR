@@ -140,7 +140,7 @@ prod_mod <- function(data, plot = FALSE){
     ln_CPUE = CPUEs[[2]],
     Fox_MSY = MSYs[2],
     Fox_fMSY = fMSYs[2],
-    Fox_Bv = as[2])
+    Fox_Bv = exp(as[2]))  # ln(CPUE) = c + d * f, so CPUE at f = 0 is exp(c)
 
   class(ret) <- "prod_mod"
 

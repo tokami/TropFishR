@@ -14,7 +14,7 @@ growth_length_age(
   CI = FALSE,
   ci.level = 0.95,
   age_plot = NULL,
-  nsim = 10000
+  do.sim = FALSE
 )
 }
 \arguments{
@@ -45,6 +45,8 @@ works for the LSM method. Default is FALSE.}
 
 \item{age_plot}{sequence with ages used for plotting (LSM method only). By default
 age_plot = seq(min(param$age),max(param$age),0.1)}
+
+\item{do.sim}{Deprecated.}
 }
 \value{
 A list with the input parameters and following parameters:

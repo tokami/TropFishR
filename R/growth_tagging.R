@@ -136,8 +136,9 @@ growth_tagging <- function(param, method,
 
            opt_mod <- optimise(f = func, interval = Linf_range)
            Linf <- opt_mod$minimum
-           K <- opt_mod$objective
            indi_Ks <- ((log(Linf-L1) - log(Linf-L2)) / (delta_t)) * time_u
+           ## K is the mean of the individual Ks at the Linf minimising their CV
+           K <- mean(indi_Ks, na.rm = TRUE)
            hist(indi_Ks, breaks = length(L1),
                 xlab = "K",
                 main = "Histogram  of individual Ks")

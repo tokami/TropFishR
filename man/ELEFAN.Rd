@@ -24,7 +24,8 @@ ELEFAN(
   contour = FALSE,
   add.values = TRUE,
   rsa.colors = terrain.colors(20),
-  plot_title = TRUE
+  plot_title = TRUE,
+  plot.score = TRUE
 )
 }
 \arguments{
@@ -92,6 +93,10 @@ Overridden when \code{contour = TRUE}.}
 (default: terrain.colors(20))}
 
 \item{plot_title}{logical; indicating whether title to score plots should be displayed}
+
+\item{plot.score}{logical; Plot the score graph, i.e. the response surface
+(if \code{Linf_fix = NA}) or the K-scan (if \code{Linf_fix} is provided)
+(Default: plot.score=TRUE).}
 }
 \value{
 A list with the input parameters and following list objects:

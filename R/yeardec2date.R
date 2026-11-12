@@ -15,6 +15,9 @@ yeardec2date <- function(yeardec){
   # adapted from lubridate::date_decimal
   start <- as.POSIXct(paste0(trunc(yeardec),  "/01/01"), tz="UTC")
   end   <- as.POSIXct(paste0(trunc(yeardec)+1,"/01/01"), tz="UTC")
-  res <- as.Date(start + (difftime(end, start, units="secs") * (yeardec - trunc(yeardec))))
+  secs <- as.numeric(difftime(end, start, units="secs")) * (yeardec - trunc(yeardec))
+  ## round to milliseconds so that floating point error (e.g. 23:59:59.999998)
+  ## does not move the date back by one day
+  res <- as.Date(start + round(secs, 3))
   return(res)
 }

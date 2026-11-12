@@ -147,17 +147,15 @@ lfqCreate <- function(data, Lname, Dname, Fname = NA, bin_size = 1,
         pg = as.numeric(as.character(plus_group[2]))
       }
 
-      midLengths <- midLengths[1:which(midLengths == pg)]
+      ## plus group class collects its own and all larger classes
+      pgi <- which(midLengths == pg)
+      midLengths <- midLengths[1:pgi]
       if(is.vector(catch_mat)){
-        addplus <- sum(catch_mat[(which(midLengths == pg):length(catch_mat))])
-        catch_mat <- catch_mat[1:which(midLengths == pg)]
-        catch_mat[which(midLengths == pg)] <-
-          catch_mat[which(midLengths == pg)] + addplus
+        catch_mat[pgi] <- sum(catch_mat[pgi:length(catch_mat)])
+        catch_mat <- catch_mat[1:pgi]
       }else{
-        addplus <- colSums(catch_mat[(which(midLengths == pg):nrow(catch_mat)),])
-        catch_mat <- catch_mat[1:which(midLengths == pg),]
-        catch_mat[which(midLengths == pg),] <-
-          catch_mat[which(midLengths == pg),] + addplus
+        catch_mat[pgi,] <- colSums(catch_mat[pgi:nrow(catch_mat),,drop=FALSE])
+        catch_mat <- catch_mat[1:pgi,,drop=FALSE]
       }
     }
 

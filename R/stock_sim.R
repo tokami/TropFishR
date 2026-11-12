@@ -127,8 +127,9 @@ stock_sim <- function(param, age_unit = "year",
     #yield in kg or g
     Y <- C * meanWeight
 
-    #mean biomass in kg or g
-    B <- Y / (FM * dt)
+    #mean biomass in kg or g: mean number alive during dt (dead / (Z * dt))
+    #times mean weight; equals Y / (FM * dt) but is also defined for FM = 0
+    B <- dead / (Z * dt) * meanWeight
 
     #value expressed in money units
     V <- Y * meanValue
@@ -154,24 +155,25 @@ stock_sim <- function(param, age_unit = "year",
       classes[length(classes)] <-
         paste(classes[length(classes)],"+",sep='')
 
-      #num deaths
+      #num deaths: all fish in the plus group die eventually
       df[plus_group, "dead"] <- df[plus_group, "N"]
 
-      #catch
-      new.C <- (FM[plus_group] / Z[plus_group]) * df[plus_group, "N"]
-      catch.plus.dif <- new.C - df[plus_group, "C"]
-      df[plus_group, "C"] <- new.C
+      #catch: all future catches of the plus group
+      df[plus_group, "C"] <- (FM[plus_group] / Z[plus_group]) * df[plus_group, "N"]
 
       #yield
-      df[plus_group, "Y"] <- meanWeight[plus_group] * catch.plus.dif
+      df[plus_group, "Y"] <- meanWeight[plus_group] * df[plus_group, "C"]
 
       #value
       df[plus_group, "V"] <-
         df[plus_group, "Y"] * meanValue[plus_group]
 
       #biomass       ####not sure....omitted in manual
-      df[plus_group, "B"] <-
-        df[plus_group, "Y"] / (FM[plus_group] * df[plus_group, "dt"])
+      #N / Z is the number-years lived by the plus group, so that B * dt
+      #enters meanB as for the other classes; equals Y / (FM * dt) but is
+      #also defined for FM = 0
+      df[plus_group, "B"] <- meanWeight[plus_group] *
+        df[plus_group, "N"] / (Z[plus_group] * df[plus_group, "dt"])
 
 
       res2 <- as.list(as.data.frame(df))
@@ -185,7 +187,7 @@ stock_sim <- function(param, age_unit = "year",
       totals <- data.frame(totC = sum(res2$C, na.rm=TRUE),
                            totY = sum(res2$Y, na.rm=TRUE),
                            totV = sum(res2$V, na.rm=TRUE),
-                           meanB = sum((res2$B * res2$dt), na.rm=TRUE) / sum(dt, na.rm=TRUE))   ### more complicated biomass concept if dt is not constant, see Chapter 5
+                           meanB = sum((res2$B * res2$dt), na.rm=TRUE) / sum(res2$dt, na.rm=TRUE))   ### more complicated biomass concept if dt is not constant, see Chapter 5
 
       res2 <- c(res2,totals = list(totals))
     }

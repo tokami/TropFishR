@@ -47,6 +47,9 @@
 #' @param rsa.colors vector of colors to be used with the Response Surface Analysis plot.
 #'    (default: terrain.colors(20))
 #' @param plot_title logical; indicating whether title to score plots should be displayed
+#' @param plot.score logical; Plot the score graph, i.e. the response surface
+#'    (if \code{Linf_fix = NA}) or the K-scan (if \code{Linf_fix} is provided)
+#'    (Default: plot.score=TRUE).
 #'
 #' @examples
 #' \donttest{
@@ -204,7 +207,8 @@ ELEFAN <- function(lfq, Linf_fix = NA, Linf_range = NA,
                    hide.progressbar = FALSE,
                    plot = FALSE, contour = FALSE,
                    add.values = TRUE, rsa.colors = terrain.colors(20),
-                   plot_title = TRUE){
+                   plot_title = TRUE,
+                   plot.score = TRUE){
 
   res <- lfq
   classes <- res$midLengths
@@ -333,7 +337,7 @@ ELEFAN <- function(lfq, Linf_fix = NA, Linf_range = NA,
 
 
   # Graphs
-  if(is.na(Linf_fix)){
+  if(plot.score && is.na(Linf_fix)){
     plot_dat <- reshape2::melt(score_mat)
 
     image(
@@ -356,7 +360,7 @@ ELEFAN <- function(lfq, Linf_fix = NA, Linf_range = NA,
         }
       }
     }
-  } else {
+  } else if(plot.score){
     if(all(Ks %in% exp(seq(log(0.1),log(10),length.out=100)))){
       K_labels <- c(seq(0.1,1,0.1),2:10)
       K_plot <- log10(Ks)
