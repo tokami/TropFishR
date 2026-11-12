@@ -5,6 +5,17 @@
 
 ##### New features
 
+- Bootstrapped ELEFAN (Schwamborn et al. 2019) to assess the uncertainty of
+  the growth parameters:
+  - `lfqResample` resamples length-frequency data.
+  - `ELEFAN_GA_boot` and `ELEFAN_SA_boot` fit `ELEFAN_GA` or `ELEFAN_SA` to
+    many resampled data sets (optionally in parallel) and return the
+    estimates with maximum density, medians and confidence intervals (class
+    `lfqBoot`).
+  - Plots of the results: `univariate_density`, `LinfK_scatterhist` (with
+    `add_phiprime` for phi' isolines), `vbgfCI_time` and `plotBoot`.
+  - Example data set `alba_boot`.
+  - New dependency: `ks`.
 - `ELEFAN`: new argument `plot.score` (default `TRUE`), as in `ELEFAN_GA` and
   `ELEFAN_SA`, to switch off the score graph (response surface or K-scan).
   The argument `plot` only controls the plot of the restructured data with
