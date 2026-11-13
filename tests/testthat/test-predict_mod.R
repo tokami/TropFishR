@@ -139,3 +139,47 @@ test_that("Thompson-Bell reference points are searched over the FM_change range"
     ## YPR peaks inside the range, so Fmax should equal the F with maximal yield
     expect_equal(res$df_Es$Fmax, res$FM_change[which.max(res$totY)], tolerance = 0.1)
 })
+
+## length-based stock_sim: plus group at Linf
+
+lb_stock <- function(Linf = 60) {
+    ml <- seq(5, 79, 2)
+    list(midLengths = ml, Linf = Linf, K = 0.3, t0 = 0, M = 0.3,
+         FM = rep(0.5, length(ml)), a = 0.01, b = 3)
+}
+
+test_that("length-based stock_sim catches all fish with a plus group at Linf", {
+    ## constant F: all fish die eventually, the fraction F / Z by fishing
+    p <- lb_stock()
+    res <- stock_sim(p)
+    expect_equal(res$totals$totC, 1000 * 0.5 / 0.8)
+    ## the class including Linf is the plus group, classes above are NA
+    lower <- p$midLengths - 1
+    above <- lower >= p$Linf
+    expect_true(all(is.na(res$C[above])))
+    expect_true(all(is.finite(res$C[!above])))
+    ## the same as with the length classes up to the one including Linf
+    cut <- p
+    cut$midLengths <- p$midLengths[!above]
+    cut$FM <- p$FM[!above]
+    expect_equal(stock_sim(cut)$totals, res$totals)
+    ## Linf at a class limit
+    expect_equal(stock_sim(lb_stock(Linf = 62))$totals$totC, 1000 * 0.5 / 0.8)
+})
+
+test_that("predict_mod LW_unit = 'g' gives yield in kg and the same reference points", {
+    p <- lb_stock()
+    p$FM <- 0.5
+    sl <- list(selecType = "trawl_ogive", L50 = 20, L75 = 24)
+    run <- function(...) {
+        r <- NULL
+        capture.output(r <- predict_mod(p, type = "ThompBell", FM_change = seq(0, 3, 0.1),
+                                        s_list = sl, hide.progressbar = TRUE, ...))
+        r
+    }
+    kg <- run()
+    g <- run(LW_unit = "g")
+    expect_equal(g$totY, kg$totY / 1000)
+    expect_equal(g$df_Es$Fmax, kg$df_Es$Fmax)
+    expect_error(run(LW_unit = "t"), "arg")
+})

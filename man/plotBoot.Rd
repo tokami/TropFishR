@@ -2,11 +2,15 @@
 % Please edit documentation in R/plotBoot.R
 \name{plotBoot}
 \alias{plotBoot}
-\title{Plot length-frequency data with bootstrapped growth curves}
+\title{Plot bootstrapping results}
 \usage{
 plotBoot(
   lfq,
   boot,
+  pType = "lfq",
+  display = c("CI", "bootRaw"),
+  best = "maxDen",
+  pRef = "Fmax",
   Fname = "catch",
   agemax = NULL,
   rel = FALSE,
@@ -19,8 +23,8 @@ plotBoot(
   date.axis = "traditional",
   date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by = "months"),
   date.format = "'\%y-\%b",
-  xlab = "",
-  ylab = "Length classes",
+  xlab = NULL,
+  ylab = NULL,
   CI = 95,
   ci.col = 1,
   ci.lty = 2,
@@ -32,9 +36,22 @@ plotBoot(
 )
 }
 \arguments{
-\item{lfq}{a length frequency object of the class `lfq`}
+\item{lfq}{a length frequency object of the class `lfq` (only used for
+`pType = "lfq"`)}
 
 \item{boot}{an object of class `lfqBoot`}
+
+\item{pType}{type of plot: `"lfq"` (default), `"cc"` or `"ypr"`}
+
+\item{display}{for `pType = "cc"`: `"CI"` (regression line and confidence
+band), `"bootRaw"` (regression lines of all resamples) or both
+(Default: `c("CI", "bootRaw")`)}
+
+\item{best}{for `pType = "cc"`: regression line with the Z and intercept
+with maximum density (`"maxDen"`, default) or the medians (`"median"`)}
+
+\item{pRef}{for `pType = "ypr"`: reference point to display, one of
+`"Fmax"` (default), `"F01"`, `"F05"` or `"F04"`}
 
 \item{Fname}{name of the element of `lfq` to plot, either `"catch"`
 (default) or `"rcounts"` (restructured data, see \link{lfqRestructure})}
@@ -64,11 +81,13 @@ background image)}
 
 \item{date.format}{format of the dates for `date.axis = "modern"`}
 
-\item{xlab}{label for x-axis}
+\item{xlab}{label for x-axis (default depends on `pType`)}
 
-\item{ylab}{label for y-axis (Default: `"Length classes"`)}
+\item{ylab}{label for y-axis (default depends on `pType`)}
 
-\item{CI}{numeric; confidence interval level (Default: 95)}
+\item{CI}{numeric; confidence interval level (Default: 95). For
+`pType = "ypr"`, the confidence interval of the reference point is taken
+from `boot$CI`.}
 
 \item{ci.col}{colour of the confidence interval lines}
 
@@ -82,15 +101,23 @@ background image)}
 
 \item{maxd.lwd}{line width of the growth curves with maximum density}
 
-\item{...}{additional arguments passed to \code{\link[graphics]{image}}}
+\item{...}{additional arguments passed to \code{\link[graphics]{image}}
+(`pType = "lfq"`) or \code{\link[graphics]{plot}}}
 }
 \value{
 plot
 }
 \description{
-Plots the length-frequency data together with the growth curves
-  with maximum density and their confidence interval from bootstrapping
-  results (\link{ELEFAN_GA_boot}, \link{ELEFAN_SA_boot}).
+Plots results of the bootstrapped assessment:
+  \itemize{
+  \item `pType = "lfq"`: the length-frequency data together with the growth
+  curves with maximum density and their confidence interval
+  (\link{ELEFAN_GA_boot}, \link{ELEFAN_SA_boot}),
+  \item `pType = "cc"`: the catch curves of the resamples
+  (\link{catchCurve} with `boot`),
+  \item `pType = "ypr"`: the yield per recruit curves of the resamples with
+  a reference point (\link{predict_mod} with `boot`).
+  }
 }
 \examples{
 data(alba)
@@ -99,5 +126,19 @@ plotBoot(lfq = alba, boot = alba_boot)
 
 # restructured data
 plotBoot(lfq = lfqRestructure(alba, MA = 7), boot = alba_boot, Fname = "rcounts")
+
+\donttest{
+# catch curves and yield per recruit
+alba$a <- 0.0001; alba$b <- 3
+res <- M_empirical(method = "Then_growth", boot = alba_boot)
+## Then's formula gives M > Z for alba; for this example, a lower M is used
+res$bootRaw$M_low <- res$bootRaw$M_Then / 3
+res <- catchCurve(alba, boot = res, calc_ogive = TRUE, natMort = "M_low",
+                  yearCombine = TRUE)
+plotBoot(boot = res, pType = "cc")
+res <- predict_mod(alba, type = "ThompBell", FM_change = seq(0, 10, 0.1),
+                   boot = res, natMort = "M_low")
+plotBoot(boot = res, pType = "ypr")
+}
 
 }

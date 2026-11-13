@@ -20,7 +20,9 @@ M_empirical(
   Wwet = NULL,
   Bl = NULL,
   schooling = FALSE,
-  method
+  method,
+  boot = NULL,
+  CI = 95
 )
 }
 \arguments{
@@ -60,9 +62,21 @@ be employed: "AlversonCarney", "Gislason" (size dependent mortality estimates), 
 "RikhterEfanov", "Roff", "Then_growth", or "Then_tmax".
 Please refer to Details to see which input parameters
 are required by each method.}
+
+\item{boot}{optional; an object of class `lfqBoot` with bootstrapped growth
+parameters (e.g. from \code{\link{ELEFAN_GA_boot}}). If provided, M is
+estimated for each resample with its Linf and K. Only the methods
+"Then_growth" and "Pauly_Linf" (with \code{temp}) are available.
+See also \code{\link{MstochThen}}.}
+
+\item{CI}{percentage for confidence intervals if \code{boot} is provided
+(Default: 95)}
 }
 \value{
-A matrix of M estimates.
+A matrix of M estimates. If \code{boot} is provided, the
+   \code{lfqBoot} object with the additional columns \code{M_Then} and/or
+   \code{M_Pauly} (in \code{bootRaw}, \code{maxDen}, \code{median} and
+   \code{CI}).
 }
 \description{
 Functions to calculate the instantaneous natural mortality rate (M)
@@ -94,6 +108,12 @@ If accounting for schooling behaviour M is multiplied by 0.8 according to
 \examples{
 M_empirical(Linf = 80, K_l = 0.5, temp = 25, tmax = 30,
      method = c("Pauly_Linf","Hoenig"))
+
+# with bootstrapped growth parameters
+data(alba_boot)
+res <- M_empirical(method = "Then_growth", boot = alba_boot)
+res$maxDen
+res$CI
 
 }
 \references{

@@ -21,6 +21,7 @@ univariate_density(
   cex = 1,
   mfrow = NA,
   ylim = NA,
+  pars = NULL,
   ...
 )
 }
@@ -60,6 +61,9 @@ rugs (Default: `FALSE`)?}
 \item{ylim}{optional list with y-axis limits, one vector per parameter
 (Default: NA).}
 
+\item{pars}{optional; names of the columns in `res$bootRaw` (parameters) to
+be plotted. Default (`NULL`): all columns.}
+
 \item{...}{Additional arguments passed to `par`.}
 }
 \value{
@@ -68,11 +72,14 @@ plot
 \description{
 Plots the univariate kernel density estimates of the VBGF
   parameters from bootstrapping results (\link{ELEFAN_GA_boot},
-  \link{ELEFAN_SA_boot}) together with the confidence interval and the
-  parameter value with maximum density.
+  \link{ELEFAN_SA_boot}) and of the following assessment steps (see the
+  argument `boot` of \link{M_empirical}, \link{catchCurve}, \link{VPA} and
+  \link{predict_mod}) together with the confidence interval and the
+  parameter value with maximum density (mode of the kernel density).
 }
 \examples{
 data(alba_boot)
 univariate_density(alba_boot)
+univariate_density(alba_boot, pars = c("Linf", "K"))
 
 }

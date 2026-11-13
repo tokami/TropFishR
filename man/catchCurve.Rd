@@ -12,7 +12,15 @@ catchCurve(
   reg_int = NULL,
   reg_num = 1,
   auto = FALSE,
-  plot = TRUE
+  plot = TRUE,
+  boot = NULL,
+  agerange = NULL,
+  natMort = NULL,
+  robustReg = FALSE,
+  yearSel = NA,
+  yearCombine = FALSE,
+  binSize = NA,
+  CI = 95
 )
 }
 \arguments{
@@ -48,6 +56,41 @@ data. Default 1.}
 automatically. Default = FALSE}
 
 \item{plot}{logical; should a plot be displayed? Default = TRUE}
+
+\item{boot}{optional; an object of class `lfqBoot` with bootstrapped growth
+parameters (e.g. from \code{\link{ELEFAN_GA_boot}}). If provided, the
+length-converted catch curve is applied to each resampled data set
+(re-created with \code{\link{lfqResample}} and the seeds of `boot`) with
+the growth parameters of the resample. `param` has to be the lfq data
+used for the bootstrapped growth analysis. The points for the
+regression line are chosen automatically for each resample (see
+Details) unless `reg_int` is provided.}
+
+\item{agerange}{optional; with `boot`, a vector with the minimum and maximum
+relative age to which the automatically chosen regression line is limited.}
+
+\item{natMort}{optional; with `boot`, the name of the column in
+`boot$bootRaw` with natural mortality estimates (e.g. "M_Then" from
+\code{\link{M_empirical}} or \code{\link{MstochThen}}). If provided,
+the fishing mortality is calculated (FM = Z - M).}
+
+\item{robustReg}{logical; with `boot`, should the last point be excluded
+from the automatically chosen regression line if the slope of the last
+three points is much flatter than the slope of the whole descending limb
+(e.g. due to lower selectivity for large fish)? Default = FALSE}
+
+\item{yearSel}{optional; with `boot`, year(s) to be used if the lfq data
+covers several years.}
+
+\item{yearCombine}{logical; with `boot`, should the catches of several years
+be combined? Default = FALSE}
+
+\item{binSize}{optional; new bin size (in cm) for the length classes. The
+catches are summed in bins of this size, starting at 0, and empty bins
+at both ends are removed (as in \code{\link{lfqModify}} with `bin_size`). With `boot`, the resampled
+data are re-binned.}
+
+\item{CI}{with `boot`, percentage for confidence intervals (Default: 95)}
 }
 \value{
 A list with the input parameters and following list objects:
@@ -75,6 +118,13 @@ in case calc_ogive == TRUE, additionally:
   probability to be caught),
   \item \strong{L75}: length at which fish have a 75% probability to be caught;
 }
+If `boot` is provided, the \code{lfqBoot} object with the additional
+columns `Z`, `FM` (if `natMort` is provided), `L50` and `L75` (if
+`calc_ogive = TRUE`) in `bootRaw`, `maxDen`, `median` and `CI`. The
+intercepts and points of the regression lines are stored in `misc`
+(for \code{\link{plotBoot}}). Resamples for which the catch curve cannot
+be fitted (e.g. no descending limb) get NA, and a warning gives their
+number.
 }
 \description{
 This function applies the (length-converted) linearised catch
@@ -106,6 +156,17 @@ This function includes the \link{identify} function, which asks you to
   pseudo-cohort.
   The cumulative catch curve does not allow for the estimation of the selectivity
   ogive.
+
+  With `boot`, the catches of each resampled data set are summed per year
+  (see `yearSel` and `yearCombine`) and the regression line is chosen
+  automatically: from the point after the highest point of the catch curve
+  to the last point with ln(C/dt) > 0.5 (optionally limited with `agerange`
+  and `robustReg`). If the selection ogive cannot be estimated because
+  fewer than two length classes with catch are below the regression line
+  (e.g. the descending limb starts at the first length class), knife-edge
+  selection is assumed: `L50` = `L75` = lower limit of the first length
+  class of the regression line (these resamples are marked in
+  `misc$knifeEdge`).
 }
 \examples{
 \donttest{

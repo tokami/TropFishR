@@ -14,7 +14,14 @@ VPA(
   analysis_type = "VPA",
   algorithm = "new",
   plus_group = TRUE,
-  plot = FALSE
+  plot = FALSE,
+  LW_unit = "kg",
+  boot = NULL,
+  natMort = NULL,
+  yearSel = NA,
+  yearCombine = FALSE,
+  binSize = NA,
+  CI = 95
 )
 }
 \arguments{
@@ -27,7 +34,8 @@ VPA(
   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
   \item \code{M}: natural mortality [1/year] (numeric value or vector of identical
      length than midLengths),
-  \item \code{a}: length-weight relationship coefficent (W = a * L^b; for kg/cm3),
+  \item \code{a}: length-weight relationship coefficent (W = a * L^b; in kg/cm^b,
+     or in g/cm^b with \code{LW_unit = "g"}),
   \item \code{b}: length-weight relationship coefficent (W = a * L^b),
   \item \code{catch}: catch as vector for pseudo cohort analysis,
      or a matrix with catches of subsequent years to follow a real cohort.
@@ -61,6 +69,35 @@ while \code{"old"} uses the algorithm described by Sparre and Venema (1998).}
 \item{plus_group}{logical; indicating if the last length group is a plus group (default: TRUE).}
 
 \item{plot}{logical; indicating whether a plot should be printed}
+
+\item{LW_unit}{unit of the weight in the length-weight relationship
+(\code{a}): \code{"kg"} (default; W in kg) or \code{"g"} (W in g, then
+\code{a} is divided by 1000). The mean body weight is in kg and biomass
+and yield in tonnes.}
+
+\item{boot}{optional; an object of class `lfqBoot` with bootstrapped growth
+parameters, natural mortality (see `natMort`) and fishing mortality
+(`FM`, from \code{\link{catchCurve}} with `natMort`). If provided, the
+length-based VPA (or cohort analysis) is applied to each resampled data
+set (re-created with \code{\link{lfqResample}} and the seeds of `boot`)
+with the growth parameters and mortality rates of the resample: the
+terminal fishing mortality is the `FM` of the resample and a plus group is
+created at Linf of the resample. `param` has to be the lfq data used for
+the bootstrapped growth analysis and contain the parameters `a` and `b`
+of the length-weight relationship.}
+
+\item{natMort}{with `boot`, the name of the column in `boot$bootRaw` with
+natural mortality estimates (e.g. "M_Then").}
+
+\item{yearSel}{optional; with `boot`, year(s) to be used if the lfq data
+covers several years.}
+
+\item{yearCombine}{logical; with `boot`, should the catches of several years
+be combined? Default = FALSE}
+
+\item{binSize}{optional; with `boot`, new bin size for the resampled data.}
+
+\item{CI}{with `boot`, percentage for confidence intervals (Default: 95)}
 }
 \value{
 A list with the input parameters and following list objects:
@@ -82,6 +119,12 @@ A list with the input parameters and following list objects:
   \item \strong{plot_mat}: matrix with rearranged survivors, nat losses
   and catches for plotting;
 }
+If `boot` is provided, the \code{lfqBoot} object with the additional
+columns `N` (total mean number of fish) and `B` (total mean biomass in
+tonnes) in `bootRaw`, `maxDen`, `median` and `CI`. The fishing mortality at
+length of each resample is stored in `misc$FMvecVPA` (used by
+\code{\link{predict_mod}} with `boot`). Resamples for which the analysis
+fails (e.g. FM <= 0) get NA.
 }
 \description{
 This function applies the Virtual Population Analysis (VPA) or

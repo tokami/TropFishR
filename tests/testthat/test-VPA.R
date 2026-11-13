@@ -30,3 +30,14 @@ test_that("length-based cohort analysis on hake (regression values)", {
                    0.3855, 0.2882, 0.3075, 0.4013, 0.3894, 0.1101, 0.2800))
     expect_equal(res$Z, res$FM_calc + hake$M)
 })
+
+test_that("VPA with LW_unit = 'g' equals a in kg", {
+    hake_g <- hake
+    hake_g$a <- hake$a * 1000
+    kg <- VPA(hake, terminalE = 0.5, analysis_type = "CA", catch_unit = "'000",
+              plus_group = TRUE)
+    g <- VPA(hake_g, terminalE = 0.5, analysis_type = "CA", catch_unit = "'000",
+             plus_group = TRUE, LW_unit = "g")
+    expect_equal(g$meanBiomassTon, kg$meanBiomassTon)
+    expect_equal(g$FM_calc, kg$FM_calc)
+})

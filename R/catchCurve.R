@@ -31,6 +31,33 @@
 #' @param auto logical; no interactive functions used instead regression line is chosen
 #'    automatically. Default = FALSE
 #' @param plot logical; should a plot be displayed? Default = TRUE
+#' @param boot optional; an object of class `lfqBoot` with bootstrapped growth
+#'    parameters (e.g. from \code{\link{ELEFAN_GA_boot}}). If provided, the
+#'    length-converted catch curve is applied to each resampled data set
+#'    (re-created with \code{\link{lfqResample}} and the seeds of `boot`) with
+#'    the growth parameters of the resample. `param` has to be the lfq data
+#'    used for the bootstrapped growth analysis. The points for the
+#'    regression line are chosen automatically for each resample (see
+#'    Details) unless `reg_int` is provided.
+#' @param agerange optional; with `boot`, a vector with the minimum and maximum
+#'    relative age to which the automatically chosen regression line is limited.
+#' @param natMort optional; with `boot`, the name of the column in
+#'    `boot$bootRaw` with natural mortality estimates (e.g. "M_Then" from
+#'    \code{\link{M_empirical}} or \code{\link{MstochThen}}). If provided,
+#'    the fishing mortality is calculated (FM = Z - M).
+#' @param robustReg logical; with `boot`, should the last point be excluded
+#'    from the automatically chosen regression line if the slope of the last
+#'    three points is much flatter than the slope of the whole descending limb
+#'    (e.g. due to lower selectivity for large fish)? Default = FALSE
+#' @param yearSel optional; with `boot`, year(s) to be used if the lfq data
+#'    covers several years.
+#' @param yearCombine logical; with `boot`, should the catches of several years
+#'    be combined? Default = FALSE
+#' @param binSize optional; new bin size (in cm) for the length classes. The
+#'    catches are summed in bins of this size, starting at 0, and empty bins
+#'    at both ends are removed (as in \code{\link{lfqModify}} with `bin_size`). With `boot`, the resampled
+#'    data are re-binned.
+#' @param CI with `boot`, percentage for confidence intervals (Default: 95)
 #'
 #'
 #' @keywords function mortality Z catchCurve
@@ -97,6 +124,17 @@
 #'   The cumulative catch curve does not allow for the estimation of the selectivity
 #'   ogive.
 #'
+#'   With `boot`, the catches of each resampled data set are summed per year
+#'   (see `yearSel` and `yearCombine`) and the regression line is chosen
+#'   automatically: from the point after the highest point of the catch curve
+#'   to the last point with ln(C/dt) > 0.5 (optionally limited with `agerange`
+#'   and `robustReg`). If the selection ogive cannot be estimated because
+#'   fewer than two length classes with catch are below the regression line
+#'   (e.g. the descending limb starts at the first length class), knife-edge
+#'   selection is assumed: `L50` = `L75` = lower limit of the first length
+#'   class of the regression line (these resamples are marked in
+#'   `misc$knifeEdge`).
+#'
 #' @return A list with the input parameters and following list objects:
 #' \itemize{
 #'   \item \strong{classes.num}, \strong{tplusdt_2}, \strong{t_midL}, or
@@ -122,6 +160,13 @@
 #'   probability to be caught),
 #'   \item \strong{L75}: length at which fish have a 75% probability to be caught;
 #' }
+#' If `boot` is provided, the \code{lfqBoot} object with the additional
+#' columns `Z`, `FM` (if `natMort` is provided), `L50` and `L75` (if
+#' `calc_ogive = TRUE`) in `bootRaw`, `maxDen`, `median` and `CI`. The
+#' intercepts and points of the regression lines are stored in `misc`
+#' (for \code{\link{plotBoot}}). Resamples for which the catch curve cannot
+#' be fitted (e.g. no descending limb) get NA, and a warning gives their
+#' number.
 #'
 #' @importFrom grDevices dev.new
 #' @importFrom graphics identify par plot
@@ -182,10 +227,37 @@ catchCurve <- function(param,
                        reg_int = NULL,
                        reg_num = 1,
                        auto = FALSE,
-                       plot = TRUE
+                       plot = TRUE,
+                       boot = NULL,
+                       agerange = NULL,
+                       natMort = NULL,
+                       robustReg = FALSE,
+                       yearSel = NA,
+                       yearCombine = FALSE,
+                       binSize = NA,
+                       CI = 95
                        ){
 
+  ## catch curve with bootstrapped growth parameters
+  if(!is.null(boot)){
+      return(catchCurve_boot(param, boot = boot, cumulative = cumulative,
+                             calc_ogive = calc_ogive, reg_int = reg_int,
+                             agerange = agerange, natMort = natMort,
+                             robustReg = robustReg, yearSel = yearSel,
+                             yearCombine = yearCombine, binSize = binSize,
+                             CI = CI))
+  }
+
   res <- param
+
+  ## re-bin length classes
+  if(!is.na(binSize)){
+      if(!("midLengths" %in% names(res)))
+          stop("binSize requires length-frequency data (midLengths).")
+      rb <- rebinCatch(res$midLengths, res$catch, binSize)
+      res$midLengths <- rb$midLengths
+      res$catch <- rb$catch
+  }
 
   if("midLengths" %in% names(res)) classes <- as.character(res$midLengths)
   if("age" %in% names(res)) classes <- as.character(res$age)
@@ -273,11 +345,9 @@ catchCurve <- function(param,
 
     # L and t of lower length classes
     lowerLengths <- midLengths - (interval / 2)
-    if("C" %in% names(res) & "ts" %in% names(res)){
-        t_L1 <- VBGF(param = list(Linf = Linf, K = K, t0 = t0, C=C, ts=ts), L = lowerLengths)
-    }else{
-        t_L1 <- VBGF(param = list(Linf = Linf, K = K, t0 = t0), L = lowerLengths)
-    }
+    ## seasonal VBGF if C and ts are provided (in par or param; C = 0 is the
+    ## non-seasonal VBGF)
+    t_L1 <- VBGF(param = list(Linf = Linf, K = K, t0 = t0, C = C, ts = ts), L = lowerLengths)
     ## t0 - (1/K) * log(1 - (lowerLengths / Linf))
 
     # delta t
@@ -290,11 +360,9 @@ catchCurve <- function(param,
     #ln (Linf - L)
     ln_Linf_L <- log(Linf - lowerLengths)
     ## t of midlengths
-    if("C" %in% names(res) & "ts" %in% names(res)){
-        t_midL <- VBGF(param = list(Linf = Linf, K = K, t0 = t0, C=C, ts=ts), L = midLengths)
-    }else{
-        t_midL <- VBGF(param = list(Linf = Linf, K = K, t0 = t0), L = midLengths)
-    }
+    ## seasonal VBGF if C and ts are provided (in par or param; C = 0 is the
+    ## non-seasonal VBGF)
+    t_midL <- VBGF(param = list(Linf = Linf, K = K, t0 = t0, C = C, ts = ts), L = midLengths)
     ## t0 - (1/K) * log(1 - (midLengths / Linf))
 
     # y variable
@@ -302,7 +370,7 @@ catchCurve <- function(param,
     lnC <- log(catch)
     # ln( Catch / delta t)
     lnC_dt <- log(catch / dt)
-    lnC_dt[which(lnC_dt == -Inf)] <- NA   ### OR zero???
+    lnC_dt[which(!is.finite(lnC_dt))] <- NA   # e.g. no catch or dt = 0
 
     if(cumulative == FALSE){
       xvar = t_midL
@@ -436,7 +504,10 @@ catchCurve <- function(param,
     if(auto){
         yvar2 <- as.numeric(yvar)
         xvar2 <- xvar[which(yvar2 > 0.2)]
-        cutter <- c(which(yvar2 == max(as.numeric(yvar2),na.rm=TRUE))+1, which(xvar2 == max(xvar2,na.rm=TRUE)))
+        ## from the point after the highest point to the point with the
+        ## largest x and y > 0.2 (index in xvar, not in xvar2)
+        cutter <- c(which(yvar2 == max(as.numeric(yvar2),na.rm=TRUE))+1,
+                    which(xvar == max(xvar2,na.rm=TRUE)))
         cutterList <- list()
         cutterList[[1]] <- cutter
     }
@@ -588,4 +659,31 @@ catchCurve <- function(param,
         if(plot) plot(ret)
         return(ret)
       }
+}
+
+
+## Sum catches in length bins of size binSize, starting at 0, and remove
+## empty bins at both ends (same as lfqModify with bin_size). catch: vector or
+## matrix (one column per sample).
+rebinCatch <- function(midLengths, catch, binSize){
+    if(binSize < midLengths[2] - midLengths[1])
+        stop("The specified binSize is smaller than the bin size in your data. This is not possible!")
+    breaks <- seq(0, max(midLengths) + binSize, by = binSize)
+    bin <- findInterval(midLengths, breaks)
+    isVec <- is.null(dim(catch))
+    catchM <- as.matrix(catch)
+    agg <- rowsum(catchM, bin)
+    new <- matrix(0, nrow = length(breaks), ncol = ncol(catchM),
+                  dimnames = list(NULL, colnames(catchM)))
+    new[as.integer(rownames(agg)), ] <- agg
+    midLengths <- breaks + binSize / 2
+    ## remove empty bins at both ends (as lfqModify)
+    nonzero <- which(rowSums(new, na.rm = TRUE) != 0)
+    if(length(nonzero) > 0){
+        keep <- min(nonzero):max(nonzero)
+        new <- new[keep, , drop = FALSE]
+        midLengths <- midLengths[keep]
+    }
+    list(midLengths = midLengths,
+         catch = if(isVec) as.numeric(new) else new)
 }

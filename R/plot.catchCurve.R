@@ -197,14 +197,10 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
               temp0 <- seq(0,xplotAGE[reg_int[1]],0.01)
               temp <- predict(lm1,newdata=data.frame(xvar=temp0))
               if(xaxis == 'length'){
-                  if("C" %in% names(pes)){
-                      temp0 <- VBGF(param = list(Linf = Linf,
-                                                 K = K, t0 = t0,
-                                                 C = C, ts = ts), t = temp0)
-                  }else{
-                      ## t0 <- ifelse("t0" %in% names(pes), pes$t0, 0)
-                      temp0 <- VBGF(param = list(Linf = Linf, K = K, t0 = t0), t = temp0)
-                  }
+                  ## C = 0: non-seasonal VBGF
+                  temp0 <- VBGF(param = list(Linf = Linf,
+                                             K = K, t0 = t0,
+                                             C = C, ts = ts), t = temp0)
 
               }
               lines(temp0,temp, col=col[I], lwd=1.7, lty=2)

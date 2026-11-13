@@ -109,3 +109,26 @@ test_that("Powell-Wetherall estimates Linf of synLFQ3 (true Linf = 50)", {
     expect_true(res$confidenceInt_Linf[1] < res$Linf_est &&
                 res$Linf_est < res$confidenceInt_Linf[2])
 })
+
+test_that("catchCurve uses seasonal growth parameters in par", {
+    lfq <- list(midLengths = synLFQ7$midLengths, catch = rowSums(synLFQ7$catch))
+    gp <- list(Linf = 130, K = 0.2, t0 = 0, C = 0.75, ts = 0.5)
+    top <- suppressWarnings(catchCurve(c(lfq, gp), reg_int = c(20, 40), plot = FALSE))
+    inpar <- suppressWarnings(catchCurve(c(lfq, list(par = gp)), reg_int = c(20, 40),
+                                         plot = FALSE))
+    nonseasonal <- suppressWarnings(catchCurve(c(lfq, list(par = gp[1:3])),
+                                               reg_int = c(20, 40), plot = FALSE))
+    expect_equal(inpar$Z, top$Z)
+    expect_false(isTRUE(all.equal(inpar$Z, nonseasonal$Z)))
+})
+
+test_that("catchCurve auto ends at the last point with ln(C/dt) > 0.2", {
+    ## empty length class in the descending limb: excluded by y > 0.2, which
+    ## used to shift the end of the regression line by one point
+    lfq <- make_length_catch()
+    lfq$catch[15] <- 0
+    res <- suppressWarnings(catchCurve(lfq, auto = TRUE, plot = FALSE))
+    ok <- which(res$lnC_dt > 0.2)
+    expect_equal(res$reg_int[2], max(ok))
+    expect_equal(res$reg_int[1], which.max(res$lnC_dt) + 1)
+})

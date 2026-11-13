@@ -16,8 +16,11 @@
 #' @param age_unit indicates if the age groups are per month (\code{"month"}) or
 #'    per year (\code{"year"}). Default: \code{"year"}
 #' @param stock_size_1 stock size of smallest age/length group
-#' @param plus_group indicates age/length group, which should be turned into a plus
-#'    group (i.e. all groups above are comprised in one group)
+#' @param plus_group indicates the age group (row index), which should be turned
+#'    into a plus group (i.e. all groups above are comprised in one group).
+#'    Only for age-based data; for length-based data, the length class
+#'    including Linf (or the last length class) is the plus group, and length
+#'    classes above Linf are \code{NA}.
 #'
 #' @keywords function prediction ypr
 #'
@@ -269,14 +272,23 @@ stock_sim <- function(param, age_unit = "year",
         ## SSB
         SSB <- B * matP
 
-        ## last length group
+        ## last length group (plus group): the length class including Linf
+        ## or the last length class; length classes above Linf are not
+        ## reached (NA)
         x2 <- length(classes.num)
+        if(is.finite(Linf) && any(lowL < Linf)) x2 <- max(which(lowL < Linf))
         C[x2] <- N[x2] * FM[x2]/Z[x2]
         W[x2] <- a * ((lowL[x2] + Linf)/2 ) ^ b
         Y[x2] <- C[x2] * W[x2]
         B[x2] <- N[x2] / Z[x2] * W[x2]
         V[x2] <- Y[x2] * meanValue[x2]
         SSB[x2] <- B[x2] * matP[x2]
+        dead[x2] <- NA
+        if(x2 < length(classes.num)){
+            above <- (x2 + 1):length(classes.num)
+            N[above] <- dead[above] <- C[above] <- Y[above] <- NA
+            B[above] <- SSB[above] <- V[above] <- NA
+        }
 
         ## total catch, yield, value and average biomass
         totals <- data.frame(totC = sum(C, na.rm=TRUE),

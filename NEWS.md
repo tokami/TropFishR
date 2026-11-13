@@ -15,8 +15,41 @@
   - Plots of the results: `univariate_density`, `LinfK_scatterhist` (with
     `add_phiprime` for phi' isolines), `vbgfCI_time` and `plotBoot`.
   - Example data set `alba_boot`.
-  - New vignette "Uncertainty of growth parameters with bootstrapped ELEFAN".
+  - The bootstrapped growth parameters can be passed on to the following
+    steps of the assessment with the new argument `boot` of `M_empirical`
+    (methods "Then_growth" and "Pauly_Linf"), `catchCurve` (with automatic
+    choice of the regression line, optional selectivity, and `natMort` for
+    F = Z - M), `VPA` (length-based) and `predict_mod` (Thompson and Bell
+    and Beverton and Holt with reference points and current F relative to
+    them), so that the uncertainty is propagated to mortality rates and
+    reference points.
+  - `MstochThen` estimates M with the formula of Then et al. (2015)
+    including the uncertainty of the formula and optionally the residual
+    error (`resid = TRUE`), based on coefficients refitted to bootstrap
+    samples of the data of Then et al. (2015).
+  - Estimates of the steps after the growth analysis are summarised by the
+    mode of their univariate kernel density (`maxDen`), the median and
+    quantiles (`CI`). Resamples that cannot be analysed are `NA` and a
+    warning gives their number.
+  - `predict_mod` with `boot`: `bootSel` selects the selectivity from
+    `catchCurve` (`L50`, `L75`) or the fishing mortality at length from
+    `VPA`.
+  - `catchCurve` with `boot` assumes knife-edge selection if the selection
+    ogive cannot be estimated because there are fewer than two length
+    classes with catch below the regression line.
+  - `plotBoot` with `pType = "cc"` and `pType = "ypr"` shows the catch
+    curves and yield per recruit curves of the resamples.
+  - New vignette "Uncertainty in length-based stock assessment with
+    bootstrapped ELEFAN".
   - New dependency: `ks`.
+- `catchCurve`: new argument `binSize` to re-bin the length classes.
+- `VPA` and `predict_mod`: new argument `LW_unit` (`"kg"`, default, or `"g"`)
+  for the unit of the weight in the length-weight relationship.
+- `univariate_density`: new argument `pars` to select the parameters, and
+  the line of maximum density is now the mode of the kernel density (before:
+  mean of the values with the highest 1 % of the density).
+- `VBGF`: the age at length of the seasonalised VBGF is calculated faster
+  and more precisely (interpolation in the lookup table).
 - `ELEFAN`: new argument `plot.score` (default `TRUE`), as in `ELEFAN_GA` and
   `ELEFAN_SA`, to switch off the score graph (response surface or K-scan).
   The argument `plot` only controls the plot of the restructured data with
@@ -24,6 +57,31 @@
 
 ##### Bug fixes
 
+- `VBGF`: the age at length of the seasonalised VBGF is now `Inf` at `Linf`
+  and `NaN` above `Linf` (as for the non-seasonal VBGF). Previously the
+  maximum age of an internal lookup table was returned, so that length
+  classes at or above `Linf` appeared as very old fish, e.g. in the
+  length-converted catch curve with seasonal growth parameters.
+  Also, the age range of the lookup table now depends on the largest length
+  instead of the last one, so that lengths that are not sorted get correct
+  ages.
+- `catchCurve`: infinite values of ln(C/dt) (e.g. dt = 0) are ignored like
+  missing values. Previously the regression failed with an error.
+- `catchCurve` with `auto = TRUE`: the regression line now ends at the
+  point with the largest age and ln(C/dt) > 0.2. Previously the position of
+  this point among the points with ln(C/dt) > 0.2 was used as index of all
+  points, so that the line ended too early if there were points with
+  ln(C/dt) <= 0.2 (or missing) before it.
+- `catchCurve`: seasonal growth parameters (`C`, `ts`) in `param$par` (e.g.
+  from ELEFAN) are now used. Previously they were only used if they were
+  elements of `param` itself.
+- `VPA`: `t0` in `param$par` is now used (previously always 0 with `par`).
+- `stock_sim` (length-based, used by `predict_mod` with `type =
+  "ThompBell"`): the length class including `Linf` is now the plus group and
+  length classes above `Linf` are `NA`. Previously only the last length
+  class was treated as plus group; with length classes above `Linf`, the
+  fish growing beyond the last class below `Linf` were lost, so that catch,
+  yield and biomass were too low.
 - ELEFAN score (`lfqFitCurves`, used by `ELEFAN`, `ELEFAN_SA` and
   `ELEFAN_GA`): if the first cell of the data (smallest length class of the
   first sample) was part of a positive peak, the cells outside of positive

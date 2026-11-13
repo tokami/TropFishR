@@ -1,11 +1,27 @@
-#' @title Plot length-frequency data with bootstrapped growth curves
+#' @title Plot bootstrapping results
 #'
-#' @description Plots the length-frequency data together with the growth curves
-#'   with maximum density and their confidence interval from bootstrapping
-#'   results (\link{ELEFAN_GA_boot}, \link{ELEFAN_SA_boot}).
+#' @description Plots results of the bootstrapped assessment:
+#'   \itemize{
+#'   \item `pType = "lfq"`: the length-frequency data together with the growth
+#'   curves with maximum density and their confidence interval
+#'   (\link{ELEFAN_GA_boot}, \link{ELEFAN_SA_boot}),
+#'   \item `pType = "cc"`: the catch curves of the resamples
+#'   (\link{catchCurve} with `boot`),
+#'   \item `pType = "ypr"`: the yield per recruit curves of the resamples with
+#'   a reference point (\link{predict_mod} with `boot`).
+#'   }
 #'
-#' @param lfq a length frequency object of the class `lfq`
+#' @param lfq a length frequency object of the class `lfq` (only used for
+#'   `pType = "lfq"`)
 #' @param boot an object of class `lfqBoot`
+#' @param pType type of plot: `"lfq"` (default), `"cc"` or `"ypr"`
+#' @param display for `pType = "cc"`: `"CI"` (regression line and confidence
+#'   band), `"bootRaw"` (regression lines of all resamples) or both
+#'   (Default: `c("CI", "bootRaw")`)
+#' @param best for `pType = "cc"`: regression line with the Z and intercept
+#'   with maximum density (`"maxDen"`, default) or the medians (`"median"`)
+#' @param pRef for `pType = "ypr"`: reference point to display, one of
+#'   `"Fmax"` (default), `"F01"`, `"F05"` or `"F04"`
 #' @param Fname name of the element of `lfq` to plot, either `"catch"`
 #'   (default) or `"rcounts"` (restructured data, see \link{lfqRestructure})
 #' @param agemax numeric. Maximum age of the growth curves. By default, derived
@@ -22,9 +38,11 @@
 #' @param date.axis either `"traditional"` (default) or `"modern"`
 #' @param date.at dates for the date axis
 #' @param date.format format of the dates for `date.axis = "modern"`
-#' @param xlab label for x-axis
-#' @param ylab label for y-axis (Default: `"Length classes"`)
-#' @param CI numeric; confidence interval level (Default: 95)
+#' @param xlab label for x-axis (default depends on `pType`)
+#' @param ylab label for y-axis (default depends on `pType`)
+#' @param CI numeric; confidence interval level (Default: 95). For
+#'   `pType = "ypr"`, the confidence interval of the reference point is taken
+#'   from `boot$CI`.
 #' @param ci.col colour of the confidence interval lines
 #' @param ci.lty line type of the confidence interval lines
 #' @param ci.lwd line width of the confidence interval lines
@@ -32,10 +50,14 @@
 #' @param maxd.lty line type of the growth curves with maximum density
 #' @param maxd.lwd line width of the growth curves with maximum density
 #' @param ... additional arguments passed to \code{\link[graphics]{image}}
+#'   (`pType = "lfq"`) or \code{\link[graphics]{plot}}
 #'
 #' @return plot
 #'
 #' @importFrom graphics image rect axis.Date mtext polygon lines box par
+#' @importFrom graphics points plot text abline hist
+#' @importFrom grDevices adjustcolor
+#' @importFrom stats median
 #' @importFrom grDevices colorRampPalette rgb
 #' @importFrom stats cov quantile
 #'
@@ -47,10 +69,28 @@
 #' # restructured data
 #' plotBoot(lfq = lfqRestructure(alba, MA = 7), boot = alba_boot, Fname = "rcounts")
 #'
+#' \donttest{
+#' # catch curves and yield per recruit
+#' alba$a <- 0.0001; alba$b <- 3
+#' res <- M_empirical(method = "Then_growth", boot = alba_boot)
+#' ## Then's formula gives M > Z for alba; for this example, a lower M is used
+#' res$bootRaw$M_low <- res$bootRaw$M_Then / 3
+#' res <- catchCurve(alba, boot = res, calc_ogive = TRUE, natMort = "M_low",
+#'                   yearCombine = TRUE)
+#' plotBoot(boot = res, pType = "cc")
+#' res <- predict_mod(alba, type = "ThompBell", FM_change = seq(0, 10, 0.1),
+#'                    boot = res, natMort = "M_low")
+#' plotBoot(boot = res, pType = "ypr")
+#' }
+#'
 #' @export
 #'
 plotBoot <- function(lfq,
                      boot,
+                     pType = "lfq",
+                     display = c("CI", "bootRaw"),
+                     best = "maxDen",
+                     pRef = "Fmax",
                      Fname = "catch",
                      agemax = NULL,
                      rel = FALSE,
@@ -62,11 +102,28 @@ plotBoot <- function(lfq,
                      zlimtype = "balanced",   # alternative : "range"
                      date.axis = "traditional",  # alternative : "modern"
                      date.at = seq(as.Date("1500-01-01"), as.Date("2500-01-01"), by="months"),
-                     date.format = "'%y-%b", xlab = "", ylab = "Length classes",
+                     date.format = "'%y-%b", xlab = NULL, ylab = NULL,
                      CI = 95,
                      ci.col = 1, ci.lty = 2, ci.lwd = 1,
                      maxd.col = 1, maxd.lty = 1, maxd.lwd = 2,
                      ...){
+
+    if(!inherits(boot, "lfqBoot")) stop("boot has to be an object of class 'lfqBoot'.")
+    pType <- match.arg(pType, c("lfq", "cc", "ypr"))
+    if(pType == "cc"){
+        return(invisible(plotBootCC(boot, display = display, best = best, CI = CI,
+                                    xlab = xlab, ylab = ylab, ci.col = ci.col,
+                                    maxd.col = maxd.col, maxd.lty = maxd.lty,
+                                    maxd.lwd = maxd.lwd, ...)))
+    }
+    if(pType == "ypr"){
+        return(invisible(plotBootYPR(boot, pRef = pRef, xlab = xlab,
+                                     ylab = ylab, ci.col = ci.col,
+                                     maxd.col = maxd.col, maxd.lty = maxd.lty,
+                                     maxd.lwd = maxd.lwd, ...)))
+    }
+    if(is.null(xlab)) xlab <- ""
+    if(is.null(ylab)) ylab <- "Length classes"
 
     dates <- lfq$dates
     classes <- lfq$midLengths
@@ -222,4 +279,110 @@ plotBoot <- function(lfq,
 
     ## frame
     box(lwd=1.2)
+}
+
+
+## Catch curves of the resamples (internal, plotBoot with pType = "cc")
+plotBootCC <- function(boot, display = c("CI", "bootRaw"), best = "maxDen",
+                       CI = 95, xlab = NULL, ylab = NULL, ci.col = 1,
+                       maxd.col = 1, maxd.lty = 1, maxd.lwd = 2,
+                       points.col = rgb(0,0,0,0.2), lines.col = rgb(0.5,0.5,0.5,0.2),
+                       ...){
+
+    datcc <- boot$misc$datcc
+    ints <- boot$misc$intsCC
+    Zs <- boot$bootRaw$Z
+    if(is.null(datcc) || is.null(Zs))
+        stop("Please run catchCurve with boot first.")
+    ok <- which(is.finite(Zs) & is.finite(ints) &
+                vapply(datcc, function(d) !is.null(d) && nrow(d) > 0, logical(1)))
+    if(length(ok) == 0) stop("No catch curves available in boot.")
+    best <- match.arg(best, c("maxDen", "median"))
+
+    cumulative <- isTRUE(boot$misc$cumulative)
+    if(is.null(xlab)) xlab <- ifelse(cumulative, "ln(Linf - L)", "Relative age [years]")
+    if(is.null(ylab)) ylab <- ifelse(cumulative, "ln C(L, Linf)", "ln(C / dt)")
+
+    ## slope of the regression lines (Z, or Z/K for the cumulative catch curve)
+    slope <- function(i) if(cumulative) Zs[i] / boot$bootRaw$K[i] else Zs[i]
+
+    xs <- unlist(lapply(datcc[ok], "[[", "x"))
+    ys <- unlist(lapply(datcc[ok], "[[", "y"))
+    plot(range(xs), c(min(0, ys), max(ys)), type = "n", xlab = xlab, ylab = ylab, ...)
+
+    for(i in ok) points(datcc[[i]]$x, datcc[[i]]$y, pch = 16, cex = 0.5, col = points.col)
+
+    xseq <- seq(min(xs), max(xs), length.out = 200)
+    if("bootRaw" %in% display){
+        for(i in ok){
+            xi <- range(datcc[[i]]$x)
+            lines(xi, ints[i] - xi * slope(i), col = lines.col)
+        }
+    }
+    if("CI" %in% display){
+        ## pointwise confidence band of the regression lines of the resamples
+        pred <- vapply(ok, function(i) ints[i] - xseq * slope(i), numeric(length(xseq)))
+        citmp <- (100-CI)/2/100
+        band <- apply(pred, 1, quantile, probs = c(citmp, 1-citmp), na.rm = TRUE)
+        polygon(c(xseq, rev(xseq)), c(band[1,], rev(band[2,])),
+                col = adjustcolor("dodgerblue", 0.3), border = NA)
+        lines(xseq, band[1,], col = ci.col, lty = 2)
+        lines(xseq, band[2,], col = ci.col, lty = 2)
+        ## best regression line
+        if(best == "maxDen"){
+            zb <- boot$maxDen[["Z"]]
+            ib <- bootUniSummary(ints[ok], CI = CI)$maxDen
+        }else{
+            zb <- boot$median[["Z"]]
+            ib <- median(ints[ok])
+        }
+        if(cumulative) zb <- zb / boot$maxDen[["K"]]
+        lines(xseq, ib - xseq * zb, col = maxd.col, lty = maxd.lty, lwd = maxd.lwd)
+    }
+    box()
+    invisible(NULL)
+}
+
+
+## Yield per recruit curves of the resamples (internal, plotBoot with
+## pType = "ypr")
+plotBootYPR <- function(boot, pRef = "Fmax", xlab = NULL, ylab = NULL,
+                        ci.col = 1, maxd.col = 1, maxd.lty = 1, maxd.lwd = 2,
+                        lines.col = rgb(0,0,0,0.2), ...){
+
+    px <- boot$misc$FM_change
+    totY <- boot$misc$totY
+    if(is.null(px) || is.null(totY)) stop("Please run predict_mod with boot first.")
+    pRef <- match.arg(pRef, c("Fmax", "F01", "F05", "F04"))
+    if(!(pRef %in% names(boot$bootRaw))) stop(paste0(pRef, " is not available in boot."))
+    ok <- which(vapply(totY, function(y) !is.null(y) && any(is.finite(y)), logical(1)))
+    if(length(ok) == 0) stop("No yield per recruit curves available in boot.")
+    if(is.null(xlab)) xlab <- "Fishing mortality"
+    if(is.null(ylab)) ylab <- "Yield per recruit"
+
+    ylims <- c(0, max(unlist(totY[ok]), na.rm = TRUE) * 1.05)
+    plot(range(px), ylims, type = "n", xlab = xlab, ylab = ylab, yaxs = "i", ...)
+
+    ## confidence interval (from boot$CI) and distribution of the reference
+    ## point
+    refs <- boot$bootRaw[[pRef]]
+    ci <- boot$CI[, pRef]
+    rect(ci[1], ylims[1], ci[2], ylims[2], border = NA,
+         col = adjustcolor("dodgerblue", 0.3))
+    abline(v = ci, col = ci.col, lty = 2)
+    h <- hist(refs[is.finite(refs)], plot = FALSE, breaks = 20)
+    rect(h$breaks[-length(h$breaks)], 0, h$breaks[-1],
+         h$density / max(h$density) * 0.2 * ylims[2],
+         col = adjustcolor("black", 0.6), border = "grey50")
+
+    for(i in ok) lines(px, totY[[i]], col = lines.col)
+
+    ## curve of the resample with the reference point closest to its maximum
+    ## density
+    ib <- ok[which.min(abs(refs[ok] - boot$maxDen[[pRef]]))]
+    lines(px, totY[[ib]], col = maxd.col, lty = maxd.lty, lwd = maxd.lwd)
+    abline(v = boot$maxDen[[pRef]], col = maxd.col, lty = 2)
+    text(mean(ci), ylims[2] * 0.95, labels = pRef, font = 2)
+    box()
+    invisible(NULL)
 }

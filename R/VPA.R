@@ -13,7 +13,8 @@
 #'   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
 #'   \item \code{M}: natural mortality [1/year] (numeric value or vector of identical
 #'      length than midLengths),
-#'   \item \code{a}: length-weight relationship coefficent (W = a * L^b; for kg/cm3),
+#'   \item \code{a}: length-weight relationship coefficent (W = a * L^b; in kg/cm^b,
+#'      or in g/cm^b with \code{LW_unit = "g"}),
 #'   \item \code{b}: length-weight relationship coefficent (W = a * L^b),
 #'   \item \code{catch}: catch as vector for pseudo cohort analysis,
 #'      or a matrix with catches of subsequent years to follow a real cohort.
@@ -38,6 +39,28 @@
 #'   while \code{"old"} uses the algorithm described by Sparre and Venema (1998).
 #' @param plus_group logical; indicating if the last length group is a plus group (default: TRUE).
 #' @param plot logical; indicating whether a plot should be printed
+#' @param LW_unit unit of the weight in the length-weight relationship
+#'    (\code{a}): \code{"kg"} (default; W in kg) or \code{"g"} (W in g, then
+#'    \code{a} is divided by 1000). The mean body weight is in kg and biomass
+#'    and yield in tonnes.
+#' @param boot optional; an object of class `lfqBoot` with bootstrapped growth
+#'    parameters, natural mortality (see `natMort`) and fishing mortality
+#'    (`FM`, from \code{\link{catchCurve}} with `natMort`). If provided, the
+#'    length-based VPA (or cohort analysis) is applied to each resampled data
+#'    set (re-created with \code{\link{lfqResample}} and the seeds of `boot`)
+#'    with the growth parameters and mortality rates of the resample: the
+#'    terminal fishing mortality is the `FM` of the resample and a plus group is
+#'    created at Linf of the resample. `param` has to be the lfq data used for
+#'    the bootstrapped growth analysis and contain the parameters `a` and `b`
+#'    of the length-weight relationship.
+#' @param natMort with `boot`, the name of the column in `boot$bootRaw` with
+#'    natural mortality estimates (e.g. "M_Then").
+#' @param yearSel optional; with `boot`, year(s) to be used if the lfq data
+#'    covers several years.
+#' @param yearCombine logical; with `boot`, should the catches of several years
+#'    be combined? Default = FALSE
+#' @param binSize optional; with `boot`, new bin size for the resampled data.
+#' @param CI with `boot`, percentage for confidence intervals (Default: 95)
 #'
 #' @details The main difference between virtual population analysis (VPA) and cohort
 #'    analysis (CA) is the step of calculating the fishing mortality per age class or
@@ -106,6 +129,12 @@
 #'   \item \strong{plot_mat}: matrix with rearranged survivors, nat losses
 #'   and catches for plotting;
 #' }
+#' If `boot` is provided, the \code{lfqBoot} object with the additional
+#' columns `N` (total mean number of fish) and `B` (total mean biomass in
+#' tonnes) in `bootRaw`, `maxDen`, `median` and `CI`. The fishing mortality at
+#' length of each resample is stored in `misc$FMvecVPA` (used by
+#' \code{\link{predict_mod}} with `boot`). Resamples for which the analysis
+#' fails (e.g. FM <= 0) get NA.
 #'
 #' @importFrom graphics plot
 #' @importFrom stats optimise
@@ -137,8 +166,22 @@ VPA <- function(param,
                 catch_columns = NA, catch_unit = NA, catch_corFac = NA,
                 terminalF = NA, terminalE = NA,
                 analysis_type = "VPA", algorithm = "new",
-                plus_group = TRUE, plot = FALSE){
+                plus_group = TRUE, plot = FALSE,
+                LW_unit = "kg",
+                boot = NULL, natMort = NULL, yearSel = NA,
+                yearCombine = FALSE, binSize = NA, CI = 95){
 
+    ## VPA with bootstrapped growth parameters and mortality rates
+    if(!is.null(boot)){
+        return(VPA_boot(param, boot = boot, catch_unit = catch_unit,
+                        catch_corFac = catch_corFac, LW_unit = LW_unit,
+                        analysis_type = analysis_type, algorithm = algorithm,
+                        natMort = natMort, yearSel = yearSel,
+                        yearCombine = yearCombine, binSize = binSize, CI = CI))
+    }
+
+    ## length-weight relationship in kg
+    param <- lwUnitA(param, LW_unit)
     res <- param
 
     if(is.na(catch_columns[1])) catch <- res$catch
@@ -155,7 +198,7 @@ VPA <- function(param,
         M <- res$par$M
         Linf <- res$par$Linf
         K <- res$par$K
-        t0 <- ifelse("t0" %in% names(res),res$par$t0,0)
+        t0 <- ifelse("t0" %in% names(res$par),res$par$t0,0)
         C <- ifelse("C" %in% names(res$par), res$par$C, 0)
         ts <- ifelse("ts" %in% names(res$par), res$par$ts, 0)
         a <- res$par$a
@@ -616,4 +659,16 @@ VPA <- function(param,
     return(ret)
 
   }# stop("Please choose analysis_type = 'CA' for length composition data!")
+}
+
+
+## Convert the parameter a of the length-weight relationship (in param or
+## param$par) from g to kg, if LW_unit = "g"
+lwUnitA <- function(param, LW_unit = "kg"){
+    LW_unit <- match.arg(LW_unit, c("kg", "g"))
+    if(LW_unit == "g"){
+        if(!is.null(param$a)) param$a <- param$a / 1000
+        if(is.list(param$par) && !is.null(param$par$a)) param$par$a <- param$par$a / 1000
+    }
+    param
 }
