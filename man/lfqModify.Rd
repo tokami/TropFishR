@@ -56,9 +56,9 @@ lfq object with rearranged catch matrix (yearly sums) and growth parameters
    if provided.
 }
 \description{
-Modify length-freqeuncy (LFQ) data. Allows to summarise catch matrix
+Modify length-frequency (LFQ) data. Allows to summarise catch matrix
    of LFQ data to one column per year. This is required for e.g. \code{\link{catchCurve}}.
-   Allows to change bin size of LFQ data. Allows to ad plus group to catch matrix.
+   Allows to change bin size of LFQ data. Allows to add plus group to catch matrix.
 }
 \examples{
 data(synLFQ4)
