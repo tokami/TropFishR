@@ -100,8 +100,9 @@ square-root transformation of positive values according to Brey et al. (1988).
 \item{plot}{logical; Plot restructured counts with fitted lines using
 \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).}
 
-\item{plot.score}{logical; Plot simulated annealing score progression.
-(Default: plot.score=TRUE)}
+\item{plot.score}{logical; Plot simulated annealing score progression:
+the score (Rn) of each evaluation of the cost function and the best
+score so far (Default: plot.score=TRUE)}
 }
 \value{
 A list with the input parameters and following list objects:

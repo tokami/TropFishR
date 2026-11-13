@@ -64,8 +64,9 @@
 #' @param flagging.out logical; passed to \link{lfqFitCurves}. Default is TRUE
 #' @param plot logical; Plot restructured counts with fitted lines using
 #' \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).
-#' @param plot.score logical; Plot simulated annealing score progression.
-#'    (Default: plot.score=TRUE)
+#' @param plot.score logical; Plot simulated annealing score progression:
+#'    the score (Rn) of each evaluation of the cost function and the best
+#'    score so far (Default: plot.score=TRUE)
 #'
 #' @examples
 #' \donttest{
@@ -127,7 +128,7 @@
 #'   comparable with ELEFAN and ELEFAN_GA).
 #' }
 #'
-#' @importFrom graphics par plot title lines grid
+#' @importFrom graphics par plot title lines grid points legend
 #' @importFrom grDevices adjustcolor
 #' @importFrom stats median
 #' @importFrom GenSA GenSA
@@ -237,11 +238,19 @@ ELEFAN_SA <- function(lfq,
     ASP <- res$ASP
 
     # seasonalised cost function
+    ## scores of all evaluations of the cost function; GenSA's trace.mat is
+    ## usually empty for ELEFAN_SA, because GenSA records it only every few
+    ## thousand steps
+    scoreTrace <- new.env()
+    scoreTrace$score <- numeric(0)
+
     soSAfun <- function(lfq, par=c(init_Linf, init_K, init_tanc, init_C, init_ts),
                         agemax, flagging.out){
         Lt <- lfqFitCurves(lfq,
                            par=list(Linf=par[1], K=par[2], t_anchor=par[3], C=par[4], ts=par[5]),
                            flagging.out = flagging.out, agemax = agemax)
+        ## record the score of each evaluation (for the score graph)
+        scoreTrace$score <- c(scoreTrace$score, Lt$fESP)
         return(-Lt$fESP)
     }
     # cost function
@@ -250,6 +259,8 @@ ELEFAN_SA <- function(lfq,
         Lt <- lfqFitCurves(lfq,
                            par=list(Linf=par[1], K=par[2], t_anchor=par[3], C = 0, ts = 0),
                            flagging.out = flagging.out, agemax = agemax)
+        ## record the score of each evaluation (for the score graph)
+        scoreTrace$score <- c(scoreTrace$score, Lt$fESP)
         return(-Lt$fESP)
     }
 
@@ -259,7 +270,7 @@ ELEFAN_SA <- function(lfq,
                     verbose = verbose)
     if(!is.null(SA_time)) control$max.time = SA_time
     if(!is.null(maxit)) control$maxit = maxit
-    if(!is.null(nb.stop.improvement)) control$nb.stop.improvement
+    if(!is.null(nb.stop.improvement)) control$nb.stop.improvement <- nb.stop.improvement
 
 
     if(seasonalised){
@@ -308,37 +319,23 @@ ELEFAN_SA <- function(lfq,
     }
 
 
-    # Score graph in GA style
-    ## CHECK: trace.mat not reported any longer from GenSA, written to file but nr == 0 ...
-    if(FALSE){
-        tmp <- as.data.frame(SAfit$trace.mat)
-        meani <- aggregate(tmp$function.value, list(step = tmp$nb.steps),mean, na.rm = TRUE)
-        exe <- aggregate(tmp$current.minimum, list(step = tmp$nb.steps),mean, na.rm = TRUE)
-        medi <- aggregate(tmp$function.value, list(step = tmp$nb.steps),median, na.rm = TRUE)
-        ylim <- c(min(range(exe$x,na.rm = TRUE, finite = TRUE)),
-                  max(range(meani$x, na.rm = TRUE, finite = TRUE)))
-        if(plot.score){
-            op <- par(mar=c(5.1, 4.1, 1, 4.1))
-            plot(tmp$nb.steps, tmp$function.value, type = "n", ylim = ylim, xlab = "Iteration",
-                 ylab = "Cost value")
-            graphics::grid(equilogs = FALSE)
-            points(tmp$nb.steps, tmp$current.minimum, type = "o", pch = 16, lty = 1,
-                   col = "green3", cex = 0.7)
-            points(meani$step, meani$x, type = "o", pch = 1, lty = 2,
-                   col = "dodgerblue3", cex = 0.7)
-            polygon(c(meani$step, rev(meani$step)),
-                    c(exe$x, rev(medi$x)),
-                    border = FALSE, col = adjustcolor("green3", alpha.f = 0.1))
-            par(new=TRUE)
-            plot(tmp$nb.steps, tmp$temperature, t="l", col=2, lty=2, log="y", axes = FALSE, xlab = "", ylab = "")
-            axis(4, col=2, col.axis=2); mtext(text = "Temperature", side = 4, line = par()$mgp[1], col=2)
-            legend("topright", legend = c("Best", "Mean", "Median", "Temperature"),
-                   col = c("green3", "dodgerblue3", adjustcolor("green3", alpha.f = 0.1), 2),
-                   pch = c(16, 1, NA, NA), lty = c(1,2,1,2),
-                   lwd = c(1, 1, 10, 1), pt.cex = c(rep(0.7,2), 2, NA),
-                   inset = 0.02)
-            par(op)
-        }
+    # Score graph: score of each evaluation and best score so far
+    score <- scoreTrace$score
+    if(plot.score && length(score) > 0){
+        best <- cummax(ifelse(is.finite(score), score, -Inf))
+        iter <- seq_along(score)
+        op <- par(mar=c(5.1, 4.1, 1, 1))
+        plot(iter, score, type = "n", xlab = "Function evaluation",
+             ylab = "Score (Rn)",
+             ylim = range(c(score, best), na.rm = TRUE, finite = TRUE))
+        graphics::grid(equilogs = FALSE)
+        points(iter, score, pch = 1, col = "dodgerblue3", cex = 0.5)
+        lines(iter, best, col = "green3", lwd = 2)
+        legend("bottomright", legend = c("Best", "Evaluation"),
+               col = c("green3", "dodgerblue3"), pch = c(NA, 1),
+               lty = c(1, NA), lwd = c(2, NA), pt.cex = c(NA, 0.7),
+               inset = 0.02, bg = "white")
+        par(op)
     }
 
     final_res <- lfqFitCurves(lfq = res,par=pars,flagging.out = flagging.out,

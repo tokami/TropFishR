@@ -67,6 +67,12 @@
   ages.
 - `catchCurve`: infinite values of ln(C/dt) (e.g. dt = 0) are ignored like
   missing values. Previously the regression failed with an error.
+- `ELEFAN_SA`: the score graph (`plot.score = TRUE`) is drawn again (issue
+  #54). It shows the score of each evaluation of the cost function and the
+  best score so far, recorded by `ELEFAN_SA` itself, because the trace of
+  `GenSA` (`trace.mat`) is usually empty for the run times of ELEFAN_SA.
+- `ELEFAN_SA`: the argument `nb.stop.improvement` is now passed to `GenSA`;
+  previously it was ignored.
 - `catchCurve` with `auto = TRUE`: the regression line now ends at the
   point with the largest age and ln(C/dt) > 0.2. Previously the position of
   this point among the points with ln(C/dt) > 0.2 was used as index of all
