@@ -42,7 +42,14 @@ Length-frequency data (LFQ) is collected by measuring the length of focal fish s
 
 # *LFQ import*
 
-There are three main ways in which you can arrange your data in a spreadsheet or text file and easily import it into R an convert it to a LFQ list (Fig. 1-3). Each of these 3 methods works evenly well with a 'csv', 'xls', or 'txt' file. For simplification, I will present all three methods with 'csv' files and consequently demonstrate how to use a 'xlsx' and a 'txt' file. This vignette requires to load the TropFishR package, ` require(TropFishR)`.
+There are three main ways in which you can arrange your data in a spreadsheet or text file and easily import it into R an convert it to a LFQ list (Fig. 1-3). Each of these 3 methods works evenly well with a 'csv', 'xls', or 'txt' file. For simplification, I will present all three methods with 'csv' files and consequently demonstrate how to use a 'xlsx' and a 'txt' file. The example files are included in TropFishR (folder 'extdata' of the installed package) and can be copied and opened with a spreadsheet software to see their arrangement. `system.file()` returns the path to these files; for your own data, use the path to your file instead, e.g. `read.csv("C:/data/lfq1.csv")`. This vignette requires to load the TropFishR package:
+
+```{r}
+library(TropFishR)
+
+## folder with the example files
+system.file("extdata", package = "TropFishR")
+```
 
 
 
@@ -57,8 +64,9 @@ The first data arrangement assumes that each measurement was inserted into a spe
 
 The data in this arrangement can be loaded into R by following code.
 
-```{r eval=FALSE, echo = TRUE}
-lfq1 <- read.csv2("lfq1.csv")
+```{r}
+lfq1 <- read.csv(system.file("extdata", "lfq1.csv", package = "TropFishR"))
+head(lfq1)
 
 lfq1$date <- as.Date(lfq1$date, format = "%d.%m.%Y")
 
@@ -81,16 +89,17 @@ The second data arrangement represents the case with an additional column which 
 
 Data of this arrangement can be loaded into R by following code.
 
-```{r eval=FALSE, echo = TRUE}
-lfq2 <- read.csv2("lfq2.csv")
+```{r}
+lfq2 <- read.csv2(system.file("extdata", "lfq2.csv", package = "TropFishR"))
+head(lfq2)
 
-lfq2$date <- as.Date(lfq2$date, format = "%d/%m/%y")
+lfq2$DATE <- as.Date(lfq2$DATE, format = "%d/%m/%y")
 
 lfq2new <- lfqCreate(data = lfq2, Lname = "Length_CM", Dname = "DATE", Fname = "Frequency")
 
 plot(lfq2new, Fname = "catch")
 ```
-Be aware of the different date format, the different column headers or names and the additional argument in the function `lfqCreate()` called 'Fname' displaying the name of the column with the frequency information.
+This file is separated by semicolons and uses a comma as decimal separator (as spreadsheet software with European settings exports csv files), which is the default of `read.csv2()`; use `read.csv()` for files separated by commas with a point as decimal separator, as in the first example. Always check the imported data, e.g. with `head()` or `str()`: if all values end up in one column, the separator is wrong, and if the lengths are characters instead of numbers, the decimal separator is wrong. Be aware of the different date format, the different column headers or names and the additional argument in the function `lfqCreate()` called 'Fname' displaying the name of the column with the frequency information.
 
 
 ## *Data arrangement 3*
@@ -101,13 +110,13 @@ The last data arragement presented here, assumes that the data was already sorte
 
 Data in this arrangement have to be treated a little differently:
 
-```{r eval=FALSE, echo = TRUE}
-lfq3 <- read.csv2("lfq3.csv")
+```{r}
+lfq3 <- read.csv(system.file("extdata", "lfq3.csv", package = "TropFishR"),
+                 check.names = FALSE)
+head(lfq3)
 
-dates <- colnames(lfq3)[-1]
-dates <- strsplit(dates, "X")
-dates <- unlist(lapply(dates, function(x) x[2]))
-dates <- as.Date(dates, "%Y-%d-%m")
+dates <- as.Date(colnames(lfq3)[-1], format = "%Y-%m-%d")
+dates
 
 lfq3new <- list(dates = dates,
                 midLengths = lfq3$lengthClass,
@@ -117,20 +126,24 @@ lfq3new$catch[is.na(lfq3new$catch)] <- 0
 
 plot(lfq3new, Fname = "catch")
 ```
-In this case, the function `lfqCreate()` can not be used, instead the data is arranged into a list manually. Extracting the dates involves extra steps to separate the actual dates from the 'X'. Next, the dates, mid lengths and the catch matrix can be directly arranged together with the function `list()`. It is of crucial importance to use the exact names and spelling (incl. case sensitivity) in the list ('dates', 'midLengths', 'catch'). with the function `class()` the TropFishR internal class 'lfq' can be assigned to the created list. Missing values in the catch matrix (`NA`, `NaN`) should be put to 0.
+In this case, the function `lfqCreate()` can not be used, instead the data is arranged into a list manually. The dates are taken from the column names. By default, R changes column names that do not start with a letter, e.g. '2016-01-15' becomes 'X2016.01.15'; the argument `check.names = FALSE` keeps the original names. Check that none of the dates is `NA`, which happens if the format in `as.Date()` does not match the dates in your file. If the dates are not in the header of your file, they can be entered manually, e.g. `dates <- as.Date(c("2016-01-15", "2016-03-15", ...))`, with one date per column. Next, the dates, mid lengths and the catch matrix can be directly arranged together with the function `list()`. It is of crucial importance to use the exact names and spelling (incl. case sensitivity) in the list ('dates', 'midLengths', 'catch'). with the function `class()` the TropFishR internal class 'lfq' can be assigned to the created list. Missing values in the catch matrix (`NA`, `NaN`) should be put to 0.
 
 
 ## *Other file formats*
 Of course, your data has not to be in the csv format, it can just as well be 'odt', 'xls', 'xlsx', 'txt' or any text file. Other formats require different functions to load the data into R (beside `read.csv2()`). The following code demonstrats this for a 'xlsx' and 'txt' file.
 
 
-```{r echo=TRUE, eval=FALSE}
-lfq2a <- read.table("lfq2.txt", sep="\t", dec=',', fileEncoding="latin1", skipNul=TRUE)
+```{r}
+lfq2a <- read.table(system.file("extdata", "lfq2.txt", package = "TropFishR"),
+                    header = TRUE, sep = "\t", dec = ",")
+head(lfq2a)
+```
 
+```{r eval=FALSE}
 install.packages("openxlsx")
-require(openxlsx)
-lfq3a <- read.xlsx("lfq3.xlsx", sheet = 1)
-
+library(openxlsx)
+lfq3a <- read.xlsx(system.file("extdata", "lfq3.xlsx", package = "TropFishR"),
+                   sheet = 1, check.names = FALSE, sep.names = "-")
 ```
 
 The function `read.table()` allows to read and load many different file formats into R, The arguments 'sep' and 'dec' control the separator between columns (here tabstop) and the decimal separator (here comma), respectively. Additional arguments like 'fileEncoding' and 'skipNul' might be necessary to use for controlling the encoding of the file and if nuls should be skipped. More information about the arguments can be viewed with `?read.table`. There are many different R packages available to read 'xls' and 'xlsx' files into R, one of the fastest is openxlsx, but it does not allow to read in 'xls' files. For this you might consider using the package 'xlsx'. These functions allow you to read in any sheet of your 'xlsx' file by using the 'sheet' argument.

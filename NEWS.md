@@ -58,6 +58,14 @@
   the sampled numbers of fish.
 - Vignette "Length-frequency data for TropFishR": new sections on data of
   several years (issue #45) and on sampled numbers and total catch.
+- The example files of the vignette "Length-frequency data for TropFishR"
+  (`lfq1.csv`, `lfq2.csv`, `lfq2.txt`, `lfq3.csv`, `lfq3.xlsx`) are now
+  included in the package (`system.file("extdata", package = "TropFishR")`)
+  and the import code of the vignette is run when the vignette is built.
+  The code did not work with the files before: wrong separators
+  (`read.csv2` for comma separated files), a wrong column name (`date`
+  instead of `DATE`), and dates in the header of data arrangement 3 that R
+  changed when reading the file, so that all dates became `NA` (issue #42).
 - `VPA` and `predict_mod`: new argument `LW_unit` (`"kg"`, default, or `"g"`)
   for the unit of the weight in the length-weight relationship.
 - `growth_length_age` (`method = "LSM"`, `CI = TRUE`): the confidence band
