@@ -62,6 +62,46 @@ test_that("catchCurve needs growth parameters for length data", {
     lfq <- make_length_catch()
     lfq$Linf <- NULL
     expect_error(catchCurve(lfq, reg_int = c(3, 20), plot = FALSE), "Linf and K")
+    ## the error explains where to put them (issue #48)
+    expect_error(catchCurve(lfq, reg_int = c(3, 20), plot = FALSE), "lfq\\$par")
+    lfq$Linf <- NA
+    expect_error(catchCurve(lfq, reg_int = c(3, 20), plot = FALSE), "Linf and K")
+})
+
+test_that("catchCurve checks reg_int (point numbers, issue #48)", {
+    lfq <- make_length_catch()
+    n <- length(lfq$midLengths)
+    ## lengths instead of point numbers
+    expect_error(catchCurve(lfq, reg_int = c(10.5, 14.5), plot = FALSE),
+                 "not lengths or ages")
+    expect_error(catchCurve(lfq, reg_int = c(3, n + 1), plot = FALSE),
+                 paste0("between 1 and ", n))
+    expect_error(catchCurve(lfq, reg_int = c(3, 3), plot = FALSE), "first and last")
+    expect_error(catchCurve(lfq, reg_int = list(c(3, 10), c(0, 5)), reg_num = 2,
+                            plot = FALSE), "first and last")
+    ## the order of the two points does not matter
+    expect_equal(catchCurve(lfq, reg_int = c(20, 3), plot = FALSE)$Z,
+                 catchCurve(lfq, reg_int = c(3, 20), plot = FALSE)$Z)
+    expect_equal(catchCurve(lfq, reg_int = c(20, 3), plot = FALSE)$reg_int, c(3, 20))
+})
+
+test_that("catchCurve checks catch_columns (issue #48)", {
+    lfq <- synLFQ7
+    lfq$par <- list(Linf = 123, K = 0.2, t0 = 0)
+    lfq <- lfqModify(lfq, plus_group = lfq$midLengths[max(which(lfq$midLengths < 123))])
+    vec <- lfqModify(lfq, vectorise_catch = TRUE)
+    expect_error(catchCurve(vec, catch_columns = c(1, 2), reg_int = c(9, 21),
+                            plot = FALSE), "catch is a vector")
+    expect_error(catchCurve(lfq, catch_columns = 0, reg_int = c(9, 21),
+                            plot = FALSE), "column numbers")
+    expect_error(catchCurve(lfq, catch_columns = ncol(lfq$catch) + 1,
+                            reg_int = c(9, 21), plot = FALSE), "column numbers")
+    ## several columns are summed
+    one <- lfq
+    one$catch <- rowSums(lfq$catch[, 1:2])
+    expect_equal(catchCurve(lfq, catch_columns = 1:2, reg_int = c(9, 21),
+                            plot = FALSE)$Z,
+                 catchCurve(one, reg_int = c(9, 21), plot = FALSE)$Z)
 })
 
 ## Z_BevertonHolt -----------------------------------------------------

@@ -29,6 +29,9 @@ catchCurve(
   \item \code{midLengths} or \code{age}: midpoints of the length classes (length-frequency
   data) or ages (age composition data),
   \item \code{Linf}: infinite length for investigated species in cm [cm],
+     required for length-frequency data, either in \code{param$par} (e.g. with
+     \code{lfqModify(lfq, par = res$par)} after \code{\link{ELEFAN_GA}}) or
+     directly in \code{param},
   \item \code{K}: growth coefficent for investigated species per year [1/year],
   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
   \item \code{catch}: catches, vector or matrix with catches of subsequent years if
@@ -36,7 +39,10 @@ catchCurve(
 }}
 
 \item{catch_columns}{numerical; indicating the column of the catch matrix which should be
-used for the analysis.}
+used for the analysis. Several columns are summed. With
+\code{lfqModify(lfq, vectorise_catch = TRUE)}, the catch matrix has one column
+per year (or is a vector for data of a single year, in which case
+\code{catch_columns} is not used).}
 
 \item{cumulative}{logical; if TRUE the cumulative
 catch curve is applied (Jones and van Zalinge method)}
@@ -46,7 +52,10 @@ calculated from the catch curve (only if \code{cumulative = FALSE})}
 
 \item{reg_int}{instead of using the identity method a range can be determined,
 which is to be used for the regression analysis. If equal to NULL identity method
-is applied (default). For multiple regression lines provide list with the two points
+is applied (default). The two values are the numbers of the first and last
+point used for the regression line, counted from the smallest length or age
+class (e.g. \code{reg_int = c(9, 21)} uses the 9th to the 21st point), not
+lengths or ages. For multiple regression lines provide list with the two points
 for the regression line in each element of the list.}
 
 \item{reg_num}{integer indicating how many separate regression lines should be applied to the

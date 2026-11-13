@@ -11,20 +11,29 @@
 #'   \item \code{midLengths} or \code{age}: midpoints of the length classes (length-frequency
 #'   data) or ages (age composition data),
 #'   \item \code{Linf}: infinite length for investigated species in cm [cm],
+#'      required for length-frequency data, either in \code{param$par} (e.g. with
+#'      \code{lfqModify(lfq, par = res$par)} after \code{\link{ELEFAN_GA}}) or
+#'      directly in \code{param},
 #'   \item \code{K}: growth coefficent for investigated species per year [1/year],
 #'   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
 #'   \item \code{catch}: catches, vector or matrix with catches of subsequent years if
 #'   the catch curve with constat time intervals should be applied;
 #' }
 #' @param catch_columns numerical; indicating the column of the catch matrix which should be
-#'   used for the analysis.
+#'   used for the analysis. Several columns are summed. With
+#'   \code{lfqModify(lfq, vectorise_catch = TRUE)}, the catch matrix has one column
+#'   per year (or is a vector for data of a single year, in which case
+#'   \code{catch_columns} is not used).
 #' @param cumulative logical; if TRUE the cumulative
 #'   catch curve is applied (Jones and van Zalinge method)
 #' @param calc_ogive logical; if TRUE the selection ogive is additionally
 #'   calculated from the catch curve (only if \code{cumulative = FALSE})
 #' @param reg_int instead of using the identity method a range can be determined,
 #'    which is to be used for the regression analysis. If equal to NULL identity method
-#'    is applied (default). For multiple regression lines provide list with the two points
+#'    is applied (default). The two values are the numbers of the first and last
+#'    point used for the regression line, counted from the smallest length or age
+#'    class (e.g. \code{reg_int = c(9, 21)} uses the 9th to the 21st point), not
+#'    lengths or ages. For multiple regression lines provide list with the two points
 #'    for the regression line in each element of the list.
 #' @param reg_num integer indicating how many separate regression lines should be applied to the
 #'    data. Default 1.
@@ -265,6 +274,17 @@ catchCurve <- function(param,
   classes.num <- do.call(rbind,strsplit(classes, split="\\+"))
   classes.num <- as.numeric(classes.num[,1])
 
+  ## catch_columns requires a catch matrix
+  if(!is.na(catch_columns[1])){
+      if(!(inherits(res$catch,'matrix') || inherits(res$catch,'data.frame')))
+          stop("catch_columns selects columns of a catch matrix, but the catch is a vector (e.g. after lfqModify(..., vectorise_catch = TRUE) with data of a single year). Remove the argument catch_columns.")
+      if(!is.numeric(catch_columns) || any(is.na(catch_columns)) ||
+         any(catch_columns != round(catch_columns)) ||
+         any(catch_columns < 1 | catch_columns > ncol(res$catch)))
+          stop(paste0("catch_columns has to contain column numbers of the catch matrix (between 1 and ",
+                      ncol(res$catch), ")."))
+  }
+
   constant_dt <- FALSE
   if(is.na(catch_columns[1]) && (inherits(res$catch,'matrix') ||
      inherits(res$catch,'data.frame'))){
@@ -336,8 +356,8 @@ catchCurve <- function(param,
             ts <- ifelse("ts" %in% names(res), res$ts, 0)
         }
 
-    if((is.null(Linf) | is.null(K))) stop(noquote(
-      "You need to assign values to Linf and K for the catch curve based on length-frequency data!"))
+    if(is.null(Linf) || is.null(K) || any(is.na(c(Linf, K)))) stop(noquote(
+      "You need to assign values to Linf and K for the catch curve based on length-frequency data! Add the growth parameters to the data, e.g. lfq$par <- list(Linf = 80, K = 0.5, t0 = 0) or, with the results of ELEFAN_GA, lfq <- lfqModify(lfq, par = res_GA$par)."))
 
     #calculate size class interval
     midLengths <- classes.num
@@ -499,6 +519,7 @@ catchCurve <- function(param,
         cutterList <- reg_int
         if(!inherits(cutterList,"list") && length(cutterList) != 2) stop("You have to provide 2 numbers in reg_int.")
         if(inherits(cutterList,"list") && any(unlist(lapply(cutterList,length)) != 2)) stop("You have to provide 2 numbers in reg_int.")
+        cutterList <- checkRegInt(cutterList, length(xvar))
     }
 
     if(auto){
@@ -686,4 +707,18 @@ rebinCatch <- function(midLengths, catch, binSize){
     }
     list(midLengths = midLengths,
          catch = if(isVec) as.numeric(new) else new)
+}
+
+
+## reg_int holds the numbers of the first and last point of each regression
+## line (index of the points in the plot, not lengths or ages)
+checkRegInt <- function(reg_int, nPoints){
+    chk <- function(x){
+        if(!is.numeric(x) || any(!is.finite(x)) ||
+           any(x != round(x)) || any(x < 1 | x > nPoints) || x[1] == x[2])
+            stop(paste0("reg_int has to contain the numbers of the first and last point used for the regression line (whole numbers between 1 and ",
+                        nPoints, ", counted from the smallest length or age class), not lengths or ages."))
+        sort(x)
+    }
+    if(inherits(reg_int, "list")) lapply(reg_int, chk) else chk(reg_int)
 }

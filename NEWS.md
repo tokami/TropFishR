@@ -109,6 +109,16 @@
 - `Bhattacharya`: the result contains the elements of the input list
   (`midLengths`, `catch`, ...) as stated in the help page, instead of the
   input list as an unnamed first element.
+- `catchCurve`: `reg_int` is checked. It has to contain the numbers of the
+  first and last point of the regression line (whole numbers within the
+  number of points), not lengths or ages. Before, values like
+  `c(10.5, 14.5)` were silently truncated to points 10 and 14, and values
+  beyond the last point failed with an unclear `lm.fit` error. The order of
+  the two points no longer matters (issue #48).
+- `catchCurve`: clear error messages if `catch_columns` is used with a catch
+  vector or does not match the columns of the catch matrix, and if `Linf` or
+  `K` are missing for length data (with how to add them to `lfq$par`)
+  (issue #48).
 - Vignette "bootstrapped ELEFAN": the bootstrapped VPA requires the sampled
   numbers of fish in the lfq data and the landings (`landings`), not the
   total catch in the lfq data as stated before.
