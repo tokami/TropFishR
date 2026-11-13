@@ -90,6 +90,10 @@
 #'    }
 #'    `phiL` and `agemax` of `maxDen`, `median`, `CI` and `multiCI` are derived
 #'    from `Linf` and `K` of the respective estimates.
+#'    If the multivariate kernel density cannot be estimated (e.g. with fewer
+#'    resamples than parameters), the function gives a warning and returns the
+#'    fits with `maxDen` and `multiCI` set to `NA`, so that the fits are not
+#'    lost.
 #'
 #' @references
 #' Schwamborn, R., Mildenberger, T. K., Taylor, M. H., 2019. Assessing sources

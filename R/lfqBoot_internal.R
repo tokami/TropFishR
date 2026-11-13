@@ -32,6 +32,37 @@ bootFits <- function(fitOne, nresamp, parallel = FALSE, no_cores = 1,
 }
 
 
+## Multivariate kernel density of the bootstrapped parameters (one column
+## per parameter) with a clear error message if it cannot be estimated
+bootKde <- function(x, what = "summarised"){
+    x <- as.data.frame(x)
+    n <- nrow(x)
+    d <- ncol(x)
+    pars <- paste(names(x), collapse = ", ")
+    msg0 <- paste0("The bootstrap results cannot be ", what, ": ")
+    if(n <= d)
+        stop(paste0(msg0, "the kernel density of the ",
+                    d, " parameters (", pars, ") requires more resamples than parameters, but there are only ",
+                    n, " resamples. Increase 'nresamp' (several hundred resamples are recommended for reliable confidence intervals)."),
+             call. = FALSE)
+    const <- names(x)[vapply(x, function(v) length(unique(v)) < 2, logical(1))]
+    if(length(const) > 0)
+        stop(paste0(msg0, "the parameter(s) ",
+                    paste(const, collapse = ", "),
+                    " have the same value in all resamples, so that their kernel density cannot be estimated. Check the search range (low_par and up_par)."),
+             call. = FALSE)
+    tryCatch({
+        H <- ks::Hpi(x, nstage = 1)
+        ks::kde(x = x, H = H, eval.points = x)
+    }, error = function(e)
+        stop(paste0(msg0, "the kernel density of the ",
+                    d, " parameters (", pars, ") could not be estimated from ", n,
+                    " resamples (", conditionMessage(e),
+                    "). This happens with few resamples or strongly correlated estimates; increase 'nresamp' (several hundred resamples are recommended)."),
+             call. = FALSE))
+}
+
+
 ## Summarise bootstrapped VBGF estimates.
 ## `res` is a list with one vector per resample: c(par, agemax, seed, Rn_max)
 bootSummary <- function(res, CI = 95, agemax = NULL){
@@ -44,23 +75,33 @@ bootSummary <- function(res, CI = 95, agemax = NULL){
     scores <- as.numeric(tmp0[,nc])
 
     ## multivariate kernel smoothing (without derived parameters)
-    x <- bootRaw[,!(names(bootRaw) %in% c("phiL", "agemax"))]
-    H <- ks::Hpi(x, nstage = 1)
-    fhat <- ks::kde(x = x, H = H, eval.points = x)
+    x <- bootRaw[,!(names(bootRaw) %in% c("phiL", "agemax")), drop = FALSE]
+    ## if the density cannot be estimated, keep the fits (which may have
+    ## taken long) and return them with a warning
+    fhat <- tryCatch(bootKde(x), error = function(e){
+        warning(paste0(conditionMessage(e),
+                       " The fits of the resamples are returned (bootRaw, seed, Rn_max) with the medians and univariate confidence intervals (median, CI); maxDen and multiCI are NA."),
+                call. = FALSE)
+        NULL
+    })
 
-    ## maximum density
-    maxDens <- unlist(fhat$eval.points[which.max(fhat$estimate),])
-    medians <- apply(fhat$eval.points, 2, median, na.rm = TRUE)
-
-    ## confidence intervals (univariate)
+    ## medians and univariate confidence intervals (quantiles of the fits)
+    medians <- apply(x, 2, median, na.rm = TRUE)
     tmp <- (100-CI)/2/100
-    limCIuni <- apply(fhat$eval.points, 2, quantile, na.rm = TRUE,
-                      probs = c(tmp, 1-tmp))
+    limCIuni <- apply(x, 2, quantile, na.rm = TRUE, probs = c(tmp, 1-tmp))
     rownames(limCIuni) <- c("lo","up")
 
-    ## confidence intervals (multivariate)
-    inCI <- fhat$estimate > quantile(fhat$estimate, probs = (100-CI)/100)
-    limCI <- apply(x[inCI,], 2, range)
+    if(!is.null(fhat)){
+        ## maximum density
+        maxDens <- unlist(fhat$eval.points[which.max(fhat$estimate),])
+        ## confidence intervals (multivariate)
+        inCI <- fhat$estimate > quantile(fhat$estimate, probs = (100-CI)/100)
+        limCI <- apply(x[inCI,, drop = FALSE], 2, range)
+    }else{
+        maxDens <- stats::setNames(rep(NA_real_, ncol(x)), names(x))
+        limCI <- matrix(NA_real_, nrow = 2, ncol = ncol(x),
+                        dimnames = list(NULL, names(x)))
+    }
     rownames(limCI) <- c("lo","up")
 
     ## derived parameters: growth performance index and maximum age
@@ -76,8 +117,8 @@ bootSummary <- function(res, CI = 95, agemax = NULL){
     ## sorted, because agemax decreases with K
     addCols <- function(m){
         lo <- as.list(m["lo",]); up <- as.list(m["up",])
-        cbind(m, phiL = sort(c(phiL(lo), phiL(up))),
-              agemax = sort(c(tmax(lo), tmax(up))))
+        cbind(m, phiL = sort(c(phiL(lo), phiL(up)), na.last = TRUE),
+              agemax = sort(c(tmax(lo), tmax(up)), na.last = TRUE))
     }
     limCIuni <- addCols(limCIuni)
     limCI <- addCols(limCI)

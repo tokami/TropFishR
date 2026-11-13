@@ -95,6 +95,15 @@
 
 ##### Bug fixes
 
+- `ELEFAN_GA_boot`, `ELEFAN_SA_boot`, `plotBoot`, `vbgfCI_time`: clear error
+  messages if the kernel density of the bootstrapped parameters cannot be
+  estimated (fewer resamples than parameters, a parameter with the same
+  value in all resamples, or other failures of `ks::Hpi`), instead of
+  errors like "the leading minor of order 4 is not positive". In
+  `ELEFAN_GA_boot` and `ELEFAN_SA_boot`, this is a warning: the fits of the
+  resamples are returned (with medians and univariate confidence intervals,
+  `maxDen` and `multiCI` are `NA`), so that they are not lost after a long
+  run.
 - `select_Millar`: invalid parameters during the optimisation (e.g. a
   negative scale of the gamma curve) gave missing values that were dropped
   from the likelihood, so that the optimisation could end at invalid

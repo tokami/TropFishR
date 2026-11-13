@@ -248,8 +248,7 @@ plotBoot <- function(lfq,
     }
 
     ## multivariate kernel density estimate for max. density
-    H <- ks::Hpi(x, nstage = 1)
-    fhat <- ks::kde(x = x, H = H, eval.points = x)
+    fhat <- bootKde(x, what = "plotted")
 
     ## maximum density
     max_dens <- as.list(fhat$eval.points[which.max(fhat$estimate),])
