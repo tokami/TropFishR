@@ -37,8 +37,13 @@
 #'   case the catch does spatially or temporarily not reflect the catch of
 #'   the stock in a whole year (e.g. landings of only one of several fleets).
 #'   With \code{boot}, one value per sample is possible.
-#' @param terminalF the fishing mortality rate of the last age/length group.
-#' @param terminalE the exploitation rate of the last age/length group.
+#' @param terminalF the fishing mortality rate of the last age/length group;
+#'   a single value > 0.
+#' @param terminalE the exploitation rate of the last age/length group; a
+#'   single value > 0 and < 1. Only one of \code{terminalF} and
+#'   \code{terminalE} is required; if both are provided, \code{terminalF} is
+#'   used. Both are not used with \code{boot} (the fishing mortality of each
+#'   resample is used instead).
 #' @param analysis_type determines which type of assessment should be done,
 #'   options: "VPA" for age or length-based Virtual Population Analysis, "CA" for age- or length-based
 #'   Cohort Analysis. Default is "VPA".
@@ -232,6 +237,11 @@ VPA <- function(param,
                         natMort = natMort, yearSel = yearSel,
                         yearCombine = yearCombine, binSize = binSize, CI = CI))
     }
+
+    ## terminal fishing mortality or exploitation rate
+    term <- checkTerminal(terminalF, terminalE)
+    terminalF <- term$terminalF
+    terminalE <- term$terminalE
 
     ## length-weight relationship in kg
     param <- lwUnitA(param, LW_unit)
@@ -742,4 +752,38 @@ lwUnitA <- function(param, LW_unit = "kg"){
         if(is.list(param$par) && !is.null(param$par$a)) param$par$a <- param$par$a / 1000
     }
     param
+}
+
+
+## Check the terminal fishing mortality (terminalF) or exploitation rate
+## (terminalE): a single value each, NULL is treated as NA
+checkTerminal <- function(terminalF, terminalE){
+    chk <- function(x, name){
+        if(is.null(x)) return(NA_real_)
+        if(length(x) != 1)
+            stop(paste0("'", name, "' has to be a single value, but has ", length(x),
+                        " values. If it was calculated from several estimates (e.g. Z - M with M of several methods of M_empirical, or Z of several regression lines of catchCurve), choose one of them."),
+                 call. = FALSE)
+        if(is.list(x)) x <- unlist(x)
+        if(is.na(x)) return(NA_real_)
+        if(!is.numeric(x) || !is.finite(x))
+            stop(paste0("'", name, "' has to be a finite number."), call. = FALSE)
+        unname(x)
+    }
+    terminalF <- chk(terminalF, "terminalF")
+    terminalE <- chk(terminalE, "terminalE")
+    if(is.na(terminalF) && is.na(terminalE))
+        stop("Please provide either the terminal exploitation rate (terminalE) or the terminal fishing mortality rate (terminalF)!",
+             call. = FALSE)
+    if(!is.na(terminalF)){
+        if(terminalF <= 0) stop("'terminalF' has to be > 0.", call. = FALSE)
+        if(!is.na(terminalE)){
+            warning("Both terminalF and terminalE are provided; terminalE is ignored.",
+                    call. = FALSE)
+            terminalE <- NA_real_
+        }
+    }else if(terminalE <= 0 || terminalE >= 1){
+        stop("'terminalE' has to be > 0 and < 1.", call. = FALSE)
+    }
+    list(terminalF = terminalF, terminalE = terminalE)
 }

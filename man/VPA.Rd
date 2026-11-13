@@ -65,9 +65,14 @@ case the catch does spatially or temporarily not reflect the catch of
 the stock in a whole year (e.g. landings of only one of several fleets).
 With \code{boot}, one value per sample is possible.}
 
-\item{terminalF}{the fishing mortality rate of the last age/length group.}
+\item{terminalF}{the fishing mortality rate of the last age/length group;
+a single value > 0.}
 
-\item{terminalE}{the exploitation rate of the last age/length group.}
+\item{terminalE}{the exploitation rate of the last age/length group; a
+single value > 0 and < 1. Only one of \code{terminalF} and
+\code{terminalE} is required; if both are provided, \code{terminalF} is
+used. Both are not used with \code{boot} (the fishing mortality of each
+resample is used instead).}
 
 \item{analysis_type}{determines which type of assessment should be done,
 options: "VPA" for age or length-based Virtual Population Analysis, "CA" for age- or length-based

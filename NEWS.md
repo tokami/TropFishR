@@ -119,6 +119,13 @@
   vector or does not match the columns of the catch matrix, and if `Linf` or
   `K` are missing for length data (with how to add them to `lfq$par`)
   (issue #48).
+- `VPA`: `terminalF` and `terminalE` are checked. Several values (e.g.
+  `Z - M` with M of several methods) gave the error "the condition has
+  length > 1" (issue #47) and now give an error asking to choose one value.
+  `terminalF` has to be > 0 and `terminalE` > 0 and < 1 (before,
+  `terminalE = 1` gave an infinite and `terminalF < 0` a negative terminal
+  F); `NULL` is treated as not provided; if both are provided, a warning
+  says that `terminalE` is ignored.
 - Vignette "bootstrapped ELEFAN": the bootstrapped VPA requires the sampled
   numbers of fish in the lfq data and the landings (`landings`), not the
   total catch in the lfq data as stated before.

@@ -41,3 +41,26 @@ test_that("VPA with LW_unit = 'g' equals a in kg", {
     expect_equal(g$meanBiomassTon, kg$meanBiomassTon)
     expect_equal(g$FM_calc, kg$FM_calc)
 })
+
+test_that("VPA checks terminalF and terminalE (issue #47)", {
+    run <- function(...) VPA(hake, analysis_type = "CA", catch_unit = "'000", ...)
+    ## several values, e.g. Z - M with M of two methods
+    expect_error(run(terminalF = c(0.5, 0.6)), "single value, but has 2")
+    expect_error(run(terminalE = c(0.5, 0.6)), "single value, but has 2")
+    expect_error(run(terminalF = NULL), "either the terminal")
+    expect_error(run(), "either the terminal")
+    expect_error(run(terminalF = -0.2), "> 0")
+    expect_error(run(terminalF = Inf), "finite")
+    expect_error(run(terminalE = 1), "< 1")
+    expect_error(run(terminalE = 0), "> 0")
+    ## both provided: terminalF is used
+    expect_warning(both <- run(terminalF = 0.5, terminalE = 0.2), "terminalE is ignored")
+    expect_equal(both$FM_calc, run(terminalF = 0.5)$FM_calc)
+    expect_equal(tail(both$FM_calc, 1), 0.5)
+    ## terminalE and the equivalent terminalF give the same result
+    M <- hake$M
+    expect_equal(run(terminalE = 0.5)$FM_calc, run(terminalF = M)$FM_calc)
+    ## NULL is treated as not provided; a named value is fine
+    expect_equal(run(terminalF = NULL, terminalE = 0.5)$FM_calc,
+                 run(terminalE = c(E = 0.5))$FM_calc)
+})
