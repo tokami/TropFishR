@@ -136,7 +136,7 @@ res$bootRaw$M_low <- res$bootRaw$M_Then / 3
 res <- catchCurve(alba, boot = res, calc_ogive = TRUE, natMort = "M_low",
                   yearCombine = TRUE)
 plotBoot(boot = res, pType = "cc")
-res <- predict_mod(alba, type = "ThompBell", FM_change = seq(0, 10, 0.1),
+res <- predict_mod(alba, type = "ThompBell", FM_change = seq(0, 10, 0.25),
                    boot = res, natMort = "M_low")
 plotBoot(boot = res, pType = "ypr")
 }

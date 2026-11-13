@@ -92,7 +92,7 @@
 #' init_par <- list(Linf = 10, K = 1, t_anchor = 0.5)
 #' low_par <- list(Linf = 8, K = 0.1, t_anchor = 0)
 #' up_par <- list(Linf = 15, K = 5, t_anchor = 1)
-#' SA_time <- 2
+#' SA_time <- 1  # far too short for a real analysis
 #' SA_temp <- 1e5
 #' nresamp <- 10
 #'

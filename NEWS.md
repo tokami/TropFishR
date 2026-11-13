@@ -58,6 +58,10 @@
   the sampled numbers of fish.
 - Vignette "Length-frequency data for TropFishR": new sections on data of
   several years (issue #45) and on sampled numbers and total catch.
+- Shorter examples (`alba`, `ELEFAN_SA`, `ELEFAN_SA_boot`, `plotBoot`) to
+  reduce the time of `R CMD check` with `--run-donttest`. The `alba` help
+  page no longer fits ELEFAN_SA (see the examples of `ELEFAN_SA` and
+  `ELEFAN_GA`) (issue #41).
 - The example files of the vignette "Length-frequency data for TropFishR"
   (`lfq1.csv`, `lfq2.csv`, `lfq2.txt`, `lfq3.csv`, `lfq3.xlsx`) are now
   included in the package (`system.file("extdata", package = "TropFishR")`)

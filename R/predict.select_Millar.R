@@ -138,6 +138,7 @@ predict.select_Millar <- function(object, lengths = object$midLengths,
 #'  using log-linear models. \emph{ICES Journal of Marine Science: Journal du Conseil},
 #'  54(3), 471-477.
 #'
+#' @importFrom stats uniroot
 #' @export
 
 select_Millar_curve <- function(lengths, meshSizes, rtype, par,
