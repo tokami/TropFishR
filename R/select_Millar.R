@@ -18,7 +18,8 @@
 #'    \code{"lognorm"} for a lognormal curve,
 #'    \code{"binorm.sca"} for a bi-normal curve,
 #'    \code{"bilognorm"} for a bi-lognormal curve,
-#'    \code{"tt.logistic"} for a control and logistic curve
+#'    \code{"tt.logistic"} for a control and logistic curve,
+#'    \code{"gamma"} for a gamma curve
 #' @param rel.power A string indicating the relative power of different meshSizes,
 #'    must have same length as \code{meshSizes} (Default: \code{rel.power = NULL}).
 #' @param plot logical; should a plot be printed?
@@ -85,6 +86,20 @@
 #'   function are not realistic. Please be aware that if the method is changed the outcoming parameters
 #'   can greatly vary. Simliarly the starting values have to be adapted when changing the method (\code{rtype}).
 #'
+#'   The parameters in \code{par} are on the internal scale of the model:
+#'   mode and standard deviation for the first mesh size (\code{"norm.loc"},
+#'   \code{"norm.sca"}, \code{"binorm.sca"}), mean and standard deviation of
+#'   the log length (\code{"lognorm"}, \code{"bilognorm"}), intercept and slope
+#'   of the logistic curve (\code{"tt.logistic"}), shape and scale per unit mesh
+#'   size (\code{"gamma"}), and the logit of the proportions (p). This is also
+#'   the scale of the starting values (\code{x0}). \code{estimates} contains the
+#'   parameters on the usual scale (mode and standard deviation for the first
+#'   mesh size, p; L50 and selection range for \code{"tt.logistic"}) with
+#'   their standard errors. Use \code{\link{predict.select_Millar}} to calculate
+#'   the retention of the fitted model for any lengths and mesh sizes, and
+#'   \code{\link{select_Millar_curve}} for the retention of given (e.g.
+#'   published) parameters.
+#'
 #' @importFrom graphics plot
 #' @importFrom stats deviance optim
 #' @import msm
@@ -138,6 +153,10 @@ select_Millar <- function(param,
     rmatrix[is.na(CatchPerNet_mat)] <- NA #No fitted retention for missing meshSizes
     rmatrix <- t(t(rmatrix) * rel.power)
     phi <- rmatrix/apply(rmatrix,1,sum,na.rm=TRUE)
+    ## invalid parameters (e.g. negative scale): observed catches without a
+    ## valid probability must not be dropped (na.rm) but make the fit impossible
+    obs <- !is.na(CatchPerNet_mat) & CatchPerNet_mat > 0
+    if(any(!is.finite(log(phi[obs])))) return(Inf)
     nll <- - sum(CatchPerNet_mat * log(phi),na.rm=TRUE)
     return(nll)
   }
@@ -212,9 +231,17 @@ select_Millar <- function(param,
              varpars <- msm::deltamethod(list(~-x1/x2,~2*log(3)/x2,~exp(x3)/(1+exp(x3))),
                                  x,varx,ses=FALSE)
              },
+           "gamma"={
+             ## mode = (k - 1) alpha m1, sd = sqrt(k) alpha m1 (m1 = first mesh size)
+             pars <- c((x[1] - 1) * x[2] * mSize1, sqrt(x[1]) * x[2] * mSize1)
+             varpars <- msm::deltamethod(
+               list(stats::as.formula(paste0("~(x1 - 1) * x2 * ", mSize1)),
+                    stats::as.formula(paste0("~sqrt(x1) * x2 * ", mSize1))),
+               x, varx, ses = FALSE)
+             },
            stop(paste("\n",res3$rtype, "not recognised, possible curve types are \n",
                       "\"norm.loc\", \"norm.sca\", \"lognorm\" \n",
-                      "\"binorm.sca\", \"bilognorm\", and \"tt.logistic\""))
+                      "\"binorm.sca\", \"bilognorm\", \"tt.logistic\", and \"gamma\""))
     )
 
     estimates <- cbind(pars,sqrt(diag(varpars)))

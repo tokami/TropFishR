@@ -60,6 +60,17 @@
   several years (issue #45) and on sampled numbers and total catch.
 - `VPA` and `predict_mod`: new argument `LW_unit` (`"kg"`, default, or `"g"`)
   for the unit of the weight in the length-weight relationship.
+- `predict` method for `select_Millar` results: relative retention of the
+  fitted selectivity model for any lengths and mesh sizes (also for mesh
+  sizes that were not used in the experiment) (issue #43).
+- `select_Millar_curve`: retention of the selection curves of
+  `select_Millar` (all curve types) for given parameters, e.g. published
+  gillnet selectivity parameters, on the usual scale (mode and standard
+  deviation, or L50 and selection range, for a reference mesh size)
+  (issue #43).
+- `select_Millar`: the gamma curve (`rtype = "gamma"`) can now be fitted;
+  `estimates` contains its mode and standard deviation for the first mesh
+  size. The help page explains the scale of `par` and `x0`.
 - `univariate_density`: new argument `pars` to select the parameters, and
   the line of maximum density is now the mode of the kernel density (before:
   mean of the values with the highest 1 % of the density).
@@ -72,6 +83,11 @@
 
 ##### Bug fixes
 
+- `select_Millar`: invalid parameters during the optimisation (e.g. a
+  negative scale of the gamma curve) gave missing values that were dropped
+  from the likelihood, so that the optimisation could end at invalid
+  parameters with a singular Hessian ("It is impossible to invert the
+  matrix"). The likelihood of such parameters is now infinite.
 - `VBGF`: the age at length of the seasonalised VBGF is now `Inf` at `Linf`
   and `NaN` above `Linf` (as for the non-seasonal VBGF). Previously the
   maximum age of an internal lookup table was returned, so that length
