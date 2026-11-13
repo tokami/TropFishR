@@ -423,11 +423,15 @@ plotBoot(boot = res, pType = "ypr", pRef = "Fmax")
 
 Instead of the selectivity estimated by the catch curve, the fishing
 mortality at length estimated by a length-based virtual population analysis
-can be used. This requires the total catch (in numbers or weight) instead of
-the sampled numbers of fish in `lfq` (see `?VPA`):
+can be used. The VPA requires the total catch of the stock, while `lfq` has
+to keep the sampled numbers of fish, because the resampling draws the
+measured fish. The total landings (in kg, one value per sample) are therefore
+passed to `VPA` with the argument `landings`, and each resample is raised to
+the total catch (see `?VPA` and `?lfqRaise`):
 
 ```{r vpa, eval = FALSE}
-res <- VPA(lfq, boot = res, natMort = "M_Then", catch_unit = "'000", LW_unit = "g")
+landings <- rep(30000, length(lfq$dates))  # landings in kg per sampling date
+res <- VPA(lfq, boot = res, natMort = "M_Then", landings = landings, LW_unit = "g")
 res <- predict_mod(lfq, type = "ThompBell", FM_change = seq(0, 3, 0.05),
                    boot = res, natMort = "M_Then", bootSel = "VPA", LW_unit = "g")
 ```

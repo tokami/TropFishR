@@ -16,19 +16,27 @@
 #'   \item \code{a}: length-weight relationship coefficent (W = a * L^b; in kg/cm^b,
 #'      or in g/cm^b with \code{LW_unit = "g"}),
 #'   \item \code{b}: length-weight relationship coefficent (W = a * L^b),
-#'   \item \code{catch}: catch as vector for pseudo cohort analysis,
-#'      or a matrix with catches of subsequent years to follow a real cohort.
-#'      For age-based VPA/CA catch has to be provided in numbers, e.g. '000 individuals
-#'      for length-based VPA/CA catch can also be provided in weight, e.g. kg (use
-#'      argument \code{catch_unit}).
+#'   \item \code{catch}: total catch of the stock per age class or length
+#'      group, as vector for pseudo cohort analysis, or a matrix with catches
+#'      of subsequent years to follow a real cohort (or, for length-frequency
+#'      data, one column per year selected with \code{catch_columns}).
+#'      By default the catch is in numbers (see \code{catch_unit}). For
+#'      length-frequency data with the sampled numbers of fish, provide the
+#'      total landings with \code{landings} instead (see Details).
 #' }
 #' @param catch_columns numerical; indicating the column of the catch matrix which should be
 #'   used for the analysis.
-#' @param catch_unit optional; a character indicating if the catch is provided in weight
-#'    ("tons" or "kg") or in thousand individuals ("'000")
-#' @param catch_corFac optional; correction factor for catch, in case provided
-#'   catch does spatially or temporarily not reflect catch for fishing ground of
-#'   a whole year.
+#' @param catch_unit optional; unit of \code{catch}: \code{NA} (default;
+#'    numbers of fish), thousand or million individuals (\code{"'000"},
+#'    \code{"'000000"}), or, for the length-based VPA/CA only, the catch in
+#'    weight per length group (\code{"kg"} or \code{"tons"}), which is
+#'    converted into numbers with the mean body weight of each length group.
+#'    Note that this is the weight of the catch of each length group, not
+#'    the total landings: for the total landings use \code{landings}.
+#' @param catch_corFac optional; additional raising factor for the catch, in
+#'   case the catch does spatially or temporarily not reflect the catch of
+#'   the stock in a whole year (e.g. landings of only one of several fleets).
+#'   With \code{boot}, one value per sample is possible.
 #' @param terminalF the fishing mortality rate of the last age/length group.
 #' @param terminalE the exploitation rate of the last age/length group.
 #' @param analysis_type determines which type of assessment should be done,
@@ -43,6 +51,20 @@
 #'    (\code{a}): \code{"kg"} (default; W in kg) or \code{"g"} (W in g, then
 #'    \code{a} is divided by 1000). The mean body weight is in kg and biomass
 #'    and yield in tonnes.
+#' @param landings optional; total landings (or catch) of the stock in kg,
+#'    one value per sample (\code{raiseBy = "sample"}) or year
+#'    (\code{raiseBy = "year"}). If provided, \code{param} has to be
+#'    length-frequency data with the sampled numbers of fish, which are raised
+#'    to the total catch with \code{\link{lfqRaise}} and summed per year
+#'    (select the year with \code{catch_columns} if there are several).
+#'    With \code{boot}, each resample is raised.
+#' @param sampleWeight optional; with \code{landings}, the measured weight of
+#'    the samples in kg (one value per sample or year). By default estimated
+#'    from the sampled numbers and the length-weight relationship (see
+#'    \code{\link{lfqRaise}}).
+#' @param raiseBy with \code{landings}, \code{"sample"} (default) to raise
+#'    each sample separately or \code{"year"} to raise all samples of a year
+#'    with one factor (see \code{\link{lfqRaise}}).
 #' @param boot optional; an object of class `lfqBoot` with bootstrapped growth
 #'    parameters, natural mortality (see `natMort`) and fishing mortality
 #'    (`FM`, from \code{\link{catchCurve}} with `natMort`). If provided, the
@@ -68,13 +90,24 @@
 #'    caught during a single day, which makes the calcualtion easier, VPA assumes that
 #'    the fish are caught continuously, which has to be solved by the trial and error
 #'    method (Sparre and Venema, 1998).
-#'    For the age-based VPA/CA the catch has to be provided in numbers (or '000 numbers),
-#'    while for the length-based VPA/CA the catch can also be provided in weight (tons or kg) by
-#'    using the argument \code{catch_unit}.
+#'    The VPA/CA requires the total catch of the stock in one year (absolute
+#'    numbers), while most other methods (e.g. ELEFAN, \code{\link{catchCurve}})
+#'    only use the relative length composition of the samples. For
+#'    length-frequency data, keep the sampled numbers of fish in the lfq data
+#'    and provide the total landings in weight (\code{landings}): the samples
+#'    are then raised to the total catch in numbers by
+#'    \code{\link{lfqRaise}}. Alternatively, \code{catch} can contain the
+#'    total catch per age class or length group in numbers (or '000 numbers)
+#'    or, for the length-based VPA/CA, in weight per length group
+#'    (\code{catch_unit}).
 #'    The catch has to be representative for fished species, that means there should not be
 #'    other fisheries fishing the same stock. If this is the case \code{catch_corFac} can
 #'    be used as a raising factor to account for the proportion of fish caught by other
 #'    fisheries.
+#'    Raising the catch with a single factor changes the numbers and biomass,
+#'    but not the fishing mortality at length; different raising factors per
+#'    sample change the length composition and, thus, also the fishing
+#'    mortality at length.
 #'    When the model should follow a real cohort instead of a pseudo cohort, \code{catch}
 #'    has to be provided as matrix. The model then starts to follow the first age class
 #'    in the first column.
@@ -110,6 +143,21 @@
 #' VPA(hake, terminalE = 0.5, analysis_type = "CA", plot = TRUE,
 #'    catch_unit = "'000", plus_group = TRUE)
 #'
+#'#_______________________________________________
+#' # Length-based VPA with sampled length-frequency data and total landings
+#' data(synLFQ7)
+#' lfq <- synLFQ7
+#' lfq$par <- list(Linf = 123, K = 0.2, t0 = 0, M = 0.2, a = 0.015, b = 3)
+#' ## plus group below Linf
+#' pg <- lfq$midLengths[max(which(lfq$midLengths < lfq$par$Linf))]
+#' lfq <- lfqModify(lfq, plus_group = pg)
+#' ## landings in kg at the sampling dates (one value per sample)
+#' landings <- seq(20000, 40000, length.out = length(lfq$dates))
+#' res <- VPA(lfq, landings = landings, terminalE = 0.5, LW_unit = "g",
+#'            plus_group = TRUE)
+#' res$raising
+#' plot(res)
+#'
 #' @return A list with the input parameters and following list objects:
 #' \itemize{
 #'   \item \strong{classes.num}: numeric age classes or length groups (without plus sign),
@@ -123,11 +171,13 @@
 #'      (same unit than input catch vector),
 #'   \item \strong{meanBodyWeight}: a vector with the mean body weight in kg,
 #'   \item \strong{meanBiomassTon}: a vector with the mean biomass in tons,
-#'   \item \strong{YieldTon}: a vector with the yield in tons,
+#'   \item \strong{yieldTon}: a vector with the yield in tons,
 #'   \item \strong{natLoss}: a vector with the number of fish died due
 #'   to natural mortality,
 #'   \item \strong{plot_mat}: matrix with rearranged survivors, nat losses
-#'   and catches for plotting;
+#'   and catches for plotting,
+#'   \item \strong{raising}: with \code{landings}, the raising factors (see
+#'   \code{\link{lfqRaise}});
 #' }
 #' If `boot` is provided, the \code{lfqBoot} object with the additional
 #' columns `N` (total mean number of fish) and `B` (total mean biomass in
@@ -168,6 +218,7 @@ VPA <- function(param,
                 analysis_type = "VPA", algorithm = "new",
                 plus_group = TRUE, plot = FALSE,
                 LW_unit = "kg",
+                landings = NULL, sampleWeight = NULL, raiseBy = "sample",
                 boot = NULL, natMort = NULL, yearSel = NA,
                 yearCombine = FALSE, binSize = NA, CI = 95){
 
@@ -175,6 +226,8 @@ VPA <- function(param,
     if(!is.null(boot)){
         return(VPA_boot(param, boot = boot, catch_unit = catch_unit,
                         catch_corFac = catch_corFac, LW_unit = LW_unit,
+                        landings = landings, sampleWeight = sampleWeight,
+                        raiseBy = raiseBy,
                         analysis_type = analysis_type, algorithm = algorithm,
                         natMort = natMort, yearSel = yearSel,
                         yearCombine = yearCombine, binSize = binSize, CI = CI))
@@ -182,6 +235,24 @@ VPA <- function(param,
 
     ## length-weight relationship in kg
     param <- lwUnitA(param, LW_unit)
+
+    ## raise the sampled numbers of fish to the total catch
+    raised <- !is.null(landings)
+    if(raised){
+        if(!("midLengths" %in% names(param)))
+            stop("'landings' is only available for the length-based VPA/CA.")
+        if(!is.na(catch_unit))
+            stop("With 'landings', the catch is raised to numbers of fish: please leave catch_unit = NA.")
+        param <- lfqRaise(param, landings = landings, sampleWeight = sampleWeight,
+                          by = raiseBy, LW_unit = "kg")
+        ## sum the raised catches per year (columns = years)
+        if(is.matrix(param$catch) && !is.null(param$dates) &&
+           length(param$dates) == ncol(param$catch)){
+            cy <- t(rowsum(t(param$catch), format(param$dates, "%Y")))
+            param$dates <- as.Date(paste0(colnames(cy), "-01-01"))
+            param$catch <- if(ncol(cy) == 1) as.numeric(cy) else unname(cy)
+        }
+    }
     res <- param
 
     if(is.na(catch_columns[1])) catch <- res$catch
@@ -295,7 +366,7 @@ VPA <- function(param,
     }else if(!is.na(catch_unit)){
       stop(paste0(catch_unit, " not known. Please use either NA, '000, or '000000 for catch in numbers."))
     }else{
-      warning("You did not specify catch_unit. The Method assumes that catch is provided in numbers!")
+      if(!raised) warning("You did not specify catch_unit. The Method assumes that catch is provided in numbers!")
       catch_numbers <- catch_cor
     }
 
@@ -499,7 +570,7 @@ VPA <- function(param,
     }else if(!is.na(catch_unit)){
       stop(paste0(catch_unit, " not known. Please use either 'tons' or 'kg' for catch in weight or NA, '000, or '000000 for catch in numbers."))
     }else{
-      warning("You did not specify catch_unit. The Method assumes that catch is provided in numbers!")
+      if(!raised) warning("You did not specify catch_unit. The Method assumes that catch is provided in numbers!")
       catch_numbers <- catch_cor
     }
 

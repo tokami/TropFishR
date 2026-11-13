@@ -137,6 +137,56 @@ The function `read.table()` allows to read and load many different file formats 
 
 
 
+# *Sampled numbers and total catch*
+
+The catch matrix of the lfq data (`catch`) should contain the numbers of fish
+measured per length class and sampling time, as in the examples above. Most
+methods of TropFishR only use the relative length composition of these
+samples and do not require the total catch: the growth methods (e.g.
+`ELEFAN_GA`), the length-converted catch curve (`catchCurve`) and the yield
+per recruit models (`predict_mod` with the selectivity and fishing mortality
+of the catch curve). The bootstrapped methods (e.g. `ELEFAN_GA_boot`) even
+require the sampled numbers, because they resample the measured fish.
+
+Only the length-based virtual population analysis (`VPA`) estimates absolute
+numbers and requires the total catch of the stock. The samples have to be
+raised to the total catch, which is usually done with the total landings in
+weight: the raising factor of each sample is the landings divided by the
+weight of the sample. If the weight of the samples was not measured, it is
+estimated from the numbers per length class and the length-weight
+relationship ($W = a L^b$). The function `lfqRaise` does this, but it is
+easier to keep the sampled numbers in the lfq data and to pass the landings
+in kg directly to `VPA` (argument `landings`), which raises the samples
+internally:
+
+```{r raising, echo = TRUE}
+library(TropFishR)
+data(synLFQ7)
+lfq <- synLFQ7
+lfq$par <- list(Linf = 123, K = 0.2, t0 = 0, M = 0.2,
+                a = 0.015, b = 3)   # length-weight relationship with W in g
+## landings in kg at the sampling dates (here simply assumed)
+landings <- c(20000, 25000, 30000, 35000, 40000, 30000, 25000, 20000)
+
+## raising factors (landings / weight of the samples)
+lfqRaise(lfq, landings = landings, LW_unit = "g")$raising
+
+## plus group below Linf and VPA with the raised catch
+pg <- lfq$midLengths[max(which(lfq$midLengths < lfq$par$Linf))]
+lfq <- lfqModify(lfq, plus_group = pg)
+res <- VPA(lfq, landings = landings, terminalE = 0.5, LW_unit = "g")
+```
+
+With `by = "sample"` (in `VPA`: `raiseBy = "sample"`, the default) each
+sample is raised with its own landings, which also gives months with large
+landings more weight than months with small landings. If the landings are
+only known per year, use `raiseBy = "year"` and one value per year. If the
+landings only cover a part of the catch of the stock (e.g. one of several
+fleets), the argument `catch_corFac` of `VPA` allows an additional raising
+factor. The option `catch_unit = "kg"` of `VPA` is meant for catches in
+weight *per length class*, not for the total landings.
+
+
 # *Conclusion*
 This vignette demonstrates the first step in the application of TropFishR,
 the arrangement of your length measurements in a spreadsheet (or text file) and

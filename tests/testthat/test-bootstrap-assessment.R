@@ -225,6 +225,37 @@ test_that("VPA with boot equals the VPA of each resample", {
     expect_true(all(is.na(res$bootRaw$N[skipped])))
 })
 
+test_that("VPA with boot and landings raises each resample", {
+    ch <- boot_chain()
+    landings <- c(100, 200, 150, 50, 100, 250, 150)  # kg, one per sample
+    res <- VPA(alba_lw, boot = ch$cc, natMort = "M_low", yearCombine = TRUE,
+               landings = landings)
+    x <- which(is.finite(res$bootRaw$N))[1]
+    ## resample x raised with the weight of the resampled fish
+    set.seed(boot15$seed[x])
+    lfqx <- lfqRaise(lfqResample(alba_lw), landings = landings)
+    lfqx <- lfqModify(lfqx, vectorise_catch = TRUE)
+    lfqx$catch <- rowSums(lfqx$catch)
+    ## the raised catch of the resample weighs as much as the landings
+    expect_equal(sum(lfqx$catch * 0.0001 * lfqx$midLengths^3), sum(landings))
+    Linf <- boot15$bootRaw$Linf[x]
+    upper <- lfqx$midLengths + diff(lfqx$midLengths)[1] / 2
+    pg <- Linf < max(upper)
+    if (pg) lfqx <- lfqModify(lfqx, plus_group = lfqx$midLengths[which.min(abs(upper - floor(Linf)))])
+    v <- suppressWarnings(VPA(list(midLengths = lfqx$midLengths, catch = lfqx$catch,
+                                   Linf = Linf, K = boot15$bootRaw$K[x], t0 = 0,
+                                   M = ch$cc$bootRaw$M_low[x], a = 0.0001, b = 3),
+                              terminalF = ch$cc$bootRaw$FM[x], plus_group = pg, plot = FALSE))
+    expect_equal(res$bootRaw$N[x], sum(v$annualMeanNr))
+    expect_equal(res$misc$FMvecVPA[[x]]$FM, v$FM_calc)
+
+    expect_error(VPA(alba_lw, boot = ch$cc, natMort = "M_low", yearCombine = TRUE,
+                     landings = landings, catch_unit = "'000"), "catch_unit = NA")
+    raised <- lfqRaise(alba_lw, landings = landings)
+    expect_error(VPA(raised, boot = ch$cc, natMort = "M_low", yearCombine = TRUE),
+                 "raised")
+})
+
 test_that("predict_mod with boot equals the model of each resample", {
     ch <- boot_chain()
     FM_change <- seq(0, 10, 0.2)

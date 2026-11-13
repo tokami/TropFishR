@@ -43,6 +43,21 @@
     bootstrapped ELEFAN".
   - New dependency: `ks`.
 - `catchCurve`: new argument `binSize` to re-bin the length classes.
+- `lfqRaise` raises the sampled numbers of fish to the total catch with the
+  total landings in weight (per sample or per year) and the measured or
+  estimated weight of the samples (issue #53).
+- `VPA`: new arguments `landings`, `sampleWeight` and `raiseBy`. With
+  `landings`, the lfq data keep the sampled numbers of fish, which are raised
+  to the total catch with `lfqRaise` and summed per year; with `boot`, each
+  resample is raised. The documentation of `catch_unit` and `catch_corFac`
+  is clearer: `catch_unit = "kg"` means the catch in weight per length
+  group, not the total landings.
+- `lfqResample`, `ELEFAN_GA_boot`, `ELEFAN_SA_boot` and `catchCurve`/`VPA`
+  with `boot` stop if the lfq data contain raised catches (`lfqRaise`) and
+  warn if the catch is not in whole numbers, because the resampling requires
+  the sampled numbers of fish.
+- Vignette "Length-frequency data for TropFishR": new section on sampled
+  numbers and total catch.
 - `VPA` and `predict_mod`: new argument `LW_unit` (`"kg"`, default, or `"g"`)
   for the unit of the weight in the length-weight relationship.
 - `univariate_density`: new argument `pars` to select the parameters, and
@@ -73,6 +88,9 @@
   `GenSA` (`trace.mat`) is usually empty for the run times of ELEFAN_SA.
 - `ELEFAN_SA`: the argument `nb.stop.improvement` is now passed to `GenSA`;
   previously it was ignored.
+- Vignette "bootstrapped ELEFAN": the bootstrapped VPA requires the sampled
+  numbers of fish in the lfq data and the landings (`landings`), not the
+  total catch in the lfq data as stated before.
 - `catchCurve` with `auto = TRUE`: the regression line now ends at the
   point with the largest age and ln(C/dt) > 0.2. Previously the position of
   this point among the points with ln(C/dt) > 0.2 was used as index of all

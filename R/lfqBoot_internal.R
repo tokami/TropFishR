@@ -115,10 +115,18 @@ checkBoot <- function(boot, required = c("Linf", "K")){
 ## the analysis of one year: optionally subset years, correct the catch,
 ## re-bin, and sum the catches over the samples.
 bootLfq <- function(lfq, boot, x, yearSel = NA, yearCombine = FALSE,
-                    binSize = NA, catch_corFac = NA){
+                    binSize = NA, catch_corFac = NA, raise = NULL){
 
     set.seed(boot$seed[x])
     lfqb <- lfqResample(lfq)
+
+    ## raise the resampled numbers to the total catch (the weight of the
+    ## samples is re-estimated for each resample unless measured)
+    if(!is.null(raise)){
+        lfqb <- lfqRaise(lfqb, landings = raise$landings,
+                         sampleWeight = raise$sampleWeight, by = raise$by,
+                         a = raise$a, b = raise$b, LW_unit = raise$LW_unit)
+    }
 
     ## subset years (after resampling, so that the resamples match)
     if(!is.na(yearSel[1])){

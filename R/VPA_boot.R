@@ -2,7 +2,8 @@
 ## with boot)
 
 VPA_boot <- function(param, boot, catch_unit = NA, catch_corFac = NA,
-                     LW_unit = "kg",
+                     LW_unit = "kg", landings = NULL, sampleWeight = NULL,
+                     raiseBy = "sample",
                      analysis_type = "VPA", algorithm = "new",
                      natMort = NULL, yearSel = NA, yearCombine = FALSE,
                      binSize = NA, CI = 95){
@@ -18,6 +19,16 @@ VPA_boot <- function(param, boot, catch_unit = NA, catch_corFac = NA,
     b <- if(!is.null(param$par$b)) param$par$b else param$b
     if(is.null(a) || is.null(b))
         stop("VPA requires information about the length-weight relationship. Please provide 'a' and 'b' estimates in param.")
+    checkSampledLfq(param, "VPA with boot")
+
+    ## raising of each resample to the total catch
+    raise <- NULL
+    if(!is.null(landings)){
+        if(!is.na(catch_unit))
+            stop("With 'landings', the catch is raised to numbers of fish: please leave catch_unit = NA.")
+        raise <- list(landings = landings, sampleWeight = sampleWeight,
+                      by = raiseBy, a = a, b = b, LW_unit = LW_unit)
+    }
 
     bootRaw <- boot$bootRaw
     n <- nrow(bootRaw)
@@ -40,7 +51,7 @@ VPA_boot <- function(param, boot, catch_unit = NA, catch_corFac = NA,
 
         lfqx <- bootLfq(param, boot, x, yearSel = yearSel,
                         yearCombine = yearCombine, binSize = binSize,
-                        catch_corFac = catch_corFac)
+                        catch_corFac = catch_corFac, raise = raise)
         growth <- bootGrowthPar(boot, x)
 
         ## plus group at Linf of the resample

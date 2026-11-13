@@ -7,7 +7,9 @@
 lfqResample(lfq, sampSize = NA, boot = NULL)
 }
 \arguments{
-\item{lfq}{a length frequency object of the class `lfq`.}
+\item{lfq}{a length frequency object of the class `lfq`. The catch has to
+be the sampled numbers of fish (not raised to the total catch, see
+\code{\link{lfqRaise}}).}
 
 \item{sampSize}{optional; number of individuals drawn per sample. By default
 (`sampSize = NA`), the number of individuals of each sample in the

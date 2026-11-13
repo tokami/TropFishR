@@ -63,6 +63,7 @@ catchCurve_boot <- function(param, boot, cumulative = FALSE, calc_ogive = FALSE,
                             binSize = NA, CI = 95){
 
     checkBoot(boot, c("Linf", "K", if(!is.null(natMort)) natMort))
+    checkSampledLfq(param, "catchCurve with boot")
     if(calc_ogive && cumulative)
         stop("It is not possible to estimate the selection ogive for the cumulative catch curve.")
     if(!("midLengths" %in% names(param)))

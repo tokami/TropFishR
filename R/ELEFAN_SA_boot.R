@@ -127,6 +127,7 @@ ELEFAN_SA_boot <- function(
     ## where unevaluated arguments (e.g. lfq = alba) cannot be found
     invisible(mget(names(formals()), envir = environment()))
 
+    checkSampledLfq(lfq, "ELEFAN_SA_boot")
     if(is.null(seed)){ seed <- round(runif(1, min = 0, max = 1e6)) }
 
     fitOne <- function(x){
