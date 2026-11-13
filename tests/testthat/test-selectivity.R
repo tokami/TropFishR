@@ -137,3 +137,61 @@ test_that("plot.select_Millar uses predict", {
     o <- select_Millar(gillnet, x0 = NULL, rtype = "lognorm", plot = FALSE)
     expect_equal(count_plot_pages(plot(o, plotlens = seq(40, 90, 1))), 1)
 })
+
+## comparison of Millar's selectivity models (issue #39)
+
+test_that("select_Millar_compare computes AICc and QAICc with a common c_hat", {
+    fits <- list(
+        lognorm = select_Millar(gillnet, x0 = NULL, rtype = "lognorm", plot = FALSE),
+        norm.loc = select_Millar(gillnet, x0 = NULL, rtype = "norm.loc", plot = FALSE),
+        bilognorm = select_Millar(gillnet, x0 = c(4, 0.2, 4.2, 0.1, 2),
+                                  rtype = "bilognorm", plot = FALSE))
+    tab <- select_Millar_compare(fits)
+    n <- sum(gillnet$CatchPerNet_mat > 0)
+    ## c_hat from the most general model (bilognorm)
+    c_hat <- unname(fits$bilognorm$out["Deviance", 1] / fits$bilognorm$out["d.o.f.", 1])
+    expect_equal(tab$c_hat, rep(c_hat, 3))
+    ## by hand: -2 logL = 2 * value (optim minimises the negative logL)
+    qaicc <- function(f, K) 2 * f$value / c_hat + 2 * K + 2 * K * (K + 1) / (n - K - 1)
+    aicc <- function(f, K) 2 * f$value + 2 * K + 2 * K * (K + 1) / (n - K - 1)
+    row <- function(m) tab[tab$model == m, ]
+    expect_equal(row("lognorm")$QAICc, qaicc(fits$lognorm, 3))
+    expect_equal(row("bilognorm")$QAICc, qaicc(fits$bilognorm, 6))
+    expect_equal(row("norm.loc")$AICc, aicc(fits$norm.loc, 2))
+    ## sorted, best model first
+    expect_equal(tab$model, c("bilognorm", "lognorm", "norm.loc"))
+    expect_equal(tab$delta, tab$QAICc - min(tab$QAICc))
+    ## differences of the QAIC follow the differences of the deviance
+    expect_equal(row("norm.loc")$QAICc - row("lognorm")$QAICc,
+                 (row("norm.loc")$deviance - row("lognorm")$deviance) / c_hat)
+    ## arguments instead of a list, names from rtype
+    tab2 <- select_Millar_compare(fits$lognorm, fits$norm.loc)
+    expect_setequal(tab2$model, c("lognorm", "norm.loc"))
+    ## given c_hat; c_hat = 1 gives the AICc
+    tab1 <- select_Millar_compare(fits, c_hat = 1)
+    expect_equal(tab1$QAICc, tab1$AICc)
+    ## Pearson
+    tabP <- select_Millar_compare(fits, c_hat_method = "pearson")
+    expect_equal(tabP$c_hat[1], unname(fits$bilognorm$out["Pearson.chisq", 1] /
+                                       fits$bilognorm$out["d.o.f.", 1]))
+})
+
+test_that("select_Millar_compare requires fits of the same data", {
+    a <- select_Millar(gillnet, x0 = NULL, rtype = "lognorm", plot = FALSE)
+    other <- gillnet
+    other$CatchPerNet_mat[1, 1] <- other$CatchPerNet_mat[1, 1] + 10
+    b <- select_Millar(other, x0 = NULL, rtype = "lognorm", plot = FALSE)
+    expect_error(select_Millar_compare(a, b), "same data")
+    expect_error(select_Millar_compare(a, list(1)), "select_Millar")
+    expect_error(select_Millar_compare(a, c_hat = -1), "c_hat")
+})
+
+test_that("logLik.select_Millar allows AIC and BIC", {
+    a <- select_Millar(gillnet, x0 = NULL, rtype = "lognorm", plot = FALSE)
+    ll <- logLik(a)
+    expect_equal(as.numeric(ll), -a$value)
+    expect_equal(attr(ll, "df"), 2)
+    expect_equal(attr(ll, "nobs"), sum(gillnet$CatchPerNet_mat > 0))
+    expect_equal(AIC(a), 2 * a$value + 2 * 2)
+    expect_equal(BIC(a), 2 * a$value + 2 * log(sum(gillnet$CatchPerNet_mat > 0)))
+})

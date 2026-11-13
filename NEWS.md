@@ -84,6 +84,11 @@
   gillnet selectivity parameters, on the usual scale (mode and standard
   deviation, or L50 and selection range, for a reference mesh size)
   (issue #43).
+- `select_Millar_compare`: compares selection curves fitted with
+  `select_Millar` to the same data by AICc and QAICc, with a common
+  overdispersion factor (`c_hat`) estimated from the most general model
+  (issue #39). New `logLik` method for `select_Millar` results, so that
+  `AIC` and `BIC` can be used.
 - `select_Millar`: the gamma curve (`rtype = "gamma"`) can now be fitted;
   `estimates` contains its mode and standard deviation for the first mesh
   size. The help page explains the scale of `par` and `x0`.
