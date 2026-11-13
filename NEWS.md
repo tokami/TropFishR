@@ -60,6 +60,10 @@
   several years (issue #45) and on sampled numbers and total catch.
 - `VPA` and `predict_mod`: new argument `LW_unit` (`"kg"`, default, or `"g"`)
   for the unit of the weight in the length-weight relationship.
+- `growth_length_age` (`method = "LSM"`, `CI = TRUE`): the confidence band
+  of the growth curve uses `ci.level` (before always 95 %) and the t
+  distribution with the residual degrees of freedom, and is returned as
+  `predCI` (before only plotted) (issue #40).
 - `predict` method for `select_Millar` results: relative retention of the
   fitted selectivity model for any lengths and mesh sizes (also for mesh
   sizes that were not used in the experiment) (issue #43).
