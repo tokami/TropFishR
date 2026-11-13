@@ -10,18 +10,26 @@
 #'   \item \code{catch} a vector with the catch per length class or a matrix with
 #'      catches per length class of subsequent years;
 #' }
-#' @param n_rnorm number of observations for the function \code{\link{rnorm}}. The
+#' @param n_rnorm number of fish of a cohort used to define its length range:
+#'    the range spans from the expected smallest to the expected largest of
+#'    \code{n_rnorm} lengths from the normal distribution of the cohort
+#'    (Blom's approximation, quantiles \code{0.625/(n_rnorm+0.25)} and
+#'    \code{(n_rnorm-0.375)/(n_rnorm+0.25)}).
+#'    The numbers of the cohort are calculated up to the largest length. The
 #'    default is 1000.
 #' @param savePlots logical; indicating whether the analyis graphs should be recorded
 #'
 #' @keywords function Bhattacharya length-frequency lfq
 #'
 #' @examples
-#' # The following example requires to choose certain values for the regression analyses:
-#' # first cohort:   point  2 to  8
-#' # second cohort:  point 12 to 17
-#' # third cohort:   point 19 to 23
-#' # fourth cohort:  point 26 to 30
+#' # The following example requires to choose the points for the regression
+#' # lines one cohort after the other in the same run, starting on the left
+#' # (each selection requires that the cohorts to the left are already removed):
+#' # first cohort:   point  2 to  8, then type 'y' in the console
+#' # second cohort:  point 12 to 17, then type 'y'
+#' # third cohort:   point 19 to 23, then type 'y'
+#' # fourth cohort:  point 26 to 30, then type 'y'
+#' # and stop the selection (right click or Escape).
 #'
 #' \donttest{
 #'  data(synLFQ1)
@@ -29,7 +37,11 @@
 #' }
 #'
 #' @details This method includes the \code{\link{identify}} function, which allows to
-#'      choose points on a graphical device manually. To stop this process please press
+#'      choose points on a graphical device manually. The points of each regression
+#'      line have to lie on a falling line (negative slope), otherwise the selection is
+#'      rejected. Start with the distribution on the left: the points of a distribution
+#'      only lie on a falling line after the distributions to the left of it have been
+#'      removed. To stop this process please press
 #'      right mouse click on the graph, and in case you are working on a windows
 #'      maschine click on "Stop". An error will be caused if the graphical device
 #'      is closed manually. After you have selected the points for regression analysis
@@ -43,7 +55,7 @@
 #'
 #' @return A list with the input parameters and
 #'    \itemize{
-#'    \item \strong{regressionLines} dataframe with intercept, slope, start and end points
+#'    \item \strong{regression_lines} dataframe with intercept, slope, start and end points
 #'       of the regression lines,
 #'    \item \strong{Lmean_SD_list} dataframe with the mean length (Lmean), standard deviation (SD),
 #'      and seperation index (SI) for each cohort,
@@ -54,7 +66,7 @@
 #'
 #' @importFrom grDevices dev.new dev.off recordPlot
 #' @importFrom graphics abline hist identify layout lines par plot points text title
-#' @importFrom stats dnorm lm rnorm sd
+#' @importFrom stats dnorm lm qnorm sd
 #' @importFrom utils flush.console
 #'
 #' @references
@@ -208,7 +220,6 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
         id.co1 <- identify(bhat.table$L, bhat.table$delta.log.N1.plus, n = 2, pos = TRUE)
         if(length(id.co1$ind) == 0) break
 
-        colour.vec[id.co1$ind[1]:id.co1$ind[2]] <- colour.xy[xy]
         dev.off()
 
         #STEP 7: calculate mean length and standard deviation of regression line
@@ -218,10 +229,17 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
         if(length(x.co1) < 3){
           writeLines("Your selection is not possible. You have to choose two \npoints which include at least one other point. At least \nthree points are required for a regression line. Please choose again!")
           flush.console()
+          next
         }
-        if(length(x.co1) >= 3){
-          break
+        # the regression line has to fall (negative slope), otherwise the
+        # standard deviation sqrt(-interval/slope) is not defined
+        if(!bhatSlopeOK(x.co1, bhat.table$delta.log.N1.plus[id.co1$ind[1]:id.co1$ind[2]])){
+          writeLines("Your selection is not possible. The selected points have to \nlie on a falling line (negative slope) without missing or \ninfinite values. Choose the points of one distribution after \nthe other, starting on the left, so that the distributions to \nthe left are removed first. Please choose again!")
+          flush.console()
+          next
         }
+        colour.vec[id.co1$ind[1]:id.co1$ind[2]] <- colour.xy[xy]
+        break
       }
 
       if(xy == 1 & length(id.co1$ind) == 0){
@@ -248,11 +266,12 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
 
 
       #STEP 8: fill sixth column
-      #set.seed ????
-      normal.dis.co1 <- rnorm(n=n_rnorm, mean = l.mean.co1, sd=s.co1)
-      max.class.ind.co1 <- which(round(max(normal.dis.co1), digits = 0) >= (
+      # length range of the cohort: expected smallest and largest of n_rnorm
+      # lengths drawn from the normal distribution of the cohort
+      range.co1 <- bhatRange(l.mean.co1, s.co1, n_rnorm)
+      max.class.ind.co1 <- which(range.co1[2] >= (
         bhat.table$mean.length.classes - (interval/2)) &
-          round(max(normal.dis.co1),digits = 0) < (
+          range.co1[2] < (
             bhat.table$mean.length.classes + (interval/2)))
       if(length(max.class.ind.co1) == 0) max.class.ind.co1 <- length(bhat.table$mean.length.classes)
       max.class.co1 <- bhat.table$mean.length.classes[max.class.ind.co1]
@@ -265,9 +284,9 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
       # Draw plot for checking
       if(xy == 1) min.class.ind.co1 <- 1
       if(xy > 1){
-        min.class.ind.co1 <- which(round(min(normal.dis.co1), digits = 0) >= (
+        min.class.ind.co1 <- which(range.co1[1] >= (
           bhat.table$mean.length.classes - (interval/2)) &
-            round(min(normal.dis.co1),digits = 0) < (
+            range.co1[1] < (
               bhat.table$mean.length.classes + (interval/2)))
         if(length(min.class.ind.co1) == 0) min.class.ind.co1 <- 1
       }
@@ -336,14 +355,7 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
 
     #STEP 9: fills one value in seventh column and one in eigth column, get clean starting value
     if(length(id.co1$ind) == 0) break
-    choosen <- seq(id.co1$ind[1],id.co1$ind[2],interval)
-    # if odd, take midpoint:
-    if(length(choosen) %% 2 == 1){
-      mid_choice <- id.co1$ind[1] + (id.co1$ind[2]-id.co1$ind[1])/2
-    }else{
-      # if even, take one after midpoint:
-      mid_choice <- (id.co1$ind[1] + (id.co1$ind[2]-id.co1$ind[1])/2) + (interval/2)
-    }
+    mid_choice <- bhatMidChoice(id.co1$ind)
     bhat.table$log.N1[mid_choice] <- log(bhat.table$N1.plus[mid_choice])
     bhat.table$N1[mid_choice] <- bhat.table$N1.plus[mid_choice]
 
@@ -420,12 +432,12 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
 
   # Lmean and SD
   l.s.list <- l.s.list[!sapply(l.s.list,is.null)]
-  if(length(l.s.list) > 1){
+  if(length(l.s.list) > 0){
     l.s.df <- do.call(rbind,l.s.list)
     l.s.df <- cbind(1:length(l.s.df[,1]),l.s.df)
     # seperation index (SI)
     SIs <- rep(NA,length(l.s.df[,1]))
-    for(i in 1:(length(l.s.df[,1])-1)){
+    for(i in seq_len(length(l.s.df[,1])-1)){
       SIs[i] <- abs(l.s.df[i+1,2]-l.s.df[i,2]) / abs((l.s.df[i+1,3]+l.s.df[i,3])/2)
     }
     l.s.df <- cbind(l.s.df,SIs)
@@ -435,12 +447,12 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
   temp.list <- temp.list[!sapply(temp.list, is.null)]
   coho_plot <- coho_plot[!sapply(coho_plot,is.null)]
 
-  ret <- list(res,
+  ret <- c(res, list(
               regression_lines = a.b.df,
               Lmean_SD_list = l.s.df,
               bhat_results = ret_pri,
               distributions = temp.list,
-              cohort_plots = coho_plot)
+              cohort_plots = coho_plot))
   class(ret) <- "Bhattacharya"
   if(cancel != TRUE){
     plot(ret)
@@ -451,4 +463,27 @@ Bhattacharya <- function(param, n_rnorm = 1000, savePlots = FALSE){
         writeLines("Interactive session needed for Bhattacharya.")
         return(NULL)
     }
+}
+
+
+## Index of the length class in the middle of the selected points (ind =
+## first and last selected row): the midpoint for an odd number of points,
+## the one after the midpoint for an even number
+bhatMidChoice <- function(ind){
+    n <- ind[2] - ind[1] + 1
+    if(n %% 2 == 1) ind[1] + (n - 1) / 2 else ind[1] + n / 2
+}
+
+## Is the regression line through the selected points falling (negative,
+## finite slope, no infinite or missing values)?
+bhatSlopeOK <- function(x, y){
+    if(length(x) < 2 || any(!is.finite(x) | !is.finite(y))) return(FALSE)
+    b <- lm(y ~ x)$coefficients[2]
+    is.finite(b) && b < 0
+}
+
+## Length range of a cohort: expected smallest and largest of n lengths from
+## a normal distribution (Blom's approximation of normal order statistics)
+bhatRange <- function(mean, sd, n){
+    qnorm((c(1, n) - 0.375) / (n + 0.25), mean = mean, sd = sd)
 }

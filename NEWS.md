@@ -88,6 +88,27 @@
   `GenSA` (`trace.mat`) is usually empty for the run times of ELEFAN_SA.
 - `ELEFAN_SA`: the argument `nb.stop.improvement` is now passed to `GenSA`;
   previously it was ignored.
+- `Bhattacharya`: a selection of points whose regression line does not fall
+  (slope >= 0) or that contains infinite values is now rejected and the
+  points can be chosen again. Previously this failed with "need finite
+  'ylim' values" or gave a standard deviation of NaN, e.g. when the third
+  cohort of the help example was selected first (issue #52). The help page
+  explains that the cohorts have to be selected from left to right.
+- `Bhattacharya`: the length class in the middle of the selected points,
+  from which the numbers of a cohort are calculated, is now correct for
+  class widths other than 1 (the class width was used as the step between
+  rows).
+- `Bhattacharya`: the mean length and standard deviation are returned if
+  only one cohort is selected (previously `Lmean_SD_list` was NA).
+- `Bhattacharya` is reproducible: the length range of a cohort is now the
+  expected smallest and largest of `n_rnorm` lengths (normal quantiles,
+  Blom's approximation) instead of the extremes of `n_rnorm` random draws,
+  so repeated runs with the same selection give the same results. Also, the
+  class of these lengths is found without rounding them to whole numbers
+  first (relevant for class widths below 1).
+- `Bhattacharya`: the result contains the elements of the input list
+  (`midLengths`, `catch`, ...) as stated in the help page, instead of the
+  input list as an unnamed first element.
 - Vignette "bootstrapped ELEFAN": the bootstrapped VPA requires the sampled
   numbers of fish in the lfq data and the landings (`landings`), not the
   total catch in the lfq data as stated before.
