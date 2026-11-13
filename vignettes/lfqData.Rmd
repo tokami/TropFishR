@@ -137,6 +137,54 @@ The function `read.table()` allows to read and load many different file formats 
 
 
 
+# *Data of several years*
+
+The lfq data are not limited to one year. The catch matrix has one column per
+sampling time, and the dates can span several years; each column just needs
+its correct date. With data arrangement 1 or 2, `lfqCreate()` builds the lfq
+data for any number of years from the dates of the measurements. With data
+arrangement 3, the dates of all columns are added, e.g. for monthly samples
+from January 2022 to December 2023 (here with random numbers instead of the
+data read from a file):
+
+```{r}
+## data arrangement 3: length classes and 24 monthly samples
+set.seed(1)
+lfq4 <- data.frame(lengthClass = seq(2.5, 29.5, 1),
+                   matrix(rpois(28 * 24, 10), ncol = 24))
+
+## mid-month dates of the samples, Jan 2022 to Dec 2023
+dates <- as.Date(paste0("15-", rep(1:12, 2), "-", rep(2022:2023, each = 12)),
+                 format = "%d-%m-%Y")
+
+lfq4new <- list(dates = dates,
+                midLengths = lfq4$lengthClass,
+                catch = as.matrix(lfq4[,-1]))
+class(lfq4new) <- "lfq"
+range(lfq4new$dates)
+```
+
+The growth methods (`ELEFAN`, `ELEFAN_SA`, `ELEFAN_GA`) use all samples
+together, which helps to follow cohorts over a longer time. The catch curve
+(`catchCurve`) and `VPA` assume a representative sample of the catch of one
+year (or the average of several years). `lfqModify()` sums the samples per
+year (one column per year) or selects the samples of certain years:
+
+```{r}
+## one column per year
+lfq4year <- lfqModify(lfq4new, vectorise_catch = TRUE)
+colnames(lfq4year$catch)
+
+## samples of 2023 only
+lfq4_2023 <- lfqModify(lfq4new, years = 2023)
+ncol(lfq4_2023$catch)
+```
+
+With the catch per year, the argument `catch_columns` of `catchCurve` and
+`VPA` selects one year or several years (summed), e.g.
+`catchCurve(lfq4year, catch_columns = 2)` for 2023.
+
+
 # *Sampled numbers and total catch*
 
 The catch matrix of the lfq data (`catch`) should contain the numbers of fish

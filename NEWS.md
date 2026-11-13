@@ -56,8 +56,8 @@
   with `boot` stop if the lfq data contain raised catches (`lfqRaise`) and
   warn if the catch is not in whole numbers, because the resampling requires
   the sampled numbers of fish.
-- Vignette "Length-frequency data for TropFishR": new section on sampled
-  numbers and total catch.
+- Vignette "Length-frequency data for TropFishR": new sections on data of
+  several years (issue #45) and on sampled numbers and total catch.
 - `VPA` and `predict_mod`: new argument `LW_unit` (`"kg"`, default, or `"g"`)
   for the unit of the weight in the length-weight relationship.
 - `univariate_density`: new argument `pars` to select the parameters, and
