@@ -2,7 +2,7 @@
 #'
 #' @description Modify length-freqeuncy (LFQ) data. Allows to summarise catch matrix
 #'    of LFQ data to one column per year. This is required for e.g. \code{\link{catchCurve}}.
-#'    Allows to change bin size of LFQ data. Allows to ad plus group to catch matrix.
+#'    Allows to change bin size of LFQ data. Allows to add plus group to catch matrix.
 #'
 #' @param lfq lfq object with dates, midLengths, and catch
 #' @param par growth parameters as resulting from e.g. \code{\link{ELEFAN}}
