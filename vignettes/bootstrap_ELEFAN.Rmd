@@ -1,5 +1,5 @@
 ---
-title: "Uncertainty of growth parameters with bootstrapped ELEFAN"
+title: "Uncertainty in length-based stock assessment with bootstrapped ELEFAN"
 author: "Tobias K. Mildenberger"
 date: "`r Sys.Date()`"
 output:
@@ -35,12 +35,18 @@ optima).
 Bootstrapped ELEFAN [@Schwamborn2019] quantifies this uncertainty: the lfq data
 is resampled many times, ELEFAN is fitted to each resampled data set, and the
 distribution of the resulting estimates is used to derive the most likely
-parameters and their confidence intervals. This vignette shows how to
+parameters and their confidence intervals. The growth parameters of each
+resample can then be used in the following steps of a length-based stock
+assessment, so that the uncertainty is propagated to mortality rates and
+reference points. This vignette shows how to
 
 1. resample lfq data (`lfqResample`),
 2. run bootstrapped ELEFAN (`ELEFAN_GA_boot`, `ELEFAN_SA_boot`),
 3. summarise and plot the results (`univariate_density`, `LinfK_scatterhist`,
-   `vbgfCI_time`, `plotBoot`).
+   `vbgfCI_time`, `plotBoot`),
+4. estimate natural, total and fishing mortality, selectivity and reference
+   points for each resample (`M_empirical`, `MstochThen`, `catchCurve`, `VPA`
+   and `predict_mod` with the argument `boot`).
 
 The [ELEFAN tutorial](https://cran.r-project.org/package=TropFishR/vignettes/Using_TropFishR_ELEFAN_functions.html)
 explains the ELEFAN functions and their settings in more detail.
@@ -283,6 +289,156 @@ fit_i <- ELEFAN_GA(lfq_i, MA = MA, seasonalised = TRUE,
                    pmutation = pmutation, plot.score = FALSE)
 unlist(fit_i$par)
 ```
+
+
+# Bootstrapped stock assessment
+
+The functions `M_empirical`, `catchCurve`, `VPA` and `predict_mod` accept the
+bootstrapping results with the argument `boot`. They apply the method to each
+resample, using the growth parameters of the resample and, for `catchCurve`,
+`VPA` and `predict_mod`, the resampled data set itself (re-created with the
+seeds stored in the `lfqBoot` object). Each step adds its estimates as
+columns to `bootRaw` and their maximum density (the mode of the univariate
+kernel density), median and confidence interval to `maxDen`, `median` and
+`CI`. Resamples that cannot be analysed in a step (e.g. because no
+descending limb of the catch curve is found or the natural mortality exceeds
+the total mortality) get `NA`, and a warning gives their number. The uncertainty of the growth
+parameters is thus propagated through the whole assessment. For
+`catchCurve`, `VPA` and `predict_mod`, `lfq` has to be the data set that was
+used for the bootstrapped growth analysis.
+
+In addition to the growth parameters, the simulation of `synLFQ7` used a
+natural mortality of $M$ = 0.2 year$^{-1}$, a fishing mortality of
+$F$ = 0.3 year$^{-1}$ (i.e. $Z$ = 0.5 year$^{-1}$), a length at 50 %
+probability of capture of $L_{50}$ = 35 cm and a length at maturity of
+$L_{mat}$ = 30.8 cm (see `?synLFQ7`).
+
+## Natural mortality
+
+`M_empirical` with `boot` estimates the natural mortality rate for each
+resample with the empirical formulas based on growth parameters
+("Then_growth" or "Pauly_Linf"). The new column is called `M_Then` (or
+`M_Pauly`):
+
+```{r M}
+res <- M_empirical(method = "Then_growth", boot = res)
+round(rbind(maxDen = res$maxDen[c("K", "M_Then")], res$CI[, c("K", "M_Then")]), 3)
+```
+
+Empirical estimators are uncertain themselves. `MstochThen` additionally
+accounts for the uncertainty of the formula of @Then2015: for each resample,
+M is estimated with coefficients of the formula that were refitted to a
+bootstrap sample of the original data of @Then2015 (see `?MstochThen`). This
+results in wider
+confidence intervals. With `resid = TRUE`, the scatter of the individual
+species around the formula is included as well, which describes the
+uncertainty of M for a single stock better but results in much wider
+confidence intervals. Each resample uses its own seed (`res$seed`, or see the
+argument `seed`), so the results are reproducible:
+
+```{r MstochThen}
+res_stoch <- MstochThen(res)
+res_resid <- MstochThen(res, resid = TRUE)
+round(rbind(formula = res$CI[, "M_Then"], stochastic = res_stoch$CI[, "M_Then"],
+            residuals = res_resid$CI[, "M_Then"]), 3)
+```
+
+## Total and fishing mortality and selectivity
+
+`catchCurve` with `boot` applies the length-converted catch curve to each
+resampled data set, with the catches summed over the samples of a year (see
+the arguments `yearSel` and `yearCombine` for data covering several years).
+The points used for the regression line are chosen automatically for each
+resample (see `?catchCurve`). With `calc_ogive = TRUE`, the selectivity
+($L_{50}$, $L_{75}$) is estimated as well, and with `natMort` the fishing
+mortality is calculated as $F = Z - M$:
+
+```{r catchCurve}
+res <- catchCurve(lfq, boot = res, calc_ogive = TRUE, natMort = "M_Then")
+pars <- c("Z", "FM", "L50", "L75")
+round(rbind(maxDen = res$maxDen[pars], res$CI[, pars]), 3)
+```
+
+`plotBoot` with `pType = "cc"` shows the catch curves of all resamples
+together with the regression line with maximum density and its confidence
+band:
+
+```{r plotcc, fig.cap = "Catch curves of the resamples (grey points and lines), regression line with maximum density (black line) and 95 % confidence band (blue)."}
+plotBoot(boot = res, pType = "cc")
+```
+
+The estimates of total mortality ($Z$ = `r round(res$maxDen[["Z"]], 2)`) and
+selectivity ($L_{50}$ = `r round(res$maxDen[["L50"]], 1)` cm) are close to the
+true values. The fishing mortality with maximum density
+($F$ = `r round(res$maxDen[["FM"]], 2)`), however, is lower than the true value
+(0.3), because the empirical formula overestimates the natural mortality of
+this population ($M$ = `r round(res$maxDen[["M_Then"]], 2)` instead of 0.2).
+The true value is within the confidence interval, but the bootstrap only
+describes the uncertainty arising from the data and the assessment steps; it
+does not correct for a biased natural mortality estimate.
+
+## Yield per recruit and reference points
+
+`predict_mod` with `boot` applies the Thompson and Bell model to each
+resample, with the growth parameters, natural and fishing mortality and the
+selectivity of the resample. The length class including $L_\infty$ of the
+resample is the plus group. It requires the parameters of the length-weight
+relationship (`a` and `b`; here with the weight in g, `LW_unit = "g"`) and, for reference points based on the spawning
+potential ratio (SPR), the length at maturity (`Lmat`, with `wmat` the width
+of the maturity ogive):
+
+```{r ypr}
+lfq$a <- 0.015
+lfq$b <- 3
+lfq$Lmat <- 30.8
+lfq$wmat <- 5
+
+res <- predict_mod(lfq, type = "ThompBell", FM_change = seq(0, 3, 0.05),
+                   boot = res, natMort = "M_Then", LW_unit = "g")
+pars <- c("F01", "Fmax", "F05", "F04", "SPR")
+round(rbind(maxDen = res$maxDen[pars], res$CI[, pars]), 3)
+```
+
+The reference points are the fishing mortalities at which the slope of the
+yield per recruit curve is 10 % of its slope at the origin (F01), the yield
+per recruit is maximal (Fmax), the biomass per recruit is 50 % of the
+unfished biomass per recruit (F05), and the SPR is 40 % (F04). `SPR` is the
+spawning potential ratio at the current fishing mortality. The columns
+`FF01`, `FFmax`, `FF05` and `FF04` give the current fishing mortality
+relative to the reference points; values below 1 indicate that the current
+fishing mortality is lower than the reference point. Because they are
+estimated for each resample, the probability that the current fishing
+mortality exceeds a reference point can be derived directly:
+
+```{r status}
+pars <- c("FF01", "FFmax", "FF05", "FF04")
+round(rbind(maxDen = res$maxDen[pars], res$CI[, pars]), 3)
+## probability that the current F exceeds the reference points
+round(colMeans(res$bootRaw[, c("FF01", "FFmax", "FF05", "FF04")] > 1, na.rm = TRUE), 2)
+```
+
+```{r plotypr, fig.cap = "Yield per recruit curves of the resamples (grey lines), the curve of the resample with the Fmax closest to its maximum density (black line), the distribution of Fmax (histogram) and its 95 % confidence interval (blue)."}
+plotBoot(boot = res, pType = "ypr", pRef = "Fmax")
+```
+
+Instead of the selectivity estimated by the catch curve, the fishing
+mortality at length estimated by a length-based virtual population analysis
+can be used. The VPA requires the total catch of the stock, while `lfq` has
+to keep the sampled numbers of fish, because the resampling draws the
+measured fish. The total landings (in kg, one value per sample) are therefore
+passed to `VPA` with the argument `landings`, and each resample is raised to
+the total catch (see `?VPA` and `?lfqRaise`):
+
+```{r vpa, eval = FALSE}
+landings <- rep(30000, length(lfq$dates))  # landings in kg per sampling date
+res <- VPA(lfq, boot = res, natMort = "M_Then", landings = landings, LW_unit = "g")
+res <- predict_mod(lfq, type = "ThompBell", FM_change = seq(0, 3, 0.05),
+                   boot = res, natMort = "M_Then", bootSel = "VPA", LW_unit = "g")
+```
+
+With `bootSel = "VPA"`, `FM_change` and the reference points refer to the
+maximum fishing mortality at length, which is also used as the current
+fishing mortality for `SPR` and `FF01`, ....
 
 
 # References

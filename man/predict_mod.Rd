@@ -22,7 +22,13 @@ predict_mod(
   Lincr = NA,
   plot = FALSE,
   mark = TRUE,
-  hide.progressbar = FALSE
+  hide.progressbar = FALSE,
+  LW_unit = "kg",
+  boot = NULL,
+  natMort = NULL,
+  bootSel = "catchCurve",
+  binSize = NA,
+  CI = 95
 )
 }
 \arguments{
@@ -75,7 +81,9 @@ relative to a stock size of 1000 individuals}
 \item{curr.Lc}{current Lc (length at first capture) if available}
 
 \item{plus_group}{if a value is provided, a plus group is created comprising this
-size class and all above}
+size class and all above. Only used for age-based data; for length-based
+data, the length class including Linf is the plus group (see
+\code{\link{stock_sim}}).}
 
 \item{Lmin}{smallest length group where to start with selection ogive. Not required
 for "knife_edge" selection type}
@@ -89,6 +97,37 @@ run. Not required for "knife_edge" selection type}
 \item{mark}{logical; if value of choosen points should be displayed in graph (default: TRUE)}
 
 \item{hide.progressbar}{logical; should progressbar be displayed or hidden? (Default: FALSE)}
+
+\item{LW_unit}{unit of the weight in the length-weight relationship
+(\code{a}): \code{"kg"} (default) or \code{"g"} (then \code{a} is
+divided by 1000, so that yield and biomass are in kg). Only affects
+yield, value and biomass, not the reference points.}
+
+\item{boot}{optional; an object of class `lfqBoot` with bootstrapped growth
+parameters, natural mortality (see `natMort`) and either selectivity and
+fishing mortality (`L50`, `L75` and `FM` from \code{\link{catchCurve}}
+with `calc_ogive = TRUE` and `natMort`) or fishing mortality at length
+(from \code{\link{VPA}} with `boot`; see `bootSel`). If provided, the model is applied
+with the parameters of each resample and the reference points are
+estimated for each resample. Only for length-based data (`midLengths` in
+`param`) and with `FM_change`. For `type = "ThompBell"`, `param` has to
+contain the parameters `a` and `b` of the length-weight relationship
+(and optionally `Lmat` and `wmat` for SPR-based reference points); for
+`type = "ypr"`, the length or age at recruitment (`Lr` or `tr`).}
+
+\item{natMort}{with `boot`, the name of the column in `boot$bootRaw` with
+natural mortality estimates (e.g. "M_Then").}
+
+\item{bootSel}{with `boot` and `type = "ThompBell"`, source of the
+selectivity: `"catchCurve"` (default) uses the selection ogive (`L50`,
+`L75`) and fishing mortality (`FM`) of \code{\link{catchCurve}}, `"VPA"`
+the fishing mortality at length of \code{\link{VPA}} with `boot`. With
+`"VPA"`, the current fishing mortality (for `SPR` and `FF01`, ...) is the
+maximum fishing mortality at length, which `FM_change` refers to.}
+
+\item{binSize}{optional; with `boot`, new bin size for the length classes.}
+
+\item{CI}{with `boot`, percentage for confidence intervals (Default: 95)}
 }
 \value{
 A list with the input parameters and dependent on the model type following
@@ -147,6 +186,16 @@ A list with the input parameters and dependent on the model type following
      \item \strong{mat_FM_Lc_com.B}: biomass matrix for all fishing mortality and Lc/tc combinations;
   }
 }
+If `boot` is provided, the \code{lfqBoot} object with the additional
+columns (in `bootRaw`, `maxDen`, `median` and `CI`) `F01`, `Fmax`, `F05`,
+`F04` (reference points), `SPR` (spawning potential ratio at the current
+fishing mortality `FM`) and `FF01`, `FFmax`, `FF05`, `FF04` (current
+fishing mortality relative to the reference points). Estimates that cannot
+be estimated with the given information (SPR-based ones without `Lmat` and
+`wmat`) are omitted. Resamples that cannot be analysed (e.g. FM <= 0 or no
+selectivity estimates) are NA, and a warning gives their number.
+The yield and biomass per recruit curves of each resample are stored in
+`misc` (for \code{\link{plotBoot}}).
 }
 \description{
 This function applies Beverton & Holt's yield per recruit model

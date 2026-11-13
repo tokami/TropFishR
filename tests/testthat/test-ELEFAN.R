@@ -84,6 +84,30 @@ test_that("seasonalised ELEFAN_GA also estimates C and ts", {
     expect_true(res$par$ts >= 0 && res$par$ts <= 1)
 })
 
+test_that("ELEFAN_SA draws the score graph and passes nb.stop.improvement", {
+    skip_on_cran()
+    fit <- function(...) {
+        set.seed(2)
+        ELEFAN_SA(synLFQ5, init_par = list(Linf = 78, K = 0.45, t_anchor = 0.3),
+                  low_par = ga_bounds$low, up_par = ga_bounds$up,
+                  SA_time = 1, maxit = 50, MA = 11, verbose = FALSE, ...)
+    }
+    ## issue #54: the score graph was never drawn
+    expect_equal(count_plot_pages(fit()), 1)
+    expect_equal(count_plot_pages(fit(plot.score = FALSE)), 0)
+    expect_equal(count_plot_pages(fit(plot = TRUE)), 2)
+    ## nb.stop.improvement reaches GenSA
+    ctrl <- NULL
+    realGenSA <- GenSA::GenSA
+    local_mocked_bindings(GenSA = function(...) {
+        args <- list(...)
+        ctrl <<- args$control
+        realGenSA(...)
+    }, .package = "GenSA")
+    quiet(fit(plot.score = FALSE, nb.stop.improvement = 7))
+    expect_equal(ctrl$nb.stop.improvement, 7)
+})
+
 test_that("ELEFAN_SA returns parameters within bounds", {
     skip_on_cran()
     set.seed(2)

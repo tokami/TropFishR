@@ -14,7 +14,17 @@ VPA(
   analysis_type = "VPA",
   algorithm = "new",
   plus_group = TRUE,
-  plot = FALSE
+  plot = FALSE,
+  LW_unit = "kg",
+  landings = NULL,
+  sampleWeight = NULL,
+  raiseBy = "sample",
+  boot = NULL,
+  natMort = NULL,
+  yearSel = NA,
+  yearCombine = FALSE,
+  binSize = NA,
+  CI = 95
 )
 }
 \arguments{
@@ -27,28 +37,42 @@ VPA(
   \item \code{t0}: theoretical time zero, at which individuals of this species hatch,
   \item \code{M}: natural mortality [1/year] (numeric value or vector of identical
      length than midLengths),
-  \item \code{a}: length-weight relationship coefficent (W = a * L^b; for kg/cm3),
+  \item \code{a}: length-weight relationship coefficent (W = a * L^b; in kg/cm^b,
+     or in g/cm^b with \code{LW_unit = "g"}),
   \item \code{b}: length-weight relationship coefficent (W = a * L^b),
-  \item \code{catch}: catch as vector for pseudo cohort analysis,
-     or a matrix with catches of subsequent years to follow a real cohort.
-     For age-based VPA/CA catch has to be provided in numbers, e.g. '000 individuals
-     for length-based VPA/CA catch can also be provided in weight, e.g. kg (use
-     argument \code{catch_unit}).
+  \item \code{catch}: total catch of the stock per age class or length
+     group, as vector for pseudo cohort analysis, or a matrix with catches
+     of subsequent years to follow a real cohort (or, for length-frequency
+     data, one column per year selected with \code{catch_columns}).
+     By default the catch is in numbers (see \code{catch_unit}). For
+     length-frequency data with the sampled numbers of fish, provide the
+     total landings with \code{landings} instead (see Details).
 }}
 
 \item{catch_columns}{numerical; indicating the column of the catch matrix which should be
 used for the analysis.}
 
-\item{catch_unit}{optional; a character indicating if the catch is provided in weight
-("tons" or "kg") or in thousand individuals ("'000")}
+\item{catch_unit}{optional; unit of \code{catch}: \code{NA} (default;
+numbers of fish), thousand or million individuals (\code{"'000"},
+\code{"'000000"}), or, for the length-based VPA/CA only, the catch in
+weight per length group (\code{"kg"} or \code{"tons"}), which is
+converted into numbers with the mean body weight of each length group.
+Note that this is the weight of the catch of each length group, not
+the total landings: for the total landings use \code{landings}.}
 
-\item{catch_corFac}{optional; correction factor for catch, in case provided
-catch does spatially or temporarily not reflect catch for fishing ground of
-a whole year.}
+\item{catch_corFac}{optional; additional raising factor for the catch, in
+case the catch does spatially or temporarily not reflect the catch of
+the stock in a whole year (e.g. landings of only one of several fleets).
+With \code{boot}, one value per sample is possible.}
 
-\item{terminalF}{the fishing mortality rate of the last age/length group.}
+\item{terminalF}{the fishing mortality rate of the last age/length group;
+a single value > 0.}
 
-\item{terminalE}{the exploitation rate of the last age/length group.}
+\item{terminalE}{the exploitation rate of the last age/length group; a
+single value > 0 and < 1. Only one of \code{terminalF} and
+\code{terminalE} is required; if both are provided, \code{terminalF} is
+used. Both are not used with \code{boot} (the fishing mortality of each
+resample is used instead).}
 
 \item{analysis_type}{determines which type of assessment should be done,
 options: "VPA" for age or length-based Virtual Population Analysis, "CA" for age- or length-based
@@ -61,6 +85,52 @@ while \code{"old"} uses the algorithm described by Sparre and Venema (1998).}
 \item{plus_group}{logical; indicating if the last length group is a plus group (default: TRUE).}
 
 \item{plot}{logical; indicating whether a plot should be printed}
+
+\item{LW_unit}{unit of the weight in the length-weight relationship
+(\code{a}): \code{"kg"} (default; W in kg) or \code{"g"} (W in g, then
+\code{a} is divided by 1000). The mean body weight is in kg and biomass
+and yield in tonnes.}
+
+\item{landings}{optional; total landings (or catch) of the stock in kg,
+one value per sample (\code{raiseBy = "sample"}) or year
+(\code{raiseBy = "year"}). If provided, \code{param} has to be
+length-frequency data with the sampled numbers of fish, which are raised
+to the total catch with \code{\link{lfqRaise}} and summed per year
+(select the year with \code{catch_columns} if there are several).
+With \code{boot}, each resample is raised.}
+
+\item{sampleWeight}{optional; with \code{landings}, the measured weight of
+the samples in kg (one value per sample or year). By default estimated
+from the sampled numbers and the length-weight relationship (see
+\code{\link{lfqRaise}}).}
+
+\item{raiseBy}{with \code{landings}, \code{"sample"} (default) to raise
+each sample separately or \code{"year"} to raise all samples of a year
+with one factor (see \code{\link{lfqRaise}}).}
+
+\item{boot}{optional; an object of class `lfqBoot` with bootstrapped growth
+parameters, natural mortality (see `natMort`) and fishing mortality
+(`FM`, from \code{\link{catchCurve}} with `natMort`). If provided, the
+length-based VPA (or cohort analysis) is applied to each resampled data
+set (re-created with \code{\link{lfqResample}} and the seeds of `boot`)
+with the growth parameters and mortality rates of the resample: the
+terminal fishing mortality is the `FM` of the resample and a plus group is
+created at Linf of the resample. `param` has to be the lfq data used for
+the bootstrapped growth analysis and contain the parameters `a` and `b`
+of the length-weight relationship.}
+
+\item{natMort}{with `boot`, the name of the column in `boot$bootRaw` with
+natural mortality estimates (e.g. "M_Then").}
+
+\item{yearSel}{optional; with `boot`, year(s) to be used if the lfq data
+covers several years.}
+
+\item{yearCombine}{logical; with `boot`, should the catches of several years
+be combined? Default = FALSE}
+
+\item{binSize}{optional; with `boot`, new bin size for the resampled data.}
+
+\item{CI}{with `boot`, percentage for confidence intervals (Default: 95)}
 }
 \value{
 A list with the input parameters and following list objects:
@@ -76,12 +146,20 @@ A list with the input parameters and following list objects:
      (same unit than input catch vector),
   \item \strong{meanBodyWeight}: a vector with the mean body weight in kg,
   \item \strong{meanBiomassTon}: a vector with the mean biomass in tons,
-  \item \strong{YieldTon}: a vector with the yield in tons,
+  \item \strong{yieldTon}: a vector with the yield in tons,
   \item \strong{natLoss}: a vector with the number of fish died due
   to natural mortality,
   \item \strong{plot_mat}: matrix with rearranged survivors, nat losses
-  and catches for plotting;
+  and catches for plotting,
+  \item \strong{raising}: with \code{landings}, the raising factors (see
+  \code{\link{lfqRaise}});
 }
+If `boot` is provided, the \code{lfqBoot} object with the additional
+columns `N` (total mean number of fish) and `B` (total mean biomass in
+tonnes) in `bootRaw`, `maxDen`, `median` and `CI`. The fishing mortality at
+length of each resample is stored in `misc$FMvecVPA` (used by
+\code{\link{predict_mod}} with `boot`). Resamples for which the analysis
+fails (e.g. FM <= 0) get NA.
 }
 \description{
 This function applies the Virtual Population Analysis (VPA) or
@@ -95,13 +173,24 @@ The main difference between virtual population analysis (VPA) and cohort
    caught during a single day, which makes the calcualtion easier, VPA assumes that
    the fish are caught continuously, which has to be solved by the trial and error
    method (Sparre and Venema, 1998).
-   For the age-based VPA/CA the catch has to be provided in numbers (or '000 numbers),
-   while for the length-based VPA/CA the catch can also be provided in weight (tons or kg) by
-   using the argument \code{catch_unit}.
+   The VPA/CA requires the total catch of the stock in one year (absolute
+   numbers), while most other methods (e.g. ELEFAN, \code{\link{catchCurve}})
+   only use the relative length composition of the samples. For
+   length-frequency data, keep the sampled numbers of fish in the lfq data
+   and provide the total landings in weight (\code{landings}): the samples
+   are then raised to the total catch in numbers by
+   \code{\link{lfqRaise}}. Alternatively, \code{catch} can contain the
+   total catch per age class or length group in numbers (or '000 numbers)
+   or, for the length-based VPA/CA, in weight per length group
+   (\code{catch_unit}).
    The catch has to be representative for fished species, that means there should not be
    other fisheries fishing the same stock. If this is the case \code{catch_corFac} can
    be used as a raising factor to account for the proportion of fish caught by other
    fisheries.
+   Raising the catch with a single factor changes the numbers and biomass,
+   but not the fishing mortality at length; different raising factors per
+   sample change the length composition and, thus, also the fishing
+   mortality at length.
    When the model should follow a real cohort instead of a pseudo cohort, \code{catch}
    has to be provided as matrix. The model then starts to follow the first age class
    in the first column.
@@ -134,6 +223,21 @@ VPA(hake, terminalE = 0.5, analysis_type = "VPA", plot = TRUE,
 data(hake)
 VPA(hake, terminalE = 0.5, analysis_type = "CA", plot = TRUE,
    catch_unit = "'000", plus_group = TRUE)
+
+#_______________________________________________
+# Length-based VPA with sampled length-frequency data and total landings
+data(synLFQ7)
+lfq <- synLFQ7
+lfq$par <- list(Linf = 123, K = 0.2, t0 = 0, M = 0.2, a = 0.015, b = 3)
+## plus group below Linf
+pg <- lfq$midLengths[max(which(lfq$midLengths < lfq$par$Linf))]
+lfq <- lfqModify(lfq, plus_group = pg)
+## landings in kg at the sampling dates (one value per sample)
+landings <- seq(20000, 40000, length.out = length(lfq$dates))
+res <- VPA(lfq, landings = landings, terminalE = 0.5, LW_unit = "g",
+           plus_group = TRUE)
+res$raising
+plot(res)
 
 }
 \references{

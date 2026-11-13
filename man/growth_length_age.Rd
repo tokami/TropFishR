@@ -41,12 +41,13 @@ or \code{"LSM"}}
 \item{CI}{logical; Should confidence intervals be calculated? This option only
 works for the LSM method. Default is FALSE.}
 
-\item{ci.level}{required confidence level (for LSM method only)}
+\item{ci.level}{required confidence level of the parameters and of the
+confidence band of the growth curve (for LSM method only)}
 
 \item{age_plot}{sequence with ages used for plotting (LSM method only). By default
 age_plot = seq(min(param$age),max(param$age),0.1)}
 
-\item{do.sim}{Deprecated.}
+\item{do.sim}{Deprecated; has no effect.}
 }
 \value{
 A list with the input parameters and following parameters:
@@ -59,7 +60,10 @@ A list with the input parameters and following parameters:
  \item \strong{t0}: theoretical time zero, at which individuals of this species hatch
      (only for Bertalanffy plot and LSM method).
  \item \strong{estimates}: dataframe with growth parameters and confidence intervals
-     (only if LSM method was applied).
+     (only if LSM method was applied with \code{CI = TRUE}),
+ \item \strong{predCI}: dataframe with the ages (\code{age_plot}), the fitted
+     lengths (\code{fit}) and the lower and upper limits of the confidence band
+     of the growth curve (only if LSM method was applied with \code{CI = TRUE}).
 }
 }
 \description{
@@ -80,7 +84,12 @@ used for a small or large sample, respectively. All lengths have to be smaller t
 Linf as otherwise the logarithm is not defined. Oldest fish (if larger than Linf) have
 to be omitted. Non-linear least squares fitting is the preferred method to estimate
 growth parameters according to Sparre and Venema (1998). If \code{CI = TRUE} the
-confidence interval of parameters is calculated and plotted.
+confidence intervals of the parameters (profile likelihood, \code{\link[stats]{confint}})
+and the confidence band of the growth curve are calculated, and the band is
+plotted. The band is calculated with the delta method: the standard error of
+the predicted length follows from the gradient of the VBGF with respect to
+Linf, K and t0 and the covariance matrix of the parameters, and the band
+uses the quantile of the t distribution with the residual degrees of freedom.
 }
 \examples{
 # synthetical length at age data

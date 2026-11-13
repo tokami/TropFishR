@@ -61,7 +61,6 @@ plot.select_Millar <- function(x,
 # Adapted R code from Russell Millar (https://www.stat.auckland.ac.nz/~millar/selectware/)
 
   res <- x
-  r <- rtypes_Millar(res$rtype)
   if(is.null(plotlens)) plotlens <- res$midLengths
   classes <- res$midLengths
   nlens <- length(classes)
@@ -78,15 +77,13 @@ plot.select_Millar <- function(x,
       "binorm.sca" = "Bi-normal",
       "bilognorm" = "Bi-lognormal",
       "tt.logistic" = "Control and logistic",
+      "gamma" = "Gamma",
       ""
     )
   }
 
 
-  rmatrix <- outer(plotlens, res$meshSizes, r, res$par)
-  rmatrix = t(t(rmatrix) * res$rel.power)
-
-  if(standardise) rmatrix = rmatrix / max(rmatrix, na.rm = TRUE)
+  rmatrix <- predict(res, lengths = plotlens, standardise = standardise)
 
   # define number of panels required for plots
   npanels <- sum(deviance_plot & ((nmeshes > 2 & AreLensUnique) | nmeshes == 2)) + sum(selectivity_plot)

@@ -22,8 +22,11 @@ per year (\code{"year"}). Default: \code{"year"}}
 
 \item{stock_size_1}{stock size of smallest age/length group}
 
-\item{plus_group}{indicates age/length group, which should be turned into a plus
-group (i.e. all groups above are comprised in one group)}
+\item{plus_group}{indicates the age group (row index), which should be turned
+into a plus group (i.e. all groups above are comprised in one group).
+Only for age-based data; for length-based data, the length class
+including Linf (or the last length class) is the plus group, and length
+classes above Linf are \code{NA}.}
 }
 \value{
 A list with the input parameters and following list objects:

@@ -100,8 +100,9 @@ square-root transformation of positive values according to Brey et al. (1988).
 \item{plot}{logical; Plot restructured counts with fitted lines using
 \code{\link{plot.lfq}} and \code{\link{lfqFitCurves}} (default : FALSE).}
 
-\item{plot.score}{logical; Plot simulated annealing score progression.
-(Default: plot.score=TRUE)}
+\item{plot.score}{logical; Plot simulated annealing score progression:
+the score (Rn) of each evaluation of the cost function and the best
+score so far (Default: plot.score=TRUE)}
 }
 \value{
 A list with the input parameters and following list objects:
@@ -147,8 +148,9 @@ A more detailed description of the simulated annealing (SA) can be found in
 data(synLFQ4)
 plot(synLFQ4, Fname="catch")
 
-# ELEFAN_SA (takes approximately 30 seconds)
-output <- ELEFAN_SA(synLFQ4, SA_time = 60*0.5, seasonalised = TRUE, MA = 11,
+# ELEFAN_SA (takes approximately 10 seconds; use a longer SA_time,
+# e.g. several minutes, for a real analysis)
+output <- ELEFAN_SA(synLFQ4, SA_time = 10, seasonalised = TRUE, MA = 11,
   init_par = list(Linf = 75, K = 0.5, t_anchor = 0.5, C = 0.5, ts = 0.5),
   low_par = list(Linf = 70, K = 0.3, t_anchor = 0, C = 0, ts = 0),
   up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1))

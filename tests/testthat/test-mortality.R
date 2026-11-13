@@ -62,6 +62,46 @@ test_that("catchCurve needs growth parameters for length data", {
     lfq <- make_length_catch()
     lfq$Linf <- NULL
     expect_error(catchCurve(lfq, reg_int = c(3, 20), plot = FALSE), "Linf and K")
+    ## the error explains where to put them (issue #48)
+    expect_error(catchCurve(lfq, reg_int = c(3, 20), plot = FALSE), "lfq\\$par")
+    lfq$Linf <- NA
+    expect_error(catchCurve(lfq, reg_int = c(3, 20), plot = FALSE), "Linf and K")
+})
+
+test_that("catchCurve checks reg_int (point numbers, issue #48)", {
+    lfq <- make_length_catch()
+    n <- length(lfq$midLengths)
+    ## lengths instead of point numbers
+    expect_error(catchCurve(lfq, reg_int = c(10.5, 14.5), plot = FALSE),
+                 "not lengths or ages")
+    expect_error(catchCurve(lfq, reg_int = c(3, n + 1), plot = FALSE),
+                 paste0("between 1 and ", n))
+    expect_error(catchCurve(lfq, reg_int = c(3, 3), plot = FALSE), "first and last")
+    expect_error(catchCurve(lfq, reg_int = list(c(3, 10), c(0, 5)), reg_num = 2,
+                            plot = FALSE), "first and last")
+    ## the order of the two points does not matter
+    expect_equal(catchCurve(lfq, reg_int = c(20, 3), plot = FALSE)$Z,
+                 catchCurve(lfq, reg_int = c(3, 20), plot = FALSE)$Z)
+    expect_equal(catchCurve(lfq, reg_int = c(20, 3), plot = FALSE)$reg_int, c(3, 20))
+})
+
+test_that("catchCurve checks catch_columns (issue #48)", {
+    lfq <- synLFQ7
+    lfq$par <- list(Linf = 123, K = 0.2, t0 = 0)
+    lfq <- lfqModify(lfq, plus_group = lfq$midLengths[max(which(lfq$midLengths < 123))])
+    vec <- lfqModify(lfq, vectorise_catch = TRUE)
+    expect_error(catchCurve(vec, catch_columns = c(1, 2), reg_int = c(9, 21),
+                            plot = FALSE), "catch is a vector")
+    expect_error(catchCurve(lfq, catch_columns = 0, reg_int = c(9, 21),
+                            plot = FALSE), "column numbers")
+    expect_error(catchCurve(lfq, catch_columns = ncol(lfq$catch) + 1,
+                            reg_int = c(9, 21), plot = FALSE), "column numbers")
+    ## several columns are summed
+    one <- lfq
+    one$catch <- rowSums(lfq$catch[, 1:2])
+    expect_equal(catchCurve(lfq, catch_columns = 1:2, reg_int = c(9, 21),
+                            plot = FALSE)$Z,
+                 catchCurve(one, reg_int = c(9, 21), plot = FALSE)$Z)
 })
 
 ## Z_BevertonHolt -----------------------------------------------------
@@ -108,4 +148,27 @@ test_that("Powell-Wetherall estimates Linf of synLFQ3 (true Linf = 50)", {
     expect_equal(res$Linf_est, 49.34458, tolerance = 1e-6)
     expect_true(res$confidenceInt_Linf[1] < res$Linf_est &&
                 res$Linf_est < res$confidenceInt_Linf[2])
+})
+
+test_that("catchCurve uses seasonal growth parameters in par", {
+    lfq <- list(midLengths = synLFQ7$midLengths, catch = rowSums(synLFQ7$catch))
+    gp <- list(Linf = 130, K = 0.2, t0 = 0, C = 0.75, ts = 0.5)
+    top <- suppressWarnings(catchCurve(c(lfq, gp), reg_int = c(20, 40), plot = FALSE))
+    inpar <- suppressWarnings(catchCurve(c(lfq, list(par = gp)), reg_int = c(20, 40),
+                                         plot = FALSE))
+    nonseasonal <- suppressWarnings(catchCurve(c(lfq, list(par = gp[1:3])),
+                                               reg_int = c(20, 40), plot = FALSE))
+    expect_equal(inpar$Z, top$Z)
+    expect_false(isTRUE(all.equal(inpar$Z, nonseasonal$Z)))
+})
+
+test_that("catchCurve auto ends at the last point with ln(C/dt) > 0.2", {
+    ## empty length class in the descending limb: excluded by y > 0.2, which
+    ## used to shift the end of the regression line by one point
+    lfq <- make_length_catch()
+    lfq$catch[15] <- 0
+    res <- suppressWarnings(catchCurve(lfq, auto = TRUE, plot = FALSE))
+    ok <- which(res$lnC_dt > 0.2)
+    expect_equal(res$reg_int[2], max(ok))
+    expect_equal(res$reg_int[1], which.max(res$lnC_dt) + 1)
 })

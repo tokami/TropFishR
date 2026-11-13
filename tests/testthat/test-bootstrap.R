@@ -70,6 +70,29 @@ test_that("ELEFAN_GA_boot resamples are ELEFAN_GA fits to lfqResample(seed + x)"
     expect_equal(lfqs[[2]], lfqResample(alba))
 })
 
+test_that("seasonalised ELEFAN_GA_boot keeps seeds and scores apart (issue #27)", {
+    skip_on_cran()
+    low <- c(alba_bounds$low, list(C = 0, ts = 0))
+    up <- c(alba_bounds$up, list(C = 1, ts = 1))
+    res <- quiet(ELEFAN_GA_boot(alba, MA = 7, seasonalised = TRUE, low_par = low,
+                                up_par = up, popSize = 20, maxiter = 5,
+                                nresamp = 15, seed = 1))
+    expect_equal(names(res$bootRaw),
+                 c("Linf", "K", "t_anchor", "C", "ts", "phiL", "agemax"))
+    expect_equal(res$seed, 1 + 1:15)
+    expect_true(all(res$Rn_max >= 0 & res$Rn_max <= 1))
+    for (p in c("C", "ts")) {
+        expect_true(all(res$bootRaw[[p]] >= 0 & res$bootRaw[[p]] <= 1))
+    }
+    ## a resample is the seasonalised ELEFAN_GA fit with its seed
+    set.seed(res$seed[2])
+    fit <- quiet(ELEFAN_GA(lfqResample(alba), MA = 7, seasonalised = TRUE,
+                           low_par = low, up_par = up, popSize = 20, maxiter = 5,
+                           run = 10, pmutation = 0.2, plot.score = FALSE))
+    expect_equal(unlist(res$bootRaw[2, names(fit$par)]), unlist(fit$par))
+    expect_equal(res$Rn_max[2], round(fit$Rn_max, 3))
+})
+
 test_that("ELEFAN_GA_boot summaries are consistent", {
     skip_on_cran()
     res <- small_ga_boot()
@@ -175,4 +198,42 @@ test_that("vbgfCI_time returns CI limits that enclose the max. density curve", {
     ok <- is.finite(ci$min) & is.finite(ci$max)
     expect_true(all(ci$min[ok] <= ci$max[ok]))
     expect_equal(names(res$max_dens), c("Linf", "K", "t_anchor"))
+})
+
+test_that("bootstrap summary gives clear errors if the density cannot be estimated", {
+    ## one vector per resample: c(par, agemax, seed, Rn_max)
+    fake <- function(n, d = 5) {
+        set.seed(1)
+        lapply(seq_len(n), function(i) {
+            p <- c(Linf = runif(1, 10, 20), K = runif(1, 0.5, 2),
+                   t_anchor = runif(1), C = runif(1), ts = runif(1))[seq_len(d)]
+            c(p, phiL = 1, agemax = 3, i, 0.5)
+        })
+    }
+    expect_error(bootKde(as.data.frame(do.call(rbind, fake(4)))[, 1:5]),
+                 "more resamples than parameters, but there are only 4")
+    expect_error(bootKde(as.data.frame(do.call(rbind, fake(5)))[, 1:5], what = "plotted"),
+                 "cannot be plotted.*nresamp")
+    res <- fake(20)
+    res <- lapply(res, function(v) { v["C"] <- 0.5; v })
+    expect_warning(bootSummary(res), "C have the same value in all resamples")
+    expect_s3_class(bootKde(as.data.frame(do.call(rbind, fake(20)))[, 1:5]), "kde")
+
+    ## the fits are returned with a warning
+    expect_warning(b <- bootSummary(fake(4)), "fits of the resamples are returned")
+    expect_s3_class(b, "lfqBoot")
+    expect_equal(nrow(b$bootRaw), 4)
+    expect_equal(b$seed, 1:4)
+    expect_equal(b$Rn_max, rep(0.5, 4))
+    raw <- b$bootRaw[, c("Linf", "K", "t_anchor", "C", "ts")]
+    expect_equal(b$median[names(raw)], apply(raw, 2, median))
+    expect_equal(unname(b$CI["lo", "Linf"]), unname(quantile(raw$Linf, 0.025)))
+    expect_true(all(is.na(b$maxDen)))
+    expect_true(all(is.na(b$multiCI)))
+    expect_true(is.finite(b$median[["phiL"]]))
+    ## median and CI with a successful density estimate are the same quantiles
+    ok <- bootSummary(fake(20))
+    raw <- ok$bootRaw[, c("Linf", "K", "t_anchor", "C", "ts")]
+    expect_equal(ok$median[names(raw)], apply(raw, 2, median))
+    expect_false(anyNA(ok$maxDen))
 })

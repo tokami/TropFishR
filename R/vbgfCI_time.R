@@ -137,9 +137,7 @@ vbgfCI_time <- function(res, CI = 95, agemax = NULL,
     box()
 
     ## multivariate kernel density estimate for max. density
-    H <- ks::Hpi(x[,c("Linf","K","t_anchor")], nstage = 1)
-    fhat <- ks::kde(x = x[,c("Linf","K","t_anchor")], H = H,
-                    eval.points = x[,c("Linf","K","t_anchor")])
+    fhat <- bootKde(x[,c("Linf","K","t_anchor")], what = "plotted")
 
     ## maximum density
     max_dens <- fhat$eval.points[which.max(fhat$estimate),]

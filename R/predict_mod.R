@@ -40,7 +40,9 @@
 #'    relative to a stock size of 1000 individuals
 #' @param age_unit in which time unit the data is provided? "month" or "year"
 #' @param plus_group if a value is provided, a plus group is created comprising this
-#'    size class and all above
+#'    size class and all above. Only used for age-based data; for length-based
+#'    data, the length class including Linf is the plus group (see
+#'    \code{\link{stock_sim}}).
 #' @param curr.Lc current Lc (length at first capture) if available
 #' @param curr.E current exploitation rate if available
 #' @param Lmin smallest length group where to start with selection ogive. Not required
@@ -51,6 +53,31 @@
 #' @param plot logical; if TRUE results are displayed graphically
 #' @param mark logical; if value of choosen points should be displayed in graph (default: TRUE)
 #' @param hide.progressbar logical; should progressbar be displayed or hidden? (Default: FALSE)
+#' @param LW_unit unit of the weight in the length-weight relationship
+#'    (\code{a}): \code{"kg"} (default) or \code{"g"} (then \code{a} is
+#'    divided by 1000, so that yield and biomass are in kg). Only affects
+#'    yield, value and biomass, not the reference points.
+#' @param boot optional; an object of class `lfqBoot` with bootstrapped growth
+#'    parameters, natural mortality (see `natMort`) and either selectivity and
+#'    fishing mortality (`L50`, `L75` and `FM` from \code{\link{catchCurve}}
+#'    with `calc_ogive = TRUE` and `natMort`) or fishing mortality at length
+#'    (from \code{\link{VPA}} with `boot`; see `bootSel`). If provided, the model is applied
+#'    with the parameters of each resample and the reference points are
+#'    estimated for each resample. Only for length-based data (`midLengths` in
+#'    `param`) and with `FM_change`. For `type = "ThompBell"`, `param` has to
+#'    contain the parameters `a` and `b` of the length-weight relationship
+#'    (and optionally `Lmat` and `wmat` for SPR-based reference points); for
+#'    `type = "ypr"`, the length or age at recruitment (`Lr` or `tr`).
+#' @param natMort with `boot`, the name of the column in `boot$bootRaw` with
+#'    natural mortality estimates (e.g. "M_Then").
+#' @param bootSel with `boot` and `type = "ThompBell"`, source of the
+#'    selectivity: `"catchCurve"` (default) uses the selection ogive (`L50`,
+#'    `L75`) and fishing mortality (`FM`) of \code{\link{catchCurve}}, `"VPA"`
+#'    the fishing mortality at length of \code{\link{VPA}} with `boot`. With
+#'    `"VPA"`, the current fishing mortality (for `SPR` and `FF01`, ...) is the
+#'    maximum fishing mortality at length, which `FM_change` refers to.
+#' @param binSize optional; with `boot`, new bin size for the length classes.
+#' @param CI with `boot`, percentage for confidence intervals (Default: 95)
 #'
 #' @keywords function prediction ypr
 #'
@@ -206,6 +233,16 @@
 #'      \item \strong{mat_FM_Lc_com.B}: biomass matrix for all fishing mortality and Lc/tc combinations;
 #'   }
 #' }
+#' If `boot` is provided, the \code{lfqBoot} object with the additional
+#' columns (in `bootRaw`, `maxDen`, `median` and `CI`) `F01`, `Fmax`, `F05`,
+#' `F04` (reference points), `SPR` (spawning potential ratio at the current
+#' fishing mortality `FM`) and `FF01`, `FFmax`, `FF05`, `FF04` (current
+#' fishing mortality relative to the reference points). Estimates that cannot
+#' be estimated with the given information (SPR-based ones without `Lmat` and
+#' `wmat`) are omitted. Resamples that cannot be analysed (e.g. FM <= 0 or no
+#' selectivity estimates) are NA, and a warning gives their number.
+#' The yield and biomass per recruit curves of each resample are stored in
+#' `misc` (for \code{\link{plotBoot}}).
 #'
 #' @importFrom graphics plot
 #' @importFrom utils setTxtProgressBar txtProgressBar
@@ -280,7 +317,22 @@ predict_mod <- function(param, type, FM_change = NA,
                         stock_size_1 = NA, age_unit = 'year', curr.E = NA,
                         curr.Lc = NA,
                         plus_group = NA, Lmin = NA, Lincr = NA, plot = FALSE, mark = TRUE,
-                        hide.progressbar = FALSE){
+                        hide.progressbar = FALSE, LW_unit = "kg",
+                        boot = NULL, natMort = NULL, bootSel = "catchCurve",
+                        binSize = NA, CI = 95){
+
+  ## prediction models with bootstrapped estimates
+  if(!is.null(boot)){
+      return(predict_mod_boot(param, boot = boot, type = type,
+                              FM_change = FM_change,
+                              stock_size_1 = stock_size_1, age_unit = age_unit,
+                              plus_group = plus_group, Lmin = Lmin, Lincr = Lincr,
+                              natMort = natMort, bootSel = bootSel,
+                              LW_unit = LW_unit, binSize = binSize, CI = CI))
+  }
+
+  ## length-weight relationship in kg
+  param <- lwUnitA(param, LW_unit)
   res <- param
   res$FM_relative = FM_relative
 

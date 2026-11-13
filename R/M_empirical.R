@@ -27,12 +27,25 @@
 #'    "RikhterEfanov", "Roff", "Then_growth", or "Then_tmax".
 #'    Please refer to Details to see which input parameters
 #'    are required by each method.
+#' @param boot optional; an object of class `lfqBoot` with bootstrapped growth
+#'    parameters (e.g. from \code{\link{ELEFAN_GA_boot}}). If provided, M is
+#'    estimated for each resample with its Linf and K. Only the methods
+#'    "Then_growth" and "Pauly_Linf" (with \code{temp}) are available.
+#'    See also \code{\link{MstochThen}}.
+#' @param CI percentage for confidence intervals if \code{boot} is provided
+#'    (Default: 95)
 #'
 #' @keywords function mortality M
 #'
 #' @examples
 #' M_empirical(Linf = 80, K_l = 0.5, temp = 25, tmax = 30,
 #'      method = c("Pauly_Linf","Hoenig"))
+#'
+#' # with bootstrapped growth parameters
+#' data(alba_boot)
+#' res <- M_empirical(method = "Then_growth", boot = alba_boot)
+#' res$maxDen
+#' res$CI
 #'
 #' @source https://cran.r-project.org/web/packages/fishmethods/index.html
 #'
@@ -58,7 +71,10 @@
 #' If accounting for schooling behaviour M is multiplied by 0.8 according to
 #'    Pauly (1983).
 #'
-#' @return A matrix of M estimates.
+#' @return A matrix of M estimates. If \code{boot} is provided, the
+#'    \code{lfqBoot} object with the additional columns \code{M_Then} and/or
+#'    \code{M_Pauly} (in \code{bootRaw}, \code{maxDen}, \code{median} and
+#'    \code{CI}).
 #'
 #' @references
 #' Alverson, D. L. and M. J. Carney. 1975. A graphic review of the growth and decay
@@ -105,7 +121,26 @@
 M_empirical <- function(Linf = NULL, Winf = NULL, K_l = NULL, K_w = NULL,
                         temp = NULL, tmax = NULL, tm50 = NULL, GSI = NULL,
                         Wdry = NULL, Wwet = NULL, Bl = NULL,
-                        schooling = FALSE, method){
+                        schooling = FALSE, method, boot = NULL, CI = 95){
+
+    ## with bootstrapped growth parameters
+    if(!is.null(boot)){
+        checkBoot(boot, c("Linf", "K"))
+        bootMethods <- c(Then_growth = "M_Then", Pauly_Linf = "M_Pauly")
+        if(!all(method %in% names(bootMethods)))
+            stop("Only the methods 'Then_growth' and 'Pauly_Linf' can be used with boot.")
+        if(any(method == "Pauly_Linf") && is.null(temp))
+            stop("Pauly_Linf requires temp.")
+        new <- list()
+        for(m in method){
+            new[[bootMethods[[m]]]] <- vapply(seq_len(nrow(boot$bootRaw)), function(x){
+                M_empirical(Linf = boot$bootRaw$Linf[x], K_l = boot$bootRaw$K[x],
+                            temp = temp, schooling = schooling, method = m)[1,1]
+            }, numeric(1))
+        }
+        return(bootAddPars(boot, new, CI = CI))
+    }
+
 
   if (any(method == "AlversonCarney") & any(is.null(tmax), is.null(K_l)))
     stop("AlversonCarney requires K_l and tmax")

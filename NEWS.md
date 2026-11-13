@@ -15,8 +15,88 @@
   - Plots of the results: `univariate_density`, `LinfK_scatterhist` (with
     `add_phiprime` for phi' isolines), `vbgfCI_time` and `plotBoot`.
   - Example data set `alba_boot`.
-  - New vignette "Uncertainty of growth parameters with bootstrapped ELEFAN".
+  - The bootstrapped growth parameters can be passed on to the following
+    steps of the assessment with the new argument `boot` of `M_empirical`
+    (methods "Then_growth" and "Pauly_Linf"), `catchCurve` (with automatic
+    choice of the regression line, optional selectivity, and `natMort` for
+    F = Z - M), `VPA` (length-based) and `predict_mod` (Thompson and Bell
+    and Beverton and Holt with reference points and current F relative to
+    them), so that the uncertainty is propagated to mortality rates and
+    reference points.
+  - `MstochThen` estimates M with the formula of Then et al. (2015)
+    including the uncertainty of the formula and optionally the residual
+    error (`resid = TRUE`), based on coefficients refitted to bootstrap
+    samples of the data of Then et al. (2015).
+  - Estimates of the steps after the growth analysis are summarised by the
+    mode of their univariate kernel density (`maxDen`), the median and
+    quantiles (`CI`). Resamples that cannot be analysed are `NA` and a
+    warning gives their number.
+  - `predict_mod` with `boot`: `bootSel` selects the selectivity from
+    `catchCurve` (`L50`, `L75`) or the fishing mortality at length from
+    `VPA`.
+  - `catchCurve` with `boot` assumes knife-edge selection if the selection
+    ogive cannot be estimated because there are fewer than two length
+    classes with catch below the regression line.
+  - `plotBoot` with `pType = "cc"` and `pType = "ypr"` shows the catch
+    curves and yield per recruit curves of the resamples.
+  - New vignette "Uncertainty in length-based stock assessment with
+    bootstrapped ELEFAN".
   - New dependency: `ks`.
+- `catchCurve`: new argument `binSize` to re-bin the length classes.
+- `lfqRaise` raises the sampled numbers of fish to the total catch with the
+  total landings in weight (per sample or per year) and the measured or
+  estimated weight of the samples (issue #53).
+- `VPA`: new arguments `landings`, `sampleWeight` and `raiseBy`. With
+  `landings`, the lfq data keep the sampled numbers of fish, which are raised
+  to the total catch with `lfqRaise` and summed per year; with `boot`, each
+  resample is raised. The documentation of `catch_unit` and `catch_corFac`
+  is clearer: `catch_unit = "kg"` means the catch in weight per length
+  group, not the total landings.
+- `lfqResample`, `ELEFAN_GA_boot`, `ELEFAN_SA_boot` and `catchCurve`/`VPA`
+  with `boot` stop if the lfq data contain raised catches (`lfqRaise`) and
+  warn if the catch is not in whole numbers, because the resampling requires
+  the sampled numbers of fish.
+- Vignette "Length-frequency data for TropFishR": new sections on data of
+  several years (issue #45) and on sampled numbers and total catch.
+- Shorter examples (`alba`, `ELEFAN_SA`, `ELEFAN_SA_boot`, `plotBoot`) to
+  reduce the time of `R CMD check` with `--run-donttest`. The `alba` help
+  page no longer fits ELEFAN_SA (see the examples of `ELEFAN_SA` and
+  `ELEFAN_GA`) (issue #41).
+- The example files of the vignette "Length-frequency data for TropFishR"
+  (`lfq1.csv`, `lfq2.csv`, `lfq2.txt`, `lfq3.csv`, `lfq3.xlsx`) are now
+  included in the package (`system.file("extdata", package = "TropFishR")`)
+  and the import code of the vignette is run when the vignette is built.
+  The code did not work with the files before: wrong separators
+  (`read.csv2` for comma separated files), a wrong column name (`date`
+  instead of `DATE`), and dates in the header of data arrangement 3 that R
+  changed when reading the file, so that all dates became `NA` (issue #42).
+- `VPA` and `predict_mod`: new argument `LW_unit` (`"kg"`, default, or `"g"`)
+  for the unit of the weight in the length-weight relationship.
+- `growth_length_age` (`method = "LSM"`, `CI = TRUE`): the confidence band
+  of the growth curve uses `ci.level` (before always 95 %) and the t
+  distribution with the residual degrees of freedom, and is returned as
+  `predCI` (before only plotted) (issue #40).
+- `predict` method for `select_Millar` results: relative retention of the
+  fitted selectivity model for any lengths and mesh sizes (also for mesh
+  sizes that were not used in the experiment) (issue #43).
+- `select_Millar_curve`: retention of the selection curves of
+  `select_Millar` (all curve types) for given parameters, e.g. published
+  gillnet selectivity parameters, on the usual scale (mode and standard
+  deviation, or L50 and selection range, for a reference mesh size)
+  (issue #43).
+- `select_Millar_compare`: compares selection curves fitted with
+  `select_Millar` to the same data by AICc and QAICc, with a common
+  overdispersion factor (`c_hat`) estimated from the most general model
+  (issue #39). New `logLik` method for `select_Millar` results, so that
+  `AIC` and `BIC` can be used.
+- `select_Millar`: the gamma curve (`rtype = "gamma"`) can now be fitted;
+  `estimates` contains its mode and standard deviation for the first mesh
+  size. The help page explains the scale of `par` and `x0`.
+- `univariate_density`: new argument `pars` to select the parameters, and
+  the line of maximum density is now the mode of the kernel density (before:
+  mean of the values with the highest 1 % of the density).
+- `VBGF`: the age at length of the seasonalised VBGF is calculated faster
+  and more precisely (interpolation in the lookup table).
 - `ELEFAN`: new argument `plot.score` (default `TRUE`), as in `ELEFAN_GA` and
   `ELEFAN_SA`, to switch off the score graph (response surface or K-scan).
   The argument `plot` only controls the plot of the restructured data with
@@ -24,6 +104,92 @@
 
 ##### Bug fixes
 
+- `ELEFAN_GA_boot`, `ELEFAN_SA_boot`, `plotBoot`, `vbgfCI_time`: clear error
+  messages if the kernel density of the bootstrapped parameters cannot be
+  estimated (fewer resamples than parameters, a parameter with the same
+  value in all resamples, or other failures of `ks::Hpi`), instead of
+  errors like "the leading minor of order 4 is not positive". In
+  `ELEFAN_GA_boot` and `ELEFAN_SA_boot`, this is a warning: the fits of the
+  resamples are returned (with medians and univariate confidence intervals,
+  `maxDen` and `multiCI` are `NA`), so that they are not lost after a long
+  run.
+- `select_Millar`: invalid parameters during the optimisation (e.g. a
+  negative scale of the gamma curve) gave missing values that were dropped
+  from the likelihood, so that the optimisation could end at invalid
+  parameters with a singular Hessian ("It is impossible to invert the
+  matrix"). The likelihood of such parameters is now infinite.
+- `VBGF`: the age at length of the seasonalised VBGF is now `Inf` at `Linf`
+  and `NaN` above `Linf` (as for the non-seasonal VBGF). Previously the
+  maximum age of an internal lookup table was returned, so that length
+  classes at or above `Linf` appeared as very old fish, e.g. in the
+  length-converted catch curve with seasonal growth parameters.
+  Also, the age range of the lookup table now depends on the largest length
+  instead of the last one, so that lengths that are not sorted get correct
+  ages.
+- `catchCurve`: infinite values of ln(C/dt) (e.g. dt = 0) are ignored like
+  missing values. Previously the regression failed with an error.
+- `ELEFAN_SA`: the score graph (`plot.score = TRUE`) is drawn again (issue
+  #54). It shows the score of each evaluation of the cost function and the
+  best score so far, recorded by `ELEFAN_SA` itself, because the trace of
+  `GenSA` (`trace.mat`) is usually empty for the run times of ELEFAN_SA.
+- `ELEFAN_SA`: the argument `nb.stop.improvement` is now passed to `GenSA`;
+  previously it was ignored.
+- `Bhattacharya`: a selection of points whose regression line does not fall
+  (slope >= 0) or that contains infinite values is now rejected and the
+  points can be chosen again. Previously this failed with "need finite
+  'ylim' values" or gave a standard deviation of NaN, e.g. when the third
+  cohort of the help example was selected first (issue #52). The help page
+  explains that the cohorts have to be selected from left to right.
+- `Bhattacharya`: the length class in the middle of the selected points,
+  from which the numbers of a cohort are calculated, is now correct for
+  class widths other than 1 (the class width was used as the step between
+  rows).
+- `Bhattacharya`: the mean length and standard deviation are returned if
+  only one cohort is selected (previously `Lmean_SD_list` was NA).
+- `Bhattacharya` is reproducible: the length range of a cohort is now the
+  expected smallest and largest of `n_rnorm` lengths (normal quantiles,
+  Blom's approximation) instead of the extremes of `n_rnorm` random draws,
+  so repeated runs with the same selection give the same results. Also, the
+  class of these lengths is found without rounding them to whole numbers
+  first (relevant for class widths below 1).
+- `Bhattacharya`: the result contains the elements of the input list
+  (`midLengths`, `catch`, ...) as stated in the help page, instead of the
+  input list as an unnamed first element.
+- `catchCurve`: `reg_int` is checked. It has to contain the numbers of the
+  first and last point of the regression line (whole numbers within the
+  number of points), not lengths or ages. Before, values like
+  `c(10.5, 14.5)` were silently truncated to points 10 and 14, and values
+  beyond the last point failed with an unclear `lm.fit` error. The order of
+  the two points no longer matters (issue #48).
+- `catchCurve`: clear error messages if `catch_columns` is used with a catch
+  vector or does not match the columns of the catch matrix, and if `Linf` or
+  `K` are missing for length data (with how to add them to `lfq$par`)
+  (issue #48).
+- `VPA`: `terminalF` and `terminalE` are checked. Several values (e.g.
+  `Z - M` with M of several methods) gave the error "the condition has
+  length > 1" (issue #47) and now give an error asking to choose one value.
+  `terminalF` has to be > 0 and `terminalE` > 0 and < 1 (before,
+  `terminalE = 1` gave an infinite and `terminalF < 0` a negative terminal
+  F); `NULL` is treated as not provided; if both are provided, a warning
+  says that `terminalE` is ignored.
+- Vignette "bootstrapped ELEFAN": the bootstrapped VPA requires the sampled
+  numbers of fish in the lfq data and the landings (`landings`), not the
+  total catch in the lfq data as stated before.
+- `catchCurve` with `auto = TRUE`: the regression line now ends at the
+  point with the largest age and ln(C/dt) > 0.2. Previously the position of
+  this point among the points with ln(C/dt) > 0.2 was used as index of all
+  points, so that the line ended too early if there were points with
+  ln(C/dt) <= 0.2 (or missing) before it.
+- `catchCurve`: seasonal growth parameters (`C`, `ts`) in `param$par` (e.g.
+  from ELEFAN) are now used. Previously they were only used if they were
+  elements of `param` itself.
+- `VPA`: `t0` in `param$par` is now used (previously always 0 with `par`).
+- `stock_sim` (length-based, used by `predict_mod` with `type =
+  "ThompBell"`): the length class including `Linf` is now the plus group and
+  length classes above `Linf` are `NA`. Previously only the last length
+  class was treated as plus group; with length classes above `Linf`, the
+  fish growing beyond the last class below `Linf` were lost, so that catch,
+  yield and biomass were too low.
 - ELEFAN score (`lfqFitCurves`, used by `ELEFAN`, `ELEFAN_SA` and
   `ELEFAN_GA`): if the first cell of the data (smallest length class of the
   first sample) was part of a positive peak, the cells outside of positive

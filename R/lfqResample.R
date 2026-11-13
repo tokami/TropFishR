@@ -7,7 +7,9 @@
 #'   and resulting in total counts (by sample) equal to the original data
 #'   (unless `sampSize` is provided).
 #'
-#' @param lfq a length frequency object of the class `lfq`.
+#' @param lfq a length frequency object of the class `lfq`. The catch has to
+#'    be the sampled numbers of fish (not raised to the total catch, see
+#'    \code{\link{lfqRaise}}).
 #' @param sampSize optional; number of individuals drawn per sample. By default
 #'    (`sampSize = NA`), the number of individuals of each sample in the
 #'    original data is used.
@@ -44,6 +46,9 @@
 #' @export
 #'
 lfqResample <- function(lfq, sampSize = NA, boot = NULL){
+
+    if(!is.null(lfq$raising))
+        stop("lfqResample requires the sampled numbers of fish, but the catch in lfq has been raised (lfq$raising). Use the original lfq data.")
 
     ## reproduce used lfq data sets if boot object provided
     nI <- ifelse(!is.null(boot) && "seed" %in% names(boot), length(boot$seed), 1)

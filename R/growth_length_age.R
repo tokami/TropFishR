@@ -21,10 +21,11 @@
 #' @param t0_init initital parameter of t0 for non-linear sqaures fitting (default 0)
 #' @param CI logical; Should confidence intervals be calculated? This option only
 #'    works for the LSM method. Default is FALSE.
-#' @param ci.level required confidence level (for LSM method only)
+#' @param ci.level required confidence level of the parameters and of the
+#'    confidence band of the growth curve (for LSM method only)
 #' @param age_plot sequence with ages used for plotting (LSM method only). By default
 #'      age_plot = seq(min(param$age),max(param$age),0.1)
-#' @param do.sim Deprecated.
+#' @param do.sim Deprecated; has no effect.
 #'
 #' @examples
 #' # synthetical length at age data
@@ -55,7 +56,12 @@
 #' Linf as otherwise the logarithm is not defined. Oldest fish (if larger than Linf) have
 #' to be omitted. Non-linear least squares fitting is the preferred method to estimate
 #' growth parameters according to Sparre and Venema (1998). If \code{CI = TRUE} the
-#' confidence interval of parameters is calculated and plotted.
+#' confidence intervals of the parameters (profile likelihood, \code{\link[stats]{confint}})
+#' and the confidence band of the growth curve are calculated, and the band is
+#' plotted. The band is calculated with the delta method: the standard error of
+#' the predicted length follows from the gradient of the VBGF with respect to
+#' Linf, K and t0 and the covariance matrix of the parameters, and the band
+#' uses the quantile of the t distribution with the residual degrees of freedom.
 #'
 #' @return A list with the input parameters and following parameters:
 #' \itemize{
@@ -67,11 +73,14 @@
 #'  \item \strong{t0}: theoretical time zero, at which individuals of this species hatch
 #'      (only for Bertalanffy plot and LSM method).
 #'  \item \strong{estimates}: dataframe with growth parameters and confidence intervals
-#'      (only if LSM method was applied).
+#'      (only if LSM method was applied with \code{CI = TRUE}),
+#'  \item \strong{predCI}: dataframe with the ages (\code{age_plot}), the fitted
+#'      lengths (\code{fit}) and the lower and upper limits of the confidence band
+#'      of the growth curve (only if LSM method was applied with \code{CI = TRUE}).
 #' }
 #'
 #' @importFrom graphics abline lines plot segments
-#' @importFrom stats lm nls predict aggregate confint vcov
+#' @importFrom stats lm nls predict aggregate confint vcov qt df.residual
 #' @importFrom grDevices adjustcolor
 #' @import MASS
 #'
@@ -87,7 +96,7 @@ growth_length_age <- function(param, method, Linf_est = NA,
                               age_plot = NULL, do.sim = FALSE){
 
     if(do.sim){
-        warning("The argument do.sim has no effect! The package 'propagate' that was used was removed from cran and we are working on an alternative.")
+        warning("The argument do.sim is deprecated and has no effect. The confidence band of the growth curve is calculated with the delta method.")
     }
 
 
@@ -275,39 +284,9 @@ growth_length_age <- function(param, method, Linf_est = NA,
              if(is.null(age_plot)){
                age_plot <- seq(min(floor(t)),max(ceiling(t)),0.1)
              }else age_plot <- age_plot
-             ## Taylor error propagation and Monte Carlo simulation for confidence interval
-             ## if (!requireNamespace("propagate", quietly = TRUE)) {
-             ##     stop("Package \"propagate\" needed for this function to work. Please install it.",
-             ##          call. = FALSE)
-             ## }
-             sink(tempfile())
-             ## NEW: Delta method without predictNLS (propagate archived)
-             newdata <- data.frame(t = age_plot)
-             pred_L <- predict(nls_mod, newdata = newdata)
-             dL_dLinf <- 1 - exp(-K * (newdata$t - t0))
-             dL_dK    <- Linf * (newdata$t - t0) * exp(-K * (newdata$t - t0))
-             dL_dt0   <- -Linf * K * exp(-K * (newdata$t - t0))
-             gradient <- cbind(dL_dLinf, dL_dK, dL_dt0)
-             vcov_mat <- vcov(nls_mod)
-             se <- sqrt(rowSums((gradient %*% vcov_mat) * gradient))
-             predVals <- data.frame(age_plot = age_plot,
-                                    fit = pred_L,
-                                    lower = pred_L - 1.96 * se,
-                                    upper = pred_L + 1.96 * se)
-             ## pred_L <- suppressMessages(propagate::predictNLS(nls_mod,
-             ##                                                  do.sim = FALSE,
-             ##                                                  nsim = nsim,
-             ##                                 newdata = data.frame(t = age_plot)))
-             sink()
-             ## # Taylor propagation
-             ## if(!do.sim){
-             ##   predVals <- cbind(age_plot,as.data.frame(pred_L$summary[,c(1,5,6)]))
-             ## }
-             ## # Monte Carlo simulation
-             ## if(do.sim){
-             ##   predVals <- cbind(age_plot,as.data.frame(pred_L$summary[,c(7,11,12)]))
-             ## }
-             names(predVals) <- c("age_plot","fit","lower","upper")
+             ## confidence band of the growth curve (delta method)
+             predVals <- lsmBand(nls_mod, age_plot, ci.level)
+             tmp$predCI <- predVals
              plot(Lt ~ t, type = "n", ylab = "L(t)", xlab = "t(age)", xlim=c(min(age_plot),max(age_plot)),
                   main = "Non-linear least squares method")
              polygon(c(age_plot,rev(age_plot)),
@@ -335,6 +314,22 @@ growth_length_age <- function(param, method, Linf_est = NA,
 
   if(exists("t0", where = tmp)) ret$t0 <- t0
   if(exists("nls_res", where = tmp)) ret$estimates <- nls_res
+  if(exists("predCI", where = tmp)) ret$predCI <- tmp$predCI
 
   return(ret)
+}
+
+
+## Confidence band of the VBGF fitted with nls (delta method): standard error
+## of the predicted length from the gradient with respect to Linf, K, t0 and
+## the covariance matrix of the parameters; t quantile with the residual df
+lsmBand <- function(nls_mod, ages, ci.level){
+    cf <- stats::coef(nls_mod)
+    Linf <- cf[["Linf"]]; K <- cf[["K"]]; t0 <- cf[["t0"]]
+    fit <- as.numeric(predict(nls_mod, newdata = data.frame(t = ages)))
+    e <- exp(-K * (ages - t0))
+    gradient <- cbind(1 - e, Linf * (ages - t0) * e, -Linf * K * e)
+    se <- sqrt(rowSums((gradient %*% vcov(nls_mod)) * gradient))
+    q <- qt(1 - (1 - ci.level) / 2, df.residual(nls_mod))
+    data.frame(age_plot = ages, fit = fit, lower = fit - q * se, upper = fit + q * se)
 }

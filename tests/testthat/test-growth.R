@@ -30,6 +30,52 @@ test_that("growth_length_age LSM fits noisy data", {
     expect_equal(res$K, 0.3, tolerance = 0.1)
 })
 
+test_that("growth_length_age LSM confidence band (delta method, issue #40)", {
+    set.seed(1)
+    noisy <- list(age = age, length = exact$length + rnorm(length(age), 0, 0.5))
+    ages <- seq(1, 7, 0.5)
+    res <- quiet(growth_length_age(noisy, method = "LSM", Linf_init = 50,
+                                   K_init = 0.2, CI = TRUE, age_plot = ages))
+    band <- res$predCI
+    expect_equal(band$age_plot, ages)
+    expect_equal(band$fit, unname(predict(res$mod, newdata = data.frame(t = ages))))
+    expect_true(all(band$lower < band$fit & band$fit < band$upper))
+    ## standard error from a numerical gradient
+    cf <- coef(res$mod)
+    vb <- function(p) p[1] * (1 - exp(-p[2] * (ages - p[3])))
+    G <- sapply(1:3, function(i) {
+        h <- 1e-6 * max(1, abs(cf[i])); d <- replace(numeric(3), i, h)
+        (vb(cf + d) - vb(cf - d)) / (2 * h)
+    })
+    se <- sqrt(rowSums((G %*% vcov(res$mod)) * G))
+    q <- qt(0.975, df.residual(res$mod))
+    expect_equal(band$upper - band$fit, q * se, tolerance = 1e-6)
+    ## the band follows ci.level
+    res90 <- quiet(growth_length_age(noisy, method = "LSM", Linf_init = 50,
+                                     K_init = 0.2, CI = TRUE, ci.level = 0.9,
+                                     age_plot = ages))
+    expect_equal((res90$predCI$upper - res90$predCI$fit) / (band$upper - band$fit),
+                 rep(qt(0.95, df.residual(res$mod)) / q, length(ages)))
+    expect_warning(quiet(growth_length_age(noisy, method = "LSM", Linf_init = 50,
+                                           K_init = 0.2, do.sim = TRUE)),
+                   "deprecated")
+})
+
+test_that("growth_length_age LSM confidence band covers the true curve", {
+    set.seed(2)
+    ages <- c(2, 4, 6)
+    covered <- replicate(300, {
+        d <- list(age = age, length = exact$length + rnorm(length(age), 0, 1))
+        b <- lsmBand(nls(Lt ~ Linf * (1 - exp(-K * (t - t0))),
+                         data = list(Lt = d$length, t = d$age),
+                         start = list(Linf = 50, K = 0.2, t0 = 0)),
+                     ages, 0.95)
+        Lt <- VBGF(true, t = ages)
+        b$lower <= Lt & Lt <= b$upper
+    })
+    expect_true(all(abs(rowMeans(covered) - 0.95) < 0.04))
+})
+
 ## tagging data with exact VBGF increments
 tag <- local({
     L1 <- c(20, 30, 40, 50, 60, 70)

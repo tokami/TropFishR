@@ -111,8 +111,12 @@ VBGF <- function(param, t = NA, L = NA, na.rm=FALSE){
       if(D == 1 & C == 0) res <- t0 - (log(1-L/Linf)/K)
       # lookup table for soVBGF
       if(D != 1 | C != 0){
-        tmax <- (t0 * K * D - log(1 - exp(D*log(L[length(L)]/Linf)))) / (K*D)
-        if(is.na(tmax)) tmax <- 40
+        ## oldest age needed: age of the largest length below Linf
+        Lsub <- L[is.finite(L) & L < Linf]
+        tmax <- if(length(Lsub) > 0){
+            (t0 * K * D - log(1 - exp(D*log(max(Lsub)/Linf)))) / (K*D)
+        }else NA
+        if(!is.finite(tmax)) tmax <- 40
         lookup_age <- seq((t0 - 1),(tmax+10),0.001)
         lookup_length <-  Linf * (1 - exp(-(K * D * (lookup_age - t0) + (((C*K*D)/(2*pi)) *
                                                                           sin(2*pi*(lookup_age-ts))) -
@@ -124,8 +128,24 @@ VBGF <- function(param, t = NA, L = NA, na.rm=FALSE){
         #                                     ((sin(2*pi*(lookup_age-ts))) +
         #                                        (sin(2*pi*(t0-ts))))))^ (1/D)
 
-        lookup_ind <- lapply(X = L, FUN = function(x) which.min((lookup_length - x)^2))
-        res <- lookup_age[unlist(lookup_ind)]
+        if(C <= 1){
+            ## length increases monotonically with age: linear interpolation
+            ## in the lookup table
+            nl <- length(lookup_length)
+            i <- findInterval(L, lookup_length)
+            i <- pmin(pmax(i, 1), nl - 1)
+            d <- lookup_length[i + 1] - lookup_length[i]
+            w <- ifelse(d > 0, (L - lookup_length[i]) / d, 0)
+            w <- pmin(pmax(w, 0), 1)
+            res <- lookup_age[i] + w * (lookup_age[i + 1] - lookup_age[i])
+        }else{
+            ## not monotonic: closest length in the lookup table
+            lookup_ind <- lapply(X = L, FUN = function(x) which.min((lookup_length - x)^2))
+            res <- lookup_age[unlist(lookup_ind)]
+        }
+        # as for the non-seasonal VBGF: Linf is never reached
+        res[L == Linf] <- Inf
+        res[L > Linf] <- NaN
       }
     }
 

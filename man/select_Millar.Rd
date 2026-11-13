@@ -33,7 +33,8 @@ should be used:
 \code{"lognorm"} for a lognormal curve,
 \code{"binorm.sca"} for a bi-normal curve,
 \code{"bilognorm"} for a bi-lognormal curve,
-\code{"tt.logistic"} for a control and logistic curve}
+\code{"tt.logistic"} for a control and logistic curve,
+\code{"gamma"} for a gamma curve}
 
 \item{rel.power}{A string indicating the relative power of different meshSizes,
 must have same length as \code{meshSizes} (Default: \code{rel.power = NULL}).}
@@ -53,6 +54,20 @@ Model adapted from the selectivity functions provided by Prof. Dr. Russell Milla
   comparison. The model can produce errors if the starting values (\code{x0}) for the \link{optim}
   function are not realistic. Please be aware that if the method is changed the outcoming parameters
   can greatly vary. Simliarly the starting values have to be adapted when changing the method (\code{rtype}).
+
+  The parameters in \code{par} are on the internal scale of the model:
+  mode and standard deviation for the first mesh size (\code{"norm.loc"},
+  \code{"norm.sca"}, \code{"binorm.sca"}), mean and standard deviation of
+  the log length (\code{"lognorm"}, \code{"bilognorm"}), intercept and slope
+  of the logistic curve (\code{"tt.logistic"}), shape and scale per unit mesh
+  size (\code{"gamma"}), and the logit of the proportions (p). This is also
+  the scale of the starting values (\code{x0}). \code{estimates} contains the
+  parameters on the usual scale (mode and standard deviation for the first
+  mesh size, p; L50 and selection range for \code{"tt.logistic"}) with
+  their standard errors. Use \code{\link{predict.select_Millar}} to calculate
+  the retention of the fitted model for any lengths and mesh sizes, and
+  \code{\link{select_Millar_curve}} for the retention of given (e.g.
+  published) parameters.
 }
 \examples{
 data(haddock)

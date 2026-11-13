@@ -2,8 +2,10 @@
 #'
 #' @description Plots the univariate kernel density estimates of the VBGF
 #'   parameters from bootstrapping results (\link{ELEFAN_GA_boot},
-#'   \link{ELEFAN_SA_boot}) together with the confidence interval and the
-#'   parameter value with maximum density.
+#'   \link{ELEFAN_SA_boot}) and of the following assessment steps (see the
+#'   argument `boot` of \link{M_empirical}, \link{catchCurve}, \link{VPA} and
+#'   \link{predict_mod}) together with the confidence interval and the
+#'   parameter value with maximum density (mode of the kernel density).
 #'
 #' @param res list of class `lfqBoot`
 #' @param CI numeric. Confidence interval level (Default: 95)
@@ -24,6 +26,8 @@
 #' @param mfrow vector. See `?par` (default: NA).
 #' @param ylim optional list with y-axis limits, one vector per parameter
 #'   (Default: NA).
+#' @param pars optional; names of the columns in `res$bootRaw` (parameters) to
+#'   be plotted. Default (`NULL`): all columns.
 #' @param ... Additional arguments passed to `par`.
 #'
 #' @return plot
@@ -36,6 +40,7 @@
 #' @examples
 #' data(alba_boot)
 #' univariate_density(alba_boot)
+#' univariate_density(alba_boot, pars = c("Linf", "K"))
 #'
 #' @export
 #'
@@ -44,9 +49,16 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
                                display_legend = FALSE, display_rugs = FALSE,
                                mar = c(1.5,2,2,0), oma = c(1.5,0,0,0.5),
                                mgp = c(2,0.5,0), tcl = -0.25, cex = 1, mfrow=NA,
-                               ylim=NA,...
+                               ylim=NA, pars = NULL, ...
                                ){
     res <- res$bootRaw
+    if(!is.null(pars)){
+        missing <- setdiff(pars, names(res))
+        if(length(missing) > 0)
+            stop(paste0("The following parameters are not in res$bootRaw: ",
+                        paste(missing, collapse = ", ")))
+        res <- res[, pars, drop = FALSE]
+    }
     na <- ifelse(display_legend,ncol(res)+1,ncol(res))
     nc <- min(c(6,na))
     nr <- ceiling(na/nc)
@@ -79,9 +91,12 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
         F01 = expression(bolditalic("F01")),
         Fmax = expression(bolditalic(Fmax)),
         F05 = expression(bolditalic("F05")),
+        F04 = expression(bolditalic("F04")),
+        SPR = expression(bolditalic(SPR)),
         FF01 = expression(bolditalic("FF01")),
         FFmax = expression(bolditalic(FFmax)),
         FF05 = expression(bolditalic("FF05")),
+        FF04 = expression(bolditalic("FF04")),
         ypr = expression(bolditalic(ypr)),
         yprrel = expression(bolditalic(yprrel)),
         bpr = expression(bolditalic(bpr)),
@@ -133,8 +148,8 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
             end.idx <- cumsum(inCI$lengths)
             limCI <- range(x$eval.points[start.idx[min(which(inCI$values))]:end.idx[max(which(inCI$values))]])
 
-            in1 <- which(x$estimate > x$cont["99%"])
-            mean1 <- mean(x$eval.points[in1])
+            ## maximum density (mode)
+            mean1 <- x$eval.points[which.max(x$estimate)]
 
             if(use_hist){
                 rect(

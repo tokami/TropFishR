@@ -23,7 +23,17 @@
 #'    \code{"lognorm"} for a lognormal curve,
 #'    \code{"binorm.sca"} for a bi-normal curve,
 #'    \code{"bilognorm"} for a bi-lognormal curve,
-#'    \code{"tt.logistic"} for a control and logistic curve.
+#'    \code{"tt.logistic"} for a control and logistic curve,
+#'    \code{"gamma"} for a gamma curve.
+#'
+#'   The returned function has the arguments \code{classes}, \code{meshSizes}
+#'   and \code{th} (parameters on the internal scale, see
+#'   \code{\link{select_Millar}}). The first value of \code{meshSizes} is the
+#'   reference mesh size to which the parameters refer. Use
+#'   \code{\link{predict.select_Millar}} or \code{\link{select_Millar_curve}}
+#'   instead of this internal function.
+#'
+#' @keywords internal
 #'
 #' @references
 #'  Millar, R. B., Holst, R., 1997. Estimation of gillnet and hook selectivity
