@@ -1,18 +1,8 @@
 ---
 title: "Length-frequency data for TropFishR"
-author: "Tobias K. Mildenberger"
-date: "`r Sys.Date()`"
-output:
-    rmarkdown::html_vignette:
-    fig_caption: yes
-    number_sections: true
-    df_print: paged
-    toc: true
-    toc_depth: 2
-    toc_float:
-      collapsed: false
+output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{tutorial_length_data}
+  %\VignetteIndexEntry{Length-frequency data for TropFishR}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 bibliography: TropFishR.bib
@@ -253,4 +243,4 @@ This vignette demonstrates the first step in the application of TropFishR,
 the arrangement of your length measurements in a spreadsheet (or text file) and
 the import into R. Nevertheless, this step is important and several requests
 motivated me to write this vignette. How you can use TropFishR for the
-further analysis of your data is demonstrated in the detailed [**tutorial**](https://cran.r-project.org/package=TropFishR/vignettes/tutorial.html).
+further analysis of your data is demonstrated in the detailed [**tutorial**](https://tokami.github.io/TropFishR/articles/tutorial.html).

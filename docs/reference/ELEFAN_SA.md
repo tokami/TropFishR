@@ -234,12 +234,12 @@ output <- ELEFAN_SA(synLFQ4, SA_time = 10, seasonalised = TRUE, MA = 11,
   up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1))
 #> Simulated annealing is running. 
 #> This will take approximately 0.17 minutes.
-#> timeSpan = 10.000071 maxTime = 10
+#> timeSpan = 10.00107 maxTime = 10
 #> Emini is: -0.5149179199
 #> xmini are:
 #> 86.50771775 0.4101330356 0.1368551619 0.7761266884 0.4978404496 
-#> Totally it used 10.00012 secs
-#> No. of function call is: 4459
+#> Totally it used 10.001115 secs
+#> No. of function call is: 4091
 
 output$par
 #> $Linf

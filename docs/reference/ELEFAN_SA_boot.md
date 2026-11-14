@@ -229,11 +229,11 @@ res <- ELEFAN_SA_boot(lfq = alba, MA = MA, seasonalised = FALSE,
 #> This will take approximately 0.02 minutes.
 res$maxDen
 #>      Linf         K  t_anchor      phiL    agemax 
-#> 9.7758712 2.9429078 0.4813687 2.4490876 2.0000000 
+#> 9.7758712 2.9404652 0.5205985 2.4487270 2.0000000 
 res$CI
 #>         Linf        K  t_anchor     phiL agemax
-#> lo  9.180246 1.675714 0.2680089 2.149908      1
-#> up 11.184892 4.141304 0.5489323 2.714401      2
+#> lo  8.724525 1.747007 0.3055888 2.123778      1
+#> up 11.232947 4.375782 0.5916848 2.742043      2
 
 # plot resulting distributions
 univariate_density(res)

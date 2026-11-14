@@ -18,7 +18,6 @@ Mildenberger TK, Taylor MH, Wolff M (2017). “TropFishR: an R package for
 fisheries analysis with length-frequency data.” *Methods in Ecology and
 Evolution*, **8**(11), 1520–1527. ISSN 2041-210X.
 [doi:10.1111/2041-210X.12791](https://doi.org/10.1111/2041-210X.12791).
-<http://dx.doi.org/10.1111/2041-210X.12791>.
 
     @Article{,
       title = {TropFishR: an R package for fisheries analysis with length-frequency data},
@@ -29,15 +28,13 @@ Evolution*, **8**(11), 1520–1527. ISSN 2041-210X.
       number = {11},
       pages = {1520--1527},
       doi = {10.1111/2041-210X.12791},
-      url = {http://dx.doi.org/10.1111/2041-210X.12791},
       issn = {2041-210X},
     }
 
 Taylor MH, Mildenberger TK (2017). “Extending electronic length
 frequency analysis in R.” *Fisheries Management and Ecology*, **24**(4),
-230–238. ISSN 0969997X.
+330–338. ISSN 0969997X.
 [doi:10.1111/fme.12232](https://doi.org/10.1111/fme.12232).
-<http://doi.wiley.com/10.1111/fme.12232>.
 
     @Article{,
       title = {Extending electronic length frequency analysis in R},
@@ -46,8 +43,23 @@ frequency analysis in R.” *Fisheries Management and Ecology*, **24**(4),
       year = {2017},
       volume = {24},
       number = {4},
-      pages = {230--238},
+      pages = {330--338},
       doi = {10.1111/fme.12232},
-      url = {http://doi.wiley.com/10.1111/fme.12232},
       issn = {0969997X},
+    }
+
+Schwamborn R, Mildenberger TK, Taylor MH (2019). “Assessing sources of
+uncertainty in length-based estimates of body growth in populations of
+fishes and macroinvertebrates with bootstrapped ELEFAN.” *Ecological
+Modelling*, **393**, 37–51.
+[doi:10.1016/j.ecolmodel.2018.12.001](https://doi.org/10.1016/j.ecolmodel.2018.12.001).
+
+    @Article{,
+      title = {Assessing sources of uncertainty in length-based estimates of body growth in populations of fishes and macroinvertebrates with bootstrapped {ELEFAN}},
+      author = {R. Schwamborn and Tobias K. Mildenberger and Marc H. Taylor},
+      journal = {Ecological Modelling},
+      year = {2019},
+      volume = {393},
+      pages = {37--51},
+      doi = {10.1016/j.ecolmodel.2018.12.001},
     }

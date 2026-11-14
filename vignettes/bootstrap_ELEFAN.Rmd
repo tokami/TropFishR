@@ -1,13 +1,11 @@
 ---
 title: "Uncertainty in length-based stock assessment with bootstrapped ELEFAN"
-author: "Tobias K. Mildenberger"
-date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     fig_caption: yes
     number_sections: true
 vignette: >
-  %\VignetteIndexEntry{tutorial_bootstrap}
+  %\VignetteIndexEntry{Uncertainty in length-based stock assessment with bootstrapped ELEFAN}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 bibliography: TropFishR.bib
@@ -21,6 +19,9 @@ knitr::opts_chunk$set(
 )
 ```
 
+
+> If you use bootstrapped ELEFAN, please cite @Schwamborn2019 in addition
+> to TropFishR (see `citation("TropFishR")`).
 
 # Introduction
 
@@ -48,7 +49,7 @@ reference points. This vignette shows how to
    points for each resample (`M_empirical`, `MstochThen`, `catchCurve`, `VPA`
    and `predict_mod` with the argument `boot`).
 
-The [ELEFAN tutorial](https://cran.r-project.org/package=TropFishR/vignettes/Using_TropFishR_ELEFAN_functions.html)
+The [ELEFAN tutorial](https://tokami.github.io/TropFishR/articles/Using_TropFishR_ELEFAN_functions.html)
 explains the ELEFAN functions and their settings in more detail.
 
 

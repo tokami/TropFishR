@@ -1,14 +1,12 @@
 ---
 title: "Using the TropFishR ELEFAN functions"
-author: "Marc H. Taylor"
-date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     fig_caption: yes
     number_sections: true
     df_print: kable
 vignette: >
-  %\VignetteIndexEntry{tutorial_ELEFAN}
+  %\VignetteIndexEntry{Using the TropFishR ELEFAN functions}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 bibliography: TropFishR.bib
@@ -23,9 +21,13 @@ knitr::opts_chunk$set(
 ```
 
 
+> If you use `ELEFAN_SA` or `ELEFAN_GA`, please cite
+> @taylor_extending_2017 in addition to TropFishR (see
+> `citation("TropFishR")`).
+
 ### *Introduction*
 
-The following tutorial outlines the use of the ELEFAN functions available in TropFishR (`ELEFAN`, `ELEFAN_GA`, and `ELEFAN_SA`) [@mildenberger_tropfishr:_2017; @Mildenberger2016]. These functions can be used to estimate growth model parameters from length-frequency (lfq) data. The ability to convert length to relative age is the initial step in length-based stock assessment, and underpins subsequent analyses (see the [TropFishR tutorial](https://cran.r-project.org/package=TropFishR/vignettes/tutorial.html) for a broader overview of length-based stock assessment).
+The following tutorial outlines the use of the ELEFAN functions available in TropFishR (`ELEFAN`, `ELEFAN_GA`, and `ELEFAN_SA`) [@mildenberger_tropfishr:_2017; @Mildenberger2016]. These functions can be used to estimate growth model parameters from length-frequency (lfq) data. The ability to convert length to relative age is the initial step in length-based stock assessment, and underpins subsequent analyses (see the [TropFishR tutorial](https://tokami.github.io/TropFishR/articles/tutorial.html) for a broader overview of length-based stock assessment).
 
 The growth model presently implemented within TropFishR is the von Bertalanffy growth function (VBGF),
 
@@ -86,7 +88,7 @@ Such variation in growth is common in many organisms, but may be more pronounced
 
 The first step to using the ELEFAN functions is to have a length-frequency  object loaded (class `lfq`). For the majority of the following examples, we will use the relatively small `alba` lfq dataset (Abra alba mollusc sampled in Kiel Bay [@brey_electronic_1988]), which consists of approximately bi-monthly sampling of length-frequencies taken over the course of one and a half years. The `alba` dataset is included within the current TropFishR version.
 
-An `lfq` class dataset is essentially a `list` containing the following elements: a catch frequency matrix (`lfq$catch`), a vector of mid-lengths (`lfq$midLengths`) corresponding to rows of the catch matrix, and a vector of dates (`lfq$dates`) corresponding to the columns of the catch matrix. The `lfq` class is used by several functions within the TropFishR package (e.g. `plot.lfq`). A separate tutorial exists detailing the creation of such objects from scratch ([link](https://cran.r-project.org/package=TropFishR/vignettes/lfqData.html)), but here is a small example that passes variables from alba to a new lfq object.
+An `lfq` class dataset is essentially a `list` containing the following elements: a catch frequency matrix (`lfq$catch`), a vector of mid-lengths (`lfq$midLengths`) corresponding to rows of the catch matrix, and a vector of dates (`lfq$dates`) corresponding to the columns of the catch matrix. The `lfq` class is used by several functions within the TropFishR package (e.g. `plot.lfq`). A separate tutorial exists detailing the creation of such objects from scratch ([link](https://tokami.github.io/TropFishR/articles/lfqData.html)), but here is a small example that passes variables from alba to a new lfq object.
 
 First, the three elements are added to a list:
 

@@ -1,8 +1,8 @@
 Package: TropFishR
 Type: Package
 Title: Tropical Fisheries Analysis
-Version: 1.7.1
-Date: 2026-11-13
+Version: 1.7.5
+Date: 2026-11-14
 Authors@R: c(person(given = c("Tobias", "K."),
                     family = "Mildenberger",
                     role = c("aut", "cre"),
@@ -40,7 +40,6 @@ NeedsCompilation: no
 BugReports: https://github.com/tokami/TropFishR/issues
 URL: https://github.com/tokami/TropFishR, https://tokami.github.io/TropFishR/
 Encoding: UTF-8
-RoxygenNote: 7.3.2
 Suggests:
     graphics,
     grDevices,
@@ -51,3 +50,4 @@ Suggests:
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
 Config/testthat/edition: 3
+Config/roxygen2/version: 8.0.0

@@ -6,6 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>TropFishR: Tropical Fisheries Analysis • TropFishR</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" sizes="any" href="favicon.ico">
+<link rel="manifest" href="site.webmanifest">
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -15,6 +20,7 @@
 ">
 <meta property="og:description" content="Fish stock assessment methods for length-frequency data in data-poor fisheries, following the FAO manual by Sparre and Venema (1998).
 ">
+<meta property="og:image" content="https://tokami.github.io/TropFishR/logo.svg">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -24,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="index.html">TropFishR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,24 +65,17 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="tropfishr-fishing_pole_and_fish">TropFishR <span class="emoji" data-emoji="fishing_pole_and_fish">🎣</span>
-<a class="anchor" aria-label="anchor" href="#tropfishr-fishing_pole_and_fish"></a>
-</h1></div>
-<p><a href="https://www.gnu.org/licenses/gpl-3.0" class="external-link"><img src="https://img.shields.io/badge/License-GPL%20v3-blue.svg" alt="License: GPL v3"></a> <a href="https://cran.r-project.org/package=TropFishR" class="external-link"><img src="https://www.r-pkg.org/badges/version/TropFishR" alt="CRAN version"></a> <a href="https://cran.r-project.org/package=TropFishR" class="external-link"><img src="http://cranlogs.r-pkg.org/badges/TropFishR" alt="CRAN Downloads"></a> <a href="https://github.com/tokami/TropFishR/releases" class="external-link"><img src="https://img.shields.io/github/release/tokami/TropFishR.svg" alt="GitHub release"></a> <a href="https://doi.org/10.5281/zenodo.495176" class="external-link"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.495176.svg" alt="DOI"></a></p>
-<div class="section level2">
-<h2 id="package-description">Package description<a class="anchor" aria-label="anchor" href="#package-description"></a>
-</h2>
-<p>TropFishR is a collection of fisheries models based on the FAO Manual “Introduction to tropical fish stock assessment” by Sparre and Venema (1998, 1999). Not only scientists working in the tropics will benefit from this new toolbox. The methods work with age-based or length-frequency data and assist in the assessment of data poor fish stocks. Overall, the package comes with 30 functions, 19 data sets and 10 s3 methods. All objects are documented and provide examples that allow reproducing the examples from the FAO manual.</p>
+<div class="page-header">
+<img src="logo.svg" class="logo" alt=""><h1 id="tropfishr-">TropFishR <a class="anchor" aria-label="anchor" href="#tropfishr-"></a>
+</h1>
 </div>
-<div class="section level2">
-<h2 id="news">News<a class="anchor" aria-label="anchor" href="#news"></a>
-</h2>
-<p>You can find detailed descriptions of new features, bug fixes, other changes of specific package versions <a href="NEWS.html">here</a>.</p>
-</div>
+<p><a href="https://www.gnu.org/licenses/gpl-3.0" class="external-link"><img src="https://img.shields.io/badge/License-GPL%20v3-blue.svg" alt="License: GPL v3"></a> <a href="https://cran.r-project.org/package=TropFishR" class="external-link"><img src="https://www.r-pkg.org/badges/version/TropFishR" alt="CRAN version"></a> <a href="https://cran.r-project.org/package=TropFishR" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/TropFishR" alt="CRAN Downloads"></a> <a href="https://github.com/tokami/TropFishR/releases" class="external-link"><img src="https://img.shields.io/github/release/tokami/TropFishR.svg" alt="GitHub release"></a> <a href="https://doi.org/10.5281/zenodo.495176" class="external-link"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.495176.svg" alt="DOI"></a></p>
+<p>TropFishR is a collection of fish stock assessment methods for length-frequency and age-based data, aimed at data-poor fisheries. It implements the methods of the FAO manual “Introduction to tropical fish stock assessment” by Sparre and Venema (1998, 1999), and the examples in the help files reproduce the manual’s worked examples. In addition, it includes newer length-based methods, such as electronic length-frequency analysis with simulated annealing and a genetic algorithm (<code>ELEFAN_SA</code>, <code>ELEFAN_GA</code>; Taylor and Mildenberger 2017) and bootstrapped ELEFAN for the uncertainty of the growth parameters (<code>ELEFAN_GA_boot</code>, <code>ELEFAN_SA_boot</code>; Schwamborn et al. 2019).</p>
+<p><strong>Website:</strong> <a href="https://tokami.github.io/TropFishR/" class="uri">https://tokami.github.io/TropFishR/</a></p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>Download the released version of TropFishR from CRAN:</p>
+<p>Install the released version from CRAN:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"TropFishR"</span><span class="op">)</span></span></code></pre></div>
 <p>Or the development version from GitHub:</p>
@@ -85,19 +84,39 @@
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"tokami/TropFishR"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="getting-started">Getting started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
+</h2>
+<p>Functions take a length-frequency data object (class <code>lfq</code>), add their results to it and return it, so that an assessment can be built up step by step: growth (e.g. <code>ELEFAN_GA</code>), mortality (<code>M_empirical</code>, <code>catchCurve</code>), stock size (<code>VPA</code>) and yield per recruit (<code>predict_mod</code>). For example, to estimate the growth parameters of a synthetic data set:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tokami/TropFishR" class="external-link">TropFishR</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">synLFQ7</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">lfq</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/lfqModify.html">lfqModify</a></span><span class="op">(</span><span class="va">synLFQ7</span>, bin_size <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ELEFAN_GA.html">ELEFAN_GA</a></span><span class="op">(</span><span class="va">lfq</span>, MA <span class="op">=</span> <span class="fl">7</span>, seasonalised <span class="op">=</span> <span class="cn">TRUE</span>, maxiter <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
+<span><span class="va">res</span><span class="op">$</span><span class="va">par</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span>, Fname <span class="op">=</span> <span class="st">"rcounts"</span><span class="op">)</span></span></code></pre></div>
+<p>The articles on the website explain each step in detail:</p>
+<ul>
+<li>
+<a href="https://tokami.github.io/TropFishR/articles/tutorial.html">Single-species fish stock assessment</a>: a complete length-based assessment with the main functions of TropFishR.</li>
+<li>
+<a href="https://tokami.github.io/TropFishR/articles/lfqData.html">Length-frequency data</a>: what LFQ data are and how to import raw length measurements (e.g. from spreadsheets) into TropFishR.</li>
+<li>
+<a href="https://tokami.github.io/TropFishR/articles/Using_TropFishR_ELEFAN_functions.html">ELEFAN functions</a>: the ELEFAN methods in detail, with recommendations for their use.</li>
+<li>
+<a href="https://tokami.github.io/TropFishR/articles/bootstrap_ELEFAN.html">Bootstrapped ELEFAN</a>: how to estimate the uncertainty of the growth parameters and propagate it through the assessment.</li>
+</ul>
+<p>Changes between versions are listed in the <a href="https://tokami.github.io/TropFishR/news/">changelog</a>.</p>
+</div>
+<div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
-<p>Please use the R command <code>citation("TropFishR")</code> to receive information on how to cite this package.</p>
+<p>Please cite TropFishR as described by <code>citation("TropFishR")</code>.</p>
 </div>
 <div class="section level2">
-<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
+<h2 id="questions-and-issues">Questions and issues<a class="anchor" aria-label="anchor" href="#questions-and-issues"></a>
 </h2>
-<p>The <a href="https://cran.r-project.org/package=TropFishR/vignettes/tutorial.html" class="external-link">tutorial</a> demonstrates the use of the main functions of TropFishR for a single-species stock assessment with length-frequency data. The <a href="https://cran.r-project.org/package=TropFishR/vignettes/lfqData.html" class="external-link">lfqDataTutorial</a> gives a brief description of LFQ data and illustrates how files with raw length measurements (e.g. excel files) can be imported into R and trimmed for the use with TropFishR. The <a href="https://cran.r-project.org/package=TropFishR/vignettes/Using_TropFishR_ELEFAN_functions.html" class="external-link">ELEFANTutorial</a> demonstrates the ELEFAN functions available in TropFishR in detail and discusses best practices.</p>
-</div>
-<div class="section level2">
-<h2 id="questions--issues">Questions / Issues<a class="anchor" aria-label="anchor" href="#questions--issues"></a>
-</h2>
-<p>In case you have questions or find bugs, please write an email to <a href="mailto:t.k.mildenberger@gmail.com">Tobias Mildenberger</a> or post on <a href="https://github.com/tokami/TropFishR/issues" class="external-link">TropFishR/issues</a>.</p>
+<p>Please report bugs and ask questions on <a href="https://github.com/tokami/TropFishR/issues" class="external-link">GitHub issues</a>.</p>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
@@ -107,9 +126,11 @@
 </li>
 <li>Sparre, P., Venema, S.C., 1999. Introduction to tropical fish stock assessment. Part 2. Exercises. FAO Fisheries Technical Paper, (306.2, Rev. 2). 94p. <a href="https://www.fao.org/4/W5448E/W5448E00.htm" class="external-link">link</a>
 </li>
-<li>Mildenberger, T. K., Taylor, M. H. and Wolff, M., 2017. TropFishR: an R package for fisheries analysis with length-frequency data. Methods in Ecology and Evolution, 8: 1520-1527. <a href="doi:10.1111/2041-210X.12791" class="uri">doi:10.1111/2041-210X.12791</a> <a href="https://doi.org/10.1111/2041-210X.12791" class="external-link">link</a>
+<li>Mildenberger, T. K., Taylor, M. H., Wolff, M., 2017. TropFishR: an R package for fisheries analysis with length-frequency data. Methods in Ecology and Evolution, 8: 1520-1527. <a href="https://doi.org/10.1111/2041-210X.12791" class="external-link">doi:10.1111/2041-210X.12791</a>
 </li>
-<li>Taylor, M. H., and Mildenberger, T. K., 2017. Extending electronic length frequency analysis in R. Fisheries Management and Ecology, 24:330-338. <a href="doi:10.1111/fme.12232" class="uri">doi:10.1111/fme.12232</a> <a href="https://doi.org/10.1111/fme.12232" class="external-link">link</a>
+<li>Taylor, M. H., Mildenberger, T. K., 2017. Extending electronic length frequency analysis in R. Fisheries Management and Ecology, 24: 330-338. <a href="https://doi.org/10.1111/fme.12232" class="external-link">doi:10.1111/fme.12232</a>
+</li>
+<li>Schwamborn, R., Mildenberger, T. K., Taylor, M. H., 2019. Assessing sources of uncertainty in length-based estimates of body growth in populations of fishes and macroinvertebrates with bootstrapped ELEFAN. Ecological Modelling, 393: 37-51. <a href="https://doi.org/10.1016/j.ecolmodel.2018.12.001" class="external-link">doi:10.1016/j.ecolmodel.2018.12.001</a>
 </li>
 </ol>
 </div>
