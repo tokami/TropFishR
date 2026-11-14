@@ -28,6 +28,7 @@ Rev. 2). 407 p.
 ## Examples
 
 ``` r
+
 data(hake)
 str(hake)
 #> List of 9

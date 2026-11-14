@@ -13,16 +13,18 @@ routine.
 
 ### *Installing TropFishR*
 
-The current version of TropFishR (v1.6.3) requires R $> = 3.0.0$ and can
-be downloaded from CRAN as follows.
+The current version of TropFishR (v1.6.3) requires R $`>= 3.0.0`$ and
+can be downloaded from CRAN as follows.
 
 ``` r
+
 install.packages("TropFishR", repos = "https://cran.rstudio.com/")
 ```
 
 Alternatively, the package can be installed from GitHub:
 
 ``` r
+
 install.packages("remotes")
 remotes::install_github("tokami/TropFishR")
 ```
@@ -30,6 +32,7 @@ remotes::install_github("tokami/TropFishR")
 The package is loaded into the R environment with:
 
 ``` r
+
 library(TropFishR)
 ```
 
@@ -47,22 +50,23 @@ per recruit models.
 #### *Growth parameters*
 
 Commonly used growth parameters are the asymptotic length
-($L_{\infty}$), the growth coefficient ($K$) and the theoretical length
-at age zero ($t_{0}$) of the von Bertalanffy growth function (VBGF). The
-ELEFAN (ELectronic LEngth Frequency ANalysis) methods allow to estimate
-$L_{\infty}$ and $K$ from LFQ data by restructuring the data and fitting
-growth curves through the restructured LFQ data (Pauly 1980). I
-recommend to start by visualising the raw and restructured LFQ data,
-which aids in determining an appropriate bin size and the moving average
-of the restructuring procedure. The function `lfqModify` allows to
-change the bin size by setting the argument `bin_size` to a numeric. The
-function `lfqRestructure` is used for the restructuring process, where
-the argument `MA` allows to control the number of bins used for the
-moving average and the argument `addl.sqrt` allows to apply an
+($`L_{\infty}`$), the growth coefficient ($`K`$) and the theoretical
+length at age zero ($`t_{0}`$) of the von Bertalanffy growth function
+(VBGF). The ELEFAN (ELectronic LEngth Frequency ANalysis) methods allow
+to estimate $`L_{\infty}`$ and $`K`$ from LFQ data by restructuring the
+data and fitting growth curves through the restructured LFQ data (Pauly
+1980). I recommend to start by visualising the raw and restructured LFQ
+data, which aids in determining an appropriate bin size and the moving
+average of the restructuring procedure. The function `lfqModify` allows
+to change the bin size by setting the argument `bin_size` to a numeric.
+The function `lfqRestructure` is used for the restructuring process,
+where the argument `MA` allows to control the number of bins used for
+the moving average and the argument `addl.sqrt` allows to apply an
 additional squareroot transformation in the restructuring process, which
 reduces the weighting of large individuals.
 
 ``` r
+
 ## set seed value for reproducible results
 set.seed(1)
 
@@ -92,20 +96,20 @@ set and will be used in the following.
 
 In TropFishR, there are 4 different methods based on the ELEFAN
 functionality: (i) K-Scan for the estimation of K for a fixed value of
-$L_{inf}$, (ii) Response Surface Analysis (RSA), (iii) ELEFAN with
+$`L_{inf}`$, (ii) Response Surface Analysis (RSA), (iii) ELEFAN with
 simulated annealing (`ELEFAN_SA`), and (iv) ELEFAN with a genetic
 algorithm (`ELEFAN_GA`), where the last three methods all allow to
-estimate K and $L_{\infty}$ simultaneously. The K-Scan method does not
-allow to test if different combinations of $L_{\infty}$ and K might
-result in a better fit. RSA with a range around $L_{\infty}$ can be used
-to check different combinations. However, RSA can be very slow and does
-not allow to optimise over the parameters C and $t_{s}$ of the
+estimate K and $`L_{\infty}`$ simultaneously. The K-Scan method does not
+allow to test if different combinations of $`L_{\infty}`$ and K might
+result in a better fit. RSA with a range around $`L_{\infty}`$ can be
+used to check different combinations. However, RSA can be very slow and
+does not allow to optimise over the parameters C and $`t_s`$ of the
 seasonalised VBGF (soVBGF). It only allows to compare the score of
-ELEFAN runs with manually fixed C and $t_{s}$ values. In contrast, the
+ELEFAN runs with manually fixed C and $`t_s`$ values. In contrast, the
 newly implemented ELEFAN method `ELEFAN_SA` using a simulated annealing
 algorithm (Xiang et al. 2013) and `ELEFAN_GA` using genetic algorithms
-allow for the optimisation of the soVBGF (M. H. Taylor and Mildenberger
-2017). The optimisation procedure in the simulated annealing algorithm
+allow for the optimisation of the soVBGF (Taylor and Mildenberger 2017).
+The optimisation procedure in the simulated annealing algorithm
 gradually reduces the stochasticity of the search process as a function
 of the decreasing “temperature” value, which describes the probability
 of accepting worse conditions.
@@ -113,12 +117,13 @@ of accepting worse conditions.
 Here, we will apply the two new ELEFAN functions `ELEFAN_SA` and
 `ELEFAN_GA`. Both functions require to define the lower (`low_par`) and
 upper (`up_par`) bounds of the search space for all growth parameters.
-For this data set, we assume a wide search space for $K$ and use the
+For this data set, we assume a wide search space for $`K`$ and use the
 maximum length in the data to define the search space for
-$L_{\infty}$(C. C. Taylor 1958; Beverton 1963). We assume the full
-parameter space for the other parameters ($t_{anchor}$, $C$, $t_{s}$).
+$`L_{\infty}`$(Taylor 1958; Beverton 1963). We assume the full parameter
+space for the other parameters ($`t_{anchor}`$, $`C`$, $`t_s`$).
 
 ``` r
+
 ## coarse estimate of Linf
 linf_guess <- max(lfq_bin2$midLengths) / 0.95
 
@@ -140,6 +145,7 @@ up_par <- list(Linf = 1.2 * linf_guess,
 Then `ELEFAN_SA` can be applied as follows.
 
 ``` r
+
 ## run ELEFAN with simulated annealing
 res_SA <- ELEFAN_SA(lfq_bin2, SA_time = 10, SA_temp = 6e5,
                    MA = ma, seasonalised = TRUE, addl.sqrt = FALSE,
@@ -173,13 +179,14 @@ the stable optimum of the objective function was not yet reached (stable
 optimum is indicated by overlapping blue and green dots in the score
 graph). Due to the limitations of the vignette format the computation
 time was set to 10 seconds, which results already in acceptable results
-of $L_{\infty}$ = 114.84, K = 0.19, $t_{anchor}$ = 0.99, C = 0.37, and
-$t_{s}$ = 0.19 with a score value ($Rn_{max}$) of 0.36. I recommend to
-increase `SA_time` to 3 - 5 minutes to increase chances of finding the
-stable optimum. Another new optimisation routine is based on generic
-algorithms and is applied by the function `ELEFAN_GA`.
+of $`L_{\infty}`$ = 114.84, K = 0.19, $`t_{anchor}`$ = 0.99, C = 0.37,
+and $`t_s`$ = 0.19 with a score value ($`Rn_{max}`$) of 0.36. I
+recommend to increase `SA_time` to 3 - 5 minutes to increase chances of
+finding the stable optimum. Another new optimisation routine is based on
+generic algorithms and is applied by the function `ELEFAN_GA`.
 
 ``` r
+
 ## run ELEFAN with genetic algorithm
 res_GA <- ELEFAN_GA(lfq_bin2, MA = ma, seasonalised = TRUE,
                     maxiter = 50, addl.sqrt = FALSE,
@@ -202,29 +209,31 @@ indicate the runnning maximum value of the fitness function, while blue
 dots indicate the mean score of each iteration.
 
 The generation number of the `ELEFAN_GA` was set to only 50 generations
-(argument `maxiter`), which returns following results: $L_{\infty}$ =
-123.79, K = 0.22, $t_{anchor}$ = 0.33, C = 0.49, and $t_{s}$ = 0.31 with
-a score value ($Rn_{max}$) of 0.27. As with `ELEFAN_SA` the generation
-number was hold down due to the vignette format and should be increased
-in order to find more stable results. According to (Pauly 1980) it is
-not possible to estimate $t_{0}$ (theoretical age at length zero) from
-LFQ data alone. However, this parameter does not influence results of
-the methods of the traditional stock assessment workflow (catch curve
-and yield per recruit model) and can be set to zero. The ELEFAN methods
-in this package do not return starting points as FiSAT II users might be
-used to. Instead, they return the parameter `t_anchor`, which describes
-the fraction of the year where yearly repeating growth curves cross
-length equal to zero; for example a value of 0.25 refers to April 1st of
-any year. The maximum age is estimated within the ELEFAN function: it is
-the age when length is 0.95 $L_{\infty}$. However, this value can also
-be fixed with the argument `agemax`, when alternative information about
-the maximum age of the fish species is available.
+(argument `maxiter`), which returns following results: $`L_{\infty}`$ =
+123.79, K = 0.22, $`t_{anchor}`$ = 0.33, C = 0.49, and $`t_s`$ = 0.31
+with a score value ($`Rn_{max}`$) of 0.27. As with `ELEFAN_SA` the
+generation number was hold down due to the vignette format and should be
+increased in order to find more stable results. According to (Pauly
+1980) it is not possible to estimate $`t_{0}`$ (theoretical age at
+length zero) from LFQ data alone. However, this parameter does not
+influence results of the methods of the traditional stock assessment
+workflow (catch curve and yield per recruit model) and can be set to
+zero. The ELEFAN methods in this package do not return starting points
+as FiSAT II users might be used to. Instead, they return the parameter
+`t_anchor`, which describes the fraction of the year where yearly
+repeating growth curves cross length equal to zero; for example a value
+of 0.25 refers to April 1st of any year. The maximum age is estimated
+within the ELEFAN function: it is the age when length is 0.95
+$`L_{\infty}`$. However, this value can also be fixed with the argument
+`agemax`, when alternative information about the maximum age of the fish
+species is available.
 
 The jack knife technique allows to estimate a confidence interval around
-the parameters of the soVBGF (Quenouille 1956; J. Tukey 1958; J. W.
-Tukey 1962). This can be automated in R with following code:
+the parameters of the soVBGF (Quenouille 1956; Tukey 1958; Tukey 1962).
+This can be automated in R with following code:
 
 ``` r
+
 ## list for results
 JK <- vector("list", length(lfq_bin2$dates))
 
@@ -265,6 +274,7 @@ indicates high similarity with true growth curves and a good fit through
 the peaks of this data set.
 
 ``` r
+
 ## plot LFQ and growth curves
 plot(lfq_bin2_res, Fname = "rcounts",date.axis = "modern", ylim=c(0,130))
 lt <- lfqFitCurves(lfq_bin2, par = list(Linf=123, K=0.2, t_anchor=0.25, C=0.3, ts=0),
@@ -290,6 +300,7 @@ For further analysis, we use the outcomes of ELFAN with genetic
 algorithm by adding them to the Thumbprint Emperor data list.
 
 ``` r
+
 ## assign estimates to the data list
 lfq_bin2 <- lfqModify(lfq_bin2, par = res_GA$par)
 ```
@@ -306,9 +317,10 @@ on correlations with life history parameters and/or environmental
 information. We apply the most recent formula, which is based upon a
 meta-analysis of 201 fish species (Then et al. 2015) and assign the
 results to our data set. This method requires estimates of the VBGF
-growth parameters \[$L_{\infty}$ and K; Then et al. (2015)\].
+growth parameters \[$`L_{\infty}`$ and K; Then et al. (2015)\].
 
 ``` r
+
 ## estimation of M
 Ms <- M_empirical(Linf = lfq_bin2$par$Linf, K_l = lfq_bin2$par$K, method = "Then_growth")
 
@@ -316,7 +328,7 @@ Ms <- M_empirical(Linf = lfq_bin2$par$Linf, K_l = lfq_bin2$par$K, method = "Then
 lfq_bin2$par$M <- as.numeric(Ms)
 ```
 
-The result is a natural mortality of 0.28 year$^{- 1}$.
+The result is a natural mortality of 0.28 year$`^{-1}`$.
 
 ### *Fishing mortality rates and gear selectivity*
 
@@ -338,6 +350,7 @@ for the whole year. Besides, changing the bin size, the function
 classes with only a few individuals into a plus group.
 
 ``` r
+
 ## define plus group as largest length class smaller than Linf
 plus_group <- lfq_bin2$midLengths[max(which(lfq_bin2$midLengths < lfq_bin2$par$Linf))]
 
@@ -366,6 +379,7 @@ separately (e.g. `catch_columns=1` for the first year), or to the data
 of several years combined (e.g. `catch_columns=c(1,2)`).
 
 ``` r
+
 ## run catch curve
 res_cc <- catchCurve(lfq_catch_vec, reg_int = c(18,55), calc_ogive = TRUE)
 
@@ -384,20 +398,21 @@ capture.](tutorial_files/figure-html/Figure%207-2.png)
 Catch curve with selected points for the regression analysis and in the
 second panel the selection ogive with age at first capture.
 
-The catch curve analysis returns a Z value of 0.51 $year^{- 1}$. By
+The catch curve analysis returns a Z value of 0.51 $`year^{-1}`$. By
 subtracting M from Z, the fishing mortality rate is derived: 0.23
-$year^{- 1}$. The selectivity function of the catch curve estimated a
-length at 50% probability of capture ($L_{50}$) of 36.35 cm.
+$`year^{-1}`$. The selectivity function of the catch curve estimated a
+length at 50% probability of capture ($`L_{50}`$) of 36.35 cm.
 
 ### *Stock status*
 
 #### *Exploitation rate*
 
-The exploitation rate is defined as $E = F/Z$ and relative to the
+The exploitation rate is defined as $`E = F/Z`$ and relative to the
 reference level of 0.5, provides a simple indication of the stock status
 Gulland (1983).
 
 ``` r
+
 lfq_catch_vec$par$E <- lfq_catch_vec$par$FM / lfq_catch_vec$par$Z
 ```
 
@@ -411,13 +426,14 @@ model) allow to evaluate the status of a fish stock in relation to
 reference levels and to infer input control measures, such as
 restricting fishing effort or regulating gear types and mesh sizes. The
 model requires information about the parameters of the length-weight
-relationship ($a$ and $b$) and the optional maturity parameters allow to
-estimate the Spawning Potential Ratio (SPR). By default the Thompson and
-Bell model assumes knife edge selection ($L_{25}$ = $L_{50}$ =
-$L_{75}$)[¹](#fn1). However, we can use $L50$ and $L75$ values,
-e.g. from the catch curve to define a selection ogive.
+relationship ($`a`$ and $`b`$) and the optional maturity parameters
+allow to estimate the Spawning Potential Ratio (SPR). By default the
+Thompson and Bell model assumes knife edge selection ($`L_{25}`$ =
+$`L_{50}`$ = $`L_{75}`$)[^1]. However, we can use $`L50`$ and $`L75`$
+values, e.g. from the catch curve to define a selection ogive.
 
 ``` r
+
 ## assign length-weight parameters to the data list
 lfq_catch_vec$par$a <- 0.015
 lfq_catch_vec$par$b <- 3
@@ -435,7 +451,7 @@ selectivity_list <- list(selecType = "trawl_ogive",
 The parameter `FM_change` determines the range of the fishing mortality
 for which to estimate the yield and biomass trajectories. In the second
 application of this model, the impact of mesh size restrictions on yield
-is explored by changing $L_{c}$ (`Lc_change`) and F (`FM_change`, or
+is explored by changing $`L_{c}`$ (`Lc_change`) and F (`FM_change`, or
 exploitation rate, `E_change`) simultaneously. The resulting estimates
 are presented as an isopleth graph showing yield per recruit. By setting
 the argument `stock_size_1` to 1, all results are per recruit. If the
@@ -445,6 +461,7 @@ allow to derive and visualise yield and biomass (per recruit) values for
 current fishing patterns.
 
 ``` r
+
 ## Thompson and Bell model with changes in F
 TB1 <- predict_mod(lfq_catch_vec, type = "ThompBell",
                    FM_change = seq(0,1.5,0.05),
@@ -505,11 +522,11 @@ fish the stock at 50% of the virgin biomass (F0.5). (b) exploration of
 impact of different exploitation rates and Lc values on the relative
 yield per recruit.
 
-Please note that the resolution of the $L_{c}$ and F changes is quite
+Please note that the resolution of the $`L_c`$ and F changes is quite
 low and the range quite narrow due to the limitations in computation
 time of the vignette format. The results indicate that the fishing
 mortality of this example (F = 0.23) is smaller than the maximum fishing
-mortality ($F_{max} =$ 0.28), which confirms the indication of the
+mortality ($`F_{max} =`$ 0.28), which confirms the indication of the
 exploitation rate (E = 0.45). The prediction plot shows that the yield
 could be increased when fishing mortality and mesh size is increased.
 The units are grams per recruit.
@@ -524,17 +541,17 @@ for deriving management advice. For data-poor fisheries, a traditional
 fish stock assessment solely based on length-frequency (LFQ) data of one
 year (as presented here) is particularly useful. LFQ data comes with
 many advantages over long time series of catch and effort or
-catch-at-age data (Mildenberger, Taylor, and Wolff 2017). In this
-exercise, the exploitation rate and results of the yield per recruit
-models indicate sustainable exploitation. The exploration of stock
-status and fisheries characteristics can of course be extended, but go
-beyond the scope of this tutorial, which is thought to help getting
-started with the length-based assessment of the TropFishR package.
-Further details about functions and their arguments can be found in the
-help files of the functions (`help(fun)` or `?fun`, where `fun` is any
-function of the package). Also the two publications by Mildenberger,
-Taylor, and Wolff (2017) and by M. H. Taylor and Mildenberger (2017)
-provide more details about the functionality and context of the package.
+catch-at-age data (Mildenberger et al. 2017). In this exercise, the
+exploitation rate and results of the yield per recruit models indicate
+sustainable exploitation. The exploration of stock status and fisheries
+characteristics can of course be extended, but go beyond the scope of
+this tutorial, which is thought to help getting started with the
+length-based assessment of the TropFishR package. Further details about
+functions and their arguments can be found in the help files of the
+functions (`help(fun)` or `?fun`, where `fun` is any function of the
+package). Also the two publications by Mildenberger et al. (2017) and by
+Taylor and Mildenberger (2017) provide more details about the
+functionality and context of the package.
 
 ## *References*
 
@@ -558,9 +575,10 @@ Millar, R. B., and R. Holst. 1997. “Estimation of gillnet and hook
 selectivity using log-linear models.” *ICES Journal of Marine Science*
 54 (1963): 471–77. <https://doi.org/10.1006/jmsc.1996.0196>.
 
-Pauly, Daniel. 1980. “On the Interrelationships Between Natural
+Pauly, Daniel. 1980. *On the Interrelationships Between Natural
 Mortality, Growth Parameters, and Mean Environmental Temperature in 175
-Fish Stocks.” <https://doi.org/10.1093/icesjms/39.2.175>.
+Fish Stocks*. No. 2. Vol. 39.
+<https://doi.org/10.1093/icesjms/39.2.175>.
 
 Powers, J. E. 2014. “Age-specific natural mortality rates in stock
 assessments: size-based vs. density-dependent.” *ICES Journal of Marine
@@ -596,7 +614,5 @@ Xiang, Y, Sylvain Gubian, Brian Suomela, and Julia Hoeng. 2013.
 Package.” *R Journal* 5 (June): 13–28.
 <https://doi.org/10.32614/RJ-2013-002>.
 
-------------------------------------------------------------------------
-
-1.  Note that the length at capture has 2 abbreviations $L_{50}$ and
-    $L_{c}$.
+[^1]: Note that the length at capture has 2 abbreviations $`L_{50}`$ and
+    $`L_c`$.

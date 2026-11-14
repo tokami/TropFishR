@@ -28,12 +28,14 @@ the uncertainty of the growth parameters (`ELEFAN_GA_boot`,
 Install the released version from CRAN:
 
 ``` r
+
 install.packages("TropFishR")
 ```
 
 Or the development version from GitHub:
 
 ``` r
+
 # install.packages("remotes")
 remotes::install_github("tokami/TropFishR")
 ```
@@ -47,6 +49,7 @@ by step: growth (e.g. `ELEFAN_GA`), mortality (`M_empirical`,
 For example, to estimate the growth parameters of a synthetic data set:
 
 ``` r
+
 library(TropFishR)
 data(synLFQ7)
 

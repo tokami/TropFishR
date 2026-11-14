@@ -110,16 +110,12 @@ and mortality in steady-state fish stocks from length-frequency data.
 # \donttest{
 data(synLFQ3)
 powell_wetherall(synLFQ3)
-#> Please choose the minimum and maximum point in the 
-#> graph to include for the regression line!
-#> Error in powell_wetherall(synLFQ3): You did not choose any points! Please run the function again 
-#> and choose points to include into the estimation of Z.
+#> Please specify reg_int or choose points for the regression analysis in an interactive session.
+#> NULL
 
 data(synLFQ5)
 powell_wetherall(synLFQ5, catch_columns = 1:12)
-#> Please choose the minimum and maximum point in the 
-#> graph to include for the regression line!
-#> Error in powell_wetherall(synLFQ5, catch_columns = 1:12): You did not choose any points! Please run the function again 
-#> and choose points to include into the estimation of Z.
+#> Please specify reg_int or choose points for the regression analysis in an interactive session.
+#> NULL
 # }
 ```

@@ -21,6 +21,7 @@ A list of class \`lfqBoot\`, see
 
 The data set was produced with following code (takes several minutes):
 
+
     data(alba)
     alba_boot <- ELEFAN_GA_boot(lfq = alba, MA = 7, seasonalised = FALSE,
       low_par = list(Linf = 8, K = 0.1, t_anchor = 0),

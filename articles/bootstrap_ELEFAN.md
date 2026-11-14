@@ -1,8 +1,7 @@
 # Uncertainty in length-based stock assessment with bootstrapped ELEFAN
 
-> If you use bootstrapped ELEFAN, please cite Schwamborn, Mildenberger,
-> and Taylor (2019) in addition to TropFishR (see
-> `citation("TropFishR")`).
+> If you use bootstrapped ELEFAN, please cite Schwamborn et al. (2019)
+> in addition to TropFishR (see `citation("TropFishR")`).
 
 ## Introduction
 
@@ -15,14 +14,14 @@ from the sampling of the lfq data (which fish were measured) and from
 the optimisation itself (different runs can end in different local
 optima).
 
-Bootstrapped ELEFAN (Schwamborn, Mildenberger, and Taylor 2019)
-quantifies this uncertainty: the lfq data is resampled many times,
-ELEFAN is fitted to each resampled data set, and the distribution of the
-resulting estimates is used to derive the most likely parameters and
-their confidence intervals. The growth parameters of each resample can
-then be used in the following steps of a length-based stock assessment,
-so that the uncertainty is propagated to mortality rates and reference
-points. This vignette shows how to
+Bootstrapped ELEFAN (Schwamborn et al. 2019) quantifies this
+uncertainty: the lfq data is resampled many times, ELEFAN is fitted to
+each resampled data set, and the distribution of the resulting estimates
+is used to derive the most likely parameters and their confidence
+intervals. The growth parameters of each resample can then be used in
+the following steps of a length-based stock assessment, so that the
+uncertainty is propagated to mortality rates and reference points. This
+vignette shows how to
 
 1.  resample lfq data (`lfqResample`),
 2.  run bootstrapped ELEFAN (`ELEFAN_GA_boot`, `ELEFAN_SA_boot`),
@@ -41,11 +40,12 @@ explains the ELEFAN functions and their settings in more detail.
 We use the synthetic data set `synLFQ7`, which was simulated with known
 growth parameters (see
 [`?synLFQ7`](http://tokami.github.io/TropFishR/reference/synLFQ7.md)):
-$L_{\infty}$ = 123 cm, $K$ = 0.2 year$^{- 1}$, $C$ = 0.3, $t_{s}$ = 0,
-and recruitment around April ($t_{anchor}$ between 0.16 and 0.34).
+$`L_\infty`$ = 123 cm, $`K`$ = 0.2 year$`^{-1}`$, $`C`$ = 0.3, $`t_s`$ =
+0, and recruitment around April ($`t_{anchor}`$ between 0.16 and 0.34).
 Knowing the true values allows us to judge the bootstrapped estimates.
 
 ``` r
+
 library(TropFishR)
 data(synLFQ7)
 lfq <- synLFQ7
@@ -68,6 +68,7 @@ Length-frequency data of synLFQ7: (a) catches and (b) restructured data
 with a moving average over 9 length classes (MA = 9).
 
 ``` r
+
 par(op)
 ```
 
@@ -85,6 +86,7 @@ observed frequencies. A resampled data set therefore has the same number
 of fish per sample, but different frequencies by length class:
 
 ``` r
+
 set.seed(1)
 lfq_resampled <- lfqResample(lfq)
 
@@ -107,6 +109,7 @@ data.](bootstrap_ELEFAN_files/figure-html/resample-1.png)
 Restructured length-frequency data: (a) original and (b) resampled data.
 
 ``` r
+
 par(op)
 ```
 
@@ -123,6 +126,7 @@ As for single ELEFAN fits, the search space (`low_par`, `up_par`) and
 the moving average (`MA`) have to be adjusted to the data:
 
 ``` r
+
 ## lower and upper limits of the search space
 low_par <- list(Linf = 100, K = 0.01, t_anchor = 0, C = 0, ts = 0)
 up_par <- list(Linf = 160, K = 3, t_anchor = 1, C = 1, ts = 1)
@@ -145,6 +149,7 @@ TropFishR has to be installed, because each core loads it. The argument
 the results reproducible:
 
 ``` r
+
 res <- ELEFAN_GA_boot(lfq, MA = MA, seasonalised = TRUE,
                       low_par = low_par, up_par = up_par,
                       popSize = popSize, maxiter = maxiter, run = run,
@@ -163,6 +168,7 @@ The result is an object of class `lfqBoot`. Its element `bootRaw`
 contains the estimates of each resample:
 
 ``` r
+
 head(res$bootRaw)
 ##       Linf         K  t_anchor         C        ts     phiL agemax
 ## 1 113.5351 0.2595156 0.5389283 0.5430991 0.5346364 3.524424     12
@@ -174,10 +180,10 @@ head(res$bootRaw)
 ```
 
 The growth performance index
-$\phi\prime = \log_{10}(K) + 2\log_{10}\left( L_{\infty} \right)$
-(`phiL`) and the maximum age (`agemax`) are derived from $L_{\infty}$
-and $K$. Each resample is identified by its seed (`res$seed`) and has a
-score (`res$Rn_max`).
+$`\phi' = \log_{10}(K) + 2 \log_{10}(L_\infty)`$ (`phiL`) and the
+maximum age (`agemax`) are derived from $`L_\infty`$ and $`K`$. Each
+resample is identified by its seed (`res$seed`) and has a score
+(`res$Rn_max`).
 
 The estimates are summarised by a multivariate kernel density estimate:
 `maxDen` is the parameter combination with the highest density, i.e. the
@@ -186,6 +192,7 @@ univariate (here 95 %) confidence intervals and `multiCI` the range of
 each parameter within the multivariate 95 % confidence region:
 
 ``` r
+
 res$maxDen
 ##        Linf           K    t_anchor           C          ts        phiL 
 ## 114.2471766   0.2336728   0.4315515   0.3901620   0.5676481   3.4842991 
@@ -200,6 +207,7 @@ res$CI
 Compared to the true parameters:
 
 ``` r
+
 pars <- c("Linf", "K", "C", "ts", "phiL")
 round(data.frame(true = true_par[pars],
                  max_density = res$maxDen[pars],
@@ -214,12 +222,12 @@ round(data.frame(true = true_par[pars],
 ## phiL   3.481       3.484   3.502    3.241    4.135
 ```
 
-The confidence intervals of $L_{\infty}$ and $K$ include the true
-values, and the growth performance index $\phi\prime$ is estimated very
-precisely. The seasonal parameters $C$ and $t_{s}$, on the other hand,
+The confidence intervals of $`L_\infty`$ and $`K`$ include the true
+values, and the growth performance index $`\phi'`$ is estimated very
+precisely. The seasonal parameters $`C`$ and $`t_s`$, on the other hand,
 are very uncertain: their confidence intervals span almost the whole
-search space. Note that $t_{s}$ is periodic ($t_{s}$ = 0 is equivalent
-to $t_{s}$ = 1). Such wide intervals are exactly the information that a
+search space. Note that $`t_s`$ is periodic ($`t_s`$ = 0 is equivalent
+to $`t_s`$ = 1). Such wide intervals are exactly the information that a
 single ELEFAN fit does not provide.
 
 ## Graphs
@@ -235,6 +243,7 @@ differ slightly from `res$maxDen` (multivariate density) and `res$CI`
 (quantiles):
 
 ``` r
+
 univariate_density(res, truePar = true_par, mfrow = c(2, 4))
 ```
 
@@ -249,16 +258,17 @@ true values (dashed red lines).
 
 ### Correlation of Linf and K
 
-Estimates of $L_{\infty}$ and $K$ are typically negatively correlated,
-i.e. similar growth curves can be described by a large $L_{\infty}$ with
-a small $K$ and vice versa. `LinfK_scatterhist` shows the joint
+Estimates of $`L_\infty`$ and $`K`$ are typically negatively correlated,
+i.e. similar growth curves can be described by a large $`L_\infty`$ with
+a small $`K`$ and vice versa. `LinfK_scatterhist` shows the joint
 distribution of both parameters. Isolines of the growth performance
-index $\phi\prime$ can be added with `phi.contour = TRUE` (or to any
-$L_{\infty}$-$K$ plot with `add_phiprime`). A few resamples ended with
-much larger values of $K$ (up to 2.6); the plot is limited to $K \leq 1$
-with `ylim`:
+index $`\phi'`$ can be added with `phi.contour = TRUE` (or to any
+$`L_\infty`$-$`K`$ plot with `add_phiprime`). A few resamples ended with
+much larger values of $`K`$ (up to 2.6); the plot is limited to
+$`K \le 1`$ with `ylim`:
 
 ``` r
+
 LinfK_scatterhist(res, phi.contour = TRUE, ylim = c(0, 1))
 ```
 
@@ -278,6 +288,7 @@ relative time together with the confidence intervals of the curves and
 the growth curve with maximum density:
 
 ``` r
+
 ci <- vbgfCI_time(res, agemax = 15, perm.col = adjustcolor("grey50", 0.2))
 ```
 
@@ -294,6 +305,7 @@ length-frequency data, one cohort per year (here limited to an age of 6
 years with `agemax`):
 
 ``` r
+
 plotBoot(lfq, res, agemax = 6)
 ```
 
@@ -308,6 +320,7 @@ The estimates with maximum density can also be used like the results of
 a single ELEFAN fit, e.g. with `lfqFitCurves`:
 
 ``` r
+
 lfq_rest <- lfqRestructure(lfq, MA = MA)
 plot(lfq_rest, Fname = "rcounts")
 tmp <- lfqFitCurves(lfq_rest, par = as.list(res$maxDen[c("Linf", "K", "t_anchor", "C", "ts")]),
@@ -327,6 +340,7 @@ Resample `x` uses the seed `seed + x` (stored in `res$seed`).
 sets, e.g. to inspect the data of a resample with an unusual estimate:
 
 ``` r
+
 lfq_resamples <- lfqResample(lfq, boot = res)
 length(lfq_resamples)
 ## [1] 200
@@ -343,6 +357,7 @@ resampling the data and fitting `ELEFAN_GA` with the same settings (the
 random numbers of the genetic algorithm follow those of the resampling):
 
 ``` r
+
 set.seed(res$seed[i])
 lfq_i <- lfqResample(lfq)
 fit_i <- ELEFAN_GA(lfq_i, MA = MA, seasonalised = TRUE,
@@ -370,10 +385,10 @@ assessment. For `catchCurve`, `VPA` and `predict_mod`, `lfq` has to be
 the data set that was used for the bootstrapped growth analysis.
 
 In addition to the growth parameters, the simulation of `synLFQ7` used a
-natural mortality of $M$ = 0.2 year$^{- 1}$, a fishing mortality of $F$
-= 0.3 year$^{- 1}$ (i.e. $Z$ = 0.5 year$^{- 1}$), a length at 50 %
-probability of capture of $L_{50}$ = 35 cm and a length at maturity of
-$L_{mat}$ = 30.8 cm (see
+natural mortality of $`M`$ = 0.2 year$`^{-1}`$, a fishing mortality of
+$`F`$ = 0.3 year$`^{-1}`$ (i.e. $`Z`$ = 0.5 year$`^{-1}`$), a length at
+50 % probability of capture of $`L_{50}`$ = 35 cm and a length at
+maturity of $`L_{mat}`$ = 30.8 cm (see
 [`?synLFQ7`](http://tokami.github.io/TropFishR/reference/synLFQ7.md)).
 
 ### Natural mortality
@@ -384,6 +399,7 @@ resample with the empirical formulas based on growth parameters
 `M_Pauly`):
 
 ``` r
+
 res <- M_empirical(method = "Then_growth", boot = res)
 round(rbind(maxDen = res$maxDen[c("K", "M_Then")], res$CI[, c("K", "M_Then")]), 3)
 ##            K M_Then
@@ -406,6 +422,7 @@ seed (`res$seed`, or see the argument `seed`), so the results are
 reproducible:
 
 ``` r
+
 res_stoch <- MstochThen(res)
 res_resid <- MstochThen(res, resid = TRUE)
 round(rbind(formula = res$CI[, "M_Then"], stochastic = res_stoch$CI[, "M_Then"],
@@ -424,16 +441,17 @@ year (see the arguments `yearSel` and `yearCombine` for data covering
 several years). The points used for the regression line are chosen
 automatically for each resample (see
 [`?catchCurve`](http://tokami.github.io/TropFishR/reference/catchCurve.md)).
-With `calc_ogive = TRUE`, the selectivity ($L_{50}$, $L_{75}$) is
+With `calc_ogive = TRUE`, the selectivity ($`L_{50}`$, $`L_{75}`$) is
 estimated as well, and with `natMort` the fishing mortality is
-calculated as $F = Z - M$:
+calculated as $`F = Z - M`$:
 
 ``` r
+
 res <- catchCurve(lfq, boot = res, calc_ogive = TRUE, natMort = "M_Then")
 pars <- c("Z", "FM", "L50", "L75")
 round(rbind(maxDen = res$maxDen[pars], res$CI[, pars]), 3)
 ##            Z    FM    L50    L75
-## maxDen 0.452 0.145 34.897 37.753
+## maxDen 0.451 0.145 34.897 37.753
 ## lo     0.332 0.074 29.674 31.023
 ## up     1.409 0.745 40.651 44.111
 ```
@@ -443,6 +461,7 @@ together with the regression line with maximum density and its
 confidence band:
 
 ``` r
+
 plotBoot(boot = res, pType = "cc")
 ```
 
@@ -453,20 +472,20 @@ with maximum density (black line) and 95 % confidence band
 Catch curves of the resamples (grey points and lines), regression line
 with maximum density (black line) and 95 % confidence band (blue).
 
-The estimates of total mortality ($Z$ = 0.45) and selectivity ($L_{50}$
-= 34.9 cm) are close to the true values. The fishing mortality with
-maximum density ($F$ = 0.14), however, is lower than the true value
-(0.3), because the empirical formula overestimates the natural mortality
-of this population ($M$ = 0.31 instead of 0.2). The true value is within
-the confidence interval, but the bootstrap only describes the
-uncertainty arising from the data and the assessment steps; it does not
-correct for a biased natural mortality estimate.
+The estimates of total mortality ($`Z`$ = 0.45) and selectivity
+($`L_{50}`$ = 34.9 cm) are close to the true values. The fishing
+mortality with maximum density ($`F`$ = 0.14), however, is lower than
+the true value (0.3), because the empirical formula overestimates the
+natural mortality of this population ($`M`$ = 0.31 instead of 0.2). The
+true value is within the confidence interval, but the bootstrap only
+describes the uncertainty arising from the data and the assessment
+steps; it does not correct for a biased natural mortality estimate.
 
 ### Yield per recruit and reference points
 
 `predict_mod` with `boot` applies the Thompson and Bell model to each
 resample, with the growth parameters, natural and fishing mortality and
-the selectivity of the resample. The length class including $L_{\infty}$
+the selectivity of the resample. The length class including $`L_\infty`$
 of the resample is the plus group. It requires the parameters of the
 length-weight relationship (`a` and `b`; here with the weight in g,
 `LW_unit = "g"`) and, for reference points based on the spawning
@@ -474,6 +493,7 @@ potential ratio (SPR), the length at maturity (`Lmat`, with `wmat` the
 width of the maturity ogive):
 
 ``` r
+
 lfq$a <- 0.015
 lfq$b <- 3
 lfq$Lmat <- 30.8
@@ -501,6 +521,7 @@ they are estimated for each resample, the probability that the current
 fishing mortality exceeds a reference point can be derived directly:
 
 ``` r
+
 pars <- c("FF01", "FFmax", "FF05", "FF04")
 round(rbind(maxDen = res$maxDen[pars], res$CI[, pars]), 3)
 ##         FF01 FFmax  FF05  FF04
@@ -514,6 +535,7 @@ round(colMeans(res$bootRaw[, c("FF01", "FFmax", "FF05", "FF04")] > 1, na.rm = TR
 ```
 
 ``` r
+
 plotBoot(boot = res, pType = "ypr", pRef = "Fmax")
 ```
 
@@ -538,6 +560,7 @@ and each resample is raised to the total catch (see
 [`?lfqRaise`](http://tokami.github.io/TropFishR/reference/lfqRaise.md)):
 
 ``` r
+
 landings <- rep(30000, length(lfq$dates))  # landings in kg per sampling date
 res <- VPA(lfq, boot = res, natMort = "M_Then", landings = landings, LW_unit = "g")
 res <- predict_mod(lfq, type = "ThompBell", FM_change = seq(0, 3, 0.05),

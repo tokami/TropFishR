@@ -8,22 +8,24 @@
 
 The following tutorial outlines the use of the ELEFAN functions
 available in TropFishR (`ELEFAN`, `ELEFAN_GA`, and `ELEFAN_SA`) (Tobias
-K. Mildenberger, Taylor, and Wolff 2017; Tobias Karl Mildenberger,
-Taylor, and Wolff 2017). These functions can be used to estimate growth
-model parameters from length-frequency (lfq) data. The ability to
-convert length to relative age is the initial step in length-based stock
-assessment, and underpins subsequent analyses (see the [TropFishR
+K. Mildenberger et al. 2017; Tobias Karl Mildenberger et al. 2017).
+These functions can be used to estimate growth model parameters from
+length-frequency (lfq) data. The ability to convert length to relative
+age is the initial step in length-based stock assessment, and underpins
+subsequent analyses (see the [TropFishR
 tutorial](https://tokami.github.io/TropFishR/articles/tutorial.html) for
 a broader overview of length-based stock assessment).
 
 The growth model presently implemented within TropFishR is the von
 Bertalanffy growth function (VBGF),
 
-$$L_{t} = L_{\infty}\left( 1 - \exp\left( - K\left( t - t_{0} \right) \right) \right),$$
+``` math
+ L_{t} = L_{\infty} (1-\exp(-K(t-t_0))), 
+```
 
-where $L_{t}$ is length-at-age $t$, $L_{\infty}$ is asymptotic length,
-$K$ is the von Bertalanffy growth constant, and $t_{0}$ is the
-theoretical age when length equals zero. $t_{0}$ is usually negative,
+where $`L_t`$ is length-at-age $`t`$, $`L_\infty`$ is asymptotic length,
+$`K`$ is the von Bertalanffy growth constant, and $`t_0`$ is the
+theoretical age when length equals zero. $`t_0`$ is usually negative,
 resulting in a positive length at the time of recruitment (t = 0). In
 TropFishR, these parameters are referred to as `Linf`, `K`, and `t0`.
 
@@ -31,6 +33,7 @@ The following plot shows the basic form of the VBGF under varying K
 settings:
 
 ``` r
+
 library(TropFishR)
 t <- seq(-0.2, 3, length.out = 200)
 K <- c(2, 1, 0.5)
@@ -57,19 +60,22 @@ for(i in seq(K)){
 TropFishR also offers users the ability to model inter-annual
 variability in growth via a seasonally-oscillating VBGF (soVBGF),
 
-$$L_{t} = L_{\infty}\left( 1 - \exp\left( - \left( K\left( t - t_{0} \right) + S(t) - S\left( t_{0} \right) \right) \right) \right),$$
+``` math
+ L_{t} = L_{\infty} (1-\exp(-(K(t-t_0)+S(t)-S(t_0)))), 
+```
 
-where $S(t) = (CK/2\pi)\sin 2\pi\left( t - t_{s} \right)$, $C$ is a
-constant indicating the amplitude of the oscillation, typically ranging
-from 0 to 1 (a value $> 1$ implies periods of shrinkage, which is rare),
-and $t_{s}$ is the fraction of a year (relative to the age of
-recruitment, $t = 0$) where the sine wave oscillation begins (i.e. turns
-positive). In TropFishR, these additional oscillation parameters are
-written as `C` and `ts`.
+where $`S(t) = (CK/2\pi)\sin 2\pi(t−t_s)`$, $`C`$ is a constant
+indicating the amplitude of the oscillation, typically ranging from 0 to
+1 (a value $`>1`$ implies periods of shrinkage, which is rare), and
+$`t_s`$ is the fraction of a year (relative to the age of recruitment,
+$`t=0`$) where the sine wave oscillation begins (i.e. turns positive).
+In TropFishR, these additional oscillation parameters are written as `C`
+and `ts`.
 
-The following plot demonstrates the effect of variable $C$ settings:
+The following plot demonstrates the effect of variable $`C`$ settings:
 
 ``` r
+
 library(TropFishR)
 t <- seq(-0.2, 3, length.out = 200)
 Lt <- VBGF(param = list(Linf = 20, K = 1, t0 = -0.1, ts = 0, C=0), t = t)
@@ -96,10 +102,10 @@ production).
 The first step to using the ELEFAN functions is to have a
 length-frequency object loaded (class `lfq`). For the majority of the
 following examples, we will use the relatively small `alba` lfq dataset
-(Abra alba mollusc sampled in Kiel Bay (Brey, Soriano, and Pauly 1988)),
-which consists of approximately bi-monthly sampling of
-length-frequencies taken over the course of one and a half years. The
-`alba` dataset is included within the current TropFishR version.
+(Abra alba mollusc sampled in Kiel Bay (Brey et al. 1988)), which
+consists of approximately bi-monthly sampling of length-frequencies
+taken over the course of one and a half years. The `alba` dataset is
+included within the current TropFishR version.
 
 An `lfq` class dataset is essentially a `list` containing the following
 elements: a catch frequency matrix (`lfq$catch`), a vector of
@@ -115,6 +121,7 @@ object.
 First, the three elements are added to a list:
 
 ``` r
+
 data("alba")
 tmplfq <- list(
   midLengths = alba$midLengths,
@@ -127,6 +134,7 @@ Finally, we need to assign the class `lfq` to our new object in order to
 allow it to be recognized by other TropFishR functions, e.g. `plot.lfq`:
 
 ``` r
+
 class(tmplfq) <- "lfq"
 plot(tmplfq, Fname="catch", hist.sc = 1)
 ```
@@ -161,6 +169,7 @@ Background coloring is added to help visualize sign and magnitude of the
 bin values.
 
 ``` r
+
 alba <- lfqRestructure(alba, MA = 7)
 plot(alba, hist.sc = 0.75)
 ```
@@ -188,13 +197,16 @@ crossed bins are counted every time they are hit (Pauly 1985).
 Finally, as a measure of relative fit, the ratio of the two values is
 used to calculate “new R” (Rn), which can have a maximum value of 1.0:
 
-$$Rn = 10^{(ESP/ASP)}/10$$
+``` math
+Rn = 10^{(ESP/ASP)}/10
+```
 
 In the following plot, background shading shows runs of peaks, with
 positive peaks in blue, negative peaks in red, and values of zero in
 white.
 
 ``` r
+
 alba <- lfqRestructure(alba, MA=7)
 plot(alba, hist.col = c("white", "black"),
   image.col = c(rep(rgb(1,0.8,0.8),1000), "white", rep(rgb(0.8,0.8,1),1000)),
@@ -238,18 +250,21 @@ results in Linf = 11.74cm and a confidence interval between 9.90 and
 13.58cm.
 
 ``` r
+
 PW <- powell_wetherall(alba, catch_columns = 1:7, reg_int = c(2,9) )
 ```
 
 ![](Using_TropFishR_ELEFAN_functions_files/figure-html/unnamed-chunk-7-1.png)
 
 ``` r
+
 PW$Linf_est
 ```
 
     ## [1] 11.3413
 
 ``` r
+
 PW$confidenceInt_Linf
 ```
 
@@ -264,7 +279,9 @@ Another approach may be to inform first guesstimates of Linf from other
 data sources, and allow ELEFAN a significant range of values for
 searching during VBGF fitting. Froese and Binohlan (2000) also showed
 strong correlation between the largest individuals (Lmax) and Linf,
-$$\log\left( L_{\infty} \right) = 0.044 + 0.9841*\log\left( L_{max} \right)$$
+``` math
+ \log(L_\infty) = 0.044 + 0.9841 * \log(L_{max}) 
+```
 , but Lmax may also be difficult to obtain in highly exploited
 populations.
 
@@ -295,6 +312,7 @@ through a defined bin, using the argument setting `method = "cross"`,
 which will substantially reduce the computation time.
 
 ``` r
+
 alba2 <- ELEFAN(
   lfq = alba,  MA = 7,
   Linf_range = seq(7, 20, length.out = 30),
@@ -312,12 +330,14 @@ alba2 <- ELEFAN(
     ## The progress bar will inform you about the progress of the calculations.
 
 ``` r
+
 points(alba2$par["Linf"], alba2$par["K"], pch="*", cex=2, col=2)
 ```
 
 ![](Using_TropFishR_ELEFAN_functions_files/figure-html/unnamed-chunk-8-1.png)
 
 ``` r
+
 unlist(alba2$par)
 ```
 
@@ -325,6 +345,7 @@ unlist(alba2$par)
     ## 9.689655 2.400000 0.370000 0.000000 0.000000 2.352828
 
 ``` r
+
 alba2$Rn_max
 ```
 
@@ -335,8 +356,7 @@ symbol(\*), although there exists a larger area of relatively similar
 scores. This is typical of an RSA plot, where a plateau of higher scores
 often forms along a banana-shaped area of negatively correlated K and
 Linf values, which generally follows an isocline of the growth
-performance index
-($\phi\prime = \log(K) + 2\log\left( L_{\infty} \right)$). In the best
+performance index ($`\phi' = \log(K)+ 2\log(L_{\infty})`$). In the best
 case, a single maxima will stand out, revealing the best parameter
 combination, however this is usually rare. Nevertheless, a wide range of
 values can be visualized, allowing for reduced ranges in subsequent RSAs
@@ -348,6 +368,7 @@ following plot, the bin designated for crossing is denoted by a red star
 symbol(\*):
 
 ``` r
+
 plot(alba2)
 points(alba$dates[3], alba$midLengths[5], pch="*", cex=2, col=2)
 ```
@@ -379,6 +400,7 @@ iterations (`maxit`). For reproducibility across computing platforms,
 `maxit` is the more appropriate stopping point.
 
 ``` r
+
 set.seed(1)
 alba3 <- ELEFAN_SA(
   lfq = alba,
@@ -401,6 +423,7 @@ alba3 <- ELEFAN_SA(
 ![](Using_TropFishR_ELEFAN_functions_files/figure-html/unnamed-chunk-10-1.png)
 
 ``` r
+
 unlist(alba3$par)
 ```
 
@@ -408,6 +431,7 @@ unlist(alba3$par)
     ## 9.689655 2.400000 0.370000 2.352828
 
 ``` r
+
 alba3$Rn_max
 ```
 
@@ -423,6 +447,7 @@ Again, the resulting best scoring parameter combination is added to
 `$par`, and can be directly plotted:
 
 ``` r
+
 plot(alba3)
 ```
 
@@ -454,6 +479,7 @@ parameter space as well as effect the degree of localized searching
 during later generations.
 
 ``` r
+
 set.seed(1)
 alba4 <- ELEFAN_GA(
   lfq = alba,
@@ -476,6 +502,7 @@ alba4 <- ELEFAN_GA(
 ![](Using_TropFishR_ELEFAN_functions_files/figure-html/unnamed-chunk-12-1.png)
 
 ``` r
+
 unlist(alba4$par)
 ```
 
@@ -483,6 +510,7 @@ unlist(alba4$par)
     ## 10.1301838  1.9618729  0.2643963  2.3039055
 
 ``` r
+
 alba4$Rn_max
 ```
 
@@ -501,6 +529,7 @@ Again, the best fitting combination is added to `$par` and the results
 can be directly plotted over the lfq data:
 
 ``` r
+
 plot(alba4)
 ```
 
@@ -529,6 +558,7 @@ parameters (i.e. between 0 and 1) are recommended.
 ##### *alba*
 
 ``` r
+
 set.seed(1)
 alba5 <- ELEFAN_GA(
   lfq = alba,
@@ -551,6 +581,7 @@ alba5 <- ELEFAN_GA(
 ![](Using_TropFishR_ELEFAN_functions_files/figure-html/unnamed-chunk-14-1.png)
 
 ``` r
+
 unlist(alba5$par)
 ```
 
@@ -558,12 +589,14 @@ unlist(alba5$par)
     ## 10.2363568  1.8799341  0.2350472  0.3332832  0.7712340  2.2944335
 
 ``` r
+
 alba5$Rn_max
 ```
 
     ## [1] 0.6937336
 
 ``` r
+
 plot(alba5)
 ```
 
@@ -581,6 +614,7 @@ For the synthetic lfq dataset `synLFQ4`, the soVBGF parameters used in
 its generation are known:
 
 ``` r
+
 true_par <- list(Linf = 80, K = 0.5, t_anchor = 0.25,C = 0.75,  ts = 0.5, phiL = 3.51)
 ```
 
@@ -593,6 +627,7 @@ that a moving average setting of `MA = 11` is appropriate for this lfq
 data.
 
 ``` r
+
 set.seed(1)
 data("synLFQ4")
 synLFQ4 <- ELEFAN_GA(
@@ -618,6 +653,7 @@ synLFQ4 <- ELEFAN_GA(
 In this case, the *true* values are very well estimated:
 
 ``` r
+
 tmp <- as.data.frame(rbind(unlist(true_par), unlist(synLFQ4$par)))
 rownames(tmp) <- c("true", "estimated")
 tmp$Rn <- c(synLFQ4$Rn_max,  lfqFitCurves(synLFQ4, par = true_par)$Rn_max)
@@ -630,6 +666,7 @@ tmp
     ## estimated 86.533 0.41    0.075 0.686 0.503 3.487 0.453
 
 ``` r
+
 plot(synLFQ4, draw = FALSE)
 tmp <- lfqFitCurves(synLFQ4, par = true_par, col=8, lty=1, draw = TRUE)
 tmp <- lfqFitCurves(synLFQ4, par = synLFQ4$par, col=4, lty=2, draw = TRUE)
@@ -653,6 +690,7 @@ pmutation rates in a way mimics the decreasing temperature of simulated
 annealing.
 
 ``` r
+
 synLFQ4 <- ELEFAN_GA(
   lfq = synLFQ4,
   seasonalised = TRUE,
@@ -714,8 +752,7 @@ Data.” *Journal of Fish Biology* 56 (4): 758–73.
 
 Gayanilo, F. C., and D Pauly, eds. 1997. *FAO-ICLARM Stock Assessment
 Tools: Reference Manual*. FAO Computerized Information Series
-(Fisheries) 8. Rome: Food; Agriculture Organization of the United
-Nations.
+(Fisheries) 8. Food; Agriculture Organization of the United Nations.
 
 Mildenberger, Tobias Karl, Marc Hollis Taylor, and Matthias Wolff. 2017.
 “TropFishR: An r Package for Fisheries Analysis with Length-Frequency
@@ -723,7 +760,7 @@ Data.” *Methods in Ecology and Evolution* 8 (11): 1520–27.
 <https://doi.org/10.1111/2041-210X.12791>.
 
 Mildenberger, Tobias K., Marc H. Taylor, and Matthias Wolff. 2017.
-“TropFishR: Tropical Fisheries Analysis with R.”
+*TropFishR: Tropical Fisheries Analysis with R*.
 <https://github.com/tokami/TropFishR>.
 
 Pauly, D. 1985. “On Improving Operation and Use of the ELEFAN Programs.

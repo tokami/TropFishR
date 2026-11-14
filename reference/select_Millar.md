@@ -172,7 +172,7 @@ select_Millar(gillnet, x0 = c(55,4,65,4,3), rtype="binorm.sca")
 #> $deviance
 #> function (object, ...) 
 #> UseMethod("deviance")
-#> <bytecode: 0x569de27e7b20>
+#> <bytecode: 0x5e98f6307370>
 #> <environment: namespace:stats>
 #> 
 #> $rtype
@@ -301,7 +301,7 @@ select_Millar(gillnet, x0 = c(4,0.2,4.2,0.1,2), rtype="bilognorm")
 #> $deviance
 #> function (object, ...) 
 #> UseMethod("deviance")
-#> <bytecode: 0x569de27e7b20>
+#> <bytecode: 0x5e98f6307370>
 #> <environment: namespace:stats>
 #> 
 #> $rtype

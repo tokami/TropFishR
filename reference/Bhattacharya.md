@@ -97,13 +97,7 @@ Rev. 2). 407 p.
 # \donttest{
  data(synLFQ1)
  Bhattacharya(param = synLFQ1)
-#> Starting on the left, please choose from black points which 
-#> lie on a straight line! Do not include points which might be 
-#> affected by the next distribution! 
-#> To stop the process press right click (and choose 
-#> 'Stop' if necessary)
-#> You did not choose any points! Please run the function again 
-#> and choose points to include in the calculation of the 
-#> Gaussian components of the observed frequency.
+#> Interactive session needed for Bhattacharya.
+#> NULL
 # }
 ```

@@ -12,7 +12,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/tokami/TropFishR/blob/HEAD/inst/CITATION)
+[`inst/CITATION`](https://github.com/tokami/TropFishR/blob/master/inst/CITATION)
 
 Mildenberger TK, Taylor MH, Wolff M (2017). “TropFishR: an R package for
 fisheries analysis with length-frequency data.” *Methods in Ecology and

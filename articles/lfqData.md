@@ -37,11 +37,12 @@ instead, e.g. `read.csv("C:/data/lfq1.csv")`. This vignette requires to
 load the TropFishR package:
 
 ``` r
+
 library(TropFishR)
 
 ## folder with the example files
 system.file("extdata", package = "TropFishR")
-#> [1] "/home/tobm/R/x86_64-pc-linux-gnu-library/4.6/TropFishR/extdata"
+#> [1] "/home/runner/work/_temp/Library/TropFishR/extdata"
 ```
 
 ### *Data arrangement 1*
@@ -59,6 +60,7 @@ measurements.
 The data in this arrangement can be loaded into R by following code.
 
 ``` r
+
 lfq1 <- read.csv(system.file("extdata", "lfq1.csv", package = "TropFishR"))
 head(lfq1)
 #>         date length
@@ -112,6 +114,7 @@ and one with the frequency of the length at respective date.
 Data of this arrangement can be loaded into R by following code.
 
 ``` r
+
 lfq2 <- read.csv2(system.file("extdata", "lfq2.csv", package = "TropFishR"))
 head(lfq2)
 #>       DATE Length_CM Frequency
@@ -169,6 +172,7 @@ times.
 Data in this arrangement have to be treated a little differently:
 
 ``` r
+
 lfq3 <- read.csv(system.file("extdata", "lfq3.csv", package = "TropFishR"),
                  check.names = FALSE)
 head(lfq3)
@@ -224,6 +228,7 @@ require different functions to load the data into R (beside
 code demonstrats this for a ‘xlsx’ and ‘txt’ file.
 
 ``` r
+
 lfq2a <- read.table(system.file("extdata", "lfq2.txt", package = "TropFishR"),
                     header = TRUE, sep = "\t", dec = ",")
 head(lfq2a)
@@ -237,6 +242,7 @@ head(lfq2a)
 ```
 
 ``` r
+
 install.packages("openxlsx")
 library(openxlsx)
 lfq3a <- read.xlsx(system.file("extdata", "lfq3.xlsx", package = "TropFishR"),
@@ -269,6 +275,7 @@ added, e.g. for monthly samples from January 2022 to December 2023 (here
 with random numbers instead of the data read from a file):
 
 ``` r
+
 ## data arrangement 3: length classes and 24 monthly samples
 set.seed(1)
 lfq4 <- data.frame(lengthClass = seq(2.5, 29.5, 1),
@@ -295,6 +302,7 @@ sums the samples per year (one column per year) or selects the samples
 of certain years:
 
 ``` r
+
 ## one column per year
 lfq4year <- lfqModify(lfq4new, vectorise_catch = TRUE)
 colnames(lfq4year$catch)
@@ -328,12 +336,13 @@ have to be raised to the total catch, which is usually done with the
 total landings in weight: the raising factor of each sample is the
 landings divided by the weight of the sample. If the weight of the
 samples was not measured, it is estimated from the numbers per length
-class and the length-weight relationship ($W = aL^{b}$). The function
+class and the length-weight relationship ($`W = a L^b`$). The function
 `lfqRaise` does this, but it is easier to keep the sampled numbers in
 the lfq data and to pass the landings in kg directly to `VPA` (argument
 `landings`), which raises the samples internally:
 
 ``` r
+
 library(TropFishR)
 data(synLFQ7)
 lfq <- synLFQ7

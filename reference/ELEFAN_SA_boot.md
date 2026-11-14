@@ -228,12 +228,12 @@ res <- ELEFAN_SA_boot(lfq = alba, MA = MA, seasonalised = FALSE,
 #> Simulated annealing is running. 
 #> This will take approximately 0.02 minutes.
 res$maxDen
-#>      Linf         K  t_anchor      phiL    agemax 
-#> 9.7758712 2.9404652 0.5205985 2.4487270 2.0000000 
+#>       Linf          K   t_anchor       phiL     agemax 
+#> 10.1836866  2.7026289  0.5084278  2.4475965  2.0000000 
 res$CI
 #>         Linf        K  t_anchor     phiL agemax
 #> lo  9.180246 2.173960 0.2777088 2.262960      1
-#> up 10.769992 4.375782 0.5916848 2.705486      2
+#> up 10.725237 4.653956 0.5769669 2.728636      2
 
 # plot resulting distributions
 univariate_density(res)

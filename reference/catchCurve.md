@@ -303,22 +303,16 @@ application of a conservation law. *Oecologia, Berl.*, 27(4):311-318
 data(goatfish)
 output <- catchCurve(goatfish)
 #> Warning: NaNs produced
-#> Please choose the minimum and maximum point in the graph 
-#> to include for the regression line!
-#> Warning: argument 2 does not name a graphical parameter
-#> Warning: argument 2 does not name a graphical parameter
-#> Error in catchCurve(goatfish): You did not choose any points in the graph. Please re-run the function and choose points in the graph!
+#> Either start an interactive session to choose points, use reg_int to define the points for the regression analysis or use auto=TRUE.
 summary(output$linear_mod)
-#> Error: object 'output' not found
+#> Length  Class   Mode 
+#>      0   NULL   NULL 
 
 # based on age composition data
 data(whiting)
 catchCurve(whiting, catch_columns = 1)
-#> Please choose the minimum and maximum point in the graph 
-#> to include for the regression line!
-#> Warning: argument 2 does not name a graphical parameter
-#> Warning: argument 2 does not name a graphical parameter
-#> Error in catchCurve(whiting, catch_columns = 1): You did not choose any points in the graph. Please re-run the function and choose points in the graph!
+#> Either start an interactive session to choose points, use reg_int to define the points for the regression analysis or use auto=TRUE.
+#> NULL
 
 #_______________________________________________
 # Constant parameter system based on age composition data (with catch matrix)
@@ -329,11 +323,8 @@ catchCurve(whiting)
 #> Age/length classes and the real cohort in the catch matrix 
 #> do not have the same length. The missing age/length 
 #> classes will be omitted.
-#> Please choose the minimum and maximum point in the graph 
-#> to include for the regression line!
-#> Warning: argument 2 does not name a graphical parameter
-#> Warning: argument 2 does not name a graphical parameter
-#> Error in catchCurve(whiting): You did not choose any points in the graph. Please re-run the function and choose points in the graph!
+#> Either start an interactive session to choose points, use reg_int to define the points for the regression analysis or use auto=TRUE.
+#> NULL
 
 #_______________________________________________
 # Cumulative Catch Curve
@@ -341,36 +332,31 @@ catchCurve(whiting)
 data(goatfish)
 catchCurve(goatfish, cumulative = TRUE)
 #> Warning: NaNs produced
-#> Please choose the minimum and maximum point in the graph 
-#> to include for the regression line!
-#> Warning: argument 2 does not name a graphical parameter
-#> Warning: argument 2 does not name a graphical parameter
-#> Error in catchCurve(goatfish, cumulative = TRUE): You did not choose any points in the graph. Please re-run the function and choose points in the graph!
+#> Either start an interactive session to choose points, use reg_int to define the points for the regression analysis or use auto=TRUE.
+#> NULL
 
 # based on age composition data
 data(synCAA2)
 catchCurve(synCAA2, cumulative = TRUE)
-#> Please choose the minimum and maximum point in the graph 
-#> to include for the regression line!
-#> Warning: argument 2 does not name a graphical parameter
-#> Warning: argument 2 does not name a graphical parameter
-#> Error in catchCurve(synCAA2, cumulative = TRUE): You did not choose any points in the graph. Please re-run the function and choose points in the graph!
+#> Either start an interactive session to choose points, use reg_int to define the points for the regression analysis or use auto=TRUE.
+#> NULL
 
 #_______________________________________________
 # Catch Curve with estimation of selection ogive
 data(synLFQ3)
 output <- catchCurve(synLFQ3, calc_ogive = TRUE)
-#> Please choose the minimum and maximum point in the graph 
-#> to include for the regression line!
-#> Warning: argument 2 does not name a graphical parameter
-#> Warning: argument 2 does not name a graphical parameter
-#> Error in catchCurve(synLFQ3, calc_ogive = TRUE): You did not choose any points in the graph. Please re-run the function and choose points in the graph!
+#> Either start an interactive session to choose points, use reg_int to define the points for the regression analysis or use auto=TRUE.
 summary(output$linear_mod_sel)
-#> Error: object 'output' not found
+#> Length  Class   Mode 
+#>      0   NULL   NULL 
  # }
 
 # the same with predefined selection for regression line:
 data(synLFQ3)
 output <- catchCurve(synLFQ3, calc_ogive = TRUE, reg_int = c(9,21))
+
+
 plot(output, plot_selec = TRUE)
+
+
 ```

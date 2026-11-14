@@ -246,7 +246,7 @@ summary(output$mod)
 #> Residual standard error: 1.424 on 32 degrees of freedom
 #> 
 #> Number of iterations to convergence: 7 
-#> Achieved convergence tolerance: 7.9e-07
+#> Achieved convergence tolerance: 8.149e-07
 #> 
 # }
 ```
