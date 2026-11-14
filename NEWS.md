@@ -1,9 +1,9 @@
 
-### TropFishR (development version)
+# TropFishR (development version)
 
 ---
 
-##### New features
+## New features
 
 - Bootstrapped ELEFAN (Schwamborn et al. 2019) to assess the uncertainty of
   the growth parameters:
@@ -102,7 +102,7 @@
   The argument `plot` only controls the plot of the restructured data with
   the growth curves.
 
-##### Bug fixes
+## Bug fixes
 
 - `ELEFAN_GA_boot`, `ELEFAN_SA_boot`, `plotBoot`, `vbgfCI_time`: clear error
   messages if the kernel density of the bootstrapped parameters cannot be
@@ -226,7 +226,7 @@
 - `yeardec2date` no longer returns the previous day for some dates because
   of floating point error (e.g. 2019-07-15 was returned as 2019-07-14).
 
-##### Minor changes
+## Minor changes
 
 - Faster ELEFAN: the score calculation in `lfqFitCurves` and `date2yeardec`
   are faster (same results), which speeds up `ELEFAN`, `ELEFAN_SA` (more
@@ -239,11 +239,11 @@
 
 
 
-### TropFishR 1.6.6 (2025-04-06)
+# TropFishR 1.6.6 (2025-04-06)
 
 ---
 
-##### Minor changes
+## Minor changes
 
 - Removed the dependency on the package `propagate`, which was archived on
   CRAN. The confidence band of the fitted growth curve in `growth_length_age`
@@ -256,11 +256,11 @@
 
 
 
-### TropFishR 1.6.5 (2024-10-21)
+# TropFishR 1.6.5 (2024-10-21)
 
 ---
 
-##### Minor changes
+## Minor changes
 
 - Fixed CRAN notes: package authors are given as `Authors@R` (incl. ORCID),
   updated link to the FAO manual, and corrected documentation links.
@@ -273,17 +273,17 @@
 
 
 
-### TropFishR 1.6.4 (2024-01-29)
+# TropFishR 1.6.4 (2024-01-29)
 
 ---
 
-##### Bug fixes
+## Bug fixes
 
 - `ELEFAN_GA` and `ELEFAN_SA` with `plot = TRUE`: the growth curves are drawn
   with the estimated parameters (`par`); previously the non-existing element
   `pars` was used.
 
-##### Minor changes
+## Minor changes
 
 - `Bhattacharya` requires an interactive session and returns `NULL` with a
   message otherwise.
@@ -309,11 +309,11 @@
 
 
 
-### TropFishR 1.6.3 (2021-09-02)
+# TropFishR 1.6.3 (2021-09-02)
 
 ---
 
-#### New features
+## New features
 
 - Exclude NA in `VBGF` function with argument `na.rm = TRUE` (default is
   `FALSE`)
@@ -321,7 +321,7 @@
 reference points
 
 
-##### Bug fixes
+## Bug fixes
 
 - Correct separation index calculation in Bhattacharya's method (correct = `(L1 - L2) /
   (sd1 + sd2)/2`)
@@ -329,7 +329,7 @@ reference points
 - Correct equations of Heincke and Robson & Chapman methods in the `Z_CPUE` function
 - Return `score_mat` in `ELEFAN` function
 
-##### Minor changes
+## Minor changes
 
 - Updated vignettes
 - `LazyData = false` which implies that `data("...")` has to be used to load a
@@ -346,11 +346,11 @@ the reference points in the prediction models. Default colours are `cols_refs = 
 
 
 
-### TropFishR 1.6.2 (2020-01-27)
+# TropFishR 1.6.2 (2020-01-27)
 
 ---
 
-##### Bug fixes
+## Bug fixes
       - Use of matrices was adjusted to comply with new R matrix classes
       - ELEFAN_GA was adjusted to use new arguments of the underlying GA::ga
         function
@@ -359,11 +359,11 @@ the reference points in the prediction models. Default colours are `cols_refs = 
 
 
 
-### TropFishR 1.6.1
+# TropFishR 1.6.1
 
 ---
 
-##### Bug fixes
+## Bug fixes
       - The LBB functionality was removed from the package.
 
 
@@ -371,11 +371,11 @@ the reference points in the prediction models. Default colours are `cols_refs = 
 
 
 
-### TropFishR 1.6
+# TropFishR 1.6
 
 ---
 
-##### New features
+## New features
       - The Length-based Bayesian biomass estimator method (LBB) by
         Froese et al. (2018) has been added to the package.
       - Improved implementation of compilation of length-frequency
@@ -387,11 +387,11 @@ the reference points in the prediction models. Default colours are `cols_refs = 
         matrix per year, per quarter, or per month, subsetting lfq
         data with range of length classes or sampling dates
 
-##### Documentation
+## Documentation
       - A new vignette "LBBmanual" with the introduction and
         demonstration of LBB within TropFishR has been added.
 
-##### Bug fixes
+## Bug fixes
       - Seasonal growth parameters are now added correctly to the lfq
         object in lfqModify
 
@@ -400,16 +400,16 @@ the reference points in the prediction models. Default colours are `cols_refs = 
 
 
 
-### TropFishR 1.2.1
+# TropFishR 1.2.1
 
 ---
 
-##### Documentation
+## Documentation
       - A new vignette has been added to the package. The vignette "ELEFANTutorial" outlines
       all ELEFAN functions available in TropFishR in detail.
 
 
-##### Bug fixes
+## Bug fixes
       - The ELEFAN functions did not overwrite any element of the lfq object but instead
       concatinated parameters onto the object. This can have unintended side effects, e.g. if several
       growth parameters are saved in the lfq object and the plotting functions are called.
@@ -419,11 +419,11 @@ the reference points in the prediction models. Default colours are `cols_refs = 
 <br><br>
 
 
-### TropFishR 1.2
+# TropFishR 1.2
 
 ---
 
-##### New features
+## New features
       - Due to more efficient matrix computations ELEFAN is 2-4 times faster as before
       - missing seed values were added in ELEFAN_GA()
       - `plot.lfq()` allows plotting relative frequencies, this is
@@ -438,14 +438,14 @@ the reference points in the prediction models. Default colours are `cols_refs = 
       - length converted catch curve can account for the seasonalized VBGF
 
 
-##### User-visible changes
+## User-visible changes
       - better control over graphical devices with par(),
       when par() defined the default settings are not used
       - growth parameters can now be added to lfq lists as "par" elements, this
       is convenient as it is in line with the results of the ELEFAN methods
 
 
-##### Documentation
+## Documentation
       - new vignette with a short description of lfq data and
       how to import lfq data into R
       - updated tutorial vignette
@@ -453,7 +453,7 @@ the reference points in the prediction models. Default colours are `cols_refs = 
       - document with news and changes about package version was added
 
 
-##### Bug fixes
+## Bug fixes
       - crash report of ELEFAN_GA with interactive sessions (Rstudio) fixed
       and more stable on windows
       - plot.catchCurve() was not displaying the regression line, but

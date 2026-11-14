@@ -1,0 +1,152 @@
+# Plotting prediction models yield per recruit and Thompson & Bell
+
+This function plots objects of the class "predict_mod", which are
+results of the function
+[`predict_mod`](https://tokami.github.io/TropFishR/reference/predict_mod.md).
+
+## Usage
+
+``` r
+# S3 method for class 'predict_mod'
+plot(
+  x,
+  type = "ypr",
+  xaxis1 = "FM",
+  yaxis1 = "Y_R.rel",
+  yaxis2 = "B_R.rel",
+  yaxis_iso = "Lc",
+  identify = FALSE,
+  mark = FALSE,
+  contour = TRUE,
+  xlab = NA,
+  ylab1 = NA,
+  ylab2 = NA,
+  ylab3 = NA,
+  plot_refs = c("F01", "Fmax", "F05", "F04"),
+  cols_refs = c("goldenrod2", "darkred", "darkgreen", "darkorange"),
+  ...
+)
+```
+
+## Arguments
+
+- x:
+
+  a object of the class 'predict_mod'
+
+- type:
+
+  a character indicating, which type of plot should be displayed in case
+  of Beverton and Holt's yield per recurit model. Options are either
+  "ypr" (default) for line plot or "Isopleth" for isopleth plot.
+
+- xaxis1:
+
+  which x-axis should be plotted? Either "FM" (fishing mortality;
+  default) or "E" (exploitation rate).
+
+- yaxis1:
+
+  which (first) y-axis should be plotted? "Y_R" (yield per recruit;
+  default) or "Y_R.rel" (relative yield per recruit) for type = "ypr".
+  For "Isopleth" in addition: "B_R" (biomass per recruit) and "B_R.rel"
+  (relative yield per recruit). For Thompson and Bell model in addition
+  also "value" or "catch" possible.
+
+- yaxis2:
+
+  which second y-axis should be plotted for type = "ypr"? Either "B_R"
+  (biomass per recruit; default), "B_R.rel" (relative biomass per
+  recruit), or "B_R.percent" (percentage biomass per recruit)
+
+- yaxis_iso:
+
+  determines label and scale of y axis of Isopleth graph. Either "Lc"
+  (default) for length at first capture or "Lc/Linf" for the relation of
+  length at first capture to the infinite length
+
+- identify:
+
+  logical; indicating whether points in the graph are supposed to be
+  identified by clicking on them (uses
+  [`locator`](https://rdrr.io/r/graphics/locator.html) function). To
+  stop press right mouse click. (default: TRUE).
+
+- mark:
+
+  logical; if value of choosen points should be displayed in graph
+  (default: TRUE)
+
+- contour:
+
+  used in combination with the Isopleth graph. Usage can be logical
+  (e.g. TRUE) or providing a numeric which indicates the number of
+  levels (`nlevels` in
+  [`contour`](https://rdrr.io/r/graphics/contour.html)). By default
+  TRUE.
+
+- xlab:
+
+  Label of x-axis. If set to NA, then default "Fishing mortality", or
+  "Exploitation rate" is used.
+
+- ylab1:
+
+  Label of y-axis. If set to NA, then default "Yield" is used for the
+  Thompson and Bell model, "Lc" is used for the Isopleth graph, and
+  "Y/R" is used for ypr.
+
+- ylab2:
+
+  Label of second y-axis. If set to NA, then default "Biomass" is used
+  for the Thompson and Bell model and "B/R" for ypr.
+
+- ylab3:
+
+  Label of third y-axis. If set to NA, then default "Value" is used for
+  the Thompson and Bell model.
+
+- plot_refs:
+
+  Define reference points to be plotted. Default:
+  c("F01","Fmax","F05","F04")
+
+- cols_refs:
+
+  Define colours for reference points. Default:
+  c("goldenrod2","darkred","darkgreen","darkorange")
+
+- ...:
+
+  optional parameters of plot function
+
+## References
+
+Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock
+assessment. Part 1. Manual. *FAO Fisheries Technical Paper*, (306.1,
+Rev. 2). 407 p.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+# Nemipterus marginatus - age structured data
+threadfin <- list(Winf = 286,K = 0.37, t0 = -0.2, M = 1.1, tr = 0.4)
+
+output <- predict_mod(threadfin, FM_change = seq(0,6,0.1),
+   tc_change = seq(0.2,1,0.2), type = 'ypr')
+plot(output)
+
+# hake - length structured data
+data(hake)
+hake$Lr <- 35
+select.list <- list(selecType = 'trawl_ogive', L50 = 20, L75 = 24)
+output <- predict_mod(param = hake, FM_change = seq(0,0.4,0.05),
+                      curr.E = 0.4, curr.Lc = 40,
+                      Lc_change = seq(5,80,1), s_list = select.list,
+                      type = 'ypr', plot = FALSE)
+plot(output, type = "Isopleth", xaxis1 = "FM", yaxis1 = "Y_R.rel",
+   identify = FALSE)
+
+} # }
+```

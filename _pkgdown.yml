@@ -1,0 +1,167 @@
+url: https://tokami.github.io/TropFishR/
+
+template:
+  bootstrap: 5
+  bootswatch: flatly
+  bslib:
+    primary: "#1f6f8b"
+
+home:
+  title: "TropFishR: Tropical Fisheries Analysis"
+  description: >
+    Fish stock assessment methods for length-frequency data in data-poor
+    fisheries, following the FAO manual by Sparre and Venema (1998).
+  sidebar:
+    structure: [links, license, citation, authors, dev]
+
+authors:
+  Tobias K. Mildenberger:
+    href: https://orcid.org/0000-0002-6631-7524
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [search, github]
+  components:
+    intro:
+      text: Get started
+      href: articles/tutorial.html
+    articles:
+      text: Articles
+      menu:
+      - text: Single-species stock assessment
+        href: articles/tutorial.html
+      - text: Length-frequency data
+        href: articles/lfqData.html
+      - text: ELEFAN functions
+        href: articles/Using_TropFishR_ELEFAN_functions.html
+      - text: Bootstrapped ELEFAN
+        href: articles/bootstrap_ELEFAN.html
+
+articles:
+- title: Tutorials
+  navbar: ~
+  contents:
+  - tutorial
+  - lfqData
+  - Using_TropFishR_ELEFAN_functions
+  - bootstrap_ELEFAN
+
+reference:
+- title: Length-frequency data
+  desc: Create, modify, restructure and resample `lfq` objects.
+  contents:
+  - lfqCreate
+  - lfqModify
+  - lfqRaise
+  - lfqRestructure
+  - lfqResample
+  - plot.lfq
+  - date2yeardec
+  - yeardec2date
+
+- title: Growth
+  desc: >
+    Estimate von Bertalanffy growth parameters from length-frequency,
+    length-at-age or tagging data.
+  contents:
+  - ELEFAN
+  - ELEFAN_SA
+  - ELEFAN_GA
+  - lfqFitCurves
+  - VBGF
+  - startingPoint2tanchor
+  - powell_wetherall
+  - Bhattacharya
+  - plot.Bhattacharya
+  - growth_length_age
+  - growth_tagging
+
+- title: Bootstrapped ELEFAN
+  desc: >
+    Uncertainty of growth parameters by resampling (Schwamborn et al. 2019),
+    and plots of the results (class `lfqBoot`).
+  contents:
+  - ELEFAN_GA_boot
+  - ELEFAN_SA_boot
+  - plotBoot
+  - univariate_density
+  - LinfK_scatterhist
+  - add_phiprime
+  - vbgfCI_time
+
+- title: Mortality
+  desc: Natural, total and fishing mortality.
+  contents:
+  - M_empirical
+  - MstochThen
+  - catchCurve
+  - plot.catchCurve
+  - Z_BevertonHolt
+  - Z_CPUE
+
+- title: Recruitment
+  contents:
+  - recruitment
+  - plot.recruitment
+
+- title: Selectivity
+  desc: Trawl and gillnet selection ogives.
+  contents:
+  - select
+  - plot.select
+  - select_ogive
+  - select_Millar
+  - select_Millar_curve
+  - select_Millar_compare
+  - plot.select_Millar
+  - predict.select_Millar
+  - logLik.select_Millar
+  - rcurves_Millar
+  - gillnetfit
+
+- title: Stock size and prediction
+  desc: >
+    Virtual population analysis, yield per recruit (Beverton-Holt,
+    Thompson-Bell), biological reference points and stock simulation.
+  contents:
+  - VPA
+  - plot.VPA
+  - predict_mod
+  - plot.predict_mod
+  - stock_sim
+
+- title: Surplus production models
+  contents:
+  - prod_mod
+  - plot.prod_mod
+  - prod_mod_ts
+  - plot.prod_mod_ts
+
+- title: Data sets from Sparre & Venema
+  desc: Data used in the worked examples of the FAO manual and other studies.
+  contents:
+  - alba
+  - alba_boot
+  - bream
+  - emperor
+  - gillnet
+  - goatfish
+  - haddock
+  - hake
+  - shrimps
+  - tilapia
+  - trammelnet
+  - trawl_fishery_Java
+  - whiting
+
+- title: Synthetic data sets
+  desc: Simulated data with known parameters, useful for testing methods.
+  contents:
+  - starts_with("syn")
+
+- title: Internal helpers
+  desc: Documented but not exported; used by `predict_mod`.
+  contents:
+  - ypr
+  - ypr_sel

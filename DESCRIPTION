@@ -38,7 +38,7 @@ Description: A compilation of fish stock assessment methods for the
 License: GPL-3
 NeedsCompilation: no
 BugReports: https://github.com/tokami/TropFishR/issues
-URL: https://github.com/tokami/TropFishR
+URL: https://github.com/tokami/TropFishR, https://tokami.github.io/TropFishR/
 Encoding: UTF-8
 RoxygenNote: 7.3.2
 Suggests:
