@@ -1,0 +1,125 @@
+# Powell-Wetherall method
+
+A method to estimate the instantaneous total mortality rate (Z) and the
+infinite length of the von Bertalanffy growth equation (Powell, 1979;
+Wetherall et al., 1987).
+
+## Usage
+
+``` r
+powell_wetherall(
+  param,
+  catch_columns = NA,
+  savePlots = FALSE,
+  reg_int = NULL,
+  main = "Powell-Wetherall plot"
+)
+```
+
+## Arguments
+
+- param:
+
+  a list consisting of following parameters:
+
+  - `midLengths`: midpoints of the length groups,
+
+  - `Linf`: infinite length for investigated species \[cm\],
+
+  - `K`: growth coefficent for investigated species \[1/year\],
+
+  - `t0`: theoretical time zero, at which individuals of this species
+    hatch,
+
+  - `catch`: catch as vector, or a matrix with catches of subsequent
+    years;
+
+- catch_columns:
+
+  optional; in case catch is a matrix or data.frame, a number indicating
+  which column of the matrix should be analysed (Default: `NA`).
+
+- savePlots:
+
+  logical; if TRUE the plot is recorded. Default is FALSE.
+
+- reg_int:
+
+  instead of using the identity method a range can be determined, which
+  is to be used for the regression analysis. If equal to NULL identity
+  method is applied (default).
+
+- main:
+
+  title of plot (Default is "Powell-Wetherall plot")
+
+## Value
+
+A list with the input parameters and follwing objects:
+
+- **tmean** or **Lmean**: mean age or length of fish,
+
+- **Z**: total mortality;
+
+and/or following objects when applying the Powell and Wetherall method:
+
+- **Lmean_Lprime**: dependent variable for regression analysis,
+
+- **Lprime**: some length for which all fish of that length and longer
+  are under full exploitation,
+
+- **Linf_est**: infinite length in \[cm\] (Linf),
+
+- **se_Linf**: standard error of Linf,
+
+- **confidenceInt_Linf**: confidence interval for Linf,
+
+- **ZK**: total mortality divided by K (Z/K),
+
+- **se_ZK**: standard error of Z/K,
+
+- **confidenceInt_ZK**: confidence interval of Z/K;
+
+## Details
+
+The first length group or age class within the list object `midLengths`
+or `age` will be used as the Lprim or tprime (length of recruitment to
+fishery). This function includes the `identify` function, which asks you
+to choose two points from a graph manually. The two points which you
+choose by clicking on the plot in the graphical device represent the
+start and end of the data points, which should be used for the analysis.
+Based on these points the regression line is calculated. The Powell and
+Wetherall method only works with length-frequency data.
+
+## References
+
+Powell, D.G., 1979. Estimation of mortality and growth parameters from
+the length- frequency of a catch. *Rapp.P.-v.Reun.CIEM*, 175:167-169
+
+Sparre, P., Venema, S.C., 1998. Introduction to tropical fish stock
+assessment. Part 1. Manual. *FAO Fisheries Technical Paper*, (306.1,
+Rev. 2). 407 p.
+
+Wetherall, J.A., J.J. Polovina and S. Ralston, 1987. Estimating growth
+and mortality in steady-state fish stocks from length-frequency data.
+*ICLARM Conf.Proc.*, (13):53-74
+
+## Examples
+
+``` r
+# \donttest{
+data(synLFQ3)
+powell_wetherall(synLFQ3)
+#> Please choose the minimum and maximum point in the 
+#> graph to include for the regression line!
+#> Error in powell_wetherall(synLFQ3): You did not choose any points! Please run the function again 
+#> and choose points to include into the estimation of Z.
+
+data(synLFQ5)
+powell_wetherall(synLFQ5, catch_columns = 1:12)
+#> Please choose the minimum and maximum point in the 
+#> graph to include for the regression line!
+#> Error in powell_wetherall(synLFQ5, catch_columns = 1:12): You did not choose any points! Please run the function again 
+#> and choose points to include into the estimation of Z.
+# }
+```
