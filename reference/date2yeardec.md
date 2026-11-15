@@ -22,5 +22,5 @@ a scalar (class 'numeric')
 
 ``` r
 date2yeardec(Sys.Date())
-#> [1] 2026.868
+#> [1] 2026.871
 ```

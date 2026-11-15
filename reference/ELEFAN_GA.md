@@ -11,9 +11,9 @@ ELEFAN_GA(
   seasonalised = FALSE,
   low_par = NULL,
   up_par = NULL,
-  popSize = 50,
-  maxiter = 100,
-  run = maxiter,
+  popSize = 100,
+  maxiter = 200,
+  run = 50,
   parallel = FALSE,
   pmutation = 0.1,
   pcrossover = 0.8,
@@ -88,17 +88,17 @@ ELEFAN_GA(
 
 - popSize:
 
-  the population size. Default: 50
+  the population size. Default: 100
 
 - maxiter:
 
   the maximum number of iterations to run before the GA search is
-  halted. default:100
+  halted. Default: 200
 
 - run:
 
   the number of consecutive generations without any improvement in the
-  best fitness value before the GA is stopped. Default: equals maxiter
+  best fitness value before the GA is stopped. Default: 50
 
 - parallel:
 

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TropFishR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -96,6 +96,14 @@
 <div class="section level3">
 <h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
 <ul><li>
+<code>lfqRestructure</code> (and <code>ELEFAN</code>, <code>ELEFAN_SA</code>, <code>ELEFAN_GA</code> and their bootstrap versions) with <code>addl.sqrt = TRUE</code>: the square-root adjustment used the counts of the wrong length classes when a sample started with empty length classes (positions counted from the first non-zero class), so that positive restructured values were divided by other counts or set to 0.</li>
+<li>
+<code>ELEFAN_GA_boot</code> and <code>ELEFAN_SA_boot</code>: <code>median</code>, <code>CI</code> and <code>multiCI</code> of <code>phiL</code> and <code>agemax</code> are now the median, quantiles and range of the values of the resamples. Before, they were calculated from the median and the limits of <code>Linf</code> and <code>K</code>, which made the confidence intervals of <code>phiL</code> much too wide, because <code>Linf</code> and <code>K</code> are negatively correlated. The summaries of the data set <code>alba_boot</code> were updated (same resamples).</li>
+<li>
+<code>ELEFAN_GA_boot</code>, <code>ELEFAN_SA_boot</code> and <code>univariate_density</code>: <code>t_anchor</code> and <code>ts</code> are times of the year (0.98 and 0.02 are close). If the resamples clearly wrap around the turn of the year, they are now summarised on a continuous range: the median and the value with maximum density are between 0 and 1, the limits of <code>CI</code> and <code>multiCI</code> can be below 0 or above 1. Before, the median and the confidence intervals of such resamples were wrong (e.g. a median around 0.5 for estimates around 0). The summaries of the precomputed bootstrap in the vignette “Bootstrapped ELEFAN” were updated (same resamples); <code>alba_boot</code> is unchanged.</li>
+<li>
+<code>plot.catchCurve</code>: the regression line failed (“‘x’ and ‘y’ lengths differ”) if the regression range included a point without catch-curve value, such as the plus group, which <code>lm</code> drops. The tutorial vignette now ends the regression at the last point before the plus group.</li>
+<li>
 <code>ELEFAN_GA_boot</code>, <code>ELEFAN_SA_boot</code>, <code>plotBoot</code>, <code>vbgfCI_time</code>: clear error messages if the kernel density of the bootstrapped parameters cannot be estimated (fewer resamples than parameters, a parameter with the same value in all resamples, or other failures of <code><a href="https://mvstat.net/ks/reference/Hpi.html" class="external-link">ks::Hpi</a></code>), instead of errors like “the leading minor of order 4 is not positive”. In <code>ELEFAN_GA_boot</code> and <code>ELEFAN_SA_boot</code>, this is a warning: the fits of the resamples are returned (with medians and univariate confidence intervals, <code>maxDen</code> and <code>multiCI</code> are <code>NA</code>), so that they are not lost after a long run.</li>
 <li>
 <code>select_Millar</code>: invalid parameters during the optimisation (e.g. a negative scale of the gamma curve) gave missing values that were dropped from the likelihood, so that the optimisation could end at invalid parameters with a singular Hessian (“It is impossible to invert the matrix”). The likelihood of such parameters is now infinite.</li>
@@ -157,7 +165,10 @@
 </ul></div>
 <div class="section level3">
 <h3 id="minor-changes-development-version">Minor changes<a class="anchor" aria-label="anchor" href="#minor-changes-development-version"></a></h3>
-<ul><li>Faster ELEFAN: the score calculation in <code>lfqFitCurves</code> and <code>date2yeardec</code> are faster (same results), which speeds up <code>ELEFAN</code>, <code>ELEFAN_SA</code> (more iterations within <code>SA_time</code>) and <code>ELEFAN_GA</code> several times.</li>
+<ul><li>
+<code>ELEFAN_GA</code>: new defaults <code>popSize = 100</code>, <code>maxiter = 200</code> and <code>run = 50</code> (before <code>popSize = 50</code>, <code>maxiter = 100</code>, <code>run = maxiter</code>). The ELEFAN score has many local maxima, and in simulations the former defaults often stopped far from the best solution. Results with the default settings therefore differ from earlier versions, also with the same <code>seed</code>; the former behaviour is obtained by setting these arguments explicitly. <code>ELEFAN_GA_boot</code> keeps its defaults.</li>
+<li>Vignette “ELEFAN”: new sections on repeating the search with different seeds and on the limitations of ELEFAN (harmonics with sparse data, the <code>Linf</code>-<code>K</code> ridge for slowly growing species).</li>
+<li>Faster ELEFAN: the score calculation in <code>lfqFitCurves</code> and <code>date2yeardec</code> are faster (same results), which speeds up <code>ELEFAN</code>, <code>ELEFAN_SA</code> (more iterations within <code>SA_time</code>) and <code>ELEFAN_GA</code> several times.</li>
 <li>Faster vignettes.</li>
 <li>Added unit tests (<code>testthat</code>).</li>
 </ul><p><br><br></p>

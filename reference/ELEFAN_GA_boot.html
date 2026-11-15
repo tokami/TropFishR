@@ -15,7 +15,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TropFishR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -230,8 +230,19 @@ each resampled data set before fitting (Default: NA, no re-binning)</p></dd>
 <li><p><strong>multiCI</strong> ranges of the parameters within the multivariate
       confidence region,</p></li>
 <li><p><strong>misc</strong> an empty list for additional information.</p></li>
-</ul><p>`phiL` and `agemax` of `maxDen`, `median`, `CI` and `multiCI` are derived
-   from `Linf` and `K` of the respective estimates.
+</ul><p>`phiL` and `agemax` of `maxDen` are derived from `Linf` and `K` of
+   `maxDen`; their `median`, `CI` and `multiCI` are the median, quantiles
+   and range (within the multivariate confidence region) of `phiL` and
+   `agemax` of the resamples.
+   `t_anchor` and `ts` are times of the year, so that e.g. 0.98 and 0.02
+   are close. If the values of the resamples clearly wrap around the turn
+   of the year (the gap across 0/1 is less than half of the largest gap
+   between the values), the circle is cut in the middle of the largest gap
+   before they are summarised. `maxDen` and
+   `median` of `t_anchor` and `ts` are between 0 and 1, but the limits of
+   `CI` and `multiCI` can be below 0 or above 1 (e.g. -0.05 to 0.08 for
+   estimates around the turn of the year). `bootRaw` keeps the original
+   values.
    If the multivariate kernel density cannot be estimated (e.g. with fewer
    resamples than parameters), the function gives a warning and returns the
    fits with `maxDen` and `multiCI` set to `NA`, so that the fits are not
@@ -291,8 +302,8 @@ fishes and macroinvertebrates with bootstrapped ELEFAN.
 <span class="r-out co"><span class="r-pr">#&gt;</span> 10.2726122  2.3565822  0.4349951  2.3956444  2.0000000 </span>
 <span class="r-in"><span><span class="va">res</span><span class="op">$</span><span class="va">CI</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         Linf        K  t_anchor     phiL agemax</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> lo  9.254409 1.669568 0.2420292 2.155301      1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> up 12.973481 3.478226 0.5091895 2.767471      2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> lo  9.254409 1.669568 0.2420292 2.232861      1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> up 12.973481 3.478226 0.5091895 2.564850      2</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># parallel version (TropFishR has to be installed)</span></span></span>
 <span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">ELEFAN_GA_boot</span><span class="op">(</span>lfq <span class="op">=</span> <span class="va">alba</span>, MA <span class="op">=</span> <span class="va">MA</span>, seasonalised <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>

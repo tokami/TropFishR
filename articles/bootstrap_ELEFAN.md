@@ -200,8 +200,8 @@ res$maxDen
 ##  13.0000000
 res$CI
 ##        Linf         K  t_anchor          C        ts     phiL agemax
-## lo 103.7134 0.1619116 0.1341449 0.06760033 0.1077767 3.240947      5
-## up 136.6103 0.7314206 0.8999609 0.82933935 0.9403650 4.135134     19
+## lo 103.7134 0.1619116 0.1370873 0.06760033 0.1077767 3.346699      5
+## up 136.6103 0.7314206 0.9376253 0.82933935 0.9403650 3.998000     19
 ```
 
 Compared to the true parameters:
@@ -219,7 +219,7 @@ round(data.frame(true = true_par[pars],
 ## K      0.200       0.234   0.243    0.162    0.731
 ## C      0.300       0.390   0.442    0.068    0.829
 ## ts     0.000       0.568   0.553    0.108    0.940
-## phiL   3.481       3.484   3.502    3.241    4.135
+## phiL   3.481       3.484   3.498    3.347    3.998
 ```
 
 The confidence intervals of $`L_\infty`$ and $`K`$ include the true
@@ -451,7 +451,7 @@ res <- catchCurve(lfq, boot = res, calc_ogive = TRUE, natMort = "M_Then")
 pars <- c("Z", "FM", "L50", "L75")
 round(rbind(maxDen = res$maxDen[pars], res$CI[, pars]), 3)
 ##            Z    FM    L50    L75
-## maxDen 0.451 0.145 34.897 37.753
+## maxDen 0.452 0.145 34.897 37.753
 ## lo     0.332 0.074 29.674 31.023
 ## up     1.409 0.745 40.651 44.111
 ```

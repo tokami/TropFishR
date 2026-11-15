@@ -211,12 +211,21 @@ an object of class \`lfqBoot\`, a list with following objects:
 
 - **misc** an empty list for additional information.
 
-\`phiL\` and \`agemax\` of \`maxDen\`, \`median\`, \`CI\` and
-\`multiCI\` are derived from \`Linf\` and \`K\` of the respective
-estimates. If the multivariate kernel density cannot be estimated (e.g.
-with fewer resamples than parameters), the function gives a warning and
-returns the fits with \`maxDen\` and \`multiCI\` set to \`NA\`, so that
-the fits are not lost.
+\`phiL\` and \`agemax\` of \`maxDen\` are derived from \`Linf\` and
+\`K\` of \`maxDen\`; their \`median\`, \`CI\` and \`multiCI\` are the
+median, quantiles and range (within the multivariate confidence region)
+of \`phiL\` and \`agemax\` of the resamples. \`t_anchor\` and \`ts\` are
+times of the year, so that e.g. 0.98 and 0.02 are close. If the values
+of the resamples clearly wrap around the turn of the year (the gap
+across 0/1 is less than half of the largest gap between the values), the
+circle is cut in the middle of the largest gap before they are
+summarised. \`maxDen\` and \`median\` of \`t_anchor\` and \`ts\` are
+between 0 and 1, but the limits of \`CI\` and \`multiCI\` can be below 0
+or above 1 (e.g. -0.05 to 0.08 for estimates around the turn of the
+year). \`bootRaw\` keeps the original values. If the multivariate kernel
+density cannot be estimated (e.g. with fewer resamples than parameters),
+the function gives a warning and returns the fits with \`maxDen\` and
+\`multiCI\` set to \`NA\`, so that the fits are not lost.
 
 ## References
 
@@ -272,8 +281,8 @@ res$maxDen
 #> 10.2726122  2.3565822  0.4349951  2.3956444  2.0000000 
 res$CI
 #>         Linf        K  t_anchor     phiL agemax
-#> lo  9.254409 1.669568 0.2420292 2.155301      1
-#> up 12.973481 3.478226 0.5091895 2.767471      2
+#> lo  9.254409 1.669568 0.2420292 2.232861      1
+#> up 12.973481 3.478226 0.5091895 2.564850      2
 
 # parallel version (TropFishR has to be installed)
 res <- ELEFAN_GA_boot(lfq = alba, MA = MA, seasonalised = FALSE,
