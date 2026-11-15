@@ -107,7 +107,7 @@ The Bertalanffy plot is a robust method, however it requires an estimate
 of Linf. As long as this estimate is reasonable the resulting estimate
 of K is reasonable. For a first estimate of Linf the Powell Wetherall
 method
-[powell_wetherall](https://tokami.github.io/TropFishR/reference/powell_wetherall.md)
+[powell_wetherall](http://tokami.github.io/TropFishR/reference/powell_wetherall.md)
 can be used. Otherwise, the largest fish or the average of the ten
 largest fish can be used for a small or large sample, respectively. All
 lengths have to be smaller than Linf as otherwise the logarithm is not

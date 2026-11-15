@@ -3,7 +3,7 @@
 This function estimates stock size, biomass and yield of a stock from
 fishing mortality per age class or length group. This function is
 embedded in the Thompson and Bell model (prediction model:
-[`predict_mod`](https://tokami.github.io/TropFishR/reference/predict_mod.md)).
+[`predict_mod`](http://tokami.github.io/TropFishR/reference/predict_mod.md)).
 
 ## Usage
 

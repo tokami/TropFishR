@@ -42,7 +42,7 @@ select_ogive(s_list, Lt, Lc = NA)
 ## Details
 
 This function is embedded within
-[`predict_mod`](https://tokami.github.io/TropFishR/reference/predict_mod.md).
+[`predict_mod`](http://tokami.github.io/TropFishR/reference/predict_mod.md).
 `selecType` "knife_edge" only requires a Lc value. "trawl_ogive"
 requires a Lc (L50) and a L75 value. "lognormal" requires two mesh
 sizes, an estimate of mu and of sigma. "normal_fixed" requires two mesh

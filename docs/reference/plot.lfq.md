@@ -2,7 +2,7 @@
 
 This function plots length frequency (lfq) samples sequentially arranged
 in time. An object of "lfq" class is obatined by applying the
-[`lfqRestructure`](https://tokami.github.io/TropFishR/reference/lfqRestructure.md)
+[`lfqRestructure`](http://tokami.github.io/TropFishR/reference/lfqRestructure.md)
 function. In case growth parameters are known, von Bertalanffy growth
 curves can be plotted through the lfq samples.
 
@@ -158,7 +158,7 @@ plot(
 ## Details
 
 This function uses
-[`lfqFitCurves`](https://tokami.github.io/TropFishR/reference/lfqFitCurves.md)
+[`lfqFitCurves`](http://tokami.github.io/TropFishR/reference/lfqFitCurves.md)
 when growth parameters are provided to plot growth curves, this can be
 turned off with `draw` = FALSE.
 

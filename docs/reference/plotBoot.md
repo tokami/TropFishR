@@ -4,16 +4,16 @@ Plots results of the bootstrapped assessment:
 
 - \`pType = "lfq"\`: the length-frequency data together with the growth
   curves with maximum density and their confidence interval
-  ([ELEFAN_GA_boot](https://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md),
-  [ELEFAN_SA_boot](https://tokami.github.io/TropFishR/reference/ELEFAN_SA_boot.md)),
+  ([ELEFAN_GA_boot](http://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md),
+  [ELEFAN_SA_boot](http://tokami.github.io/TropFishR/reference/ELEFAN_SA_boot.md)),
 
 - \`pType = "cc"\`: the catch curves of the resamples
-  ([catchCurve](https://tokami.github.io/TropFishR/reference/catchCurve.md)
+  ([catchCurve](http://tokami.github.io/TropFishR/reference/catchCurve.md)
   with \`boot\`),
 
 - \`pType = "ypr"\`: the yield per recruit curves of the resamples with
   a reference point
-  ([predict_mod](https://tokami.github.io/TropFishR/reference/predict_mod.md)
+  ([predict_mod](http://tokami.github.io/TropFishR/reference/predict_mod.md)
   with \`boot\`).
 
 ## Usage
@@ -86,7 +86,7 @@ plotBoot(
 
   name of the element of \`lfq\` to plot, either \`"catch"\` (default)
   or \`"rcounts"\` (restructured data, see
-  [lfqRestructure](https://tokami.github.io/TropFishR/reference/lfqRestructure.md))
+  [lfqRestructure](http://tokami.github.io/TropFishR/reference/lfqRestructure.md))
 
 - agemax:
 

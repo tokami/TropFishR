@@ -1,9 +1,9 @@
 # Bootstrapped VBGF estimates for the alba lfq dataset
 
 Bootstrapped VBGF estimates for the
-[alba](https://tokami.github.io/TropFishR/reference/alba.md) lfq dataset
+[alba](http://tokami.github.io/TropFishR/reference/alba.md) lfq dataset
 as estimated by
-[`ELEFAN_GA_boot`](https://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md)
+[`ELEFAN_GA_boot`](http://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md)
 (200 resamples).
 
 ## Usage
@@ -15,7 +15,7 @@ data(alba_boot)
 ## Format
 
 A list of class \`lfqBoot\`, see
-[`ELEFAN_GA_boot`](https://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md).
+[`ELEFAN_GA_boot`](http://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md).
 
 ## Source
 
@@ -46,8 +46,8 @@ alba_boot$maxDen
 #> 10.0096156  2.7150279  0.4908732  2.4346091  2.0000000 
 alba_boot$CI
 #>         Linf        K  t_anchor     phiL agemax
-#> lo  9.171726 1.547109 0.2486596 2.114423      1
-#> up 11.478216 4.165708 0.5486528 2.739438      2
+#> lo  9.171726 1.547109 0.2486596 2.235436      1
+#> up 11.478216 4.165708 0.5486528 2.611677      2
 
 # plot
 univariate_density(alba_boot)

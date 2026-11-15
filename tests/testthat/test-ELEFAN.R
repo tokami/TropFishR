@@ -122,3 +122,22 @@ test_that("ELEFAN_SA returns parameters within bounds", {
     }
     expect_gt(res$Rn_max, 0)
 })
+
+test_that("lfqRestructure with addl.sqrt uses the counts of the same bins", {
+    ## leading and trailing empty bins: the restructured values span only the
+    ## bins from the first to the last non-zero count
+    x <- structure(list(midLengths = 1:10 + 0.5, dates = as.Date("2020-01-01"),
+                        catch = matrix(c(0, 0, 0, 0, 50, 1, 30, 2, 40, 0), ncol = 1)),
+                   class = "lfq")
+    plain <- lfqRestructure(x, MA = 3)$rcounts[, 1]
+    sq <- lfqRestructure(x, MA = 3, addl.sqrt = TRUE)$rcounts[, 1]
+    pos <- plain > 0
+    expect_equal(sum(pos), 3)
+    expect_equal(sq[pos], plain[pos] / sqrt(1 + 2 / x$catch[pos, 1]))
+    expect_equal(sq[!pos], plain[!pos])
+    ## without leading empty bins the result is unchanged
+    x2 <- x; x2$catch <- x$catch[c(5:10, 1:4), , drop = FALSE]
+    p2 <- lfqRestructure(x2, MA = 3)$rcounts[, 1]
+    s2 <- lfqRestructure(x2, MA = 3, addl.sqrt = TRUE)$rcounts[, 1]
+    expect_equal(s2[p2 > 0], p2[p2 > 0] / sqrt(1 + 2 / x2$catch[p2 > 0, 1]))
+})

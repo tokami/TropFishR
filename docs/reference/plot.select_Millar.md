@@ -2,7 +2,7 @@
 
 This function plots the selectivity estimates of Millar's selectivity
 model
-([`select_Millar`](https://tokami.github.io/TropFishR/reference/select_Millar.md)).
+([`select_Millar`](http://tokami.github.io/TropFishR/reference/select_Millar.md)).
 
 ## Usage
 
@@ -90,7 +90,7 @@ plot(
 This function draws a selectivity plot for the object class
 `"select_Millar"`, which is created by applying Millar's selectivity
 model
-[`select_Millar`](https://tokami.github.io/TropFishR/reference/select_Millar.md).
+[`select_Millar`](http://tokami.github.io/TropFishR/reference/select_Millar.md).
 
 ## References
 

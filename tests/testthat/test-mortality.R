@@ -172,3 +172,18 @@ test_that("catchCurve auto ends at the last point with ln(C/dt) > 0.2", {
     expect_equal(res$reg_int[2], max(ok))
     expect_equal(res$reg_int[1], which.max(res$lnC_dt) + 1)
 })
+
+test_that("catch curve plot works when the regression range includes the plus group", {
+    data(synLFQ7)
+    lfq <- lfqModify(synLFQ7, par = list(Linf = 123, K = 0.2, t_anchor = 0.25))
+    pg <- lfq$midLengths[max(which(lfq$midLengths < lfq$par$Linf))]
+    vec <- lfqModify(lfq, vectorise_catch = TRUE, plus_group = pg)
+    n <- length(vec$midLengths)
+    res <- suppressWarnings(catchCurve(vec, reg_int = c(n - 15, n), calc_ogive = TRUE,
+                                       plot = FALSE))
+    ## the plus group has no catch-curve value and is dropped from the regression
+    expect_equal(length(fitted(res$linear_mod)), 15)
+    pdf(NULL); on.exit(dev.off())
+    expect_no_error(plot(res))
+    expect_no_error(plot(res, plot_selec = TRUE))
+})

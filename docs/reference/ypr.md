@@ -50,12 +50,12 @@ following list objects:
 
 The Thompson and Bell model incorporates an iteration step simulating
 the stock by means of the
-[`stock_sim`](https://tokami.github.io/TropFishR/reference/stock_sim.md)
+[`stock_sim`](http://tokami.github.io/TropFishR/reference/stock_sim.md)
 function. In case changes in gear characteristics - here measured in
 terms of Lc or tc, the length or age at first capture, respectively -
 should be explored, a list with selectivity information about the gear
 has to be provided and the prediction models make use of the selectivity
-[`select_ogive`](https://tokami.github.io/TropFishR/reference/select_ogive.md)
+[`select_ogive`](http://tokami.github.io/TropFishR/reference/select_ogive.md)
 function. Sparre and Venema (1998) recommend to treat the last length
 class always as plus group. This model is very sensitive to zero
 observations in the ultimate length classes. If unrealistic results are

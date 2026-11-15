@@ -9,7 +9,7 @@
   al. (2015) ("Then_growth" in M_empirical), including the
   uncertainty of the estimator itself: for each resample, the model of Then
   et al. (2015) with coefficients from a bootstrap of their data is used
-  for each resample.'><meta property="og:image" content="https://tokami.github.io/TropFishR/logo.svg"></head><body>
+  for each resample.'><meta property="og:image" content="http://tokami.github.io/TropFishR/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -17,7 +17,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TropFishR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -126,15 +126,15 @@ performance of empirical estimators of natural mortality rate using information 
 <span class="r-out co"><span class="r-pr">#&gt;</span> 10.0096156  2.7150279  0.4908732  2.4346091  2.0000000  3.1399201 </span>
 <span class="r-in"><span><span class="va">res</span><span class="op">$</span><span class="va">CI</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         Linf        K  t_anchor     phiL agemax   M_Then</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> lo  9.171726 1.547109 0.2486596 2.114423      1 1.758586</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> up 11.478216 4.165708 0.5486528 2.739438      2 6.588096</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> lo  9.171726 1.547109 0.2486596 2.235436      1 1.758586</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> up 11.478216 4.165708 0.5486528 2.611677      2 6.588096</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## including the residual error of the model</span></span></span>
 <span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">MstochThen</span><span class="op">(</span><span class="va">alba_boot</span>, resid <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">res</span><span class="op">$</span><span class="va">CI</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         Linf        K  t_anchor     phiL agemax     M_Then</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> lo  9.171726 1.547109 0.2486596 2.114423      1  0.4997372</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> up 11.478216 4.165708 0.5486528 2.739438      2 12.5964694</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> lo  9.171726 1.547109 0.2486596 2.235436      1  0.4997372</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> up 11.478216 4.165708 0.5486528 2.611677      2 12.5964694</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

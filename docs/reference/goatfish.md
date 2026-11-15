@@ -3,7 +3,7 @@
 Data of Yellowstriped goatfish (*Upeneus vittatus*) from Manila Bay,
 Philippines. Can be used for the estimation of the instantaneous
 mortality rate (Z) by means of
-[`catchCurve`](https://tokami.github.io/TropFishR/reference/catchCurve.md).
+[`catchCurve`](http://tokami.github.io/TropFishR/reference/catchCurve.md).
 
 ## Usage
 

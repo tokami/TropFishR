@@ -172,7 +172,9 @@ lfqRestructure <- function(param, MA=5, addl.sqrt=FALSE){
     # optional square-root adjustment to emphasize larger length bins with lower counts
     if(addl.sqrt){
       posFs <- which(Fs > 0)
-      if(length(posFs)>0) {Fs[posFs] <- Fs[posFs] / sqrt(1+2/lfq$catch[posFs,i])} #Fs[posFs] / sqrt(1+2/Fs[posFs])}
+      ## Fs covers the bins val_pos (first to last non-zero bin), so the
+      ## counts of the same bins are val_string
+      if(length(posFs)>0) {Fs[posFs] <- Fs[posFs] / sqrt(1+2/val_string[posFs])}
     }
 
     rcounts[val_pos,i] <- Fs

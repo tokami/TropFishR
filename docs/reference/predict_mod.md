@@ -128,7 +128,7 @@ predict_mod(
   if a value is provided, a plus group is created comprising this size
   class and all above. Only used for age-based data; for length-based
   data, the length class including Linf is the plus group (see
-  [`stock_sim`](https://tokami.github.io/TropFishR/reference/stock_sim.md)).
+  [`stock_sim`](http://tokami.github.io/TropFishR/reference/stock_sim.md)).
 
 - Lmin:
 
@@ -166,10 +166,10 @@ predict_mod(
   optional; an object of class \`lfqBoot\` with bootstrapped growth
   parameters, natural mortality (see \`natMort\`) and either selectivity
   and fishing mortality (\`L50\`, \`L75\` and \`FM\` from
-  [`catchCurve`](https://tokami.github.io/TropFishR/reference/catchCurve.md)
+  [`catchCurve`](http://tokami.github.io/TropFishR/reference/catchCurve.md)
   with \`calc_ogive = TRUE\` and \`natMort\`) or fishing mortality at
   length (from
-  [`VPA`](https://tokami.github.io/TropFishR/reference/VPA.md) with
+  [`VPA`](http://tokami.github.io/TropFishR/reference/VPA.md) with
   \`boot\`; see \`bootSel\`). If provided, the model is applied with the
   parameters of each resample and the reference points are estimated for
   each resample. Only for length-based data (\`midLengths\` in
@@ -189,9 +189,9 @@ predict_mod(
   with \`boot\` and \`type = "ThompBell"\`, source of the selectivity:
   \`"catchCurve"\` (default) uses the selection ogive (\`L50\`, \`L75\`)
   and fishing mortality (\`FM\`) of
-  [`catchCurve`](https://tokami.github.io/TropFishR/reference/catchCurve.md),
+  [`catchCurve`](http://tokami.github.io/TropFishR/reference/catchCurve.md),
   \`"VPA"\` the fishing mortality at length of
-  [`VPA`](https://tokami.github.io/TropFishR/reference/VPA.md) with
+  [`VPA`](http://tokami.github.io/TropFishR/reference/VPA.md) with
   \`boot\`. With \`"VPA"\`, the current fishing mortality (for \`SPR\`
   and \`FF01\`, ...) is the maximum fishing mortality at length, which
   \`FM_change\` refers to.
@@ -307,18 +307,18 @@ information (SPR-based ones without \`Lmat\` and \`wmat\`) are omitted.
 Resamples that cannot be analysed (e.g. FM \<= 0 or no selectivity
 estimates) are NA, and a warning gives their number. The yield and
 biomass per recruit curves of each resample are stored in \`misc\` (for
-[`plotBoot`](https://tokami.github.io/TropFishR/reference/plotBoot.md)).
+[`plotBoot`](http://tokami.github.io/TropFishR/reference/plotBoot.md)).
 
 ## Details
 
 The Thompson and Bell model incorporates an iteration step simulating
 the stock by means of the
-[`stock_sim`](https://tokami.github.io/TropFishR/reference/stock_sim.md)
+[`stock_sim`](http://tokami.github.io/TropFishR/reference/stock_sim.md)
 function. In case changes in gear characteristics - here measured in
 terms of Lc or tc, the length or age at first capture, respectively -
 should be explored, a list with selectivity information about the gear
 has to be provided and the prediction models make use of the selectivity
-[`select_ogive`](https://tokami.github.io/TropFishR/reference/select_ogive.md)
+[`select_ogive`](http://tokami.github.io/TropFishR/reference/select_ogive.md)
 function. Sparre and Venema (1998) recommend to treat the last length
 class always as plus group. This model is very sensitive to zero
 observations in the ultimate length classes. If unrealistic results are

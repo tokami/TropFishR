@@ -20,7 +20,7 @@ lfqResample(lfq, sampSize = NA, boot = NULL)
 
   a length frequency object of the class \`lfq\`. The catch has to be
   the sampled numbers of fish (not raised to the total catch, see
-  [`lfqRaise`](https://tokami.github.io/TropFishR/reference/lfqRaise.md)).
+  [`lfqRaise`](http://tokami.github.io/TropFishR/reference/lfqRaise.md)).
 
 - sampSize:
 
@@ -31,7 +31,7 @@ lfqResample(lfq, sampSize = NA, boot = NULL)
 - boot:
 
   optional; an object of class \`lfqBoot\` (e.g. from
-  [`ELEFAN_GA_boot`](https://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md))
+  [`ELEFAN_GA_boot`](http://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md))
   for reproducing the resampled lfq data sets by re-using its seed
   values.
 

@@ -3,9 +3,9 @@
 This dataset contains information about sky emperor (*Lethrinus
 mahsena*) and its fisheries of offshore Mauritius banks (Nazareth
 banks). It can be used for production models
-([`prod_mod`](https://tokami.github.io/TropFishR/reference/prod_mod.md)
+([`prod_mod`](http://tokami.github.io/TropFishR/reference/prod_mod.md)
 and
-[`prod_mod_ts`](https://tokami.github.io/TropFishR/reference/prod_mod_ts.md)).
+[`prod_mod_ts`](http://tokami.github.io/TropFishR/reference/prod_mod_ts.md)).
 
 ## Usage
 

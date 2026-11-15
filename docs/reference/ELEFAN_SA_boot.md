@@ -2,14 +2,14 @@
 
 \`ELEFAN_SA_boot\` performs a bootstrapped fitting of the von
 Bertalanffy growth function (VBGF) via the
-[ELEFAN_SA](https://tokami.github.io/TropFishR/reference/ELEFAN_SA.md)
+[ELEFAN_SA](http://tokami.github.io/TropFishR/reference/ELEFAN_SA.md)
 function. The length-frequency data is resampled \`nresamp\` times with
-[lfqResample](https://tokami.github.io/TropFishR/reference/lfqResample.md)
+[lfqResample](http://tokami.github.io/TropFishR/reference/lfqResample.md)
 and
-[ELEFAN_SA](https://tokami.github.io/TropFishR/reference/ELEFAN_SA.md)
-is fitted to each resampled data set. Most of the arguments are simply
+[ELEFAN_SA](http://tokami.github.io/TropFishR/reference/ELEFAN_SA.md) is
+fitted to each resampled data set. Most of the arguments are simply
 passed to
-[ELEFAN_SA](https://tokami.github.io/TropFishR/reference/ELEFAN_SA.md).
+[ELEFAN_SA](http://tokami.github.io/TropFishR/reference/ELEFAN_SA.md).
 
 ## Usage
 
@@ -148,13 +148,13 @@ ELEFAN_SA_boot(
 
   number indicating over how many length classes the moving average
   should be performed (default: 5, for more information see
-  [lfqRestructure](https://tokami.github.io/TropFishR/reference/lfqRestructure.md))
+  [lfqRestructure](http://tokami.github.io/TropFishR/reference/lfqRestructure.md))
 
 - addl.sqrt:
 
   additional squareroot transformation of positive values according to
   Brey et al. (1988) (default: FALSE, for more information see
-  [lfqRestructure](https://tokami.github.io/TropFishR/reference/lfqRestructure.md))
+  [lfqRestructure](http://tokami.github.io/TropFishR/reference/lfqRestructure.md))
 
 - agemax:
 
@@ -177,7 +177,7 @@ ELEFAN_SA_boot(
 ## Value
 
 an object of class \`lfqBoot\`, see
-[ELEFAN_GA_boot](https://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md).
+[ELEFAN_GA_boot](http://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md).
 
 ## References
 
@@ -232,8 +232,8 @@ res$maxDen
 #> 9.7758712 2.9404652 0.5205985 2.4487270 2.0000000 
 res$CI
 #>         Linf        K  t_anchor     phiL agemax
-#> lo  8.724525 1.747007 0.3055888 2.123778      1
-#> up 11.232947 4.375782 0.5916848 2.742043      2
+#> lo  9.180246 2.173960 0.2777088 2.290667      1
+#> up 10.769992 4.375782 0.5916848 2.672285      2
 
 # plot resulting distributions
 univariate_density(res)

@@ -2,8 +2,8 @@
 
 Synthetic length-frequency data as provided in Sparre & Venema (1998).
 Can be used to apply the function
-[`Bhattacharya`](https://tokami.github.io/TropFishR/reference/Bhattacharya.md)
-or [`ELEFAN`](https://tokami.github.io/TropFishR/reference/ELEFAN.md).
+[`Bhattacharya`](http://tokami.github.io/TropFishR/reference/Bhattacharya.md)
+or [`ELEFAN`](http://tokami.github.io/TropFishR/reference/ELEFAN.md).
 
 ## Usage
 

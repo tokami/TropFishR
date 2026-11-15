@@ -3,10 +3,10 @@
 ### Tutorials
 
 - [Single-species fish stock assessment with
-  TropFishR](https://tokami.github.io/TropFishR/articles/tutorial.md):
+  TropFishR](http://tokami.github.io/TropFishR/articles/tutorial.md):
 - [Length-frequency data for
-  TropFishR](https://tokami.github.io/TropFishR/articles/lfqData.md):
+  TropFishR](http://tokami.github.io/TropFishR/articles/lfqData.md):
 - [Using the TropFishR ELEFAN
-  functions](https://tokami.github.io/TropFishR/articles/Using_TropFishR_ELEFAN_functions.md):
+  functions](http://tokami.github.io/TropFishR/articles/Using_TropFishR_ELEFAN_functions.md):
 - [Uncertainty in length-based stock assessment with bootstrapped
-  ELEFAN](https://tokami.github.io/TropFishR/articles/bootstrap_ELEFAN.md):
+  ELEFAN](http://tokami.github.io/TropFishR/articles/bootstrap_ELEFAN.md):

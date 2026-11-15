@@ -203,8 +203,8 @@ dots indicate the mean score of each iteration.
 
 The generation number of the `ELEFAN_GA` was set to only 50 generations
 (argument `maxiter`), which returns following results: $L_{\infty}$ =
-123.79, K = 0.22, $t_{anchor}$ = 0.33, C = 0.49, and $t_{s}$ = 0.31 with
-a score value ($Rn_{max}$) of 0.27. As with `ELEFAN_SA` the generation
+122.73, K = 0.2, $t_{anchor}$ = 0.16, C = 0.23, and $t_{s}$ = 0.15 with
+a score value ($Rn_{max}$) of 0.32. As with `ELEFAN_SA` the generation
 number was hold down due to the vignette format and should be increased
 in order to find more stable results. According to (Pauly 1980) it is
 not possible to estimate $t_{0}$ (theoretical age at length zero) from
@@ -316,7 +316,7 @@ Ms <- M_empirical(Linf = lfq_bin2$par$Linf, K_l = lfq_bin2$par$K, method = "Then
 lfq_bin2$par$M <- as.numeric(Ms)
 ```
 
-The result is a natural mortality of 0.28 year$^{- 1}$.
+The result is a natural mortality of 0.26 year$^{- 1}$.
 
 ### *Fishing mortality rates and gear selectivity*
 
@@ -350,24 +350,27 @@ The catch curve can then be applied to the vectorised data set with
 function where the user selects points to be used in the regression
 analysis by clickling on the first and last point to be included. Please
 find for more information with
-[`help(catchCurve)`](https://tokami.github.io/TropFishR/reference/catchCurve.md).
+[`help(catchCurve)`](http://tokami.github.io/TropFishR/reference/catchCurve.md).
 Alternatively, the argument `reg_int` defines the first and last point
 to be used in the regression analysis and, thus, allows to avoid the
-interactive plotting function. For this data set, the 18th and 55th
-point seem to be reasonable first and last points of the regression
-analysis. The argument `calc_ogive` allows the estimation of the
-selection ogive. Note, that you might require the argument
-`catch_columns` if your data set spans multiple years as it allows to
-choose the columns (years after vectorisation) of the catch matrix which
-will be summarised for the analysis. Here, we do not need this argument
-as the catch matrix only includes catches from 2016. If data of several
-years are available, the catch curve can either be applied to the years
-separately (e.g. `catch_columns=1` for the first year), or to the data
-of several years combined (e.g. `catch_columns=c(1,2)`).
+interactive plotting function. For this data set, the 18th point and the
+last point before the plus group seem to be reasonable first and last
+points of the regression analysis. The argument `calc_ogive` allows the
+estimation of the selection ogive. Note, that you might require the
+argument `catch_columns` if your data set spans multiple years as it
+allows to choose the columns (years after vectorisation) of the catch
+matrix which will be summarised for the analysis. Here, we do not need
+this argument as the catch matrix only includes catches from 2016. If
+data of several years are available, the catch curve can either be
+applied to the years separately (e.g. `catch_columns=1` for the first
+year), or to the data of several years combined
+(e.g. `catch_columns=c(1,2)`).
 
 ``` r
 ## run catch curve
-res_cc <- catchCurve(lfq_catch_vec, reg_int = c(18,55), calc_ogive = TRUE)
+res_cc <- catchCurve(lfq_catch_vec,
+                     reg_int = c(18, length(lfq_catch_vec$midLengths) - 1),
+                     calc_ogive = TRUE)
 
 ## assign estimates to the data list
 lfq_catch_vec$par$Z <- res_cc$Z
@@ -384,10 +387,10 @@ capture.](tutorial_files/figure-html/Figure%207-2.png)
 Catch curve with selected points for the regression analysis and in the
 second panel the selection ogive with age at first capture.
 
-The catch curve analysis returns a Z value of 0.51 $year^{- 1}$. By
-subtracting M from Z, the fishing mortality rate is derived: 0.23
+The catch curve analysis returns a Z value of 0.45 $year^{- 1}$. By
+subtracting M from Z, the fishing mortality rate is derived: 0.19
 $year^{- 1}$. The selectivity function of the catch curve estimated a
-length at 50% probability of capture ($L_{50}$) of 36.35 cm.
+length at 50% probability of capture ($L_{50}$) of 35.65 cm.
 
 ### *Stock status*
 
@@ -401,7 +404,7 @@ Gulland (1983).
 lfq_catch_vec$par$E <- lfq_catch_vec$par$FM / lfq_catch_vec$par$Z
 ```
 
-For this data set, the exploitation rate is equal to 0.45 and, thus,
+For this data set, the exploitation rate is equal to 0.42 and, thus,
 does not indicate overfishing.
 
 #### *Yield per recruit modelling*
@@ -473,19 +476,19 @@ mtext("(b)", side = 3, at = -0.1, line = 0.6)
 
 ## Biological reference levels
 TB1$df_Es
-#>         F01      Fmax       F05       F04       E01      Emax       E05
-#> 1 0.2074148 0.2765531 0.1322645 0.1743487 0.4281761 0.4995963 0.3231761
+#>         F01     Fmax       F05       F04       E01      Emax       E05
+#> 1 0.1953908 0.255511 0.1262525 0.1593186 0.4309545 0.4975765 0.3285665
 #>         E04  YPR_F01 YPR_Fmax  YPR_F05  YPR_F04  BPR_F01 BPR_Fmax  BPR_F05
-#> 1 0.3862838 1590.158 1627.835 1377.501 1528.999 7807.255 6083.677 10902.91
-#>    BPR_F04   SPR_F01 SPR_Fmax   SPR_F05   SPR_F04
-#> 1 8958.348 0.3449916 0.266518 0.4859574 0.3974062
+#> 1 0.3817674 1498.457 1531.087 1303.183 1427.166 7798.972 6159.712 10892.36
+#>   BPR_F04   SPR_F01  SPR_Fmax  SPR_F05   SPR_F04
+#> 1 9198.01 0.3385661 0.2650074 0.477402 0.4013541
 
 ## Current yield and biomass levels
 TB1$currents
-#>   curr.Lc curr.tc    curr.E    curr.F    curr.C   curr.Y curr.V   curr.B
-#> 1      NA      NA 0.4516576 0.2281589 0.3316577 1597.359      0 7275.263
+#>   curr.Lc curr.tc    curr.E    curr.F    curr.C   curr.Y curr.V  curr.B
+#> 1      NA      NA 0.4248198 0.1905551 0.3112582 1477.428      0 8030.48
 #>   curr.SSB  curr.SPR
-#> 1 7042.419 0.3207701
+#> 1 7772.702 0.3489567
 ```
 
 ![Results of the Thompson and Bell model: (a) Curves of yield and
@@ -508,9 +511,9 @@ yield per recruit.
 Please note that the resolution of the $L_{c}$ and F changes is quite
 low and the range quite narrow due to the limitations in computation
 time of the vignette format. The results indicate that the fishing
-mortality of this example (F = 0.23) is smaller than the maximum fishing
-mortality ($F_{max} =$ 0.28), which confirms the indication of the
-exploitation rate (E = 0.45). The prediction plot shows that the yield
+mortality of this example (F = 0.19) is smaller than the maximum fishing
+mortality ($F_{max} =$ 0.26), which confirms the indication of the
+exploitation rate (E = 0.42). The prediction plot shows that the yield
 could be increased when fishing mortality and mesh size is increased.
 The units are grams per recruit.
 

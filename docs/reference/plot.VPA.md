@@ -2,7 +2,7 @@
 
 This function plots the survivors, catches, natural losses, and fishing
 mortality resulting from the
-[VPA](https://tokami.github.io/TropFishR/reference/VPA.md) model.
+[VPA](http://tokami.github.io/TropFishR/reference/VPA.md) model.
 
 ## Usage
 

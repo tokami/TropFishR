@@ -3,9 +3,9 @@
 Times series of catch and effort data from the trawl fishery off the
 North coast of Java. This dataset can be used for the estimation of
 maximum sustainable yield by means of the production models
-([`prod_mod`](https://tokami.github.io/TropFishR/reference/prod_mod.md)
+([`prod_mod`](http://tokami.github.io/TropFishR/reference/prod_mod.md)
 and
-[`prod_mod_ts`](https://tokami.github.io/TropFishR/reference/prod_mod_ts.md)).
+[`prod_mod_ts`](http://tokami.github.io/TropFishR/reference/prod_mod_ts.md)).
 
 ## Usage
 

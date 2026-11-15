@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">TropFishR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.7.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,8 +65,6 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.svg" class="logo" alt=""><h1>Using the TropFishR ELEFAN functions</h1>
-                        <h4 data-toc-skip class="author">Marc H.
-Taylor</h4>
             
       
       <small class="dont-index">Source: <a href="https://github.com/tokami/TropFishR/blob/HEAD/vignettes/Using_TropFishR_ELEFAN_functions.Rmd" class="external-link"><code>vignettes/Using_TropFishR_ELEFAN_functions.Rmd</code></a></small>
@@ -75,6 +73,11 @@ Taylor</h4>
 
     
     
+<blockquote>
+<p>If you use <code>ELEFAN_SA</code> or <code>ELEFAN_GA</code>, please
+cite <span class="citation">Taylor and Mildenberger (2017)</span> in
+addition to TropFishR (see <code>citation("TropFishR")</code>).</p>
+</blockquote>
 <div class="section level3">
 <h3 id="introduction">
 <em>Introduction</em><a class="anchor" aria-label="anchor" href="#introduction"></a>
@@ -86,7 +89,7 @@ Taylor, and Wolff 2017; Tobias Karl Mildenberger, Taylor, and Wolff
 2017)</span>. These functions can be used to estimate growth model
 parameters from length-frequency (lfq) data. The ability to convert
 length to relative age is the initial step in length-based stock
-assessment, and underpins subsequent analyses (see the <a href="https://cran.r-project.org/package=TropFishR/vignettes/tutorial.html" class="external-link">TropFishR
+assessment, and underpins subsequent analyses (see the <a href="https://tokami.github.io/TropFishR/articles/tutorial.html" class="external-link">TropFishR
 tutorial</a> for a broader overview of length-based stock
 assessment).</p>
 <p>The growth model presently implemented within TropFishR is the von
@@ -187,7 +190,7 @@ and a vector of dates (<code>lfq$dates</code>) corresponding to the
 columns of the catch matrix. The <code>lfq</code> class is used by
 several functions within the TropFishR package
 (e.g. <code>plot.lfq</code>). A separate tutorial exists detailing the
-creation of such objects from scratch (<a href="https://cran.r-project.org/package=TropFishR/vignettes/lfqData.html" class="external-link">link</a>),
+creation of such objects from scratch (<a href="https://tokami.github.io/TropFishR/articles/lfqData.html" class="external-link">link</a>),
 but here is a small example that passes variables from alba to a new lfq
 object.</p>
 <p>First, the three elements are added to a list:</p>
@@ -690,6 +693,59 @@ of simulated annealing.</p>
 <pre><code><span><span class="co">## Genetic algorithm is running. This might take some time.</span></span></code></pre>
 <p><img src="Using_TropFishR_ELEFAN_functions_files/figure-html/unnamed-chunk-19-1.png" class="r-plt" alt="" width="576"></p>
 </div>
+<div class="section level4">
+<h4 id="several-runs-with-different-seeds">
+<em>Several runs with different seeds</em><a class="anchor" aria-label="anchor" href="#several-runs-with-different-seeds"></a>
+</h4>
+<p>The ELEFAN score is very rugged: it changes in steps whenever a
+growth curve enters or leaves a length class, and it has many local
+maxima. A single run of <code>ELEFAN_GA</code> (or
+<code>ELEFAN_SA</code>) often stops at one of them, so it is advisable
+to repeat the search with different seeds (argument <code>seed</code>)
+and to keep the run with the highest score (<code>Rn_max</code>):</p>
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">seeds</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fl">4</span></span>
+<span><span class="va">runs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">seeds</span>, <span class="kw">function</span><span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="fu"><a href="../reference/ELEFAN_GA.html">ELEFAN_GA</a></span><span class="op">(</span></span>
+<span>  lfq <span class="op">=</span> <span class="va">alba</span>, MA <span class="op">=</span> <span class="fl">7</span>,</span>
+<span>  low_par <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Linf <span class="op">=</span> <span class="va">PW</span><span class="op">$</span><span class="va">confidenceInt_Linf</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, K <span class="op">=</span> <span class="fl">1</span>, t_anchor <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,</span>
+<span>  up_par <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Linf <span class="op">=</span> <span class="va">PW</span><span class="op">$</span><span class="va">confidenceInt_Linf</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, K <span class="op">=</span> <span class="fl">4</span>, t_anchor <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  popSize <span class="op">=</span> <span class="fl">60</span>, pmutation <span class="op">=</span> <span class="fl">0.2</span>, maxiter <span class="op">=</span> <span class="fl">50</span>, run <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>  seed <span class="op">=</span> <span class="va">s</span>, plot.score <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Genetic algorithm is running. This might take some time.</span></span>
+<span><span class="co">## Genetic algorithm is running. This might take some time.</span></span>
+<span><span class="co">## Genetic algorithm is running. This might take some time.</span></span>
+<span><span class="co">## Genetic algorithm is running. This might take some time.</span></span></code></pre>
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">runs</span>, <span class="kw">function</span><span class="op">(</span><span class="va">r</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">par</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Linf"</span>, <span class="st">"K"</span>, <span class="st">"t_anchor"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>, Rn <span class="op">=</span> <span class="va">r</span><span class="op">$</span><span class="va">Rn_max</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span>seed <span class="op">=</span> <span class="va">seeds</span>, <span class="va">tab</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##      seed   Linf     K t_anchor    Rn</span></span>
+<span><span class="co">## [1,]    1 10.130 1.962    0.264 0.694</span></span>
+<span><span class="co">## [2,]    2 10.198 1.938    0.268 0.694</span></span>
+<span><span class="co">## [3,]    3  9.807 2.138    0.274 0.694</span></span>
+<span><span class="co">## [4,]    4 10.106 1.944    0.268 0.694</span></span></code></pre>
+<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">best</span> <span class="op">&lt;-</span> <span class="va">runs</span><span class="op">[[</span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.max</a></span><span class="op">(</span><span class="va">tab</span><span class="op">[</span>, <span class="st">"Rn"</span><span class="op">]</span><span class="op">)</span><span class="op">]</span><span class="op">]</span></span></code></pre></div>
+<p>For the small <code>alba</code> data set all runs reach the same
+score, but with somewhat different parameters: the score is constant on
+plateaus in the parameter space, and every combination on the plateau
+fits equally well. The spread of these parameters says how precisely the
+search can locate the maximum, not how precisely the data determine the
+growth parameters (for the latter, see the vignette on bootstrapped
+ELEFAN). If the runs reach clearly different scores, keep the best one
+and consider more runs, a larger <code>popSize</code> and
+<code>maxiter</code>, or a larger <code>run</code>. The defaults of
+<code>ELEFAN_GA</code> are now <code>popSize = 100</code>,
+<code>maxiter = 200</code> and <code>run = 50</code>. In a simulation
+with an individual-based model (<code>MA = 11</code>), runs with these
+settings and a <code>K</code> range up to 5, keeping the best of three
+seeds, estimated <code>K</code> within about 10 to 15 % for monthly
+samples of 1000 fish of fast- and medium-growing species, whereas single
+runs with the former defaults (<code>popSize = 50</code>,
+<code>maxiter = 100</code>, <code>K</code> up to 1) were often off by
+more than 50 %. Searching <code>K</code> on a log scale or starting from
+a coarse grid did not help.</p>
+</div>
 </div>
 <div class="section level3">
 <h3 id="best-practices">
@@ -731,9 +787,64 @@ generations so that parameter space containing local maxima are fully
 explored (i.e. <code>SA_time</code> and <code>maxit</code> arguments
 in<code>ELEFAN_SA</code>; <code>maxiter</code>, <code>elitism</code>,
 and <code>run</code> arguments in <code>ELEFAN_GA</code>).</li>
+<li>should be checked by repeating the search with different seeds and
+keeping the run with the highest score.</li>
+</ul>
+</li>
+<li>Search range
+<ul>
+<li>
+<code>low_par</code> and <code>up_par</code> should include all
+plausible values; in particular, the default upper limit of
+<code>K</code> (1) is too low for fast-growing species.</li>
 </ul>
 </li>
 </ul>
+</div>
+<div class="section level3">
+<h3 id="limitations">
+<em>Limitations</em><a class="anchor" aria-label="anchor" href="#limitations"></a>
+</h3>
+<p>ELEFAN finds the growth curves that pass through the most peaks of
+the restructured length-frequency data. This criterion does not always
+have its maximum at the true growth parameters, and a better search
+cannot change that. In the simulation mentioned above (three life
+histories, recruitment once a year), the highest score found over 19
+runs per data set (different search settings and seeds, all with
+<code>MA = 11</code>) was close to the true <code>K</code> for monthly
+samples of 1000 fish of fast- and medium-growing species, but not
+for</p>
+<ul>
+<li>sparse data (quarterly samples of 200 fish): the best score was at
+<code>K</code> values of 0.08 to 0.26 instead of 0.5 and 1, i.e. at
+curves that pass through the peaks of several cohorts (a
+<em>harmonic</em> of the true growth),</li>
+<li>slowly growing species (<code>K</code> = 0.2, <code>Linf</code> =
+120): the best score was found anywhere along a ridge of
+<code>Linf</code> and <code>K</code> (<code>Linf</code> 88 to 194,
+<code>K</code> 0.04 to 0.34), because the large fish do not form
+distinct peaks.</li>
+</ul>
+<p>The <code>MA</code> setting alone can decide whether the result is
+useful. In the same simulation, <code>MA = 11</code> fitted the finely
+binned data of the fast- and medium-growing species (0.5 and 1 cm bins),
+but with <code>MA = 5</code> the estimates of <code>K</code> were off by
+about 90 %. For the slowly growing species (2 cm bins) it was the other
+way round: <code>MA = 5</code> estimated <code>K</code> within 10 %,
+even with quarterly samples, whereas <code>MA = 11</code> did not.</p>
+<p>In 23 of 24 simulated data sets, the true parameters scored lower
+than the best solution found. Bootstrapped ELEFAN
+(<code>ELEFAN_GA_boot</code>) does not remove this bias: its confidence
+intervals were very wide (for example, 0.06 to 1.5 for a true
+<code>K</code> of 1), or excluded the true value (0.01 to 0.2 for a true
+<code>K</code> of 0.5 with quarterly samples). A high score or a narrow
+confidence interval is therefore no proof of correct growth parameters.
+Estimates are most reliable for frequent samples with many fish and
+clearly separated cohorts of young fish; for other data, they should be
+compared with independent information (e.g. age readings, tagging data,
+or growth parameters of the species or similar species, e.g. from
+FishBase), and the effect of the uncertain growth parameters on the
+subsequent assessment should be considered.</p>
 </div>
 <div class="section level3 unnumbered">
 <h3 class="unnumbered" id="references">

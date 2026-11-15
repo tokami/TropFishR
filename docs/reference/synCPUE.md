@@ -3,7 +3,7 @@
 Synthetical CPUE dataset from Exercise 4.3 in Sparre & Venema (1999).
 Can be used to estimate the instantaneous total mortality rate (Z) by
 means of the function
-[`Z_CPUE`](https://tokami.github.io/TropFishR/reference/Z_CPUE.md).
+[`Z_CPUE`](http://tokami.github.io/TropFishR/reference/Z_CPUE.md).
 
 ## Usage
 

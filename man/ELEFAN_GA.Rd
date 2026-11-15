@@ -9,9 +9,9 @@ ELEFAN_GA(
   seasonalised = FALSE,
   low_par = NULL,
   up_par = NULL,
-  popSize = 50,
-  maxiter = 100,
-  run = maxiter,
+  popSize = 100,
+  maxiter = 200,
+  run = 50,
   parallel = FALSE,
   pmutation = 0.1,
   pcrossover = 0.8,
@@ -65,13 +65,13 @@ following default values are used:
   \item \strong{ts} summer point (ts = WP - 0.5) (range: 0 to 1, default: 1);
 }}
 
-\item{popSize}{the population size. Default: 50}
+\item{popSize}{the population size. Default: 100}
 
 \item{maxiter}{the maximum number of iterations to run before the
-GA search is halted. default:100}
+GA search is halted. Default: 200}
 
 \item{run}{the number of consecutive generations without any improvement
-in the best fitness value before the GA is stopped. Default: equals maxiter}
+in the best fitness value before the GA is stopped. Default: 50}
 
 \item{parallel}{a logical argument specifying if parallel computing
 should be used (TRUE) or not (FALSE, default) for evaluating the

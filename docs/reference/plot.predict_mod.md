@@ -2,7 +2,7 @@
 
 This function plots objects of the class "predict_mod", which are
 results of the function
-[`predict_mod`](https://tokami.github.io/TropFishR/reference/predict_mod.md).
+[`predict_mod`](http://tokami.github.io/TropFishR/reference/predict_mod.md).
 
 ## Usage
 

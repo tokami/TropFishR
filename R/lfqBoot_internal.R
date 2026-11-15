@@ -63,6 +63,33 @@ bootKde <- function(x, what = "summarised"){
 }
 
 
+## Times of the year (t_anchor, ts) are circular: 0.98 and 0.02 are close.
+## Cut the circle in the middle of the largest gap between the values, so that
+## they form one continuous range (which may extend below 0 or above 1) and
+## can be summarised by densities and quantiles. The values are returned
+## unchanged unless they clearly wrap around the turn of the year, i.e. the
+## gap across 0/1 is less than half of the largest gap (so that values spread
+## over the whole year are not cut at an arbitrary point).
+unwrapCircular <- function(v){
+    ok <- is.finite(v)
+    if(sum(ok) < 2) return(v)
+    s <- sort(v[ok] %% 1)
+    n <- length(s)
+    gaps <- c(diff(s), s[1] + 1 - s[n])
+    i <- which.max(gaps)
+    if(i == n || gaps[n] >= gaps[i] / 2) return(v)
+    cut <- s[i] + gaps[i] / 2
+    u <- v %% 1
+    u <- ifelse(u < cut, u + 1, u)
+    ## keep the centre of the values within [0, 1)
+    if(mean(u[ok]) >= 1) u <- u - 1
+    u
+}
+unwrapTimes <- function(x, pars = c("t_anchor", "ts")){
+    for(p in intersect(pars, names(x))) x[[p]] <- unwrapCircular(x[[p]])
+    x
+}
+
 ## Summarise bootstrapped VBGF estimates.
 ## `res` is a list with one vector per resample: c(par, agemax, seed, Rn_max)
 bootSummary <- function(res, CI = 95, agemax = NULL){
@@ -76,6 +103,8 @@ bootSummary <- function(res, CI = 95, agemax = NULL){
 
     ## multivariate kernel smoothing (without derived parameters)
     x <- bootRaw[,!(names(bootRaw) %in% c("phiL", "agemax")), drop = FALSE]
+    ## t_anchor and ts on a continuous range (circular times of the year)
+    x <- unwrapTimes(x)
     ## if the density cannot be estimated, keep the fits (which may have
     ## taken long) and return them with a warning
     fhat <- tryCatch(bootKde(x), error = function(e){
@@ -111,17 +140,28 @@ bootSummary <- function(res, CI = 95, agemax = NULL){
             ceiling((1/-p[["K"]]) * log(1-((p[["Linf"]]*0.95)/p[["Linf"]])))
         }else agemax
     }
-    maxDens <- c(maxDens, phiL = phiL(maxDens), agemax = tmax(maxDens))
-    medians <- c(medians, phiL = phiL(medians), agemax = tmax(medians))
-    ## limits of the derived parameters from the limits of Linf and K;
-    ## sorted, because agemax decreases with K
-    addCols <- function(m){
-        lo <- as.list(m["lo",]); up <- as.list(m["up",])
-        cbind(m, phiL = sort(c(phiL(lo), phiL(up)), na.last = TRUE),
-              agemax = sort(c(tmax(lo), tmax(up)), na.last = TRUE))
+    ## times of the year of the point estimates back to [0, 1); the limits stay
+    ## on the continuous range, so that lo <= up
+    for(p in intersect(c("t_anchor", "ts"), names(x))){
+        maxDens[p] <- maxDens[p] %% 1
+        medians[p] <- medians[p] %% 1
     }
-    limCIuni <- addCols(limCIuni)
-    limCI <- addCols(limCI)
+    maxDens <- c(maxDens, phiL = phiL(maxDens), agemax = tmax(maxDens))
+    ## medians and limits of the derived parameters over the resamples
+    ## (limits of phiL from the limits of Linf and K would be too wide,
+    ## because Linf and K are negatively correlated)
+    derived <- data.frame(phiL = log10(x$K) + 2 * log10(x$Linf),
+                          agemax = if(is.null(agemax)) ceiling(-log(0.05) / x$K)
+                                   else rep(agemax, nrow(x)))
+    medians <- c(medians, apply(derived, 2, median, na.rm = TRUE))
+    limCIuni <- cbind(limCIuni, apply(derived, 2, quantile, na.rm = TRUE,
+                                      probs = c(tmp, 1-tmp)))
+    if(!is.null(fhat)){
+        limCI <- cbind(limCI, apply(derived[inCI,, drop = FALSE], 2, range))
+    }else{
+        limCI <- cbind(limCI, phiL = NA_real_, agemax = NA_real_)
+    }
+    rownames(limCIuni) <- rownames(limCI) <- c("lo","up")
 
     ret <- list()
     ret$bootRaw <- bootRaw

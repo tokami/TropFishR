@@ -2,14 +2,14 @@
 
 \`ELEFAN_GA_boot\` performs a bootstrapped fitting of the von
 Bertalanffy growth function (VBGF) via the
-[ELEFAN_GA](https://tokami.github.io/TropFishR/reference/ELEFAN_GA.md)
+[ELEFAN_GA](http://tokami.github.io/TropFishR/reference/ELEFAN_GA.md)
 function. The length-frequency data is resampled \`nresamp\` times with
-[lfqResample](https://tokami.github.io/TropFishR/reference/lfqResample.md)
+[lfqResample](http://tokami.github.io/TropFishR/reference/lfqResample.md)
 and
-[ELEFAN_GA](https://tokami.github.io/TropFishR/reference/ELEFAN_GA.md)
-is fitted to each resampled data set. Most of the arguments are simply
+[ELEFAN_GA](http://tokami.github.io/TropFishR/reference/ELEFAN_GA.md) is
+fitted to each resampled data set. Most of the arguments are simply
 passed to
-[ELEFAN_GA](https://tokami.github.io/TropFishR/reference/ELEFAN_GA.md).
+[ELEFAN_GA](http://tokami.github.io/TropFishR/reference/ELEFAN_GA.md).
 
 ## Usage
 
@@ -93,7 +93,7 @@ ELEFAN_GA_boot(
 
   logical; should the resamples be fitted in parallel? This differs from
   the \`parallel\` argument in
-  [ELEFAN_GA](https://tokami.github.io/TropFishR/reference/ELEFAN_GA.md)
+  [ELEFAN_GA](http://tokami.github.io/TropFishR/reference/ELEFAN_GA.md)
   in that it is not used within the \`ga\` function for calculation at
   the population level, but rather for the resamples. TropFishR has to
   be installed for the parallel version, because each worker loads it.
@@ -155,13 +155,13 @@ ELEFAN_GA_boot(
 
   number indicating over how many length classes the moving average
   should be performed (default: 5, for more information see
-  [lfqRestructure](https://tokami.github.io/TropFishR/reference/lfqRestructure.md))
+  [lfqRestructure](http://tokami.github.io/TropFishR/reference/lfqRestructure.md))
 
 - addl.sqrt:
 
   additional squareroot transformation of positive values according to
   Brey et al. (1988) (default: FALSE, for more information see
-  [lfqRestructure](https://tokami.github.io/TropFishR/reference/lfqRestructure.md))
+  [lfqRestructure](http://tokami.github.io/TropFishR/reference/lfqRestructure.md))
 
 - agemax:
 
@@ -184,7 +184,7 @@ ELEFAN_GA_boot(
 - bin_size:
 
   optional; bin size passed to
-  [lfqModify](https://tokami.github.io/TropFishR/reference/lfqModify.md)
+  [lfqModify](http://tokami.github.io/TropFishR/reference/lfqModify.md)
   to re-bin each resampled data set before fitting (Default: NA, no
   re-binning)
 
@@ -211,12 +211,21 @@ an object of class \`lfqBoot\`, a list with following objects:
 
 - **misc** an empty list for additional information.
 
-\`phiL\` and \`agemax\` of \`maxDen\`, \`median\`, \`CI\` and
-\`multiCI\` are derived from \`Linf\` and \`K\` of the respective
-estimates. If the multivariate kernel density cannot be estimated (e.g.
-with fewer resamples than parameters), the function gives a warning and
-returns the fits with \`maxDen\` and \`multiCI\` set to \`NA\`, so that
-the fits are not lost.
+\`phiL\` and \`agemax\` of \`maxDen\` are derived from \`Linf\` and
+\`K\` of \`maxDen\`; their \`median\`, \`CI\` and \`multiCI\` are the
+median, quantiles and range (within the multivariate confidence region)
+of \`phiL\` and \`agemax\` of the resamples. \`t_anchor\` and \`ts\` are
+times of the year, so that e.g. 0.98 and 0.02 are close. If the values
+of the resamples clearly wrap around the turn of the year (the gap
+across 0/1 is less than half of the largest gap between the values), the
+circle is cut in the middle of the largest gap before they are
+summarised. \`maxDen\` and \`median\` of \`t_anchor\` and \`ts\` are
+between 0 and 1, but the limits of \`CI\` and \`multiCI\` can be below 0
+or above 1 (e.g. -0.05 to 0.08 for estimates around the turn of the
+year). \`bootRaw\` keeps the original values. If the multivariate kernel
+density cannot be estimated (e.g. with fewer resamples than parameters),
+the function gives a warning and returns the fits with \`maxDen\` and
+\`multiCI\` set to \`NA\`, so that the fits are not lost.
 
 ## References
 
@@ -272,8 +281,8 @@ res$maxDen
 #> 10.2726122  2.3565822  0.4349951  2.3956444  2.0000000 
 res$CI
 #>         Linf        K  t_anchor     phiL agemax
-#> lo  9.254409 1.669568 0.2420292 2.155301      1
-#> up 12.973481 3.478226 0.5091895 2.767471      2
+#> lo  9.254409 1.669568 0.2420292 2.232861      1
+#> up 12.973481 3.478226 0.5091895 2.564850      2
 
 # parallel version (TropFishR has to be installed)
 res <- ELEFAN_GA_boot(lfq = alba, MA = MA, seasonalised = FALSE,

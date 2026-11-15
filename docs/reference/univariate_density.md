@@ -2,13 +2,13 @@
 
 Plots the univariate kernel density estimates of the VBGF parameters
 from bootstrapping results
-([ELEFAN_GA_boot](https://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md),
-[ELEFAN_SA_boot](https://tokami.github.io/TropFishR/reference/ELEFAN_SA_boot.md))
+([ELEFAN_GA_boot](http://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md),
+[ELEFAN_SA_boot](http://tokami.github.io/TropFishR/reference/ELEFAN_SA_boot.md))
 and of the following assessment steps (see the argument \`boot\` of
-[M_empirical](https://tokami.github.io/TropFishR/reference/M_empirical.md),
-[catchCurve](https://tokami.github.io/TropFishR/reference/catchCurve.md),
-[VPA](https://tokami.github.io/TropFishR/reference/VPA.md) and
-[predict_mod](https://tokami.github.io/TropFishR/reference/predict_mod.md))
+[M_empirical](http://tokami.github.io/TropFishR/reference/M_empirical.md),
+[catchCurve](http://tokami.github.io/TropFishR/reference/catchCurve.md),
+[VPA](http://tokami.github.io/TropFishR/reference/VPA.md) and
+[predict_mod](http://tokami.github.io/TropFishR/reference/predict_mod.md))
 together with the confidence interval and the parameter value with
 maximum density (mode of the kernel density).
 

@@ -115,6 +115,34 @@ test_that("ELEFAN_GA_boot summaries are consistent", {
                  log10(res$maxDen[["K"]]) + 2 * log10(res$maxDen[["Linf"]]))
     expect_equal(res$maxDen[["agemax"]], ceiling(-log(0.05) / res$maxDen[["K"]]))
     expect_equal(colnames(res$CI), c(pars, "phiL", "agemax"))
+    ## median and limits of phiL and agemax over the resamples
+    phi <- log10(res$bootRaw$K) + 2 * log10(res$bootRaw$Linf)
+    expect_equal(res$median[["phiL"]], median(phi))
+    expect_equal(unname(res$CI[, "phiL"]), unname(quantile(phi, c(0.025, 0.975))))
+    expect_true(res$multiCI["lo", "phiL"] >= min(phi) &&
+                res$multiCI["up", "phiL"] <= max(phi))
+    amax <- ceiling(-log(0.05) / res$bootRaw$K)
+    expect_equal(unname(res$CI[, "agemax"]), unname(quantile(amax, c(0.025, 0.975))))
+})
+
+test_that("bootstrap CI of phiL comes from the resamples, not from the Linf and K limits", {
+    ## strongly negatively correlated Linf and K: phiL varies much less than
+    ## log10(K) + 2 log10(Linf) at the limits of Linf and K suggests
+    set.seed(2)
+    res <- lapply(1:200, function(i) {
+        Linf <- exp(rnorm(1, log(50), 0.1))
+        K <- 10^(2.5 - 2 * log10(Linf) + rnorm(1, 0, 0.01))
+        c(Linf = Linf, K = K, t_anchor = runif(1, 0.3, 0.5),
+          phiL = log10(K) + 2 * log10(Linf), agemax = 3, i, 0.5)
+    })
+    b <- bootSummary(res)
+    phi <- b$bootRaw$phiL
+    expect_equal(unname(b$CI[, "phiL"]), unname(quantile(phi, c(0.025, 0.975))))
+    expect_lt(diff(b$CI[, "phiL"]), 0.1)
+    expect_true(all(b$multiCI[, "phiL"] >= min(phi) & b$multiCI[, "phiL"] <= max(phi)))
+    expect_equal(b$median[["phiL"]], median(phi))
+    ## fixed agemax
+    expect_equal(unname(bootSummary(res, agemax = 4)$CI[, "agemax"]), c(4, 4))
 })
 
 test_that("ELEFAN_GA_boot writes progress to outfile", {
@@ -206,7 +234,8 @@ test_that("bootstrap summary gives clear errors if the density cannot be estimat
         set.seed(1)
         lapply(seq_len(n), function(i) {
             p <- c(Linf = runif(1, 10, 20), K = runif(1, 0.5, 2),
-                   t_anchor = runif(1), C = runif(1), ts = runif(1))[seq_len(d)]
+                   t_anchor = runif(1, 0.4, 0.6), C = runif(1),
+                   ts = runif(1, 0.4, 0.6))[seq_len(d)]
             c(p, phiL = 1, agemax = 3, i, 0.5)
         })
     }
@@ -236,4 +265,34 @@ test_that("bootstrap summary gives clear errors if the density cannot be estimat
     raw <- ok$bootRaw[, c("Linf", "K", "t_anchor", "C", "ts")]
     expect_equal(ok$median[names(raw)], apply(raw, 2, median))
     expect_false(anyNA(ok$maxDen))
+})
+
+test_that("bootstrap summaries treat t_anchor and ts as circular", {
+    expect_equal(unwrapCircular(c(0.2, 0.3, 0.5)), c(0.2, 0.3, 0.5))
+    ## values spread over the year (gap across 0/1 not clearly smaller)
+    expect_equal(unwrapCircular(c(0.1, 0.3, 0.6, 0.85)), c(0.1, 0.3, 0.6, 0.85))
+    expect_equal(unwrapCircular(c(0.95, 0.05, 0.99)), c(0.95, 1.05, 0.99))
+    expect_equal(unwrapCircular(c(0.97, 0.02, 0.05, 0.1)), c(-0.03, 0.02, 0.05, 0.1))
+    expect_equal(unwrapCircular(c(0.9, NA, 0.1)), c(0.9, NA, 1.1) - 1)
+    ## resamples around the turn of the year
+    set.seed(3)
+    n <- 200
+    ta <- rnorm(n, 0, 0.04) %% 1
+    ts <- rnorm(n, 0.5, 0.05)
+    res <- lapply(seq_len(n), function(i) {
+        Linf <- rnorm(1, 50, 2); K <- rnorm(1, 0.5, 0.03)
+        c(Linf = Linf, K = K, t_anchor = ta[i], C = runif(1), ts = ts[i],
+          phiL = log10(K) + 2 * log10(Linf), agemax = 6, i, 0.5)
+    })
+    b <- bootSummary(res)
+    expect_lt(abs(((b$median[["t_anchor"]] + 0.5) %% 1) - 0.5), 0.02)
+    expect_lt(abs(((b$maxDen[["t_anchor"]] + 0.5) %% 1) - 0.5), 0.03)
+    expect_true(b$median[["t_anchor"]] >= 0 && b$median[["t_anchor"]] < 1)
+    expect_true(b$CI["lo", "t_anchor"] < 0 && b$CI["up", "t_anchor"] > 0)
+    expect_lt(diff(b$CI[, "t_anchor"]), 0.2)
+    expect_lt(diff(b$multiCI[, "t_anchor"]), 0.3)
+    expect_equal(b$bootRaw$t_anchor, ta)
+    ## without wrap-around the summaries are as before
+    expect_equal(unname(b$CI[, "ts"]), unname(quantile(ts, c(0.025, 0.975))))
+    expect_equal(b$median[["ts"]], median(ts))
 })

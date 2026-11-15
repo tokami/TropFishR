@@ -2,7 +2,7 @@
 
 Relative retention for given parameters of the selection curves of
 Millar's selectivity model
-([`select_Millar`](https://tokami.github.io/TropFishR/reference/select_Millar.md)),
+([`select_Millar`](http://tokami.github.io/TropFishR/reference/select_Millar.md)),
 e.g. published gillnet selectivity parameters.
 
 ## Usage
@@ -33,10 +33,10 @@ select_Millar_curve(lengths, meshSizes, rtype, par, refMesh = meshSizes[1])
 
   parameters of the selection curve for the reference mesh size
   (`refMesh`), as reported by
-  [`select_Millar`](https://tokami.github.io/TropFishR/reference/select_Millar.md)
+  [`select_Millar`](http://tokami.github.io/TropFishR/reference/select_Millar.md)
   in `estimates` (see Details). Either a numeric vector or the matrix
   `estimates` of
-  [`select_Millar`](https://tokami.github.io/TropFishR/reference/select_Millar.md).
+  [`select_Millar`](http://tokami.github.io/TropFishR/reference/select_Millar.md).
 
 - refMesh:
 
@@ -71,10 +71,10 @@ curve is the same for all mesh sizes.
 
 The curves are scaled to a maximum retention of 1 (except bi-modal
 curves). Note that the parameters in `par` of the result of
-[`select_Millar`](https://tokami.github.io/TropFishR/reference/select_Millar.md)
+[`select_Millar`](http://tokami.github.io/TropFishR/reference/select_Millar.md)
 are on an internal scale (e.g. on the log scale for `"lognorm"`); use
 `estimates` or
-[`predict.select_Millar`](https://tokami.github.io/TropFishR/reference/predict.select_Millar.md)
+[`predict.select_Millar`](http://tokami.github.io/TropFishR/reference/predict.select_Millar.md)
 for a fitted model.
 
 ## References
@@ -85,8 +85,8 @@ Journal du Conseil*, 54(3), 471-477.
 
 ## See also
 
-[`select_Millar`](https://tokami.github.io/TropFishR/reference/select_Millar.md),
-[`predict.select_Millar`](https://tokami.github.io/TropFishR/reference/predict.select_Millar.md)
+[`select_Millar`](http://tokami.github.io/TropFishR/reference/select_Millar.md),
+[`predict.select_Millar`](http://tokami.github.io/TropFishR/reference/predict.select_Millar.md)
 
 ## Examples
 

@@ -191,7 +191,9 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
 
           points(x = xplot[reg_int[1]:reg_int[2]], y = yplot[reg_int[1]:reg_int[2]],
                  pch = 19, col = col[I], cex = cex)
-          lines(xplot[reg_int[1]:reg_int[2]],fitted(lm1), col=col[I], lwd=1.7)
+          ## points without catch-curve value (e.g. a plus group) are
+          ## dropped from the regression: the row names give the points used
+          lines(xplot[as.integer(names(fitted(lm1)))], fitted(lm1), col=col[I], lwd=1.7)
 
           if(I == which(ind)){
               temp0 <- seq(0,xplotAGE[reg_int[1]],0.01)
@@ -299,7 +301,9 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
 
           points(x = xplot[reg_int[1]:reg_int[2]], y = yplot[reg_int[1]:reg_int[2]],
                  pch = 19, col = col[I], cex = cex)
-          lines(xplot[reg_int[1]:reg_int[2]],fitted(lm1), col=col[I], lwd=1.7)
+          ## points without catch-curve value (e.g. a plus group) are
+          ## dropped from the regression: the row names give the points used
+          lines(xplot[as.integer(names(fitted(lm1)))], fitted(lm1), col=col[I], lwd=1.7)
 
           pusr <- par("usr")
           text(x = pusr[2]*0.85, y = pusr[4]-(pusr[4]/(12*(1/I))), labels = paste("Z =",round(Z_lm1,2),"+/-",

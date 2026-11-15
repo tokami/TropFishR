@@ -2,7 +2,7 @@
 
 This function plots the seperated frequency distributions and selected
 regression lines of
-[Bhattacharya](https://tokami.github.io/TropFishR/reference/Bhattacharya.md)
+[Bhattacharya](http://tokami.github.io/TropFishR/reference/Bhattacharya.md)
 method.
 
 ## Usage

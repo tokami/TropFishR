@@ -3,7 +3,7 @@
 Estimates the natural mortality rate (M) for each resample of a
 bootstrapped growth analysis with the growth-based estimator of Then et
 al. (2015) ("Then_growth" in
-[`M_empirical`](https://tokami.github.io/TropFishR/reference/M_empirical.md)),
+[`M_empirical`](http://tokami.github.io/TropFishR/reference/M_empirical.md)),
 including the uncertainty of the estimator itself: for each resample,
 the model of Then et al. (2015) with coefficients from a bootstrap of
 their data is used for each resample.
@@ -20,7 +20,7 @@ MstochThen(boot, resid = FALSE, seed = NULL, CI = 95)
 
   an object of class \`lfqBoot\` with bootstrapped growth parameters
   (e.g. from
-  [`ELEFAN_GA_boot`](https://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md))
+  [`ELEFAN_GA_boot`](http://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md))
 
 - resid:
 
@@ -75,13 +75,13 @@ res$maxDen
 #> 10.0096156  2.7150279  0.4908732  2.4346091  2.0000000  3.1399201 
 res$CI
 #>         Linf        K  t_anchor     phiL agemax   M_Then
-#> lo  9.171726 1.547109 0.2486596 2.114423      1 1.758586
-#> up 11.478216 4.165708 0.5486528 2.739438      2 6.588096
+#> lo  9.171726 1.547109 0.2486596 2.235436      1 1.758586
+#> up 11.478216 4.165708 0.5486528 2.611677      2 6.588096
 
 ## including the residual error of the model
 res <- MstochThen(alba_boot, resid = TRUE)
 res$CI
 #>         Linf        K  t_anchor     phiL agemax     M_Then
-#> lo  9.171726 1.547109 0.2486596 2.114423      1  0.4997372
-#> up 11.478216 4.165708 0.5486528 2.739438      2 12.5964694
+#> lo  9.171726 1.547109 0.2486596 2.235436      1  0.4997372
+#> up 11.478216 4.165708 0.5486528 2.611677      2 12.5964694
 ```

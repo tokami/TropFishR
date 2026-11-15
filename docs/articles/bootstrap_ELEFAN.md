@@ -1,5 +1,9 @@
 # Uncertainty in length-based stock assessment with bootstrapped ELEFAN
 
+> If you use bootstrapped ELEFAN, please cite Schwamborn, Mildenberger,
+> and Taylor (2019) in addition to TropFishR (see
+> `citation("TropFishR")`).
+
 ## Introduction
 
 The ELEFAN functions of TropFishR (`ELEFAN`, `ELEFAN_SA` and
@@ -29,14 +33,14 @@ points. This vignette shows how to
     `catchCurve`, `VPA` and `predict_mod` with the argument `boot`).
 
 The [ELEFAN
-tutorial](https://cran.r-project.org/package=TropFishR/vignettes/Using_TropFishR_ELEFAN_functions.html)
+tutorial](https://tokami.github.io/TropFishR/articles/Using_TropFishR_ELEFAN_functions.html)
 explains the ELEFAN functions and their settings in more detail.
 
 ## Data
 
 We use the synthetic data set `synLFQ7`, which was simulated with known
 growth parameters (see
-[`?synLFQ7`](https://tokami.github.io/TropFishR/reference/synLFQ7.md)):
+[`?synLFQ7`](http://tokami.github.io/TropFishR/reference/synLFQ7.md)):
 $L_{\infty}$ = 123 cm, $K$ = 0.2 year$^{- 1}$, $C$ = 0.3, $t_{s}$ = 0,
 and recruitment around April ($t_{anchor}$ between 0.16 and 0.34).
 Knowing the true values allows us to judge the bootstrapped estimates.
@@ -189,8 +193,8 @@ res$maxDen
 ##  13.0000000
 res$CI
 ##        Linf         K  t_anchor          C        ts     phiL agemax
-## lo 103.7134 0.1619116 0.1341449 0.06760033 0.1077767 3.240947      5
-## up 136.6103 0.7314206 0.8999609 0.82933935 0.9403650 4.135134     19
+## lo 103.7134 0.1619116 0.1370873 0.06760033 0.1077767 3.346699      5
+## up 136.6103 0.7314206 0.9376253 0.82933935 0.9403650 3.998000     19
 ```
 
 Compared to the true parameters:
@@ -207,7 +211,7 @@ round(data.frame(true = true_par[pars],
 ## K      0.200       0.234   0.243    0.162    0.731
 ## C      0.300       0.390   0.442    0.068    0.829
 ## ts     0.000       0.568   0.553    0.108    0.940
-## phiL   3.481       3.484   3.502    3.241    4.135
+## phiL   3.481       3.484   3.498    3.347    3.998
 ```
 
 The confidence intervals of $L_{\infty}$ and $K$ include the true
@@ -370,7 +374,7 @@ natural mortality of $M$ = 0.2 year$^{- 1}$, a fishing mortality of $F$
 = 0.3 year$^{- 1}$ (i.e. $Z$ = 0.5 year$^{- 1}$), a length at 50 %
 probability of capture of $L_{50}$ = 35 cm and a length at maturity of
 $L_{mat}$ = 30.8 cm (see
-[`?synLFQ7`](https://tokami.github.io/TropFishR/reference/synLFQ7.md)).
+[`?synLFQ7`](http://tokami.github.io/TropFishR/reference/synLFQ7.md)).
 
 ### Natural mortality
 
@@ -393,7 +397,7 @@ accounts for the uncertainty of the formula of Then et al. (2015): for
 each resample, M is estimated with coefficients of the formula that were
 refitted to a bootstrap sample of the original data of Then et al.
 (2015) (see
-[`?MstochThen`](https://tokami.github.io/TropFishR/reference/MstochThen.md)).
+[`?MstochThen`](http://tokami.github.io/TropFishR/reference/MstochThen.md)).
 This results in wider confidence intervals. With `resid = TRUE`, the
 scatter of the individual species around the formula is included as
 well, which describes the uncertainty of M for a single stock better but
@@ -419,7 +423,7 @@ each resampled data set, with the catches summed over the samples of a
 year (see the arguments `yearSel` and `yearCombine` for data covering
 several years). The points used for the regression line are chosen
 automatically for each resample (see
-[`?catchCurve`](https://tokami.github.io/TropFishR/reference/catchCurve.md)).
+[`?catchCurve`](http://tokami.github.io/TropFishR/reference/catchCurve.md)).
 With `calc_ogive = TRUE`, the selectivity ($L_{50}$, $L_{75}$) is
 estimated as well, and with `natMort` the fishing mortality is
 calculated as $F = Z - M$:
@@ -530,8 +534,8 @@ while `lfq` has to keep the sampled numbers of fish, because the
 resampling draws the measured fish. The total landings (in kg, one value
 per sample) are therefore passed to `VPA` with the argument `landings`,
 and each resample is raised to the total catch (see
-[`?VPA`](https://tokami.github.io/TropFishR/reference/VPA.md) and
-[`?lfqRaise`](https://tokami.github.io/TropFishR/reference/lfqRaise.md)):
+[`?VPA`](http://tokami.github.io/TropFishR/reference/VPA.md) and
+[`?lfqRaise`](http://tokami.github.io/TropFishR/reference/lfqRaise.md)):
 
 ``` r
 landings <- rep(30000, length(lfq$dates))  # landings in kg per sampling date

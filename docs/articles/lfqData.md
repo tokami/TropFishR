@@ -41,7 +41,7 @@ library(TropFishR)
 
 ## folder with the example files
 system.file("extdata", package = "TropFishR")
-#> [1] "/tmp/RtmpAaIq2K/temp_libpathc00756898edff/TropFishR/extdata"
+#> [1] "/tmp/Rtmp7Y2cwo/temp_libpathd7db25488fb93/TropFishR/extdata"
 ```
 
 ### *Data arrangement 1*
@@ -86,14 +86,14 @@ stand for the day, ‘%m’ for the month, and ‘%Y’ for the year with the
 century, e.g. 2014, without the century it would be ‘%y’, e.g. 14. The
 separator, here ‘.’, should be the same as in your data (see other
 examples below). The function
-[`lfqCreate()`](https://tokami.github.io/TropFishR/reference/lfqCreate.md)
+[`lfqCreate()`](http://tokami.github.io/TropFishR/reference/lfqCreate.md)
 is a handy function, which allows you to convert the dataframe into a
 list in the right format. The arguments ‘Lname’ and ‘Dname’ define the
 names of the columns in your dataframe with the length measurements and
 the dates, respectively. They should correspond to `colnames(lfq1)`.
 Besides the arguments above it allows for many other adjustments, such
 as setting the bin size or aggregating the data monthly, see
-[`?lfqCreate`](https://tokami.github.io/TropFishR/reference/lfqCreate.md)
+[`?lfqCreate`](http://tokami.github.io/TropFishR/reference/lfqCreate.md)
 for more information.
 
 ### *Data arrangement 2*
@@ -142,7 +142,7 @@ column, the separator is wrong, and if the lengths are characters
 instead of numbers, the decimal separator is wrong. Be aware of the
 different date format, the different column headers or names and the
 additional argument in the function
-[`lfqCreate()`](https://tokami.github.io/TropFishR/reference/lfqCreate.md)
+[`lfqCreate()`](http://tokami.github.io/TropFishR/reference/lfqCreate.md)
 called ‘Fname’ displaying the name of the column with the frequency
 information.
 
@@ -196,7 +196,7 @@ plot(lfq3new, Fname = "catch")
 
 ![](lfqData_files/figure-html/unnamed-chunk-4-1.png) In this case, the
 function
-[`lfqCreate()`](https://tokami.github.io/TropFishR/reference/lfqCreate.md)
+[`lfqCreate()`](http://tokami.github.io/TropFishR/reference/lfqCreate.md)
 can not be used, instead the data is arranged into a list manually. The
 dates are taken from the column names. By default, R changes column
 names that do not start with a letter, e.g. ‘2016-01-15’ becomes
@@ -262,7 +262,7 @@ the ‘sheet’ argument.
 The lfq data are not limited to one year. The catch matrix has one
 column per sampling time, and the dates can span several years; each
 column just needs its correct date. With data arrangement 1 or 2,
-[`lfqCreate()`](https://tokami.github.io/TropFishR/reference/lfqCreate.md)
+[`lfqCreate()`](http://tokami.github.io/TropFishR/reference/lfqCreate.md)
 builds the lfq data for any number of years from the dates of the
 measurements. With data arrangement 3, the dates of all columns are
 added, e.g. for monthly samples from January 2022 to December 2023 (here
@@ -290,7 +290,7 @@ The growth methods (`ELEFAN`, `ELEFAN_SA`, `ELEFAN_GA`) use all samples
 together, which helps to follow cohorts over a longer time. The catch
 curve (`catchCurve`) and `VPA` assume a representative sample of the
 catch of one year (or the average of several years).
-[`lfqModify()`](https://tokami.github.io/TropFishR/reference/lfqModify.md)
+[`lfqModify()`](http://tokami.github.io/TropFishR/reference/lfqModify.md)
 sums the samples per year (one column per year) or selects the samples
 of certain years:
 
@@ -378,4 +378,4 @@ TropFishR, the arrangement of your length measurements in a spreadsheet
 important and several requests motivated me to write this vignette. How
 you can use TropFishR for the further analysis of your data is
 demonstrated in the detailed
-[**tutorial**](https://cran.r-project.org/package=TropFishR/vignettes/tutorial.html).
+[**tutorial**](https://tokami.github.io/TropFishR/articles/tutorial.html).

@@ -3,7 +3,7 @@
 Synthetic length frequency data from Sparre & Venema (1998). Can be used
 for the estimation of the instantaneous total mortality rate (Z) by
 means of
-[`Z_BevertonHolt`](https://tokami.github.io/TropFishR/reference/Z_BevertonHolt.md).
+[`Z_BevertonHolt`](http://tokami.github.io/TropFishR/reference/Z_BevertonHolt.md).
 
 ## Usage
 

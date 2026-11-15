@@ -3,8 +3,8 @@
 This dataset contains length-frequency data and biological
 characteristics about hake (*Merluccius merluccius*) and its fisheries
 off Senegal. It can be used for
-[`VPA`](https://tokami.github.io/TropFishR/reference/VPA.md) or
-[`predict_mod`](https://tokami.github.io/TropFishR/reference/predict_mod.md).
+[`VPA`](http://tokami.github.io/TropFishR/reference/VPA.md) or
+[`predict_mod`](http://tokami.github.io/TropFishR/reference/predict_mod.md).
 
 ## Usage
 

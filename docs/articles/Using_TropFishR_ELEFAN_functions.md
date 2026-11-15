@@ -1,5 +1,9 @@
 # Using the TropFishR ELEFAN functions
 
+> If you use `ELEFAN_SA` or `ELEFAN_GA`, please cite Taylor and
+> Mildenberger (2017) in addition to TropFishR (see
+> `citation("TropFishR")`).
+
 ### *Introduction*
 
 The following tutorial outlines the use of the ELEFAN functions
@@ -9,8 +13,8 @@ Taylor, and Wolff 2017). These functions can be used to estimate growth
 model parameters from length-frequency (lfq) data. The ability to
 convert length to relative age is the initial step in length-based stock
 assessment, and underpins subsequent analyses (see the [TropFishR
-tutorial](https://cran.r-project.org/package=TropFishR/vignettes/tutorial.html)
-for a broader overview of length-based stock assessment).
+tutorial](https://tokami.github.io/TropFishR/articles/tutorial.html) for
+a broader overview of length-based stock assessment).
 
 The growth model presently implemented within TropFishR is the von
 Bertalanffy growth function (VBGF),
@@ -104,8 +108,8 @@ matrix, and a vector of dates (`lfq$dates`) corresponding to the columns
 of the catch matrix. The `lfq` class is used by several functions within
 the TropFishR package (e.g. `plot.lfq`). A separate tutorial exists
 detailing the creation of such objects from scratch
-([link](https://cran.r-project.org/package=TropFishR/vignettes/lfqData.html)),
-but here is a small example that passes variables from alba to a new lfq
+([link](https://tokami.github.io/TropFishR/articles/lfqData.html)), but
+here is a small example that passes variables from alba to a new lfq
 object.
 
 First, the three elements are added to a list:
@@ -211,7 +215,7 @@ positive. In some ways, the shift towards a time perspective can help
 provide important biological information (i.e. identify season when
 growth strongest). Furthermore, back-calculation of length zero across
 bins allows for the reconstruction of a relative recruitment index (see
-[`?recruitment`](https://tokami.github.io/TropFishR/reference/recruitment.md)).
+[`?recruitment`](http://tokami.github.io/TropFishR/reference/recruitment.md)).
 
 ### *Restricting the VBGF parameter search range*
 
@@ -669,6 +673,62 @@ synLFQ4 <- ELEFAN_GA(
 
 ![](Using_TropFishR_ELEFAN_functions_files/figure-html/unnamed-chunk-19-1.png)
 
+#### *Several runs with different seeds*
+
+The ELEFAN score is very rugged: it changes in steps whenever a growth
+curve enters or leaves a length class, and it has many local maxima. A
+single run of `ELEFAN_GA` (or `ELEFAN_SA`) often stops at one of them,
+so it is advisable to repeat the search with different seeds (argument
+`seed`) and to keep the run with the highest score (`Rn_max`):
+
+``` r
+seeds <- 1:4
+runs <- lapply(seeds, function(s) ELEFAN_GA(
+  lfq = alba, MA = 7,
+  low_par = list(Linf = PW$confidenceInt_Linf[1], K = 1, t_anchor = 0),
+  up_par = list(Linf = PW$confidenceInt_Linf[2], K = 4, t_anchor = 1),
+  popSize = 60, pmutation = 0.2, maxiter = 50, run = 20,
+  seed = s, plot.score = FALSE))
+```
+
+    ## Genetic algorithm is running. This might take some time.
+    ## Genetic algorithm is running. This might take some time.
+    ## Genetic algorithm is running. This might take some time.
+    ## Genetic algorithm is running. This might take some time.
+
+``` r
+tab <- t(sapply(runs, function(r)
+  c(unlist(r$par[c("Linf", "K", "t_anchor")]), Rn = r$Rn_max)))
+round(cbind(seed = seeds, tab), 3)
+```
+
+    ##      seed   Linf     K t_anchor    Rn
+    ## [1,]    1 10.130 1.962    0.264 0.694
+    ## [2,]    2 10.198 1.938    0.268 0.694
+    ## [3,]    3  9.807 2.138    0.274 0.694
+    ## [4,]    4 10.106 1.944    0.268 0.694
+
+``` r
+best <- runs[[which.max(tab[, "Rn"])]]
+```
+
+For the small `alba` data set all runs reach the same score, but with
+somewhat different parameters: the score is constant on plateaus in the
+parameter space, and every combination on the plateau fits equally well.
+The spread of these parameters says how precisely the search can locate
+the maximum, not how precisely the data determine the growth parameters
+(for the latter, see the vignette on bootstrapped ELEFAN). If the runs
+reach clearly different scores, keep the best one and consider more
+runs, a larger `popSize` and `maxiter`, or a larger `run`. The defaults
+of `ELEFAN_GA` are now `popSize = 100`, `maxiter = 200` and `run = 50`.
+In a simulation with an individual-based model (`MA = 11`), runs with
+these settings and a `K` range up to 5, keeping the best of three seeds,
+estimated `K` within about 10 to 15 % for monthly samples of 1000 fish
+of fast- and medium-growing species, whereas single runs with the former
+defaults (`popSize = 50`, `maxiter = 100`, `K` up to 1) were often off
+by more than 50 %. Searching `K` on a log scale or starting from a
+coarse grid did not help.
+
 ### *Best practices*
 
 The following list highlights some existing best practices for using the
@@ -695,6 +755,51 @@ ELEFAN approach:
     generations so that parameter space containing local maxima are
     fully explored (i.e. `SA_time` and `maxit` arguments in`ELEFAN_SA`;
     `maxiter`, `elitism`, and `run` arguments in `ELEFAN_GA`).
+  - should be checked by repeating the search with different seeds and
+    keeping the run with the highest score.
+- Search range
+  - `low_par` and `up_par` should include all plausible values; in
+    particular, the default upper limit of `K` (1) is too low for
+    fast-growing species.
+
+### *Limitations*
+
+ELEFAN finds the growth curves that pass through the most peaks of the
+restructured length-frequency data. This criterion does not always have
+its maximum at the true growth parameters, and a better search cannot
+change that. In the simulation mentioned above (three life histories,
+recruitment once a year), the highest score found over 19 runs per data
+set (different search settings and seeds, all with `MA = 11`) was close
+to the true `K` for monthly samples of 1000 fish of fast- and
+medium-growing species, but not for
+
+- sparse data (quarterly samples of 200 fish): the best score was at `K`
+  values of 0.08 to 0.26 instead of 0.5 and 1, i.e. at curves that pass
+  through the peaks of several cohorts (a *harmonic* of the true
+  growth),
+- slowly growing species (`K` = 0.2, `Linf` = 120): the best score was
+  found anywhere along a ridge of `Linf` and `K` (`Linf` 88 to 194, `K`
+  0.04 to 0.34), because the large fish do not form distinct peaks.
+
+The `MA` setting alone can decide whether the result is useful. In the
+same simulation, `MA = 11` fitted the finely binned data of the fast-
+and medium-growing species (0.5 and 1 cm bins), but with `MA = 5` the
+estimates of `K` were off by about 90 %. For the slowly growing species
+(2 cm bins) it was the other way round: `MA = 5` estimated `K` within 10
+%, even with quarterly samples, whereas `MA = 11` did not.
+
+In 23 of 24 simulated data sets, the true parameters scored lower than
+the best solution found. Bootstrapped ELEFAN (`ELEFAN_GA_boot`) does not
+remove this bias: its confidence intervals were very wide (for example,
+0.06 to 1.5 for a true `K` of 1), or excluded the true value (0.01 to
+0.2 for a true `K` of 0.5 with quarterly samples). A high score or a
+narrow confidence interval is therefore no proof of correct growth
+parameters. Estimates are most reliable for frequent samples with many
+fish and clearly separated cohorts of young fish; for other data, they
+should be compared with independent information (e.g. age readings,
+tagging data, or growth parameters of the species or similar species,
+e.g. from FishBase), and the effect of the uncertain growth parameters
+on the subsequent assessment should be considered.
 
 ### *References*
 

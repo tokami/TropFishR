@@ -2,7 +2,7 @@
 
 Modify length-frequency (LFQ) data. Allows to summarise catch matrix of
 LFQ data to one column per year. This is required for e.g.
-[`catchCurve`](https://tokami.github.io/TropFishR/reference/catchCurve.md).
+[`catchCurve`](http://tokami.github.io/TropFishR/reference/catchCurve.md).
 Allows to change bin size of LFQ data. Allows to add plus group to catch
 matrix.
 
@@ -34,7 +34,7 @@ lfqModify(
 - par:
 
   growth parameters as resulting from e.g.
-  [`ELEFAN`](https://tokami.github.io/TropFishR/reference/ELEFAN.md)
+  [`ELEFAN`](http://tokami.github.io/TropFishR/reference/ELEFAN.md)
 
 - bin_size:
 

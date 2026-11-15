@@ -1,7 +1,7 @@
 # Plot of recruitment patterns
 
 This function plots the recruitment patterns from the
-[recruitment](https://tokami.github.io/TropFishR/reference/recruitment.md)
+[recruitment](http://tokami.github.io/TropFishR/reference/recruitment.md)
 model.
 
 ## Usage

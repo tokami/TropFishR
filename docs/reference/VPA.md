@@ -131,7 +131,7 @@ VPA(
   sample (`raiseBy = "sample"`) or year (`raiseBy = "year"`). If
   provided, `param` has to be length-frequency data with the sampled
   numbers of fish, which are raised to the total catch with
-  [`lfqRaise`](https://tokami.github.io/TropFishR/reference/lfqRaise.md)
+  [`lfqRaise`](http://tokami.github.io/TropFishR/reference/lfqRaise.md)
   and summed per year (select the year with `catch_columns` if there are
   several). With `boot`, each resample is raised.
 
@@ -140,23 +140,23 @@ VPA(
   optional; with `landings`, the measured weight of the samples in kg
   (one value per sample or year). By default estimated from the sampled
   numbers and the length-weight relationship (see
-  [`lfqRaise`](https://tokami.github.io/TropFishR/reference/lfqRaise.md)).
+  [`lfqRaise`](http://tokami.github.io/TropFishR/reference/lfqRaise.md)).
 
 - raiseBy:
 
   with `landings`, `"sample"` (default) to raise each sample separately
   or `"year"` to raise all samples of a year with one factor (see
-  [`lfqRaise`](https://tokami.github.io/TropFishR/reference/lfqRaise.md)).
+  [`lfqRaise`](http://tokami.github.io/TropFishR/reference/lfqRaise.md)).
 
 - boot:
 
   optional; an object of class \`lfqBoot\` with bootstrapped growth
   parameters, natural mortality (see \`natMort\`) and fishing mortality
   (\`FM\`, from
-  [`catchCurve`](https://tokami.github.io/TropFishR/reference/catchCurve.md)
+  [`catchCurve`](http://tokami.github.io/TropFishR/reference/catchCurve.md)
   with \`natMort\`). If provided, the length-based VPA (or cohort
   analysis) is applied to each resampled data set (re-created with
-  [`lfqResample`](https://tokami.github.io/TropFishR/reference/lfqResample.md)
+  [`lfqResample`](http://tokami.github.io/TropFishR/reference/lfqResample.md)
   and the seeds of \`boot\`) with the growth parameters and mortality
   rates of the resample: the terminal fishing mortality is the \`FM\` of
   the resample and a plus group is created at Linf of the resample.
@@ -220,14 +220,14 @@ A list with the input parameters and following list objects:
   for plotting,
 
 - **raising**: with `landings`, the raising factors (see
-  [`lfqRaise`](https://tokami.github.io/TropFishR/reference/lfqRaise.md));
+  [`lfqRaise`](http://tokami.github.io/TropFishR/reference/lfqRaise.md));
 
 If \`boot\` is provided, the `lfqBoot` object with the additional
 columns \`N\` (total mean number of fish) and \`B\` (total mean biomass
 in tonnes) in \`bootRaw\`, \`maxDen\`, \`median\` and \`CI\`. The
 fishing mortality at length of each resample is stored in
 \`misc\$FMvecVPA\` (used by
-[`predict_mod`](https://tokami.github.io/TropFishR/reference/predict_mod.md)
+[`predict_mod`](http://tokami.github.io/TropFishR/reference/predict_mod.md)
 with \`boot\`). Resamples for which the analysis fails (e.g. FM \<= 0)
 get NA.
 
@@ -241,12 +241,12 @@ calcualtion easier, VPA assumes that the fish are caught continuously,
 which has to be solved by the trial and error method (Sparre and Venema,
 1998). The VPA/CA requires the total catch of the stock in one year
 (absolute numbers), while most other methods (e.g. ELEFAN,
-[`catchCurve`](https://tokami.github.io/TropFishR/reference/catchCurve.md))
+[`catchCurve`](http://tokami.github.io/TropFishR/reference/catchCurve.md))
 only use the relative length composition of the samples. For
 length-frequency data, keep the sampled numbers of fish in the lfq data
 and provide the total landings in weight (`landings`): the samples are
 then raised to the total catch in numbers by
-[`lfqRaise`](https://tokami.github.io/TropFishR/reference/lfqRaise.md).
+[`lfqRaise`](http://tokami.github.io/TropFishR/reference/lfqRaise.md).
 Alternatively, `catch` can contain the total catch per age class or
 length group in numbers (or '000 numbers) or, for the length-based
 VPA/CA, in weight per length group (`catch_unit`). The catch has to be

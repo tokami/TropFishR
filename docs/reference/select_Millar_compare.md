@@ -1,7 +1,7 @@
 # Compare Millar's selectivity models
 
 Compares several selection curves fitted with
-[`select_Millar`](https://tokami.github.io/TropFishR/reference/select_Millar.md)
+[`select_Millar`](http://tokami.github.io/TropFishR/reference/select_Millar.md)
 to the same data by the (quasi-) Akaike information criterion corrected
 for small sample sizes (AICc and QAICc).
 
@@ -16,7 +16,7 @@ select_Millar_compare(..., c_hat = NULL, c_hat_method = "deviance")
 - ...:
 
   results of
-  [`select_Millar`](https://tokami.github.io/TropFishR/reference/select_Millar.md)
+  [`select_Millar`](http://tokami.github.io/TropFishR/reference/select_Millar.md)
   (class `"select_Millar"`) fitted to the same data, or one list of such
   results. The names of the arguments (or of the list) are used as model
   names, otherwise the curve types (`rtype`).
@@ -43,7 +43,7 @@ to the lowest QAICc (`delta`).
 
 Catches of gillnet and hook experiments are often overdispersed, i.e.
 more variable than expected from the multinomial model of
-[`select_Millar`](https://tokami.github.io/TropFishR/reference/select_Millar.md).
+[`select_Millar`](http://tokami.github.io/TropFishR/reference/select_Millar.md).
 The QAICc accounts for this by dividing the log-likelihood by the
 overdispersion factor `c_hat` (Burnham and Anderson 2002):
 
@@ -78,7 +78,7 @@ Journal du Conseil*, 54(3), 471-477.
 
 ## See also
 
-[`select_Millar`](https://tokami.github.io/TropFishR/reference/select_Millar.md)
+[`select_Millar`](http://tokami.github.io/TropFishR/reference/select_Millar.md)
 
 ## Examples
 

@@ -2,7 +2,7 @@
 
 This function plots CPUE and yield values against fishing effort
 resulting from the production models
-([prod_mod](https://tokami.github.io/TropFishR/reference/prod_mod.md)).
+([prod_mod](http://tokami.github.io/TropFishR/reference/prod_mod.md)).
 
 ## Usage
 

@@ -5,7 +5,7 @@ esculenta* with gillnets of two mesh sizes. The Results of the
 experiment are the midlengths of size classes, the number of fish caught
 with net 1 & 2, and the meshsizes of both nets. The data can be analysed
 with the function
-[`select`](https://tokami.github.io/TropFishR/reference/select.md).
+[`select`](http://tokami.github.io/TropFishR/reference/select.md).
 
 ## Usage
 

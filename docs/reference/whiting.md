@@ -2,8 +2,8 @@
 
 A dataset of North Sea whiting *Merlangius merlangus* caught during the
 period 1974-1980. Can be used for
-[`catchCurve`](https://tokami.github.io/TropFishR/reference/catchCurve.md)
-and [`VPA`](https://tokami.github.io/TropFishR/reference/VPA.md).
+[`catchCurve`](http://tokami.github.io/TropFishR/reference/catchCurve.md)
+and [`VPA`](http://tokami.github.io/TropFishR/reference/VPA.md).
 
 ## Usage
 

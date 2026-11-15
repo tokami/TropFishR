@@ -1,8 +1,8 @@
 # VBGF plot and CI from bootstrapping results
 
 Plots the growth curves of all resamples of a bootstrapped ELEFAN fit
-([ELEFAN_GA_boot](https://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md),
-[ELEFAN_SA_boot](https://tokami.github.io/TropFishR/reference/ELEFAN_SA_boot.md))
+([ELEFAN_GA_boot](http://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md),
+[ELEFAN_SA_boot](http://tokami.github.io/TropFishR/reference/ELEFAN_SA_boot.md))
 over relative time together with the confidence intervals and the growth
 curve with the maximum multivariate kernel density.
 

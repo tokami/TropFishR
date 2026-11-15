@@ -36,12 +36,12 @@ and logistic curve, `"gamma"` for a gamma curve.
 
 The returned function has the arguments `classes`, `meshSizes` and `th`
 (parameters on the internal scale, see
-[`select_Millar`](https://tokami.github.io/TropFishR/reference/select_Millar.md)).
+[`select_Millar`](http://tokami.github.io/TropFishR/reference/select_Millar.md)).
 The first value of `meshSizes` is the reference mesh size to which the
 parameters refer. Use
-[`predict.select_Millar`](https://tokami.github.io/TropFishR/reference/predict.select_Millar.md)
+[`predict.select_Millar`](http://tokami.github.io/TropFishR/reference/predict.select_Millar.md)
 or
-[`select_Millar_curve`](https://tokami.github.io/TropFishR/reference/select_Millar_curve.md)
+[`select_Millar_curve`](http://tokami.github.io/TropFishR/reference/select_Millar_curve.md)
 instead of this internal function.
 
 ## References

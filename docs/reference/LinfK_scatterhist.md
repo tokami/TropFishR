@@ -1,8 +1,8 @@
 # Linf-K scatterplot of bootstrapping results
 
 Plots the bootstrapped estimates of Linf and K
-([ELEFAN_GA_boot](https://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md),
-[ELEFAN_SA_boot](https://tokami.github.io/TropFishR/reference/ELEFAN_SA_boot.md))
+([ELEFAN_GA_boot](http://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md),
+[ELEFAN_SA_boot](http://tokami.github.io/TropFishR/reference/ELEFAN_SA_boot.md))
 with their bivariate kernel density and marginal histograms.
 
 ## Usage

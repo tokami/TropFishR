@@ -71,7 +71,7 @@ approach corresponds to the Schaefer and Fox model and thus the
 methodology of this function. The authors recommend to use dynamic
 fitting methods when possible rather than the equilibrium approach. For
 dynamic production models please refer to
-[prod_mod_ts](https://tokami.github.io/TropFishR/reference/prod_mod_ts.md).
+[prod_mod_ts](http://tokami.github.io/TropFishR/reference/prod_mod_ts.md).
 
 ## References
 

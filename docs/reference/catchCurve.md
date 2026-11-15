@@ -41,7 +41,7 @@ catchCurve(
   - `Linf`: infinite length for investigated species in cm \[cm\],
     required for length-frequency data, either in `param$par` (e.g. with
     `lfqModify(lfq, par = res$par)` after
-    [`ELEFAN_GA`](https://tokami.github.io/TropFishR/reference/ELEFAN_GA.md))
+    [`ELEFAN_GA`](http://tokami.github.io/TropFishR/reference/ELEFAN_GA.md))
     or directly in `param`,
 
   - `K`: growth coefficent for investigated species per year \[1/year\],
@@ -99,10 +99,10 @@ catchCurve(
 
   optional; an object of class \`lfqBoot\` with bootstrapped growth
   parameters (e.g. from
-  [`ELEFAN_GA_boot`](https://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md)).
+  [`ELEFAN_GA_boot`](http://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md)).
   If provided, the length-converted catch curve is applied to each
   resampled data set (re-created with
-  [`lfqResample`](https://tokami.github.io/TropFishR/reference/lfqResample.md)
+  [`lfqResample`](http://tokami.github.io/TropFishR/reference/lfqResample.md)
   and the seeds of \`boot\`) with the growth parameters of the resample.
   \`param\` has to be the lfq data used for the bootstrapped growth
   analysis. The points for the regression line are chosen automatically
@@ -118,9 +118,9 @@ catchCurve(
 
   optional; with \`boot\`, the name of the column in \`boot\$bootRaw\`
   with natural mortality estimates (e.g. "M_Then" from
-  [`M_empirical`](https://tokami.github.io/TropFishR/reference/M_empirical.md)
+  [`M_empirical`](http://tokami.github.io/TropFishR/reference/M_empirical.md)
   or
-  [`MstochThen`](https://tokami.github.io/TropFishR/reference/MstochThen.md)).
+  [`MstochThen`](http://tokami.github.io/TropFishR/reference/MstochThen.md)).
   If provided, the fishing mortality is calculated (FM = Z - M).
 
 - robustReg:
@@ -145,7 +145,7 @@ catchCurve(
   optional; new bin size (in cm) for the length classes. The catches are
   summed in bins of this size, starting at 0, and empty bins at both
   ends are removed (as in
-  [`lfqModify`](https://tokami.github.io/TropFishR/reference/lfqModify.md)
+  [`lfqModify`](http://tokami.github.io/TropFishR/reference/lfqModify.md)
   with \`bin_size\`). With \`boot\`, the resampled data are re-binned.
 
 - CI:
@@ -199,7 +199,7 @@ columns \`Z\`, \`FM\` (if \`natMort\` is provided), \`L50\` and \`L75\`
 (if \`calc_ogive = TRUE\`) in \`bootRaw\`, \`maxDen\`, \`median\` and
 \`CI\`. The intercepts and points of the regression lines are stored in
 \`misc\` (for
-[`plotBoot`](https://tokami.github.io/TropFishR/reference/plotBoot.md)).
+[`plotBoot`](http://tokami.github.io/TropFishR/reference/plotBoot.md)).
 Resamples for which the catch curve cannot be fitted (e.g. no descending
 limb) get NA, and a warning gives their number.
 

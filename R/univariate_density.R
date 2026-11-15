@@ -51,7 +51,8 @@ univariate_density <- function(res, CI=95, use_hist = FALSE, nbreaks = 10,
                                mgp = c(2,0.5,0), tcl = -0.25, cex = 1, mfrow=NA,
                                ylim=NA, pars = NULL, ...
                                ){
-    res <- res$bootRaw
+    ## t_anchor and ts on a continuous range (circular times of the year)
+    res <- unwrapTimes(res$bootRaw)
     if(!is.null(pars)){
         missing <- setdiff(pars, names(res))
         if(length(missing) > 0)

@@ -3,7 +3,7 @@
 Adds isolines of the growth performance index \\\phi' = \log\_{10}(K) +
 2 \log\_{10}(L\_\infty)\\ to an existing plot with Linf on the x-axis
 and K on the y-axis (e.g.
-[LinfK_scatterhist](https://tokami.github.io/TropFishR/reference/LinfK_scatterhist.md)).
+[LinfK_scatterhist](http://tokami.github.io/TropFishR/reference/LinfK_scatterhist.md)).
 
 ## Usage
 

@@ -2,7 +2,7 @@
 
 Data of a covered codend experimental catch of the haddock
 (*Melanogrammus aeglefinus*). Can be used for function
-[`select_Millar`](https://tokami.github.io/TropFishR/reference/select_Millar.md).
+[`select_Millar`](http://tokami.github.io/TropFishR/reference/select_Millar.md).
 
 ## Usage
 

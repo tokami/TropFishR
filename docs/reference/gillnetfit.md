@@ -2,9 +2,9 @@
 
 Function to estimate selectivity parameters from experimental data. This
 function is applied within
-[`select_Millar`](https://tokami.github.io/TropFishR/reference/select_Millar.md)
+[`select_Millar`](http://tokami.github.io/TropFishR/reference/select_Millar.md)
 to derive starting parameters.
-[`select_Millar`](https://tokami.github.io/TropFishR/reference/select_Millar.md)
+[`select_Millar`](http://tokami.github.io/TropFishR/reference/select_Millar.md)
 is the recommended function for selectivity estimation.
 
 ## Usage

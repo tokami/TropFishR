@@ -294,7 +294,7 @@ plus_group <- lfq_bin2$midLengths[max(which(lfq_bin2$midLengths < lfq_bin2$par$L
 lfq_catch_vec <- lfqModify(lfq_bin2, vectorise_catch = TRUE, plus_group = plus_group)
 ```
 
-The catch curve can then be applied to the vectorised data set with `catchCurve(lfq_catch_vec)`. This triggers an interactive plotting function where the user selects points to be used in the regression analysis by clickling on the first and last point to be included. Please find for more information with `help(catchCurve)`. Alternatively, the argument `reg_int` defines the first and last point to be used in the regression analysis and, thus, allows to avoid the interactive plotting function. For this data set, the 18th and 55th point seem to be reasonable first and last points of the regression analysis. The argument `calc_ogive` allows the
+The catch curve can then be applied to the vectorised data set with `catchCurve(lfq_catch_vec)`. This triggers an interactive plotting function where the user selects points to be used in the regression analysis by clickling on the first and last point to be included. Please find for more information with `help(catchCurve)`. Alternatively, the argument `reg_int` defines the first and last point to be used in the regression analysis and, thus, allows to avoid the interactive plotting function. For this data set, the 18th point and the last point before the plus group seem to be reasonable first and last points of the regression analysis. The argument `calc_ogive` allows the
 estimation of the selection ogive. Note, that you might require the argument `catch_columns` if your data set spans multiple years as it allows
 to choose the columns (years after vectorisation) of the catch matrix which will be summarised for the
 analysis. Here, we do not need this argument as the catch matrix only includes catches
@@ -302,7 +302,9 @@ from 2016. If data of several years are available, the catch curve can either be
 
 ```{r Figure 7,echo=TRUE, fig.width=6, fig.height=5, fig.cap="Catch curve with selected points for the regression analysis and in the second panel the selection ogive with age at first capture.", message = FALSE, warning=FALSE}
 ## run catch curve
-res_cc <- catchCurve(lfq_catch_vec, reg_int = c(18,55), calc_ogive = TRUE)
+res_cc <- catchCurve(lfq_catch_vec,
+                     reg_int = c(18, length(lfq_catch_vec$midLengths) - 1),
+                     calc_ogive = TRUE)
 
 ## assign estimates to the data list
 lfq_catch_vec$par$Z <- res_cc$Z

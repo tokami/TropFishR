@@ -1,7 +1,7 @@
 # Plotting catch curve
 
 This function plots the results from the
-[`catchCurve`](https://tokami.github.io/TropFishR/reference/catchCurve.md)
+[`catchCurve`](http://tokami.github.io/TropFishR/reference/catchCurve.md)
 model.
 
 ## Usage
@@ -39,7 +39,7 @@ plot(
   logical; if TRUE the regression line is plotted for not fully
   exploited length groups and the probability of capture is plotted.
   This only works if the
-  [catchCurve](https://tokami.github.io/TropFishR/reference/catchCurve.md)
+  [catchCurve](http://tokami.github.io/TropFishR/reference/catchCurve.md)
   was applied with `calc_ogive` == TRUE.
 
 - col:

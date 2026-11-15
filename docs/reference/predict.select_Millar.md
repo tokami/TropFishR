@@ -1,7 +1,7 @@
 # Predict the retention of Millar's selectivity model
 
 Relative retention of a fitted selectivity model
-([`select_Millar`](https://tokami.github.io/TropFishR/reference/select_Millar.md))
+([`select_Millar`](http://tokami.github.io/TropFishR/reference/select_Millar.md))
 for any lengths and mesh sizes.
 
 ## Usage
@@ -23,7 +23,7 @@ predict(
 - object:
 
   a list of the class `"select_Millar"` with the results of
-  [`select_Millar`](https://tokami.github.io/TropFishR/reference/select_Millar.md).
+  [`select_Millar`](http://tokami.github.io/TropFishR/reference/select_Millar.md).
 
 - lengths:
 
@@ -67,8 +67,8 @@ times the logistic curve.
 
 ## See also
 
-[`select_Millar`](https://tokami.github.io/TropFishR/reference/select_Millar.md),
-[`select_Millar_curve`](https://tokami.github.io/TropFishR/reference/select_Millar_curve.md)
+[`select_Millar`](http://tokami.github.io/TropFishR/reference/select_Millar.md),
+[`select_Millar_curve`](http://tokami.github.io/TropFishR/reference/select_Millar_curve.md)
 
 ## Examples
 

@@ -88,8 +88,19 @@
 #'       confidence region,
 #'    \item \strong{misc} an empty list for additional information.
 #'    }
-#'    `phiL` and `agemax` of `maxDen`, `median`, `CI` and `multiCI` are derived
-#'    from `Linf` and `K` of the respective estimates.
+#'    `phiL` and `agemax` of `maxDen` are derived from `Linf` and `K` of
+#'    `maxDen`; their `median`, `CI` and `multiCI` are the median, quantiles
+#'    and range (within the multivariate confidence region) of `phiL` and
+#'    `agemax` of the resamples.
+#'    `t_anchor` and `ts` are times of the year, so that e.g. 0.98 and 0.02
+#'    are close. If the values of the resamples clearly wrap around the turn
+#'    of the year (the gap across 0/1 is less than half of the largest gap
+#'    between the values), the circle is cut in the middle of the largest gap
+#'    before they are summarised. `maxDen` and
+#'    `median` of `t_anchor` and `ts` are between 0 and 1, but the limits of
+#'    `CI` and `multiCI` can be below 0 or above 1 (e.g. -0.05 to 0.08 for
+#'    estimates around the turn of the year). `bootRaw` keeps the original
+#'    values.
 #'    If the multivariate kernel density cannot be estimated (e.g. with fewer
 #'    resamples than parameters), the function gives a warning and returns the
 #'    fits with `maxDen` and `multiCI` set to `NA`, so that the fits are not

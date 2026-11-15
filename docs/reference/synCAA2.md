@@ -3,7 +3,7 @@
 Synthetic Catch-at-age data from Sparre & Venema (1998). Can be used for
 the estimation of the instantaneous mortality rate (Z) by means of the
 cumulative catch curve
-([`catchCurve`](https://tokami.github.io/TropFishR/reference/catchCurve.md)).
+([`catchCurve`](http://tokami.github.io/TropFishR/reference/catchCurve.md)).
 
 ## Usage
 

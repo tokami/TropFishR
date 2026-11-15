@@ -11,9 +11,9 @@ ELEFAN_GA(
   seasonalised = FALSE,
   low_par = NULL,
   up_par = NULL,
-  popSize = 50,
-  maxiter = 100,
-  run = maxiter,
+  popSize = 100,
+  maxiter = 200,
+  run = 50,
   parallel = FALSE,
   pmutation = 0.1,
   pcrossover = 0.8,
@@ -88,17 +88,17 @@ ELEFAN_GA(
 
 - popSize:
 
-  the population size. Default: 50
+  the population size. Default: 100
 
 - maxiter:
 
   the maximum number of iterations to run before the GA search is
-  halted. default:100
+  halted. Default: 200
 
 - run:
 
   the number of consecutive generations without any improvement in the
-  best fitness value before the GA is stopped. Default: equals maxiter
+  best fitness value before the GA is stopped. Default: 50
 
 - parallel:
 
@@ -128,13 +128,13 @@ ELEFAN_GA(
 
   number indicating over how many length classes the moving average
   should be performed (default: 5, for more information see
-  [lfqRestructure](https://tokami.github.io/TropFishR/reference/lfqRestructure.md))
+  [lfqRestructure](http://tokami.github.io/TropFishR/reference/lfqRestructure.md))
 
 - addl.sqrt:
 
   additional squareroot transformation of positive values according to
   Brey et al. (1988) (default: FALSE, for more information see
-  [lfqRestructure](https://tokami.github.io/TropFishR/reference/lfqRestructure.md))
+  [lfqRestructure](http://tokami.github.io/TropFishR/reference/lfqRestructure.md))
 
 - agemax:
 
@@ -166,9 +166,9 @@ ELEFAN_GA(
 - plot:
 
   logical; Plot restructured counts with fitted lines using
-  [`plot.lfq`](https://tokami.github.io/TropFishR/reference/plot.lfq.md)
+  [`plot.lfq`](http://tokami.github.io/TropFishR/reference/plot.lfq.md)
   and
-  [`lfqFitCurves`](https://tokami.github.io/TropFishR/reference/lfqFitCurves.md)
+  [`lfqFitCurves`](http://tokami.github.io/TropFishR/reference/lfqFitCurves.md)
   (default : FALSE).
 
 - plot.score:
@@ -230,8 +230,8 @@ A list with the input parameters and following list objects:
 A more detailed description of the generic algorithm (GA) can be found
 in Scrucca (2013). The score value `fitnessValue` is not comparable with
 the score value of the other ELEFAN functions
-([`ELEFAN`](https://tokami.github.io/TropFishR/reference/ELEFAN.md) or
-[`ELEFAN_SA`](https://tokami.github.io/TropFishR/reference/ELEFAN_SA.md)).
+([`ELEFAN`](http://tokami.github.io/TropFishR/reference/ELEFAN.md) or
+[`ELEFAN_SA`](http://tokami.github.io/TropFishR/reference/ELEFAN_SA.md)).
 
 ## References
 

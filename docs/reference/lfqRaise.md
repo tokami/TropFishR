@@ -4,11 +4,11 @@ The function raises the sampled numbers of fish per length class
 (\`lfq\$catch\`) to the total catch, using the total landings in weight
 and the weight of the samples. This is required for methods that need
 absolute numbers, such as the length-based virtual population analysis
-([`VPA`](https://tokami.github.io/TropFishR/reference/VPA.md)). Methods
+([`VPA`](http://tokami.github.io/TropFishR/reference/VPA.md)). Methods
 that only use the relative length composition (e.g. ELEFAN,
-[`catchCurve`](https://tokami.github.io/TropFishR/reference/catchCurve.md))
+[`catchCurve`](http://tokami.github.io/TropFishR/reference/catchCurve.md))
 and the resampling
-([`lfqResample`](https://tokami.github.io/TropFishR/reference/lfqResample.md))
+([`lfqResample`](http://tokami.github.io/TropFishR/reference/lfqResample.md))
 work with the sampled numbers.
 
 ## Usage
@@ -90,11 +90,11 @@ landings, independent of the number of fish measured.
 
 Keep the original lfq data with the sampled numbers for all other
 analyses. In particular, the bootstrap functions
-([`lfqResample`](https://tokami.github.io/TropFishR/reference/lfqResample.md),
-[`ELEFAN_GA_boot`](https://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md),
+([`lfqResample`](http://tokami.github.io/TropFishR/reference/lfqResample.md),
+[`ELEFAN_GA_boot`](http://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md),
 ...) require the sampled numbers, because they resample the measured
 fish. Instead of raising the data beforehand, the landings can be passed
-directly to [`VPA`](https://tokami.github.io/TropFishR/reference/VPA.md)
+directly to [`VPA`](http://tokami.github.io/TropFishR/reference/VPA.md)
 (argument `landings`), which raises the data (or each resample with
 `boot`) internally.
 

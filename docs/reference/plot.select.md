@@ -1,7 +1,7 @@
 # Selectivity plot
 
 This function plots the selectivity estimates of the function
-[`select`](https://tokami.github.io/TropFishR/reference/select.md).
+[`select`](http://tokami.github.io/TropFishR/reference/select.md).
 
 ## Usage
 

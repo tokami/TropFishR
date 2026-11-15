@@ -98,11 +98,11 @@ https://cran.r-project.org/web/packages/fishmethods/index.html
 
   optional; an object of class \`lfqBoot\` with bootstrapped growth
   parameters (e.g. from
-  [`ELEFAN_GA_boot`](https://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md)).
+  [`ELEFAN_GA_boot`](http://tokami.github.io/TropFishR/reference/ELEFAN_GA_boot.md)).
   If provided, M is estimated for each resample with its Linf and K.
   Only the methods "Then_growth" and "Pauly_Linf" (with `temp`) are
   available. See also
-  [`MstochThen`](https://tokami.github.io/TropFishR/reference/MstochThen.md).
+  [`MstochThen`](http://tokami.github.io/TropFishR/reference/MstochThen.md).
 
 - CI:
 
@@ -215,6 +215,6 @@ res$maxDen
 #> 10.0096156  2.7150279  0.4908732  2.4346091  2.0000000  3.9568143 
 res$CI
 #>         Linf        K  t_anchor     phiL agemax   M_Then
-#> lo  9.171726 1.547109 0.2486596 2.114423      1 2.513000
-#> up 11.478216 4.165708 0.5486528 2.739438      2 5.512375
+#> lo  9.171726 1.547109 0.2486596 2.235436      1 2.513000
+#> up 11.478216 4.165708 0.5486528 2.611677      2 5.512375
 ```

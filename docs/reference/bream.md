@@ -3,7 +3,7 @@
 Data of a covered codend experimental catch of the species Threadfin
 bream (*Nemipterus japonicus*) in South China Sea. This data can be
 analysed with the function
-[`select`](https://tokami.github.io/TropFishR/reference/select.md).
+[`select`](http://tokami.github.io/TropFishR/reference/select.md).
 
 ## Usage
 

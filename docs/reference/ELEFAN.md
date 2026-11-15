@@ -71,16 +71,16 @@ ELEFAN(
 
   number indicating over how many length classes the moving average
   should be performed (default: 5, for more information see
-  [lfqRestructure](https://tokami.github.io/TropFishR/reference/lfqRestructure.md)).
+  [lfqRestructure](http://tokami.github.io/TropFishR/reference/lfqRestructure.md)).
 
 - addl.sqrt:
 
   Passed to
-  [lfqRestructure](https://tokami.github.io/TropFishR/reference/lfqRestructure.md).
+  [lfqRestructure](http://tokami.github.io/TropFishR/reference/lfqRestructure.md).
   Applied an additional square-root transformation of positive values
   according to Brey et al. (1988). (default: FALSE, for more information
   see
-  [lfqRestructure](https://tokami.github.io/TropFishR/reference/lfqRestructure.md)).
+  [lfqRestructure](http://tokami.github.io/TropFishR/reference/lfqRestructure.md)).
 
 - agemax:
 
@@ -195,9 +195,9 @@ A list with the input parameters and following list objects:
 This functions allows to perform the K-Scan and Response surface
 analysis to estimate growth parameters. It combines the step of
 restructuring length-frequency data
-([lfqRestructure](https://tokami.github.io/TropFishR/reference/lfqRestructure.md))
+([lfqRestructure](http://tokami.github.io/TropFishR/reference/lfqRestructure.md))
 followed by the fitting of VBGF curves through the restructured data
-([lfqFitCurves](https://tokami.github.io/TropFishR/reference/lfqFitCurves.md)).
+([lfqFitCurves](http://tokami.github.io/TropFishR/reference/lfqFitCurves.md)).
 K-Scan is a method used to search for the K parameter with the best fit
 while keeping the Linf fixed. In contrast, with response surface
 analysis both parameters are estimated and the fits are displayed in a
@@ -205,12 +205,12 @@ heatmap. Both methods use
 [`optimise`](https://rdrr.io/r/stats/optimize.html) to find the best
 `t_anchor` value for each combination of `K` and `Linf`. To find out
 more about `t_anchor`, please refer to the Details description of
-[`lfqFitCurves`](https://tokami.github.io/TropFishR/reference/lfqFitCurves.md).
+[`lfqFitCurves`](http://tokami.github.io/TropFishR/reference/lfqFitCurves.md).
 The score value `Rn_max` is comparable with the score values of the
 other ELEFAN functions
-([`ELEFAN_SA`](https://tokami.github.io/TropFishR/reference/ELEFAN_SA.md)
+([`ELEFAN_SA`](http://tokami.github.io/TropFishR/reference/ELEFAN_SA.md)
 or
-[`ELEFAN_GA`](https://tokami.github.io/TropFishR/reference/ELEFAN_GA.md))
+[`ELEFAN_GA`](http://tokami.github.io/TropFishR/reference/ELEFAN_GA.md))
 when other settings are consistent (e.g. \`MA\`, \`addl.sqrt\`,
 \`agemax\`, \`flagging.out\`).
 

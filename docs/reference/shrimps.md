@@ -3,7 +3,7 @@
 Data from the Kuwait shrimp (*Penaeus semisulcatus*) fishery. They can
 be used to simulate different management scenarios by applying
 prediction models
-([`predict_mod`](https://tokami.github.io/TropFishR/reference/predict_mod.md)).
+([`predict_mod`](http://tokami.github.io/TropFishR/reference/predict_mod.md)).
 Fishing mortalities were estimated from catch data and biomass estimates
 were obtained from the swept area method. Recuritment to fishery at the
 age of one month (Tr = 1).

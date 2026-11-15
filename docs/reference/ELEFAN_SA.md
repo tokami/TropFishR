@@ -125,16 +125,16 @@ ELEFAN_SA(
 
   number indicating over how many length classes the moving average
   should be performed (defalut: 5, for more information see
-  [lfqRestructure](https://tokami.github.io/TropFishR/reference/lfqRestructure.md)).
+  [lfqRestructure](http://tokami.github.io/TropFishR/reference/lfqRestructure.md)).
 
 - addl.sqrt:
 
   Passed to
-  [lfqRestructure](https://tokami.github.io/TropFishR/reference/lfqRestructure.md).
+  [lfqRestructure](http://tokami.github.io/TropFishR/reference/lfqRestructure.md).
   Applied an additional square-root transformation of positive values
   according to Brey et al. (1988). (default: FALSE, for more information
   see
-  [lfqRestructure](https://tokami.github.io/TropFishR/reference/lfqRestructure.md)).
+  [lfqRestructure](http://tokami.github.io/TropFishR/reference/lfqRestructure.md)).
 
 - agemax:
 
@@ -143,15 +143,15 @@ ELEFAN_SA(
 - flagging.out:
 
   logical; passed to
-  [lfqFitCurves](https://tokami.github.io/TropFishR/reference/lfqFitCurves.md).
+  [lfqFitCurves](http://tokami.github.io/TropFishR/reference/lfqFitCurves.md).
   Default is TRUE
 
 - plot:
 
   logical; Plot restructured counts with fitted lines using
-  [`plot.lfq`](https://tokami.github.io/TropFishR/reference/plot.lfq.md)
+  [`plot.lfq`](http://tokami.github.io/TropFishR/reference/plot.lfq.md)
   and
-  [`lfqFitCurves`](https://tokami.github.io/TropFishR/reference/lfqFitCurves.md)
+  [`lfqFitCurves`](http://tokami.github.io/TropFishR/reference/lfqFitCurves.md)
   (default : FALSE).
 
 - plot.score:
@@ -201,8 +201,8 @@ A list with the input parameters and following list objects:
 A more detailed description of the simulated annealing (SA) can be found
 in Xiang et al. (2013). The score value `cost_value` is not comparable
 with the score value of the other ELEFAN functions
-([`ELEFAN`](https://tokami.github.io/TropFishR/reference/ELEFAN.md) or
-[`ELEFAN_GA`](https://tokami.github.io/TropFishR/reference/ELEFAN_GA.md)).
+([`ELEFAN`](http://tokami.github.io/TropFishR/reference/ELEFAN.md) or
+[`ELEFAN_GA`](http://tokami.github.io/TropFishR/reference/ELEFAN_GA.md)).
 
 ## References
 
@@ -234,12 +234,12 @@ output <- ELEFAN_SA(synLFQ4, SA_time = 10, seasonalised = TRUE, MA = 11,
   up_par = list(Linf = 90, K = 0.7, t_anchor = 1, C = 1, ts = 1))
 #> Simulated annealing is running. 
 #> This will take approximately 0.17 minutes.
-#> timeSpan = 10.00107 maxTime = 10
+#> timeSpan = 10.006788 maxTime = 10
 #> Emini is: -0.5149179199
 #> xmini are:
 #> 86.50771775 0.4101330356 0.1368551619 0.7761266884 0.4978404496 
-#> Totally it used 10.001115 secs
-#> No. of function call is: 4091
+#> Totally it used 10.006844 secs
+#> No. of function call is: 4369
 
 output$par
 #> $Linf

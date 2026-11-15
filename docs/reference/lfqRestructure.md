@@ -52,8 +52,8 @@ A list with the input parameters and following list objects:
 ## Details
 
 This function is used prior to fitting of growth curves (e.g. in
-[`ELEFAN`](https://tokami.github.io/TropFishR/reference/ELEFAN.md),
-[`ELEFAN_SA`](https://tokami.github.io/TropFishR/reference/ELEFAN_SA.md)
+[`ELEFAN`](http://tokami.github.io/TropFishR/reference/ELEFAN.md),
+[`ELEFAN_SA`](http://tokami.github.io/TropFishR/reference/ELEFAN_SA.md)
 functions). It restructures a length frequency data set according to a
 list of steps to emphasise cohorts in the data. The steps can be found
 in various publications, see e.g. Brey et al. (1988) or Pauly and David

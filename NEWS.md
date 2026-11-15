@@ -104,6 +104,30 @@
 
 ## Bug fixes
 
+- `lfqRestructure` (and `ELEFAN`, `ELEFAN_SA`, `ELEFAN_GA` and their
+  bootstrap versions) with `addl.sqrt = TRUE`: the square-root adjustment
+  used the counts of the wrong length classes when a sample started with
+  empty length classes (positions counted from the first non-zero class), so
+  that positive restructured values were divided by other counts or set to 0.
+- `ELEFAN_GA_boot` and `ELEFAN_SA_boot`: `median`, `CI` and `multiCI` of
+  `phiL` and `agemax` are now the median, quantiles and range of the values
+  of the resamples. Before, they were calculated from the median and the
+  limits of `Linf` and `K`, which made the confidence intervals of `phiL`
+  much too wide, because `Linf` and `K` are negatively correlated. The
+  summaries of the data set `alba_boot` were updated (same resamples).
+- `ELEFAN_GA_boot`, `ELEFAN_SA_boot` and `univariate_density`: `t_anchor` and
+  `ts` are times of the year (0.98 and 0.02 are close). If the resamples
+  clearly wrap around the turn of the year, they are now summarised on a
+  continuous range: the median and the value with maximum density are
+  between 0 and 1, the limits of `CI` and `multiCI` can be below 0 or above 1.
+  Before, the median and the confidence intervals of such resamples were
+  wrong (e.g. a median around 0.5 for estimates around 0). The summaries of
+  the precomputed bootstrap in the vignette "Bootstrapped ELEFAN" were
+  updated (same resamples); `alba_boot` is unchanged.
+- `plot.catchCurve`: the regression line failed ("'x' and 'y' lengths differ")
+  if the regression range included a point without catch-curve value, such
+  as the plus group, which `lm` drops. The tutorial vignette now ends the
+  regression at the last point before the plus group.
 - `ELEFAN_GA_boot`, `ELEFAN_SA_boot`, `plotBoot`, `vbgfCI_time`: clear error
   messages if the kernel density of the bootstrapped parameters cannot be
   estimated (fewer resamples than parameters, a parameter with the same
@@ -228,6 +252,16 @@
 
 ## Minor changes
 
+- `ELEFAN_GA`: new defaults `popSize = 100`, `maxiter = 200` and `run = 50`
+  (before `popSize = 50`, `maxiter = 100`, `run = maxiter`). The ELEFAN score
+  has many local maxima, and in simulations the former defaults often
+  stopped far from the best solution. Results with the default settings
+  therefore differ from earlier versions, also with the same `seed`; the
+  former behaviour is obtained by setting these arguments explicitly.
+  `ELEFAN_GA_boot` keeps its defaults.
+- Vignette "ELEFAN": new sections on repeating the search with different
+  seeds and on the limitations of ELEFAN (harmonics with sparse data, the
+  `Linf`-`K` ridge for slowly growing species).
 - Faster ELEFAN: the score calculation in `lfqFitCurves` and `date2yeardec`
   are faster (same results), which speeds up `ELEFAN`, `ELEFAN_SA` (more
   iterations within `SA_time`) and `ELEFAN_GA` several times.
