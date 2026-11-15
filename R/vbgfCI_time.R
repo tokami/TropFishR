@@ -53,7 +53,8 @@
 #' data(alba)
 #' alba <- lfqRestructure(alba, MA = 7)
 #' plot(alba, Fname = "rcounts")
-#' for(i in seq(nrow(alba_boot$bootRaw))){
+#' # (first 50 resamples only, to keep the example fast)
+#' for(i in seq_len(50)){
 #'   x <- as.list(alba_boot$bootRaw[i,])
 #'   tmp <- lfqFitCurves(
 #'     lfq = alba, par = x,
@@ -106,13 +107,13 @@ vbgfCI_time <- function(res, CI = 95, agemax = NULL,
     Lt_plus <- replace(Lt_plus, Lt_plus<0, NaN)
 
     ## determine if a positive or negative shift improves overall covariance for each permutation
-    cov0 <- cov(Lt0, use = "pair")
-    shift <- 0 * seq(ncol(Lt0))
-    for(i in seq(ncol(Lt0))){
-        cov_minus <- cov(x = Lt_minus[,i], y = Lt0, use = "pair")
-        cov_plus <- cov(x = Lt_plus[,i], y = Lt0, use = "pair")
-        shift[i] <- c(0,-1,1)[which.max(c(sum(cov0[i,]), sum(cov_minus), sum(cov_plus)))]
-    }
+    ## (row i of each matrix: covariances of permutation i with all unshifted ones)
+    sum_cov <- cbind(
+        rowSums(cov(Lt0, use = "pair")),
+        rowSums(cov(x = Lt_minus, y = Lt0, use = "pair")),
+        rowSums(cov(x = Lt_plus, y = Lt0, use = "pair"))
+    )
+    shift <- c(0,-1,1)[apply(sum_cov, 1, which.max)]
 
     ## fixed predictions
     agenew <- seq(0+min(shift), agemax+max(shift), 0.01)
