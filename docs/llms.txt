@@ -4,8 +4,10 @@
 v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![CRAN
 version](https://www.r-pkg.org/badges/version/TropFishR)](https://cran.r-project.org/package=TropFishR)
-[![CRAN
-Downloads](https://cranlogs.r-pkg.org/badges/TropFishR)](https://cran.r-project.org/package=TropFishR)
+[![last month
+downloads](https://cranlogs.r-pkg.org/badges/TropFishR)](https://cran.r-project.org/package=TropFishR)
+[![total
+downloads](https://cranlogs.r-pkg.org/badges/grand-total/TropFishR)](https://cran.r-project.org/package=TropFishR)
 [![GitHub
 release](https://img.shields.io/github/release/tokami/TropFishR.svg)](https://github.com/tokami/TropFishR/releases)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.495176.svg)](https://doi.org/10.5281/zenodo.495176)

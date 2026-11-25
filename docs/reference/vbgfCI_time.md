@@ -125,7 +125,8 @@ CIinfo <- vbgfCI_time(
 data(alba)
 alba <- lfqRestructure(alba, MA = 7)
 plot(alba, Fname = "rcounts")
-for(i in seq(nrow(alba_boot$bootRaw))){
+# (first 50 resamples only, to keep the example fast)
+for(i in seq_len(50)){
   x <- as.list(alba_boot$bootRaw[i,])
   tmp <- lfqFitCurves(
     lfq = alba, par = x,

@@ -173,8 +173,8 @@ the stable optimum of the objective function was not yet reached (stable
 optimum is indicated by overlapping blue and green dots in the score
 graph). Due to the limitations of the vignette format the computation
 time was set to 10 seconds, which results already in acceptable results
-of $L_{\infty}$ = 114.84, K = 0.19, $t_{anchor}$ = 0, C = 0.32, and
-$t_{s}$ = 0.26 with a score value ($Rn_{max}$) of 0.35. I recommend to
+of $L_{\infty}$ = 123.05, K = 0.2, $t_{anchor}$ = 0.27, C = 0.38, and
+$t_{s}$ = 0.42 with a score value ($Rn_{max}$) of 0.29. I recommend to
 increase `SA_time` to 3 - 5 minutes to increase chances of finding the
 stable optimum. Another new optimisation routine is based on generic
 algorithms and is applied by the function `ELEFAN_GA`.

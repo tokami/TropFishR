@@ -41,7 +41,7 @@ library(TropFishR)
 
 ## folder with the example files
 system.file("extdata", package = "TropFishR")
-#> [1] "/tmp/Rtmp7Y2cwo/temp_libpathd7db25488fb93/TropFishR/extdata"
+#> [1] "/tmp/Rtmp8NurAA/temp_libpath1033ae2b259d2b/TropFishR/extdata"
 ```
 
 ### *Data arrangement 1*
