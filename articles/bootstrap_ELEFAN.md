@@ -451,7 +451,7 @@ res <- catchCurve(lfq, boot = res, calc_ogive = TRUE, natMort = "M_Then")
 pars <- c("Z", "FM", "L50", "L75")
 round(rbind(maxDen = res$maxDen[pars], res$CI[, pars]), 3)
 ##            Z    FM    L50    L75
-## maxDen 0.452 0.145 34.897 37.753
+## maxDen 0.451 0.145 34.897 37.753
 ## lo     0.332 0.074 29.674 31.023
 ## up     1.409 0.745 40.651 44.111
 ```
