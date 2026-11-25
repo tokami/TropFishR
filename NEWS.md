@@ -104,6 +104,16 @@
 
 ## Bug fixes
 
+- `catchCurve` with `calc_ogive = TRUE`: when the selection ogive could not
+  be estimated (fewer than two length or age classes below the regression
+  interval with an observed selectivity between 0 and 1), `L50`, `L75` and
+  `L95` are NA and every element of the result whose value was NA was
+  renamed "L95", so `L50` and `L75` were missing (later failures such as
+  "argument is of length zero" in `predict_mod(curr.Lc = res$L50)`). The
+  names are now kept, the selection parameters are NA with a warning, and
+  `plot(..., plot_selec = TRUE)` shows an empty selection panel instead of
+  failing. Classes with an observed selectivity of exactly 1 (-Inf in the
+  regression) no longer make the ogive regression fail.
 - `lfqRestructure` (and `ELEFAN`, `ELEFAN_SA`, `ELEFAN_GA` and their
   bootstrap versions) with `addl.sqrt = TRUE`: the square-root adjustment
   used the counts of the wrong length classes when a sample started with

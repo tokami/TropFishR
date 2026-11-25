@@ -637,6 +637,12 @@ catchCurve <- function(param,
         ln_1_S_1[which(ln_1_S_1 == Inf)] <- NA
         t_ogive[which(t_ogive == Inf)] <- NA
 
+        ## the regression needs two classes with 0 < Sobs < 1 (Sobs >= 1
+        ## gives NaN or -Inf); otherwise the selection parameters are NA
+        if(sum(is.finite(ln_1_S_1) & is.finite(t_ogive)) < 2)
+            warning("The selection ogive could not be estimated: fewer than two length or age classes below the regression interval have an observed selectivity between 0 and 1. The selection parameters (t50, L50, ...) are NA. Try a regression interval (reg_int) that starts at a larger length or age.", call. = FALSE)
+        ln_1_S_1[!is.finite(ln_1_S_1)] <- NA
+
         #regression analysis to caluclate T1 and T2
         mod_ogive <- lm(ln_1_S_1 ~ t_ogive, na.action = na.omit)
         sum_lm_ogive <- summary(mod_ogive)
@@ -669,9 +675,6 @@ catchCurve <- function(param,
         if(exists("L50")) ret2$L50 = L50
         if(exists("L75")) ret2$L75 = L75
         if(exists("L95")) ret2$L95 = L95
-        if(exists("L50")) names(ret2)[which(ret2 %in% L50)] <- "L50"
-        if(exists("L75")) names(ret2)[which(ret2 %in% L75)] <- "L75"
-        if(exists("L95")) names(ret2)[which(ret2 %in% L95)] <- "L95"
 
         class(ret2) <- "catchCurve"
         if(plot) plot(ret2, plot_selec=TRUE)

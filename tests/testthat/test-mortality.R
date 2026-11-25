@@ -187,3 +187,28 @@ test_that("catch curve plot works when the regression range includes the plus gr
     expect_no_error(plot(res))
     expect_no_error(plot(res, plot_selec = TRUE))
 })
+
+test_that("catchCurve returns NA selection parameters when the ogive cannot be estimated", {
+    ## a single length class with catch below the regression interval: the
+    ## ogive regression has one point, so its slope is NA. The result list
+    ## used to be renamed via `which(ret2 %in% L50)`, which matched every NA
+    ## element, so L50 was missing and later names were wrong.
+    x <- list(midLengths = 1:40, catch = c(rep(0, 9), 60, round(1000 * exp(-0.25 * (0:29)))),
+              Linf = 45, K = 0.5, t0 = 0)
+    expect_warning(res <- catchCurve(x, reg_int = c(11, 30), calc_ogive = TRUE, plot = FALSE),
+                   "selection ogive could not be estimated")
+    expect_false(anyDuplicated(names(res)) > 0)
+    expect_true(all(c("Z", "t50", "L50", "L75", "L95") %in% names(res)))
+    expect_true(is.na(res$L50) && is.na(res$L75) && is.na(res$t50))
+    expect_true(is.finite(res$Z) && res$Z > 0)
+    pdf(NULL); on.exit(dev.off())
+    expect_no_error(plot(res))
+    expect_no_error(plot(res, plot_selec = TRUE))
+})
+
+test_that("catchCurve keeps the names of its result when the ogive is estimated", {
+    data(synLFQ3)
+    res <- catchCurve(synLFQ3, reg_int = c(9, 21), calc_ogive = TRUE, plot = FALSE)
+    expect_false(anyDuplicated(names(res)) > 0)
+    expect_true(is.finite(res$L50) && is.finite(res$L75) && res$L50 < res$L75)
+})

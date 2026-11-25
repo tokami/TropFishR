@@ -219,10 +219,20 @@ plot.catchCurve <- function(x, xaxis = 'age', plot_selec = FALSE,
 
 
 
-    plot(pes$Sest ~ xplot, type ='o', xlab = xlabel, xlim = xlims,
-         ylab = "Probability of capture")
+    sel50 <- if(xaxis == 'length') pes$L50 else pes$t50
+    if(!any(is.finite(pes$Sest))){
+        ## the selection ogive could not be estimated (see catchCurve)
+        plot(NA, xlim = range(xplot[is.finite(xplot)]), ylim = c(0, 1),
+             xlab = xlabel, ylab = "Probability of capture")
+        text(mean(par("usr")[1:2]), 0.5, "selection ogive not estimated")
+    }else{
+        plot(pes$Sest ~ xplot, type ='o', xlab = xlabel, xlim = xlims,
+             ylab = "Probability of capture")
+    }
 
-    if(xaxis == 'length'){
+    if(is.null(sel50) || !is.finite(sel50)){
+        ## no L50 or t50 to mark
+    }else if(xaxis == 'length'){
         points(y = 0.5, x=pes$L50,col='red',pch=16)
         segments(x0 = pes$L50, y0 = 0.5, x1 = pes$L50, y1 = 0, col='red',lty=2)
         par(xpd=TRUE)
